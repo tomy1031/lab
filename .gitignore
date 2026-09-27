@@ -1,0 +1,4 @@
+node_modules/
+__pycache__/
+.segments-*/
+nextmake-mv/scripts/.glyphs.txt
