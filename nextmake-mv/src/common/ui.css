@@ -1,0 +1,22 @@
+/* Product-UI mockups shared by the promo films (phone frame, chat, cards, chips). */
+.phone { position: absolute; width: 420px; height: 860px; border-radius: 64px; background: #0d0f14;
+  box-shadow: 0 60px 120px rgba(10,20,40,.28), 0 0 0 2px rgba(255,255,255,.06) inset; transform-origin: 50% 50%; }
+.phone .screen { position: absolute; left: 14px; top: 14px; right: 14px; bottom: 14px; border-radius: 50px; overflow: hidden; background: #f6f8fb; }
+.phone .island { position: absolute; left: 50%; top: 22px; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #0d0f14; z-index: 5; }
+.phone .status { position: absolute; left: 34px; right: 34px; top: 24px; height: 30px; display: flex; justify-content: space-between;
+  font: 600 17px 'LATIN', sans-serif; color: #111; z-index: 4; }
+.phone .appbar { position: absolute; left: 0; right: 0; top: 70px; height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 24px;
+  font: 700 20px 'SANS', sans-serif; color: #0b1a33; border-bottom: 1px solid rgba(11,26,51,.08); }
+.phone .appbar .dot { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg,#1668c4,#3fb0ff); }
+.bubble { position: absolute; max-width: 300px; padding: 14px 18px; border-radius: 22px; font: 500 17px/1.6 'SANS', sans-serif; letter-spacing: .02em; }
+.bubble.me { right: 20px; background: #1668c4; color: #fff; border-bottom-right-radius: 6px; }
+.bubble.ai { left: 20px; background: #fff; color: #0b1a33; border-bottom-left-radius: 6px; box-shadow: 0 6px 18px rgba(11,26,51,.08); }
+.bubble.ai .who { display: block; font: 700 12px 'LATIN', sans-serif; letter-spacing: .2em; color: #1668c4; margin-bottom: 4px; }
+.uicard { position: absolute; background: #fff; border-radius: 20px; box-shadow: 0 18px 48px rgba(11,26,51,.10), 0 0 0 1px rgba(11,26,51,.05);
+  color: #0b1a33; font-family: 'SANS', sans-serif; }
+.uicard .h { font: 600 13px 'LATIN', sans-serif; letter-spacing: .24em; text-transform: uppercase; color: #5b6b85; }
+.token { position: absolute; padding: 10px 16px; border-radius: 12px; background: #eaf2fc; color: #0b3f7a; font: 600 19px 'SANS', sans-serif;
+  box-shadow: 0 0 0 1px rgba(22,104,196,.25) inset; white-space: nowrap; }
+.token b { font: 700 12px 'LATIN', sans-serif; letter-spacing: .18em; color: #1668c4; margin-right: 10px; }
+.icon { display: inline-block; vertical-align: middle; }
+.icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }

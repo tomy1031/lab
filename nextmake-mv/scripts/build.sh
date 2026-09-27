@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full pipeline for both films: scores -> fonts -> video.
+# Full pipeline for all four films: scores -> fonts -> video.
 # Requirements: python3 (numpy, scipy, fonttools, brotli), node + playwright (Chromium), ffmpeg with libx264.
 #   pip install numpy scipy fonttools brotli
 #   npm i -g playwright   (or set NODE_PATH to a directory containing it)
@@ -15,8 +15,12 @@ export NODE_PATH=${NODE_PATH:-$(npm root -g)}
 echo "== Scores"
 python3 scripts/music_invest.py "$WORK/invest.wav"
 python3 scripts/music_ceo.py "$WORK/ceo.wav"
+python3 scripts/music_nmclaw.py "$WORK/nmclaw.wav"
+python3 scripts/music_ido.py "$WORK/ido.wav"
 ffmpeg -y -loglevel error -i "$WORK/invest.wav" -c:a libmp3lame -b:a 192k src/assets/invest_bgm.mp3
 ffmpeg -y -loglevel error -i "$WORK/ceo.wav" -c:a libmp3lame -b:a 192k src/assets/ceo_score.mp3
+ffmpeg -y -loglevel error -i "$WORK/nmclaw.wav" -c:a libmp3lame -b:a 192k src/assets/nmclaw_score.mp3
+ffmpeg -y -loglevel error -i "$WORK/ido.wav" -c:a libmp3lame -b:a 192k src/assets/ido_score.mp3
 
 echo "== Fonts"
 if [ ! -f "$FONT_DIR/NotoSansJP[wght].ttf" ]; then
@@ -42,4 +46,12 @@ encode "$WORK/invest.mp4" "$WORK/invest.wav" 01_invest_in_the_next
 echo "== Film 02"
 node scripts/render.cjs --page ceo/index.html --video "$WORK/ceo.mp4" --duration 144 --workers "$WORKERS" --crf 16
 encode "$WORK/ceo.mp4" "$WORK/ceo.wav" 02_yaruka_yaranaika
+
+echo "== Promo 03 NMClaw"
+node scripts/render.cjs --page nmclaw/index.html --video "$WORK/nmclaw.mp4" --duration 86 --workers "$WORKERS" --crf 16
+encode "$WORK/nmclaw.mp4" "$WORK/nmclaw.wav" 03_nmclaw_promo
+
+echo "== Promo 04 IDO"
+node scripts/render.cjs --page ido/index.html --video "$WORK/ido.mp4" --duration 100 --workers "$WORKERS" --crf 16
+encode "$WORK/ido.mp4" "$WORK/ido.wav" 04_ido_promo
 echo "done: output/"

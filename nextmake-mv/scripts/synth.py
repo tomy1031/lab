@@ -233,3 +233,96 @@ def boom(length=4.0, bright=.12):
     b = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 1.2)
     air = lp(hp(rng.standard_normal(n), 900), 5000) * np.exp(-t * 2.5) * bright
     return np.tanh((b * 1.1 + air) * 1.2)
+
+
+# ---------------------------------------------------------------- Japanese instruments & UI sounds
+def koto(m, dur=2.5, bright=.6, bend=.0, vel=1.0):
+    """Karplus-Strong plucked string (koto-like), optional upward press-bend (oshide) in semitones."""
+    f = mtof(m)
+    n = idx(dur)
+    N = max(2, int(SR / f - .5))           # loop delay is N + 0.5 samples with the 2-tap average
+    r = f / (SR / (N + .5))                # >= 1: resample to hit the exact pitch
+    m_len = int(n * r) + 2
+    exc = rng.uniform(-1, 1, N) * np.hanning(N) ** .3
+    exc = lp(exc, 1500 + 6000 * bright)
+    x = np.zeros(m_len); x[:N] = exc
+    g = .996 - .004 * (m - 60) / 24
+    a = np.zeros(N + 2); a[0] = 1; a[N] = -g / 2; a[N + 1] = -g / 2
+    y = signal.lfilter([1.0], a, x)
+    y = np.interp(np.arange(n) * r, np.arange(m_len), y)
+    if bend:
+        t = np.arange(n) / SR
+        ratio = 2 ** (bend / 12 * np.clip((t - .08) / .18, 0, 1))
+        pos = np.cumsum(ratio)
+        y = np.interp(pos, np.arange(n), y, right=0)
+    body = bp(y, 180, 5000) * .6 + y * .4
+    t = np.arange(n) / SR
+    return body * np.exp(-t * .6) * vel / (np.max(np.abs(body)) + 1e-9)
+
+
+def shakuhachi(m, dur, vel=1.0, meri=True):
+    """Breathy end-blown flute: harmonic tone + band-limited breath, vibrato grows, optional meri dip."""
+    n = idx(dur + .4)
+    t = np.arange(n) / SR
+    f = mtof(m)
+    bend = (1 - .03 * np.exp(-t * 7)) if meri else 1.0
+    vib = 1 + .006 * np.sin(2 * np.pi * 5.2 * t) * np.clip((t - .5) / .8, 0, 1)
+    ph = np.cumsum(f * bend * vib) / SR
+    tone = np.sin(2 * np.pi * ph) + .3 * np.sin(4 * np.pi * ph) + .12 * np.sin(6 * np.pi * ph)
+    breath = bp(rng.standard_normal(n), f * .8, min(f * 4, 9000)) * .35 + hp(rng.standard_normal(n), 3000) * .05
+    env = adsr(n, .35, .4, .8, .45, dur)
+    return (tone * .7 + breath) * env * vel
+
+
+def taiko(big=True):
+    n = idx(2.2 if big else 1.0)
+    t = np.arange(n) / SR
+    f0, f1 = (95, 52) if big else (170, 110)
+    f = f1 + (f0 - f1) * np.exp(-t * 18)
+    skin = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * (2.4 if big else 6))
+    hit = lp(rng.standard_normal(n), 900) * np.exp(-t * 35) * .7
+    return np.tanh((skin + hit) * 1.5)
+
+
+def chime(m=88, dur=1.4):
+    """Clean UI chime (QR scan / notification)."""
+    a = fm_bell(m, dur, index=.8, ratio=2.0) * .8
+    b = fm_bell(m + 7, dur * .8, index=.5, ratio=2.0) * .35
+    a[:len(b)] += b
+    return a
+
+
+def ping(m=93):
+    n = idx(.5)
+    t = np.arange(n) / SR
+    return np.sin(2 * np.pi * mtof(m) * t) * np.exp(-t * 14) * np.minimum(1, t / .002)
+
+
+def buzz(dur=.35):
+    """Phone vibration."""
+    n = idx(dur)
+    t = np.arange(n) / SR
+    return lp(saw(165, n) * (np.sin(2 * np.pi * 26 * t) > 0), 900) * .5 * np.minimum(1, t / .01)
+
+
+def tick():
+    n = idx(.05)
+    t = np.arange(n) / SR
+    return bp(rng.standard_normal(n), 2500, 8000) * np.exp(-t * 180)
+
+
+def ambience(seconds, kind='river'):
+    """Filtered-noise bed: 'river' (water) or 'wind'."""
+    n = idx(seconds)
+    t = np.arange(n) / SR
+    x = rng.standard_normal(n)
+    if kind == 'river':
+        y = bp(x, 300, 4000) * (1 + .3 * np.sin(2 * np.pi * .3 * t)) + hp(x, 5000) * .15
+    else:
+        y = swept_lp(x, 500 + 400 * np.sin(2 * np.pi * .07 * t) + 300, bank=(250, 450, 800, 1400))
+    return y * .2
+
+
+def pluck_guitar(m, dur=1.2, vel=1.0):
+    """Warm nylon-ish pluck (Karplus-Strong, darker)."""
+    return lp(koto(m, dur, bright=.25, vel=vel), 3500)

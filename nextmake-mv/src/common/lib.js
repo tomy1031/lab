@@ -22,6 +22,7 @@ const E = {
   inExpo: p => p <= 0 ? 0 : Math.pow(2, 10 * p - 10),
   inOutExpo: p => p <= 0 ? 0 : p >= 1 ? 1 : p < .5 ? Math.pow(2, 20 * p - 10) / 2 : (2 - Math.pow(2, -20 * p + 10)) / 2,
   outSine: p => Math.sin(p * Math.PI / 2),
+  outBack: p => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); },
   inOutSine: p => -(Math.cos(Math.PI * p) - 1) / 2,
 };
 function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
