@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>やるか、やらないか。— 松井亮</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../common/base.css">
+<style>
+  .v { writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap; }
+  .quote-mark { font-family: 'SERIF', serif; }
+  .cine img { filter: saturate(.62) contrast(1.08) brightness(.92) !important; }
+  .cine .grade { background: linear-gradient(180deg, rgba(40,32,20,.10), rgba(6,12,22,.38)) !important; }
+  .attrib { font-family: 'LATIN', sans-serif; font-weight: 500; font-size: 14px; letter-spacing: .3em; color: var(--mist); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <div id="world"><div id="scenes"></div></div>
+    <div id="letterbox"><i></i><i></i></div>
+    <div id="hud"><div class="tl"></div><div class="tr label"></div></div>
+    <div id="fade"></div>
+    <div id="grain"></div>
+    <div id="vignette"></div>
+  </div>
+</div>
+<script src="../common/lib.js"></script>
+<script src="film.js"></script>
+</body>
+</html>

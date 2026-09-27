@@ -1,0 +1,88 @@
+/* Shared design system for the NEXTMAKE films.
+ * Quiet, editorial: ink / paper palette, Mincho statements, light gothic body,
+ * tracked Latin labels, hairlines, mask reveals, graded photography. */
+@font-face { font-family: 'SANS'; src: url(../common/fonts/NotoSansJP.woff2) format('woff2'); font-weight: 100 900; font-display: block; }
+@font-face { font-family: 'SERIF'; src: url(../common/fonts/NotoSerifJP.woff2) format('woff2'); font-weight: 200 900; font-display: block; }
+@font-face { font-family: 'LATIN'; src: url(../common/fonts/Montserrat.woff2) format('woff2'); font-weight: 100 900; font-display: block; }
+
+:root {
+  --ink: #0b0e14;
+  --ink2: #141925;
+  --paper: #f2f0eb;
+  --paper2: #e7e3da;
+  --stone: #8b909a;
+  --mist: rgba(255,255,255,.62);
+  --line: rgba(255,255,255,.22);
+  --line-ink: rgba(11,14,20,.18);
+  --blue: #1668c4;
+  --sky: #3fb0ff;
+  --gold: #c8a86a;
+  --m: 128px;               /* outer margin */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #000; }
+#viewport { position: relative; width: 1920px; height: 1080px; transform-origin: 0 0; }
+#stage {
+  position: absolute; inset: 0; overflow: hidden; background: var(--ink); color: #fff;
+  font-family: 'SANS', sans-serif; font-weight: 400;
+  -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision;
+  font-feature-settings: 'palt' 1;
+}
+#world { position: absolute; inset: 0; }
+.scene { position: absolute; inset: 0; display: none; }
+.abs { position: absolute; }
+.fill { position: absolute; inset: 0; }
+.paper { background: var(--paper); color: var(--ink); }
+.inkbg { background: var(--ink); color: #fff; }
+
+/* type */
+.serif { font-family: 'SERIF', serif; font-weight: 500; letter-spacing: .04em; font-feature-settings: 'palt' 1; }
+.latin { font-family: 'LATIN', 'SANS', sans-serif; }
+.label { font-family: 'LATIN', sans-serif; font-weight: 500; font-size: 15px; letter-spacing: .38em; text-transform: uppercase; }
+.num { font-family: 'LATIN', sans-serif; font-weight: 200; letter-spacing: -.02em; line-height: .9; font-variant-numeric: tabular-nums lining-nums; }
+.body { font-family: 'SANS', sans-serif; font-weight: 400; font-size: 22px; line-height: 1.9; letter-spacing: .06em; }
+.cap { font-family: 'SANS', sans-serif; font-weight: 400; font-size: 14px; letter-spacing: .08em; line-height: 1.6; }
+.muted { color: var(--mist); }
+.paper .muted { color: rgba(11,14,20,.55); }
+
+/* mask line reveal */
+.ln { display: block; overflow: hidden; padding: .06em 0 .14em; margin: -.06em 0 -.14em; }
+.lni { display: block; will-change: transform; white-space: nowrap; }
+.ch { display: inline-block; white-space: pre; will-change: transform, opacity; }
+
+/* rules */
+.hair { position: absolute; height: 1px; background: var(--line); transform-origin: 0 50%; }
+.paper .hair, .hair.ink { background: var(--line-ink); }
+.vhair { position: absolute; width: 1px; background: var(--line); transform-origin: 50% 0; }
+.paper .vhair, .vhair.ink { background: var(--line-ink); }
+
+/* photography */
+.photo { position: absolute; overflow: hidden; background: #111; }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%;
+  filter: saturate(.78) contrast(1.06) brightness(.96); }
+.photo .grade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(22,40,70,.14), rgba(8,10,16,.30)); mix-blend-mode: multiply; }
+.photo.raw img { filter: none; }
+.scrim-b { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,10,16,.88) 0%, rgba(8,10,16,.45) 38%, rgba(8,10,16,0) 70%); }
+.scrim-l { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,10,16,.9) 0%, rgba(8,10,16,.6) 35%, rgba(8,10,16,0) 70%); }
+.scrim { position: absolute; inset: 0; background: rgba(8,10,16,.55); }
+
+/* logo */
+.logo { display: flex; align-items: center; gap: .3em; font-family: 'LATIN', sans-serif; font-weight: 400; letter-spacing: .05em; line-height: 1; }
+.logo svg { height: .74em; width: auto; overflow: visible; }
+
+/* overlays */
+#grain { position: absolute; inset: -50%; pointer-events: none; opacity: .055; mix-blend-mode: overlay; }
+#vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,.32) 100%); }
+#fade { position: absolute; inset: 0; pointer-events: none; background: #000; opacity: 0; }
+#hud { position: absolute; inset: 0; pointer-events: none; }
+#hud .tl { position: absolute; left: var(--m); top: 56px; }
+#hud .tr { position: absolute; right: var(--m); top: 58px; }
+#letterbox { position: absolute; inset: 0; pointer-events: none; }
+#letterbox i { position: absolute; left: 0; right: 0; height: 0; background: #000; }
+#letterbox i:first-child { top: 0; } #letterbox i:last-child { bottom: 0; }
+
+/* preview controls */
+#controls { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; z-index: 10; font: 14px system-ui, sans-serif; color: #fff; }
+#controls button { font: 600 14px system-ui, sans-serif; padding: 8px 18px; border-radius: 999px; border: 0; background: #fff; color: #000; cursor: pointer; }
+#controls input { width: 420px; }
+body.render #controls { display: none; }

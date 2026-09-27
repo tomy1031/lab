@@ -15,13 +15,13 @@ SRC = ROOT / 'src'
 ttf_dir = pathlib.Path(sys.argv[1])
 
 chars = set(string.printable)
-for f in (SRC / 'mv.js', SRC / 'index.html'):
+for f in [*SRC.glob('*/*.js'), *SRC.glob('*/*.html')]:
     chars |= set(f.read_text(encoding='utf-8'))
 chars |= set('、。「」『』（）｜・〜ー―×→✓％＋')
 chars = ''.join(sorted(c for c in chars if c.isprintable() or c == ' '))
 (ROOT / 'scripts' / '.glyphs.txt').write_text(chars, encoding='utf-8')
 
-out = SRC / 'fonts'
+out = SRC / 'common' / 'fonts'
 out.mkdir(exist_ok=True)
 for src, dst in [('NotoSansJP[wght].ttf', 'NotoSansJP.woff2'),
                  ('NotoSerifJP[wght].ttf', 'NotoSerifJP.woff2'),

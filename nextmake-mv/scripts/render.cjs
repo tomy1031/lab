@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /* Render src/index.html frame-by-frame with headless Chromium and encode with ffmpeg.
  *
- *   node render.cjs --stills 1.5,33,65 --out dir     # PNG stills for review
- *   node render.cjs --video out.mp4 --audio bgm.wav   # full render (parallel workers)
+ *   node render.cjs --page invest/index.html --stills 1.5,33,65 --out dir          # PNG stills for review
+ *   node render.cjs --page ceo/index.html --video out.mp4 --audio bgm.wav --duration 144
+ *   node render.cjs --page ceo/index.html --video part.mp4 --from 51 --to 57           # one section only
  *
  * Needs: playwright (NODE_PATH=$(npm root -g) works with the global install) and ffmpeg on PATH.
  */
@@ -16,6 +17,7 @@ const SRC = path.resolve(__dirname, '..', 'src');
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; };
 const WORKERS = +opt('workers', 4);
+const PAGE = opt('page', 'invest/index.html');
 const FPS = 30;
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.jpg': 'image/jpeg',
@@ -35,7 +37,7 @@ function serve() {
 async function openPage(browser, port) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
   page.on('pageerror', e => console.error('pageerror:', e.message));
-  await page.goto(`http://127.0.0.1:${port}/index.html?render=1`, { waitUntil: 'load' });
+  await page.goto(`http://127.0.0.1:${port}/${PAGE}?render=1`, { waitUntil: 'load' });
   await page.evaluate(() => window.MV.ready());
   return page;
 }
@@ -59,12 +61,15 @@ async function video(browser, port) {
   const outFile = path.resolve(opt('video'));
   const audio = opt('audio');
   const tmp = fs.mkdtempSync(path.join(path.dirname(outFile), '.segments-'));
-  const total = Math.round(+opt('duration', 100) * FPS);
+  // optional --from/--to (seconds) render a sub-range, e.g. to re-render and splice one section
+  const f0 = Math.round(+opt('from', 0) * FPS);
+  const f1 = Math.round(+opt('to', opt('duration', 100)) * FPS);
+  const total = f1 - f0;
   const per = Math.ceil(total / WORKERS);
   const started = Date.now();
   let done = 0;
   const jobs = Array.from({ length: WORKERS }, (_, w) => (async () => {
-    const a = w * per, b = Math.min(total, a + per);
+    const a = f0 + w * per, b = Math.min(f1, a + per);
     const page = await openPage(browser, port);
     const seg = path.join(tmp, `seg${w}.mp4`);
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
