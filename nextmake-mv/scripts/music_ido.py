@@ -137,16 +137,16 @@ def cue_b():
     # UI sounds
     ui = np.zeros((N, 2))
     place(ui, stereo(chime(90, 1.8), 0), 26.0, .5)            # the switch: QR chime
-    place(ui, stereo(chime(95, 1.2), .2), 28.8, .4)           # scanned
-    place(ui, stereo(ping(88), 0), 31.2, .25)                 # play
+    place(ui, stereo(chime(95, 1.2), .2), 29.75, .4)          # scanned at the post
+    place(ui, stereo(ping(88), 0), 31.0, .25)                 # the story starts playing
     place(ui, stereo(tick() * 2, 0), 38.2, .5)                # tap
     place(ui, stereo(chime(93, 1.2), .2), 38.7, .38)          # purchased
-    for i in range(6):                                        # unlocks — D pentatonic up
-        place(ui, stereo(fm_bell([74, 76, 78, 81, 83, 86][i], .5, index=.9, ratio=2.0), (i - 2.5) / 4), 41.9 + i * .625, .2)
-    for i in range(5):                                        # story pins
-        place(ui, stereo(koto([74, 76, 78, 81, 86][i], 1.2, bright=.8), (i - 2) / 3), 46.5 + i * .8, .16)
-    for i in range(6):
-        place(ui, stereo(ping(96 + (i % 3) * 2), 0), 47.6 + i * .42, .06)
+    for i in range(5):                                        # the other five guides open — D pentatonic up
+        place(ui, stereo(fm_bell([76, 78, 81, 83, 86][i], .5, index=.9, ratio=2.0), (i - 2) / 4), 39.0 + i * .3125, .2)
+    for i, t0 in enumerate([42.25, 44.125, 46.0, 47.875, 49.75]):     # a QR scanned at each stop on the walk
+        place(ui, stereo(koto([74, 76, 78, 81, 86][i], 1.2, bright=.8), (i - 2) / 3), t0, .18)
+    for i in range(6):                                        # places to eat, stay, shop, try
+        place(ui, stereo(ping(96 + (i % 3) * 2), 0), 44.5 + i * .625, .06)
     for t0 in (52.25, 53.5, 54.75):
         place(ui, stereo(tick(), .3), t0, .3)
     # koto glissando into cue C
