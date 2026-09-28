@@ -145,7 +145,7 @@ function world(parent) {
   post.innerHTML = `<div class="pillar"></div><div class="plate"><div class="pt">この場所の物語</div><img src="${QR}"><div class="pf"><span>スマホで読み取る</span><span class="seal">旅</span></div></div>`;
   return w;
 }
-scene(26, 36, n => {
+scene(26, 36.5, n => {   // runs on under the next page's entrance
   const c = {};
   c.wa = world(n);
   c.ring = el('div', 'abs', c.wa); box(c.ring, QRC[0] - 95, QRC[1] - 95, 190, 190); place(c.ring, { border: `4px solid ${SHU}`, borderRadius: '14px' });
@@ -265,7 +265,7 @@ scene(26, 36, n => {
 const GUIDES = [['STORY 01', '谷に眠る物語', 'miyoshi_iya_autumn'], ['STORY 02', '街の成り立ち', 'miyoshi_village'], ['STORY 03', '産業が生まれた理由', 'miyoshi_ochiai'],
   ['STORY 04', '受け継がれた文化', 'miyoshi_thatch'], ['ROUTE', '街を巡るおすすめルート', 'miyoshi_iya_observatory'], ['MAP', '周辺の食・宿・土産・体験', 'miyoshi_oboke_boat']];
 const PAY = { tap: 38.2, done: 38.7, open: 39.0 };
-scene(36, 41, n => {
+scene(36, 41.5, n => {
   const c = {};
   washi(n);
   c.head = stepHead(n, '02 TICKET', '続きは、ガイドチケットで。', '無料で入口を体験　→　チケットを購入　→　街全体のガイドがひらく');
@@ -334,7 +334,7 @@ const ROUTE = 'M 260 820 C 420 760 520 640 700 620 S 980 700 1080 560 S 1260 330
 const STOPS = [[260, 820, 'STORY 01', '谷に眠る物語', 'miyoshi_iya_autumn', [300, 862]], [700, 620, 'STORY 02', '街の成り立ち', 'miyoshi_village', [560, 454]],
   [1080, 560, 'STORY 03', '産業が生まれた理由', 'miyoshi_ochiai', [1110, 604]], [1460, 360, 'STORY 04', '受け継がれた文化', 'miyoshi_thatch', [1486, 404]], [1760, 220, 'GOAL', '', '', null]];
 const SC = [42.25, 44.125, 46.0, 47.875, 49.75];      // a scan every three beats
-scene(41, 51, n => {
+scene(41, 51.6, n => {
   const c = {};
   washi(n);
   const svg = S('svg', { width: W, height: H }); svg.style.cssText = 'position:absolute;left:0;top:0'; n.appendChild(svg);
