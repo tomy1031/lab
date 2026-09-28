@@ -1,4 +1,4 @@
-/* Film 02 — 「やるか、やらないか。」 a portrait of 松井 亮 (144 s, 80 BPM: bar 3 s).
+/* Film 02 — 「やるか、やらないか。」 a portrait of 松井 亮 (154 s).
  * Words are Matsui's own, from NEXTMAKE's official YouTube channel (lightly cleaned for reading).
  * Cinematic grammar: letterboxed photo passages, black typographic passages, vertical Mincho for the motto.
  */
@@ -92,26 +92,17 @@ scene(12, 18, n => {
 scene(18, 33, n => {
   const c = {};
   c.ch = chapter(n, '01', '一言', 'The words');
-  // manga inset (the CEO's autobiographical manga on the official site)
-  c.mg = photo(n, 'manga_admire', [930, 250, 820, 503], { raw: true });
-  c.mg.style.background = '#fff';
-  c.mgcap = el('div', 'abs cap muted', n, '自伝マンガ『夢を信じたネクマックス』より（NEXTMAKE公式サイト）'); box(c.mgcap, 930, 775);
-  c.m1 = quoteBlock(n, ['新卒で入った会社で、', '憧れの人に出会う。'], 400, 48);
-  c.m2 = sub(n, '「ここまで強く共感したことは、人生で初めてだった」', M, 580, 22);
+  c.m1 = quoteBlock(n, ['「実は、26歳ぐらいの', '　サラリーマン時代のエピソードなんですけどね」'], 430, 52);
   c.p1 = cine(n, 'crowd_blur'); c.p2 = cine(n, 'office_window');
   c.s = el('div', 'scrim-b', n);
-  c.t2 = quoteBlock(n, ['26歳、営業の部署にいた頃。', '「私、できるかな。いや、できないと思う」'], CAP_Y - 66, 44);
+  c.t2 = quoteBlock(n, ['営業の部署にいた頃。', '「私、できるかな。いや、できないと思う」'], CAP_Y - 66, 44);
   c.t2b = sub(n, '——そう口にする人間だった。', M, CAP_Y + 82, 22);
   c.t3 = quoteBlock(n, ['たまたま、営業本部長がそれを聞いていた。'], CAP_Y, 42);
   c.q = lines(n, ['「できるできないじゃねえんだよ。', '　やるかやらないかなんだよ」'], { left: M + 'px', top: '400px', fontSize: '72px', lineHeight: 1.6 }, 'serif');
   return c;
 }, (t, c) => {
   chapterUpdate(c.ch, t, 18);
-  const vm = t >= 20.4 && t < 23.6;
-  if (vm) { wipe(c.mg, t, 20.5, .9, 'up', E.inOutQuart); c.mg.style.opacity = clamp((23.6 - t) / .35); kb(c.mg, t, 20.4, 23.6, { s0: 1.04, s1: 1.0 }); } else show(c.mg, 0);
-  show(c.mgcap, win(t, 21.0, 23.5, .5, .3));
-  revealLines(c.m1, t, 20.7, { stag: .35, out: 23.1, outDur: .4 }); if (t < 20.7 || t > 23.6) show(c.m1, 0);
-  show(c.m2, win(t, 21.5, 23.4, .5, .3));
+  revealLines(c.m1, t, 20.6, { stag: .5, out: 23.1, outDur: .4 }); if (t < 20.6 || t > 23.6) show(c.m1, 0);
   photoSpan(c.p1, t, 23.6, 26.6, .7, { s0: 1.08, s1: 1.08, x0: 60, x1: -40 });
   photoSpan(c.p2, t, 26.6, 29.2, .5, { s0: 1.1, s1: 1.04 });
   show(c.s, t >= 23.6 && t < 29.2 ? 1 : 0);
@@ -148,31 +139,42 @@ scene(33, 45, n => {
   revealLines(c.q, t, 41.5, { stag: .9, out: 44.4, outDur: .5 }); if (t < 41.5) show(c.q, 0);
 });
 
-// ================================================================= 45–63 Ch.3 好奇心
+// ================================================================= 45–73 Ch.3 好奇心 (extended; later scenes shift by S3)
 let IDOTS = [];
 hooks.preload.push(async () => { IDOTS = await fetch('../assets/indochina_dots.json').then(r => r.json()); });
 const PX = 120, LON0 = 96, LAT0 = 16.4;
 const mp = (lon, lat) => [(lon - LON0) * PX, (LAT0 - lat) * PX];
-scene(45, 63, n => {
+scene(45, 73, n => {
   const c = {};
   c.ch = chapter(n, '03', '好奇心', 'Curiosity');
   c.q = lines(n, ['「好奇心が、止まらないんです」'], { left: 0, right: 0, top: '470px', fontSize: '84px', textAlign: 'center' }, 'serif');
   c.at = el('div', 'abs attrib', n, '— Akira Matsui'); place(c.at, { left: 0, right: 0, top: '620px', textAlign: 'center' });
+  // 51–61.4 map: the decision to go
   c.cv = el('canvas', 'fill', n); c.cv.width = W; c.cv.height = H; c.g = c.cv.getContext('2d');
   c.m1 = quoteBlock(n, ['2023年、ベトナムで会社をつくった頃。', '隣の国カンボジアで働く経営者たちと出会う。'], 250, 40);
   c.m2 = quoteBlock(n, ['「カンボジア、どこですか？」', '「隣だよ。バスで6時間」'], 250, 48);
+  c.m3 = quoteBlock(n, ['「1回だけでも、', '　見に行くのはいいんじゃないかなと」'], 250, 48);
+  c.m4 = quoteBlock(n, ['ベトナムから、バスで6時間。'], 250, 56);
+  // 61.4–70 the pool story, told as he tells it
   c.p = cine(n, 'angkor'); c.s = el('div', 'scrim-b', n);
-  c.p1 = quoteBlock(n, ['遊び半分で、バスに揺られて6時間。'], CAP_Y, 44);
-  c.p2 = quoteBlock(n, ['早く着きすぎて、プールで泳いでいたら――', 'びしょ濡れのまま、初対面。'], CAP_Y - 40, 44);
-  c.p3 = el('div', 'abs serif', n, '「君が松井君か」'); box(c.p3, 1340, CAP_Y + 40); place(c.p3, { fontSize: '34px', color: 'var(--mist)' });
+  c.jl = el('div', 'abs label muted', n, 'Episode — 本人いわく「恥ずかしい話」'); box(c.jl, M, CAP_Y - 120);
+  c.j1 = quoteBlock(n, ['初めて直接会う相手は、日本カンボジア協会の方々。'], CAP_Y - 50, 42);
+  c.j1s = sub(n, '会長は、元・駐カンボジア日本大使。それまでは、Zoomでしか話したことがなかった。', M, CAP_Y + 30, 22);
+  c.j2 = quoteBlock(n, ['早く着きすぎて、暑くて、プールへ。', '泳ぎすぎて、気づけば待ち合わせの時間。'], CAP_Y - 50, 42);
+  c.j3 = quoteBlock(n, ['着替える間もなく、', 'びしょびしょのまま、ご対面。'], CAP_Y - 50, 42);
+  c.j3q = el('div', 'abs serif', n, '「君が松井君か」'); box(c.j3q, 1300, CAP_Y + 10); place(c.j3q, { fontSize: '40px', color: 'var(--mist)' });
+  // 70–73 punchline on black
+  c.k0 = el('div', 'abs label muted', n, '心の声'); place(c.k0, { left: 0, right: 0, top: '430px', textAlign: 'center' });
+  c.k1 = lines(n, ['（あ、カンボジア事業、終わった……）'], { left: 0, right: 0, top: '480px', fontSize: '56px', textAlign: 'center' }, 'serif');
+  c.k2 = lines(n, ['「こんな感じで、カンボジアが始まったんです」'], { left: 0, right: 0, top: '490px', fontSize: '60px', textAlign: 'center' }, 'serif');
   return c;
 }, (t, c) => {
   chapterUpdate(c.ch, t, 45);
   revealLines(c.q, t, 47.6, { dur: 1.1, out: 50.5, outDur: .5 }); if (t < 47.6 || t > 51) show(c.q, 0);
   show(c.at, win(t, 48.7, 50.9, .6, .4));
-  // map 51–57
-  const g = c.g, vm = t >= 51 && t < 57;
-  show(c.cv, vm ? win(t, 51, 57, .6, .4) : 0);
+  // map 51–61.4
+  const g = c.g, vm = t >= 51 && t < 61.4;
+  show(c.cv, vm ? win(t, 51, 61.4, .6, .4) : 0);
   if (vm) {
     g.clearRect(0, 0, W, H);
     const [vx, vy] = mp(106.7, 10.8), [px, py] = mp(104.9, 11.6);
@@ -185,7 +187,7 @@ scene(45, 63, n => {
       g.globalAlpha = a; g.fillRect(x - 2.4, y - 2.4, 4.8, 4.8);
     }
     g.globalAlpha = 1;
-    const rp = E.inOutCubic(prog(t, 54.0, 55.6));
+    const rp = E.inOutCubic(prog(t, 58.8, 60.6));
     g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.6; g.setLineDash([8, 8]);
     const mx = (vx + px) / 2 + 40, my = (vy + py) / 2 + 70;
     g.beginPath();
@@ -195,6 +197,11 @@ scene(45, 63, n => {
       k ? g.lineTo(X, Y) : g.moveTo(X, Y);
     }
     g.stroke(); g.setLineDash([]);
+    if (rp > 0 && rp < 1) {                       // the traveller
+      const s = rp, u = 1 - s;
+      const X = u * u * vx + 2 * u * s * mx + s * s * px, Y = u * u * vy + 2 * u * s * my + s * s * py;
+      g.fillStyle = 'rgba(92,192,255,1)'; g.beginPath(); g.arc(X, Y, 6, 0, 6.283); g.fill();
+    }
     const node = (x, y, label, a, right) => {
       if (a <= 0) return;
       g.globalAlpha = a;
@@ -205,30 +212,44 @@ scene(45, 63, n => {
       g.globalAlpha = 1;
     };
     node(vx, vy, 'VIETNAM', E.outCubic(prog(t, 51.3, 52)), true);
-    node(px, py, 'PHNOM PENH, CAMBODIA', E.outCubic(prog(t, 55.4, 56)), false);
+    node(px, py, 'PHNOM PENH, CAMBODIA', E.outCubic(prog(t, 60.3, 61)), false);
     if (rp > .5) {
       g.globalAlpha = clamp((rp - .5) * 2); g.font = '500 14px LATIN'; g.fillStyle = 'rgba(255,255,255,.75)'; g.textAlign = 'left';
       g.fillText('BY BUS — 6 HOURS', mx - 60, my + 40); g.globalAlpha = 1;
     }
   }
   revealLines(c.m1, t, 51.5, { stag: .5, out: 53.7, outDur: .4 }); if (t < 51.5 || t > 54.2) show(c.m1, 0);
-  revealLines(c.m2, t, 54.3, { stag: .9, out: 56.6, outDur: .4 }); if (t < 54.3 || t > 57) show(c.m2, 0);
-  // photo 57–63
-  photoSpan(c.p, t, 57, 63, .8, { s0: 1.12, s1: 1.03 });
-  show(c.s, t >= 57 && t < 63 ? 1 : 0);
-  revealLines(c.p1, t, 57.4, { out: 59.2, outDur: .4 }); if (t < 57.4 || t > 59.7) show(c.p1, 0);
-  revealLines(c.p2, t, 59.6, { stag: 1.0, out: 62.4, outDur: .5 }); if (t < 59.6) show(c.p2, 0);
-  show(c.p3, win(t, 61.3, 62.8, .5, .4));
+  revealLines(c.m2, t, 54.2, { stag: .8, out: 56.4, outDur: .35 }); if (t < 54.2 || t > 56.8) show(c.m2, 0);
+  revealLines(c.m3, t, 56.8, { stag: .6, out: 58.7, outDur: .35 }); if (t < 56.8 || t > 59.1) show(c.m3, 0);
+  revealLines(c.m4, t, 59.1, { dur: .8, out: 61.0, outDur: .4 }); if (t < 59.1 || t > 61.4) show(c.m4, 0);
+  // photo 61.4–70
+  photoSpan(c.p, t, 61.4, 70, .8, { s0: 1.12, s1: 1.02 });
+  show(c.s, t >= 61.4 && t < 70 ? 1 : 0);
+  show(c.jl, win(t, 61.7, 69.7, .5, .3));
+  revealLines(c.j1, t, 61.9, { out: 64.5, outDur: .4 }); if (t < 61.9 || t > 64.9) show(c.j1, 0);
+  show(c.j1s, win(t, 62.5, 64.6, .5, .3));
+  revealLines(c.j2, t, 65.0, { stag: .9, out: 67.3, outDur: .35 }); if (t < 65.0 || t > 67.7) show(c.j2, 0);
+  revealLines(c.j3, t, 67.7, { stag: .6, out: 69.6, outDur: .35 }); if (t < 67.7 || t > 70) show(c.j3, 0);
+  show(c.j3q, win(t, 68.6, 69.8, .35, .25));
+  // punchline 70–73
+  show(c.k0, win(t, 70.15, 71.5, .3, .25));
+  revealLines(c.k1, t, 70.25, { dur: .6, out: 71.35, outDur: .3 }); if (t < 70.25 || t > 71.7) show(c.k1, 0);
+  revealLines(c.k2, t, 71.7, { dur: .8, out: 72.6, outDur: .35 }); if (t < 71.7) show(c.k2, 0);
 });
 
+// Scenes after chapter 3 keep their original timing; the extended chapter pushes them back by S3.
+const S3 = 10;
+const late = (a, b, build, update) => scene(a + S3, b + S3, build, (t, c) => update(t - S3, c));
+
 // ================================================================= 63–81 Ch.4 提案
-scene(63, 81, n => {
+late(63, 81, n => {
   const c = {};
   c.ch = chapter(n, '04', '提案', 'The proposal');
   c.q1 = quoteBlock(n, ['「2030年に、80万人のエンジニアが', '　足りなくなると言われてる」'], 420, 56);
   c.q1s = sub(n, 'だからこそ、海外の若い世代に教育を。それができたら、社会的に意義のある事業になる――。', M, 660, 22);
   c.p1 = cine(n, 'formal_gathering'); c.s1 = el('div', 'scrim-b', n);
   c.q2 = quoteBlock(n, ['「カンボジアの若い子たちを、僕が教えるので、', '　助けてもらえないか」'], CAP_Y - 50, 46);
+  c.q2l = el('div', 'abs label muted', n, '協会の会長に同行し、首相に提案する時間をもらう'); box(c.q2l, M, CAP_Y - 110);
   c.r0 = sub(n, '返ってきた言葉は、', M, 440, 26);
   c.r1 = lines(n, ['「本当に、やる気があるか」'], { left: M + 'px', top: '500px', fontSize: '76px' }, 'serif');
   c.p2 = cine(n, 'signing'); c.s2 = el('div', 'scrim-b', n);
@@ -242,6 +263,7 @@ scene(63, 81, n => {
   photoSpan(c.p1, t, 70, 75, .8, { s0: 1.08, s1: 1.02 });
   show(c.s1, t >= 70 && t < 75 ? 1 : 0);
   revealLines(c.q2, t, 70.4, { stag: .9, out: 74.5, outDur: .5 }); if (t < 70.4 || t > 75) show(c.q2, 0);
+  show(c.q2l, win(t, 70.3, 74.8, .5, .4));
   show(c.r0, win(t, 75.2, 77.8, .5, .4));
   revealLines(c.r1, t, 75.8, { dur: 1.0, out: 77.5, outDur: .45 }); if (t < 75.8 || t > 78) show(c.r1, 0);
   photoSpan(c.p2, t, 78, 81, .5, { s0: 1.1, s1: 1.04 });
@@ -251,7 +273,7 @@ scene(63, 81, n => {
 });
 
 // ================================================================= 81–93 Ch.5 仲間
-scene(81, 93, n => {
+late(81, 93, n => {
   const c = {};
   c.ch = chapter(n, '05', '仲間', 'Believers');
   c.p1 = cine(n, 'team_osaka'); c.p2 = cine(n, 'whiteboard');
@@ -271,7 +293,7 @@ scene(81, 93, n => {
 });
 
 // ================================================================= 93–108 Ch.6 夢
-scene(93, 108, n => {
+late(93, 108, n => {
   const c = {};
   c.ch = chapter(n, '06', '夢', 'Dreams');
   c.p1 = cine(n, 'class_teaching'); c.p2 = cine(n, 'it_start'); c.p3 = cine(n, 'ceremony_2026'); c.p4 = cine(n, 'students_cafe');
@@ -291,7 +313,7 @@ scene(93, 108, n => {
 });
 
 // ================================================================= 108–123 Climax
-scene(108, 123, n => {
+late(108, 123, n => {
   const c = {};
   c.m = ['undokai', 'graduation', 'forum', 'student_speech', 'ceremony_group', 'visit_group', 'aupp_group'].map(p => cine(n, p));
   c.s = el('div', 'scrim-b', n);
@@ -316,7 +338,7 @@ scene(108, 123, n => {
 });
 
 // ================================================================= 123–144 Closing
-scene(123, 144, n => {
+late(123, 144, n => {
   const c = {};
   c.paper = el('div', 'fill paper', n);
   c.l0 = el('div', 'abs', c.paper, 'こういうことをやってみたい、と言う人がいたら――'); box(c.l0, M, 420);
@@ -333,7 +355,7 @@ scene(123, 144, n => {
   c.sl = lines(c.card, ['夢を、一緒に実現できる仲間を。'], { left: M + 'px', top: '630px', fontSize: '48px' }, 'serif');
   c.logo = logo(c.card, 40, { left: M + 'px', top: '800px' }, { light: false });
   c.url = el('div', 'abs latin', c.card, 'nextmake.site'); box(c.url, M + 400, 808); place(c.url, { fontSize: '18px', letterSpacing: '.3em', fontWeight: 500, color: 'var(--blue)' });
-  c.note = el('div', 'abs cap', c.card, '本人の発言は、株式会社ネクストメイク公式YouTubeチャンネルの動画から引用し、読みやすく整えています。写真は公式サイト・PR TIMES掲載のものです。');
+  c.note = el('div', 'abs cap', c.card, '本人の発言は、株式会社ネクストメイク公式YouTubeチャンネルの動画から引用し、読みやすく整えています。写真は公式サイト・PR TIMES掲載のものです。　音楽：「スイングバイ」のる（OpenTracks）');
   place(c.note, { left: M + 'px', bottom: '64px', fontSize: '13px', color: 'rgba(11,14,20,.5)' });
   return c;
 }, (t, c) => {
@@ -358,11 +380,11 @@ scene(123, 144, n => {
 });
 
 // ================================================================= letterbox, HUD, fades
-const LB_ON = [[23.6, 29.2], [38, 41], [57, 63], [70, 75], [78, 81], [83.4, 93], [95.4, 108], [108, 113.25]];
+const LB_ON = [[23.6, 29.2], [38, 41], [61.4, 70], ...[[70, 75], [78, 81], [83.4, 93], [95.4, 108], [108, 113.25]].map(([a, b]) => [a + S3, b + S3])];
 const bars = [...document.querySelectorAll('#letterbox i')];
 const hud = $('#hud'), tl = hud.querySelector('.tl'), tr = hud.querySelector('.tr');
 tl.innerHTML = '<span class="label" style="font-size:12px;color:rgba(255,255,255,.55)">Akira Matsui — a portrait</span>';
-const CH = [[18, 33, '01　一言'], [33, 45, '02　ゼロから'], [45, 63, '03　好奇心'], [63, 81, '04　提案'], [81, 93, '05　仲間'], [93, 108, '06　夢'], [108, 114, 'Epilogue']];
+const CH = [[18, 33, '01　一言'], [33, 45, '02　ゼロから'], [45, 73, '03　好奇心'], [73, 91, '04　提案'], [91, 103, '05　仲間'], [103, 118, '06　夢'], [118, 124, 'Epilogue']];
 hooks.after.push(t => {
   let h = 0;
   for (const [a, b] of LB_ON) h = Math.max(h, win(t, a - .3, b + .3, .6, .6));
@@ -371,9 +393,9 @@ hooks.after.push(t => {
   place(tl, { top: '58px' }); place(tr, { top: '58px' });
   const ch = CH.find(c => t >= c[0] && t < c[1]);
   tr.textContent = ch ? ch[2] : ''; tr.style.color = 'rgba(255,255,255,.55)'; tr.style.fontSize = '12px';
-  $('#fade').style.opacity = E.inOutSine(prog(t, 142.4, 144)).toFixed(3);
-  $('#vignette').style.opacity = t >= 123 ? .2 : 1;
+  $('#fade').style.opacity = E.inOutSine(prog(t, 152.4, 154)).toFixed(3);
+  $('#vignette').style.opacity = t >= 133 ? .2 : 1;
 });
 
-film({ duration: 144, fps: 30, audio: '../assets/ceo_score.mp3' });
+film({ duration: 154, fps: 30, audio: '../assets/ceo_score.mp3' });
 })();

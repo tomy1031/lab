@@ -2,3 +2,7 @@ node_modules/
 __pycache__/
 .segments-*/
 nextmake-mv/scripts/.glyphs.txt
+# licensed BGM (OpenTracks) must not be redistributed: fetched by scripts/fetch_music.py
+nextmake-mv/music_src/
+nextmake-mv/src/assets/ceo_score.mp3
+nextmake-mv/src/assets/nmclaw_score.mp3

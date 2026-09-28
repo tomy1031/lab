@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Full pipeline for all four films: scores -> fonts -> video.
+# Full pipeline for all four films: music -> fonts -> video.
 # Requirements: python3 (numpy, scipy, fonttools, brotli), node + playwright (Chromium), ffmpeg with libx264.
-#   pip install numpy scipy fonttools brotli
+#   pip install numpy scipy fonttools brotli pyloudnorm
 #   npm i -g playwright   (or set NODE_PATH to a directory containing it)
 # Font sources (SIL OFL) are downloaded from github.com/google/fonts when FONT_DIR is not set.
 set -euo pipefail
@@ -12,7 +12,8 @@ FONT_DIR=${FONT_DIR:-$WORK/fonts}
 WORKERS=${WORKERS:-4}
 export NODE_PATH=${NODE_PATH:-$(npm root -g)}
 
-echo "== Scores"
+echo "== Music"
+python3 scripts/fetch_music.py            # films 02/03: free BGM from OpenTracks (not redistributed)
 python3 scripts/music_invest.py "$WORK/invest.wav"
 python3 scripts/music_ceo.py "$WORK/ceo.wav"
 python3 scripts/music_nmclaw.py "$WORK/nmclaw.wav"
@@ -44,7 +45,7 @@ node scripts/render.cjs --page invest/index.html --video "$WORK/invest.mp4" --du
 encode "$WORK/invest.mp4" "$WORK/invest.wav" 01_invest_in_the_next
 
 echo "== Film 02"
-node scripts/render.cjs --page ceo/index.html --video "$WORK/ceo.mp4" --duration 144 --workers "$WORKERS" --crf 16
+node scripts/render.cjs --page ceo/index.html --video "$WORK/ceo.mp4" --duration 154 --workers "$WORKERS" --crf 16
 encode "$WORK/ceo.mp4" "$WORK/ceo.wav" 02_yaruka_yaranaika
 
 echo "== Promo 03 NMClaw"

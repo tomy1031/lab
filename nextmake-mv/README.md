@@ -1,21 +1,21 @@
 # NEXTMAKE Films
 
 株式会社ネクストメイク（大阪）の、公開情報をもとにつくったショートフィルム4本です。
-映像・音楽・レンダリングはすべてこのリポジトリのコードから生成しています。
+映像とレンダリングは、すべてこのリポジトリのコードから生成しています。音楽は、01と04はこのリポジトリで合成したオリジナル、02と03はフリーBGMサイト OpenTracks（旧DOVA-SYNDROME）の曲を映像に合わせて編集したものです。
 
 | | 01「Invest in the Next」 | 02「やるか、やらないか。」 | 03 NMClaw | 04 IDO（観光DX） |
 |---|---|---|---|---|
 | 目的 | 投資家向けMV | 代表・松井亮のポートレート | AI業務基盤のプロモーション | 観光DXのプロモーション |
-| 尺 | 100秒 | 144秒 | 86秒 | 100秒 |
+| 尺 | 100秒 | 154秒 | 86秒 | 100秒 |
 | 完成動画 | [01](output/01_invest_in_the_next.mp4) | [02](output/02_yaruka_yaranaika.mp4) | [03](output/03_nmclaw_promo.mp4) | [04](output/04_ido_promo.mp4) |
 | 共有用720p | [01](output/01_invest_in_the_next_720p.mp4) | [02](output/02_yaruka_yaranaika_720p.mp4) | [03](output/03_nmclaw_promo_720p.mp4) | [04](output/04_ido_promo_720p.mp4) |
 | 絵コンテ | [storyboard](docs/storyboard.md) | [ceo_film](docs/ceo_film.md) | [promos](docs/promos.md) | [promos](docs/promos.md) |
-| 音楽 | [music_invest](scripts/music_invest.py) | [music_ceo](scripts/music_ceo.py) | [music_nmclaw](scripts/music_nmclaw.py)（3曲を切り替え） | [music_ido](scripts/music_ido.py)（3曲を切り替え） |
+| 音楽 | オリジナル（[music_invest](scripts/music_invest.py)） | 「スイングバイ」のる（[music_ceo](scripts/music_ceo.py)で編集） | 「Future Next」FLASH☆BEAT（[music_nmclaw](scripts/music_nmclaw.py)で編集） | オリジナル（[music_ido](scripts/music_ido.py)、3曲を切り替え） |
 
 調査メモ：
 - 会社：[`docs/research.md`](docs/research.md)
 - 代表の発言（公式YouTubeの字幕から引用候補40件）：[`docs/ceo_transcript_notes.md`](docs/ceo_transcript_notes.md)
-- 自伝マンガの読解：[`docs/ceo_manga_notes.md`](docs/ceo_manga_notes.md)
+- 自伝マンガの読解：[`docs/ceo_manga_notes.md`](docs/ceo_manga_notes.md)（マンガの物語は便宜上の架空の話を含むため、映像には使っていません）
 
 ## デザイン
 
@@ -47,10 +47,11 @@
 | `src/invest/film.js` | 01のシーン構成 |
 | `src/ceo/film.js` | 02のシーン構成 |
 | `src/nmclaw/film.js` `src/ido/film.js` | 03・04のシーン構成 |
-| `scripts/synth.py` | numpyで書いた小さなシンセサイザー。ピアノ、FMベル、エレピ、ストリングス、ドラム、リバーブに加え、箏（弦をはじく音の物理モデル）、尺八、太鼓、UIの効果音 |
+| `scripts/synth.py` | numpyで書いた小さなシンセサイザー（01・04の音楽）。ピアノ、FMベル、エレピ、ストリングス、ドラム、リバーブに加え、箏（弦をはじく音の物理モデル）、尺八、太鼓、UIの効果音 |
+| `scripts/fetch_music.py` `cue.py` | 02・03のフリーBGMを公式のダウンロードページから取得し（`music_src/`、Gitには入れない）、小節の頭で編集・フィルター・音量調整をする |
 | `scripts/render.cjs` | Headless Chromiumでフレームを並列キャプチャし、ffmpegでエンコード |
 | `scripts/subset_fonts.py` | 使っている文字だけを残してフォントを小さくする |
-| `scripts/build.sh` | 音楽 → フォント → 4本の動画 を一括で実行 |
+| `scripts/build.sh` | 音楽の取得・編集 → フォント → 4本の動画 を一括で実行 |
 
 ### ブラウザでプレビュー
 
@@ -62,17 +63,18 @@ cd src && npx http-server -p 8080
 ### 再レンダリング
 
 ```bash
-pip install numpy scipy fonttools brotli
+pip install numpy scipy fonttools brotli pyloudnorm
 npm i -g playwright
 ./scripts/build.sh            # output/ に4本を生成（4並列で1本あたり10〜20分）
 ```
 
 ## 素材・権利
 
-- 写真・イラスト・マンガのコマは、公式サイト（nextmake.site）とPR TIMESのプレスリリースに掲載されている画像です（依頼者の指示により、Web上の素材を使っています）。
+- 写真・イラストは、公式サイト（nextmake.site）とPR TIMESのプレスリリースに掲載されている画像です（依頼者の指示により、Web上の素材を使っています）。
 - 04の三好市の風景写真は、Wikimedia CommonsのCCライセンス作品です。クレジットは映像の最後と[`docs/promos.md`](docs/promos.md)に記載しています。
 - 代表の発言は、公式YouTubeチャンネルの動画から引用し、読みやすく整えています。YouTubeの映像と音声そのものは使っていません。
 - ロゴは公式ロゴ画像をもとに、SVGで作り直しました。
-- 音楽はすべてこのリポジトリで合成したオリジナルです。
+- 01・04の音楽は、このリポジトリで合成したオリジナルです。
+- 02・03の音楽は OpenTracks（旧DOVA-SYNDROME）のフリーBGMです：02「スイングバイ」作曲 のる、03「Future Next」作曲 FLASH☆BEAT。[音源利用ライセンス](https://opentracks.com/help/articles/license/)により、商用を含む動画の背景音楽として使え、クレジット表記は不要です（映像の最後に小さく入れています）。一方で**音源ファイルそのものの再配布は禁止**されているため、曲のファイルと編集済みの音声（`src/assets/ceo_score.mp3` `nmclaw_score.mp3`）はGitに入れていません。`scripts/fetch_music.py` で取得してください。
 - フォントはSIL Open Font License、地図はNatural Earth（パブリックドメイン）です。
 - 社外に出す前に、ネクストメイク社と松井氏本人に、内容と素材の使用について確認をとってください。

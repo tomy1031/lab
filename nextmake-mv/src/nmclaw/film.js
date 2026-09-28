@@ -292,7 +292,7 @@ scene(76, 86, n => {
   c.cta = sub(n, 'まずは、今の情報の流れをお聞かせください。<br>現在の報告方法や管理表から、自動化できるところをご提案します。', M, 630, 780, INK, 24);
   c.url = el('div', 'abs latin', n, 'nextmake.site/nmclaw'); box(c.url, M, 760); place(c.url, { fontSize: '22px', letterSpacing: '.24em', fontWeight: 500, color: BLUE });
   c.logo = logo(n, 34, { left: M + 'px', top: '880px' }, { light: false });
-  c.note = el('div', 'abs cap', n, '※画面はイメージです。登場する社名・金額などは架空のものです。'); box(c.note, M, 1000); c.note.style.color = 'rgba(11,26,51,.5)';
+  c.note = el('div', 'abs cap', n, '※画面はイメージです。登場する社名・金額などは架空のものです。　音楽：「Future Next」FLASH☆BEAT（OpenTracks）'); box(c.note, M, 1000); c.note.style.color = 'rgba(11,26,51,.5)';
   return c;
 }, (t, c) => {
   wipe(c.img, t, 76.1, 1.0, 'left', E.inOutQuart); kb(c.img, t, 76, 86, { s0: 1.08, s1: 1.0 });
