@@ -40,6 +40,12 @@ npm run dev          # サーバー（:8787）と画面（:5173）を同時に�
 Claude Code モードは、`claude` にログイン済み（または `ANTHROPIC_API_KEY` を設定済み）の環境で動きます。
 本番：`npm run build && npm start`（http://localhost:8787）。
 
+### みんなで見る（複数人ログイン）
+
+サーバー 1 台に全員がブラウザでつなぎます。Claude Code モードは、`claude` にログイン済みのマシン（社内 PC や小さな VM）で
+`npm run build && npm start` し、社内ネットワーク・Tailscale・Cloudflare Tunnel などで共有するのが手軽です。
+HTTPS の裏で動かすときは `COOKIE_SECURE=1` を付けてください。ログイン中の人は右上と 3D の名札に出ます。
+
 ## しくみ
 
 | 場所 | 中身 |
