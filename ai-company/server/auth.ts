@@ -64,6 +64,9 @@ export function memberFrom(store: Store, req: IncomingMessage): Member | null {
   return (s && store.member(s.memberId)) || null
 }
 
+/** HTTPS の裏で動かすときは COOKIE_SECURE=1 */
+const SECURE = process.env.COOKIE_SECURE === '1' ? '; Secure' : ''
+
 export function sessionCookie(token: string, maxAgeSec = 60 * 60 * 24 * 30): string {
-  return `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}`
+  return `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}${SECURE}`
 }

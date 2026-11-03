@@ -106,9 +106,16 @@ const str = (v: unknown, max = 2000) => (typeof v === 'string' ? v.trim().slice(
 const list = (v: unknown) =>
   (Array.isArray(v) ? v : typeof v === 'string' ? v.split(/[,、，\s]+/) : []).map((x) => String(x).trim()).filter(Boolean).slice(0, 20)
 
+/** ログインの失敗が続いたら少し待たせる（ログイン名ごと・10 分に 8 回まで） */
+const failures = new Map<string, number[]>()
 route('POST', '/api/login', false, (_req, res, _me, _p, b) => {
-  const r = login(store, str(b.login, 64), str(b.password, 200))
+  const name = str(b.login, 64)
+  const recent = (failures.get(name) ?? []).filter((t) => Date.now() - t < 10 * 60_000)
+  need(recent.length < 8, 429, 'ログインの失敗が続いたので、10 分ほど待ってからお試しください')
+  const r = login(store, name, str(b.password, 200))
+  if (!r) failures.set(name, [...recent, Date.now()])
   need(r, 401, 'ログイン名かパスワードが違います')
+  failures.delete(name)
   res.setHeader('Set-Cookie', sessionCookie(r!.token))
   return { me: r!.member }
 })
@@ -243,6 +250,8 @@ route('POST', '/api/engine', true, (_req, _res, me, _p, b) => {
 route('GET', '/api/goals/:id/files', true, (req, _res, _me, [gid]) => {
   const url = new URL(req.url ?? '/', 'http://x')
   const rel = url.searchParams.get('path') ?? ''
+  // ゴールの id だけを受け付ける（'..' などで作業フォルダの外を読ませない）
+  need(/^goal_[a-z0-9]+$/.test(gid) && store.goal(gid), 404, 'ゴールがありません')
   const base = resolve(WORKSPACE, gid)
   const p = normalize(join(base, rel))
   need(p.startsWith(base + sep) && existsSync(p) && statSync(p).isFile(), 404, 'ファイルがありません')
@@ -287,7 +296,7 @@ const MIME: Record<string, string> = {
 function serveStatic(req: IncomingMessage, res: ServerResponse): void {
   const url = new URL(req.url ?? '/', 'http://x')
   let p = normalize(join(DIST, decodeURIComponent(url.pathname)))
-  if (!p.startsWith(DIST)) p = join(DIST, 'index.html')
+  if (!p.startsWith(DIST + sep)) p = join(DIST, 'index.html')
   if (!existsSync(p) || statSync(p).isDirectory()) p = join(DIST, 'index.html')
   if (!existsSync(p)) {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' })

@@ -588,7 +588,9 @@ export class OfficeWorld implements OfficeWorldApi {
   }
 
   private walkTo(e: Entity, to: P2, lane: number | undefined, onArrive: () => void): void {
-    e.path = route(e.pos, to, lane)
+    const atHome = Math.abs(e.pos.u - e.home.u) < 0.05 && Math.abs(e.pos.z - e.home.z) < 0.05
+    const fromLane = e.seated && atHome && e.avatar.root.visible ? e.homeLane : undefined
+    e.path = route(e.pos, to, lane, fromLane)
     e.onArrive = onArrive
     e.avatar.setMode('walk')
   }
