@@ -134,6 +134,8 @@ export interface Message {
   text: string
   goalId?: string
   taskId?: string
+  /** 返事のとき、元のメッセージの id */
+  replyTo?: string
 }
 
 export interface Activity {

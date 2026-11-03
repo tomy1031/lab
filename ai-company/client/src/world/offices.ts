@@ -390,7 +390,7 @@ export function buildOffice(info: OfficeInfo): OfficeBuild {
   } else {
     // 入口の上のアーチ
     b.add(GEO.cone, toonMat('#e0a060'), DOOR_U, 2.35, -HALF_D + 0.08, { sx: 0.7, sy: 0.55, sz: 0.08 })
-    palm(b, -6.1, -5.0, 0.12)
+    palm(b, -6.3, -2.4, 0.12)
     palm(b, 6.2, 5.15, -0.18)
     lotusPond(b, 6.35, 0.6)
     plant(b, -6.4, 1.2, 0.9)
@@ -413,10 +413,10 @@ export function buildOffice(info: OfficeInfo): OfficeBuild {
   group.add(baked)
 
   // --- 浮かぶ時計
-  const [clockC] = canvas(512, 150)
+  const [clockC] = canvas(640, 150)
   const clockTex = toTexture(clockC)
   disposables.push(clockTex)
-  const clock = textPlane(clockTex, 2.9, 0.85, s)
+  const clock = textPlane(clockTex, 3.5, 0.82, s)
   clock.position.set(-0.6, 3.75, -HALF_D + 0.1)
   group.add(clock)
 
@@ -464,7 +464,7 @@ export function buildOffice(info: OfficeInfo): OfficeBuild {
       const phase = phaseOfHour(lt.h + lt.m / 60)
       if (lt.text !== lastClock) {
         lastClock = lt.text
-        paintClock(clockC, id === 'jp' ? 'OSAKA  JST' : 'PHNOM PENH  ICT', lt.text, phase, id === 'jp' ? '#ff7aa2' : '#f0a04b')
+        paintClock(clockC, id === 'jp' ? '大阪 JST' : 'プノンペン ICT', lt.text, phase, id === 'jp' ? '#ff7aa2' : '#f0a04b')
         clockTex.needsUpdate = true
         if (phase !== build.phase || !winTex.userData.painted) {
           build.phase = phase

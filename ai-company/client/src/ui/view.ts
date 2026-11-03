@@ -120,8 +120,11 @@ export function goalDetail(state: AppState, g: Goal, hd: GoalHandlers): HTMLElem
 
 // ------------------------------------------------------------------ マイタスク
 
-export function myTasks(state: AppState, onComplete: (t: Task) => void, onGoal: (id: string) => void): HTMLElement {
+export function myTasks(state: AppState, onComplete: (t: Task) => void, onGoal: (id: string) => void, onReply: (m: Message, text: string) => void): HTMLElement {
   const me = state.me
+  const msgs = state.snap?.messages ?? []
+  const answered = new Set(msgs.filter((m) => m.replyTo).map((m) => m.replyTo))
+  const questions = msgs.filter((m) => m.toId === me?.id && m.kind === 'question' && !answered.has(m.id)).reverse()
   const mine = (state.snap?.tasks ?? []).filter((t) => t.assigneeId === me?.id && t.requiresHuman)
   const waiting = mine.filter((t) => t.status === 'waiting_human')
   const upcoming = mine.filter((t) => ['todo', 'blocked'].includes(t.status))
@@ -138,9 +141,24 @@ export function myTasks(state: AppState, onComplete: (t: Task) => void, onGoal: 
       active ? h('button', { class: 'btn primary', onclick: () => onComplete(t) }, '対応して完了にする') : taskChip(t),
     )
   }
+  const qCard = (q: Message) => {
+    const from = state.member(q.fromId)
+    const box = h('textarea', { rows: 2, placeholder: '返事（質問した AI社員の記憶に入り、次の仕事で使われます）' }) as HTMLTextAreaElement
+    return h(
+      'li',
+      { class: 'mytask question' },
+      h('div', { class: 'q-from' }, avatar(from, 22), h('b', {}, from?.name ?? '?'), h('small', {}, `${from?.role ?? ''}・${timeAgo(q.at)}`)),
+      h('p', {}, q.text),
+      box,
+      h('button', { class: 'btn small primary', onclick: () => box.value.trim() && onReply(q, box.value.trim()) }, '返事する'),
+    )
+  }
   return h(
     'div',
     { class: 'mytasks' },
+    questions.length ? h('h4', {}, `❓ AI社員からの質問（${questions.length}）`) : null,
+    questions.length ? h('ul', {}, ...questions.slice(0, 10).map(qCard)) : null,
+    questions.length ? h('h4', {}, '👤 お願いしている仕事') : null,
     waiting.length ? h('ul', {}, ...waiting.map((t) => card(t, true))) : h('p', { class: 'empty' }, 'いま、あなたにお願いしている仕事はありません ☕'),
     upcoming.length ? h('h4', {}, 'このあと回ってくる仕事') : null,
     upcoming.length ? h('ul', {}, ...upcoming.map((t) => card(t, false))) : null,
@@ -179,6 +197,7 @@ export function memberList(state: AppState, onPick: (id: string) => void, select
 const order = (m: Member) => (m.kind === 'nexmax' ? 0 : m.kind === 'human' ? 1 : 2) * 1000 + Math.max(0, m.deskIndex)
 
 export interface MemberHandlers {
+  onTalk(m: Member, text: string): void
   onClose(): void
   onNote(m: Member, text: string): void
   onRetire(m: Member): void
@@ -191,6 +210,15 @@ export function memberCard(state: AppState, m: Member, memory: MemoryEntry[] | n
   const hiredBy = state.member(m.hiredBy)
   const note = h('textarea', { rows: 2, placeholder: m.kind === 'human' ? 'この人について覚えておくこと（例：数字は表で見たい）' : 'この AI社員へのフィードバック（次の仕事から反映されます）' }) as HTMLTextAreaElement
   const msgs = (state.snap?.messages ?? []).filter((x) => x.fromId === m.id || x.toId === m.id).slice(-8).reverse()
+  const talk = h('input', { placeholder: m.kind === 'human' ? `${m.name}さんにメッセージ` : `${m.name}に話しかける（記憶を踏まえて答えます）` }) as HTMLInputElement
+  const sendTalk = () => {
+    if (!talk.value.trim()) return
+    hd.onTalk(m, talk.value.trim())
+    talk.value = ''
+  }
+  talk.addEventListener('keydown', (e) => {
+    if ((e as KeyboardEvent).key === 'Enter' && !(e as KeyboardEvent).isComposing) sendTalk()
+  })
   return h(
     'div',
     { class: 'member-card' },
@@ -207,6 +235,7 @@ export function memberCard(state: AppState, m: Member, memory: MemoryEntry[] | n
       h('span', {}, `${m.kind === 'agent' ? '採用' : '登録'} ${timeAgo(m.hiredAt)}${hiredBy ? `（${hiredBy.name}）` : ''}`),
     ),
     m.hireReason ? h('div', { class: 'reason' }, `採用理由：${m.hireReason}`) : null,
+    me && me.id !== m.id ? h('div', { class: 'talk' }, talk, h('button', { class: 'btn small primary', onclick: sendTalk }, '送る')) : null,
     h('h4', {}, '🧠 たまっていくコンテキスト（記憶）'),
     memory === null
       ? h('p', { class: 'empty' }, '読み込み中…')

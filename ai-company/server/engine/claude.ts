@@ -7,7 +7,7 @@ import { createSdkMcpServer, query, tool, type Options, type SDKMessage } from '
 import { z } from 'zod'
 import type { EngineInfo } from '../../shared/types'
 import { COMPANY_CONTEXT, describeContext, describeMember, extractJson, personaPrompt, splitMemory } from './prompts'
-import type { ConsultInput, Engine, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
+import type { ConsultInput, Engine, MemberContext, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
 const MODEL = process.env.AI_MODEL || undefined
 const ALLOW_BASH = process.env.AGENT_ALLOW_BASH === '1'
@@ -215,6 +215,19 @@ ${prev}
       prompt: `${goal ? `（ゴール「${goal.title}」の件）\n` : ''}${from.name}（${from.role}）からの相談：\n${question}\n\n同僚として、自分の専門と記憶を踏まえて、要点を 300 字以内で答えてください。`,
       options: baseOptions({
         systemPrompt: `${COMPANY_CONTEXT}\n\n${personaPrompt(to)}`,
+        allowedTools: [],
+        tools: [],
+        maxTurns: 1,
+      }),
+    })
+    return (await collect(q)).text.trim()
+  }
+
+  async reflect(me: MemberContext): Promise<string> {
+    const q = query({
+      prompt: `あなたのこれまでの記憶：\n${describeContext(me, 20)}\n\nここから、次の仕事に活かす気づき（自分の得意・相手の好み・気をつけること）を、箇条書き 2〜3 行で書いてください。記憶に無いことは書かない。`,
+      options: baseOptions({
+        systemPrompt: `${COMPANY_CONTEXT}\n\n${personaPrompt(me)}`,
         allowedTools: [],
         tools: [],
         maxTurns: 1,

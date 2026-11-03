@@ -4,7 +4,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { extname, join, normalize, resolve, sep } from 'node:path'
 import { WebSocketServer, type WebSocket } from 'ws'
-import type { Member, OfficeId, ServerEvent, Snapshot } from '../shared/types'
+import type { Member, Message, OfficeId, ServerEvent, Snapshot } from '../shared/types'
 import { OFFICES } from '../shared/types'
 import { login, logout, memberFrom, sessionCookie, setPassword, tokenFrom } from './auth'
 import { Company } from './company'
@@ -60,10 +60,15 @@ function snapshot(me: Member | null): Snapshot {
     members: s.members,
     goals: s.goals.slice(-60),
     tasks: s.tasks.filter((t) => s.goals.slice(-60).some((g) => g.id === t.goalId)),
-    messages: s.messages.slice(-200),
+    messages: mergeMessages(s.messages.slice(-200), me ? s.messages.filter((m) => m.toId === me.id && m.kind === 'question').slice(-30) : []),
     activities: s.activities.slice(-200),
     engine: engines[engineMode].info,
   }
+}
+
+function mergeMessages(a: Message[], b: Message[]): Message[] {
+  const ids = new Set(a.map((m) => m.id))
+  return [...b.filter((m) => !ids.has(m.id)), ...a].sort((x, y) => x.at.localeCompare(y.at))
 }
 
 function setOnline(memberId: string, delta: number): void {
@@ -139,6 +144,25 @@ route('POST', '/api/tasks/:id/complete', true, (_req, _res, me, [tid], b) => {
 route('POST', '/api/tasks/:id/retry', true, (_req, _res, me, [tid]) => {
   company.retryTask(tid, me!)
   return { ok: true }
+})
+
+route('POST', '/api/talk', true, (_req, _res, me, _p, b) => {
+  const to = store.member(str(b.to, 80))
+  const text = str(b.text, 1000)
+  need(to && to.id !== me!.id, 400, '相手を選んでください')
+  need(text, 400, '話す内容を書いてください')
+  void company.talk(me!, to!, text)
+  return { ok: true }
+})
+
+route('POST', '/api/messages/:id/reply', true, (_req, _res, me, [mid], b) => {
+  const text = str(b.text, 2000)
+  need(text, 400, '返事を書いてください')
+  try {
+    return { message: company.reply(mid, me!, text) }
+  } catch (e) {
+    throw new HttpError(400, (e as Error).message)
+  }
 })
 
 route('GET', '/api/members/:id/memory', true, (_req, _res, _me, [mid]) => {

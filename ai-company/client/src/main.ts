@@ -61,6 +61,8 @@ function startApp(): void {
   let memberMemory: MemoryEntry[] | null = null
   let rightTab: 'mine' | 'members' | 'log' = 'mine'
   let mobilePanel: 'world' | 'goals' | 'right' = 'world'
+  let hideLeft = false
+  let hideRight = false
 
   // ---- 骨組み
   const worldEl = h('div', { id: 'world' })
@@ -84,11 +86,24 @@ function startApp(): void {
         if (id) openMember(id)
       }
       if (state.snap) syncWorld()
+      requestAnimationFrame(applyInsets)
     })
     .catch((e) => {
       console.error('3D の空間を作れませんでした', e)
       worldEl.append(h('div', { class: 'world-fallback' }, '3D の空間を表示できませんでした（WebGL が使えない端末かもしれません）。パネルは使えます。'))
     })
+
+  /** パネルで隠れていない範囲にオフィスが収まるよう、3D に余白を伝える */
+  const applyInsets = () => {
+    root.classList.toggle('hide-left', hideLeft)
+    root.classList.toggle('hide-right', hideRight)
+    const w = world
+    if (!w || typeof w.setInsets !== 'function') return
+    const mobile = innerWidth <= 860
+    const panelW = (el: HTMLElement) => (mobile ? 0 : el.getBoundingClientRect().width + 12)
+    w.setInsets({ left: hideLeft ? 0 : panelW(left), right: hideRight ? 0 : panelW(right), top: mobile ? 60 : 70, bottom: mobile ? 70 : 20 })
+  }
+  addEventListener('resize', () => applyInsets())
 
   const syncWorld = () => {
     if (!world || !state.snap) return
@@ -110,6 +125,12 @@ function startApp(): void {
       h('div', { class: 'logo small' }, h('span', { class: 'logo-mark' }, 'NM'), h('div', {}, h('b', {}, 'NEXTMAKE AI COMPANY'), h('small', {}, 'Virtual Office'))),
       h('div', { class: 'clocks' }, ...OFFICES.map((o) => h('button', { class: 'clock', onclick: () => world?.focus(o.id), title: `${o.name}を見る` }, h('span', {}, o.id === 'jp' ? '🇯🇵 大阪' : '🇰🇭 プノンペン'), h('b', { 'data-tz': o.tz }, clock(o.tz))))),
       h('div', { class: 'views' }, h('button', { onclick: () => world?.focus('all') }, '全体'), h('button', { onclick: () => world?.focus('jp') }, '日本'), h('button', { onclick: () => world?.focus('kh') }, 'カンボジア')),
+      h(
+        'div',
+        { class: 'views panels-toggle' },
+        h('button', { class: hideLeft ? '' : 'on', title: 'ゴールのパネル', onclick: () => ((hideLeft = !hideLeft), applyInsets(), renderTop()) }, '◧'),
+        h('button', { class: hideRight ? '' : 'on', title: '仕事・社員のパネル', onclick: () => ((hideRight = !hideRight), applyInsets(), renderTop()) }, '◨'),
+      ),
       h('div', { class: 'spacer' }),
       eng
         ? h(
@@ -185,7 +206,11 @@ function startApp(): void {
   // ---- 右：マイタスク・社員・ログ
   const renderRight = () => {
     const me = state.me
-    const waitingMine = (state.snap?.tasks ?? []).filter((t) => t.assigneeId === me?.id && t.status === 'waiting_human').length
+    const msgs = state.snap?.messages ?? []
+    const answered = new Set(msgs.filter((x) => x.replyTo).map((x) => x.replyTo))
+    const waitingMine =
+      (state.snap?.tasks ?? []).filter((t) => t.assigneeId === me?.id && t.status === 'waiting_human').length +
+      msgs.filter((x) => x.toId === me?.id && x.kind === 'question' && !answered.has(x.id)).length
     const tabs = h(
       'div',
       { class: 'tabs' },
@@ -197,6 +222,9 @@ function startApp(): void {
     const m = state.member(selectedMember)
     if (rightTab === 'members' && m) {
       body = memberCard(state, m, memberMemory, {
+        onTalk: (mm, text) => {
+          Api.talk(mm.id, text).catch((e) => toast(e.message, 'warn'))
+        },
         onClose: () => {
           selectedMember = null
           world?.setSelected(null)
@@ -230,12 +258,21 @@ function startApp(): void {
     } else if (rightTab === 'log') {
       body = logView(state)
     } else {
-      body = myTasks(state, openComplete, (id) => {
-        selectedGoal = id
-        renderLeft()
-        mobilePanel = 'goals'
-        renderMobileNav()
-      })
+      body = myTasks(
+        state,
+        openComplete,
+        (id) => {
+          selectedGoal = id
+          renderLeft()
+          mobilePanel = 'goals'
+          renderMobileNav()
+        },
+        (q, text) => {
+          Api.reply(q.id, text)
+            .then(() => toast('返事を届けました。AI社員の記憶に入ります', 'success'))
+            .catch((e) => toast(e.message, 'warn'))
+        },
+      )
     }
     right.replaceChildren(tabs, h('div', { class: 'tab-body' }, body))
   }
@@ -429,7 +466,8 @@ function startApp(): void {
       case 'message':
         world?.message(c.message.fromId, c.message.toId, c.message.kind, c.message.text)
         pushTicker(messageRow(state, c.message))
-        if (rightTab === 'log' || (rightTab === 'members' && selectedMember)) renderAll()
+        if (c.message.toId === me?.id && c.message.kind === 'question') toast(`❓ ${state.member(c.message.fromId)?.name ?? ''}から質問が届きました`, 'hire')
+        if (c.message.toId === me?.id || c.message.replyTo || rightTab === 'log' || (rightTab === 'members' && selectedMember)) renderAll()
         break
       case 'activity':
         if (rightTab === 'log') renderAll()

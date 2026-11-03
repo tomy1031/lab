@@ -4,7 +4,7 @@
 // → 終わるたびに担当者の記憶（コンテキスト）を足す → 全部終わったら完了報告。
 import { mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
-import type { Goal, Member, MessageKind, OfficeId, Task } from '../shared/types'
+import type { Goal, Member, Message, MessageKind, OfficeId, Task } from '../shared/types'
 import { OFFICES } from '../shared/types'
 import type { Engine, HireSpec } from './engine/types'
 import { contextOf, remember } from './memory'
@@ -91,8 +91,45 @@ export class Company {
     this.store.addActivity({ id: id('act'), at: now(), level, text, memberId, goalId })
   }
 
-  say(from: Member, to: Member | null, kind: MessageKind, text: string, goalId?: string, taskId?: string): void {
-    this.store.addMessage({ id: id('msg'), at: now(), fromId: from.id, toId: to?.id ?? null, kind, text: clip(text, 400), goalId, taskId })
+  say(from: Member, to: Member | null, kind: MessageKind, text: string, goalId?: string, taskId?: string, replyTo?: string): Message {
+    return this.store.addMessage({ id: id('msg'), at: now(), fromId: from.id, toId: to?.id ?? null, kind, text: clip(text, 600), goalId, taskId, replyTo })
+  }
+
+  // ------------------------------------------------------------------ 人間との会話
+
+  /** 人間が誰かに話しかける。AI社員・ネクマックスはその人の記憶を踏まえてすぐ答える */
+  async talk(from: Member, to: Member, text: string): Promise<void> {
+    const q = this.say(from, to, 'chat', text)
+    if (to.kind === 'human') {
+      remember(this.store, to.id, 'conversation', `${from.name}さんから：${clip(text, 160)}`, { importance: 4 })
+      return
+    }
+    const prev = { status: to.status, statusText: to.statusText }
+    this.status(to, 'talking', `${from.name}さんと会話中`)
+    try {
+      const answer = await this.engine.consult({ goal: undefined, from, to: contextOf(this.store, to), question: text })
+      this.say(to, from, 'answer', answer, undefined, undefined, q.id)
+      remember(this.store, to.id, 'conversation', `${from.name}さん（人間）と会話：「${clip(text, 80)}」→ ${clip(answer, 120)}`, { importance: 5 })
+      remember(this.store, from.id, 'conversation', `${to.name}に「${clip(text, 80)}」と話した`, { importance: 3 })
+    } catch (e) {
+      this.say(to, from, 'answer', `ごめんなさい、いま答えられませんでした（${(e as Error).message}）`, undefined, undefined, q.id)
+    } finally {
+      const cur = this.store.member(to.id)
+      if (cur?.status === 'talking') this.status(cur, prev.status === 'talking' ? 'idle' : prev.status, prev.statusText)
+    }
+  }
+
+  /** AI社員から人間への質問に返事する。返事は質問した人の記憶に入り、次の仕事で使われる */
+  reply(messageId: string, by: Member, text: string): Message {
+    const q = this.store.state.messages.find((m) => m.id === messageId)
+    if (!q || q.toId !== by.id) throw new Error('あなた宛ての質問ではありません')
+    if (this.store.state.messages.some((m) => m.replyTo === messageId)) throw new Error('もう返事しています')
+    const asker = this.store.member(q.fromId)
+    if (!asker) throw new Error('質問した人がいません')
+    const a = this.say(by, asker, 'answer', text, q.goalId, q.taskId, q.id)
+    remember(this.store, asker.id, 'feedback', `${by.name}さん（人間）から回答：「${clip(q.text, 60)}」→ ${clip(text, 200)}`, { importance: 8, goalId: q.goalId, taskId: q.taskId })
+    remember(this.store, by.id, 'conversation', `${asker.name}の質問「${clip(q.text, 60)}」に回答`, { importance: 3, goalId: q.goalId })
+    return a
   }
 
   status(m: Member, status: Member['status'], statusText?: string, currentTaskId?: string | null): void {
@@ -291,6 +328,7 @@ export class Company {
       this.store.patchTask(t.id, { status: 'done', output: res.output, files, finishedAt: now() })
       this.store.patchMember(agent.id, { status: 'idle', statusText: undefined, currentTaskId: null, stats: { ...agent.stats, tasksDone: agent.stats.tasksDone + 1 } })
       remember(this.store, agent.id, 'task', `「${t.title}」（ゴール：${g.title}）を完了。${res.memoryNote || clip(res.output, 160)}`, { importance: 6, goalId: g.id, taskId: t.id })
+      void this.maybeReflect(agent.id)
 
       // 次の担当へ引き継ぎ（いなければネクマックスへ報告）
       const next = this.store.tasksOf(g.id).find((x) => x.dependsOn.includes(t.id) && x.assigneeId && x.assigneeId !== agent.id)
@@ -370,10 +408,38 @@ export class Company {
     const m = this.store.member(t.assigneeId) ?? by
     this.store.patchMember(m.id, { stats: { ...m.stats, tasksDone: m.stats.tasksDone + 1 } })
     remember(this.store, m.id, 'task', `「${t.title}」（ゴール：${g?.title ?? ''}）を対応。メモ：${clip(note || 'なし', 200)}`, { importance: 7, goalId: t.goalId, taskId: t.id })
+    void this.maybeReflect(m.id)
     this.say(by, this.nexmaxFor(by.office), 'report', `「${t.title}」対応しました${note ? `：${clip(note, 80)}` : ''}`, t.goalId, t.id)
     this.activity('success', `✅ ${by.name}：「${t.title}」対応完了`, by.id, t.goalId)
     this.schedule()
     return t
+  }
+
+  private reflecting = new Set<string>()
+
+  /** 仕事の記憶が 3 件たまるごとに、ふりかえり（気づき）を記憶に足す */
+  private async maybeReflect(memberId: string): Promise<void> {
+    const m = this.store.member(memberId)
+    if (!m || this.reflecting.has(memberId)) return
+    const mem = this.store.memoryOf(memberId)
+    let lastReflect = -1
+    mem.forEach((e, i) => {
+      if (e.kind === 'reflection') lastReflect = i
+    })
+    const since = mem.slice(lastReflect + 1).filter((e) => e.kind === 'task').length
+    if (since < 3) return
+    this.reflecting.add(memberId)
+    try {
+      const text = await this.engine.reflect(contextOf(this.store, m, 20))
+      if (text) {
+        remember(this.store, memberId, 'reflection', text, { importance: 8 })
+        this.activity('info', `💭 ${m.name}がこれまでの仕事をふりかえりました`, memberId)
+      }
+    } catch (e) {
+      console.error('[reflect]', e)
+    } finally {
+      this.reflecting.delete(memberId)
+    }
   }
 
   private finishing = new Set<string>()

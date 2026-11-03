@@ -95,8 +95,9 @@
 
 .ow-task {
   pointer-events: none;
-  font-size: 10px;
-  padding: 2px 7px;
+  margin-bottom: 2px;
+  font-size: 9.5px;
+  padding: 1px 6px;
   border-radius: 6px;
   background: #fffbe6;
   color: #6b5200;
@@ -108,6 +109,7 @@
   text-overflow: ellipsis;
 }
 .ow-labels.very-far .ow-task { display: none; }
+.ow-task[hidden] { display: none; }
 
 .ow-bridge-label {
   pointer-events: none;

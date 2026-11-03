@@ -88,4 +88,6 @@ export interface Engine {
   runTask(input: RunTaskInput): Promise<RunTaskResult>
   consult(input: ConsultInput): Promise<string>
   report(input: ReportInput): Promise<string>
+  /** ふりかえり：たまった記憶から、次に活かす気づきを 2〜3 行にまとめる（Generative Agents の reflection） */
+  reflect(me: MemberContext): Promise<string>
 }

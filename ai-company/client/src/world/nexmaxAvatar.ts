@@ -5,7 +5,7 @@ import type { Look, MemberStatus } from '../../../shared/types'
 import type { Avatar, Mode } from './chibi'
 import { createNexmax, type NexmaxCharacter } from './nexmax/nexmaxModel'
 
-export const NEXMAX_HEIGHT = 1.4
+export const NEXMAX_HEIGHT = 1.75
 
 export class NexmaxAvatar implements Avatar {
   readonly root = new THREE.Group()
@@ -48,7 +48,7 @@ export class NexmaxAvatar implements Avatar {
 
   setStatus(s: MemberStatus): void {
     this.status = s
-    this.nx.setExpression(s === 'thinking' ? 'surprised' : s === 'waiting' ? 'worried' : 'happy')
+    this.nx.setExpression(s === 'thinking' ? 'determined' : s === 'waiting' ? 'worried' : 'happy')
     this.nx.setOreGlow(s === 'working' || s === 'thinking' ? 1.8 : 1.1)
   }
 

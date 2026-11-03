@@ -236,3 +236,19 @@ h4 { font-size: 13px; margin: 16px 0 8px; color: var(--ink-2); }
   .mobile-nav button { flex: 1; border: 0; border-radius: 13px; background: none; font-weight: 700; font-size: 13px; }
   .mobile-nav button.on { background: var(--ink); color: #fff; }
 }
+
+.talk { display: flex; gap: 6px; margin: 10px 0 0; }
+.talk input { flex: 1; padding: 8px 10px; }
+.mytask.question { border-color: #e6d6ff; background: linear-gradient(180deg, #fbf7ff, #fff); }
+.q-from { display: flex; align-items: center; gap: 6px; }
+.q-from small { color: var(--ink-3); font-size: 11px; }
+
+.panels-toggle button { font-size: 15px; color: var(--ink-3); }
+.panels-toggle button.on { color: var(--nx-deep); background: #fff; }
+.panel { transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .35s; }
+@media (min-width: 861px) {
+  #app.hide-left .panel.left { transform: translateX(calc(-100% - 24px)); opacity: 0; pointer-events: none; }
+  #app.hide-right .panel.right { transform: translateX(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+  #app.hide-left .ticker { left: 12px; }
+  #app.hide-right .ticker { right: 12px; }
+}

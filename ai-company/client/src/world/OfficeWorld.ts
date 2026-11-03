@@ -61,8 +61,8 @@ type Entity = {
   nameEl: HTMLElement
   roleEl: HTMLElement
   icoEl: HTMLElement
+  taskEl: HTMLElement
   bubble: { obj: CSS2DObject; el: HTMLDivElement; until: number } | null
-  task: { obj: CSS2DObject; el: HTMLDivElement } | null
   newUntil: number
   talkUntil: number
   scale: number
@@ -123,7 +123,18 @@ export class OfficeWorld implements OfficeWorldApi {
   private followId: string | null = null
   private down: { x: number; y: number; t: number } | null = null
   private hoverId: string | null = null
+  /** 作業札（作り直しても残す） */
+  private readonly taskLabels = new Map<string, string | null>()
   private lastLabelClass = ''
+  /** UI のパネルで隠れる幅（CSS px）。見える長方形の中心に向けて写す */
+  private insets = { left: 0, right: 0, top: 0, bottom: 0 }
+  private viewOff = { x: 0, y: 0 }
+  private viewOffTarget = { x: 0, y: 0 }
+  /** 描画の統計（調整用） */
+  get stats(): { calls: number; triangles: number; entities: number } {
+    const r = this.renderer.info.render
+    return { calls: r.calls, triangles: r.triangles, entities: this.entities.size }
+  }
 
   constructor(container: HTMLElement) {
     this.container = container
@@ -297,7 +308,7 @@ export class OfficeWorld implements OfficeWorldApi {
     el.appendChild(k)
     el.appendChild(document.createTextNode(truncate(text, 60)))
     const obj = wrapLabel(el, 1)
-    obj.position.y = 0.42
+    obj.position.y = 0.5
     e.avatar.tagAnchor.add(obj)
     e.bubble = { obj, el, until: this.t + dur / 1000 }
   }
@@ -305,21 +316,10 @@ export class OfficeWorld implements OfficeWorldApi {
   setTaskLabel(memberId: string, label: string | null): void {
     const e = this.entities.get(memberId)
     if (!e) return
-    if (!label) {
-      if (e.task) e.task.obj.removeFromParent()
-      e.task = null
-      return
-    }
-    if (!e.task) {
-      const el = document.createElement('div')
-      el.className = 'ow-task'
-      const obj = wrapLabel(el, 0.5)
-      e.task = { obj, el }
-      this.scene.add(obj)
-    }
-    e.task.el.textContent = `📄 ${truncate(label, 18)}`
-    e.task.el.title = label
-    this.placeTask(e)
+    this.taskLabels.set(memberId, label)
+    e.taskEl.hidden = !label
+    e.taskEl.textContent = label ? `📄 ${truncate(label, 16)}` : ''
+    e.taskEl.title = label ?? ''
   }
 
   celebrate(memberId: string): void {
@@ -341,6 +341,43 @@ export class OfficeWorld implements OfficeWorldApi {
     this.selected = memberId && this.entities.has(memberId) ? memberId : null
     if (this.selected) this.entities.get(this.selected)!.tagEl.classList.add('selected')
     this.selRing.visible = !!this.selected
+  }
+
+  setInsets(insets: { left: number; right: number; top: number; bottom: number }): void {
+    const i = { left: Math.max(0, insets.left), right: Math.max(0, insets.right), top: Math.max(0, insets.top), bottom: Math.max(0, insets.bottom) }
+    const same = i.left === this.insets.left && i.right === this.insets.right && i.top === this.insets.top && i.bottom === this.insets.bottom
+    this.insets = i
+    if (same) return
+    this.updateViewOffsetTarget()
+    if (typeof this.focusTarget === 'string' || this.followId) this.applyFocus(this.focusTarget, false)
+  }
+
+  /** 実際に使う隠れ幅（見える所が狭すぎるときは無視する） */
+  private effInsets(): { left: number; right: number; top: number; bottom: number } {
+    const w = Math.max(1, this.container.clientWidth)
+    const h = Math.max(1, this.container.clientHeight)
+    const i = { ...this.insets }
+    if (w - i.left - i.right < Math.min(360, w * 0.45)) {
+      i.left = 0
+      i.right = 0
+    }
+    if (h - i.top - i.bottom < Math.min(260, h * 0.45)) {
+      i.top = 0
+      i.bottom = 0
+    }
+    return i
+  }
+
+  private updateViewOffsetTarget(): void {
+    const i = this.effInsets()
+    this.viewOffTarget = { x: -(i.left - i.right) / 2, y: -(i.top - i.bottom) / 2 }
+  }
+
+  private applyViewOffset(): void {
+    const w = Math.max(1, this.container.clientWidth)
+    const h = Math.max(1, this.container.clientHeight)
+    if (Math.abs(this.viewOff.x) < 0.5 && Math.abs(this.viewOff.y) < 0.5) this.camera.clearViewOffset()
+    else this.camera.setViewOffset(w, h, this.viewOff.x, this.viewOff.y, w, h)
   }
 
   dispose(): void {
@@ -400,7 +437,10 @@ export class OfficeWorld implements OfficeWorldApi {
     chip.append(ico, dot, name, nw)
     const role = document.createElement('div')
     role.className = 'ow-role'
-    tagEl.append(chip, role)
+    const task = document.createElement('div')
+    task.className = 'ow-task'
+    task.hidden = true
+    tagEl.append(task, chip, role)
     tagEl.addEventListener('click', (ev) => {
       ev.stopPropagation()
       this.onSelect?.(m.id)
@@ -427,8 +467,8 @@ export class OfficeWorld implements OfficeWorldApi {
       nameEl: name,
       roleEl: role,
       icoEl: ico,
+      taskEl: task,
       bubble: null,
-      task: null,
       newUntil: viaDoor ? this.t + 25 : 0,
       talkUntil: 0,
       scale: viaDoor ? 0.01 : 1,
@@ -441,6 +481,8 @@ export class OfficeWorld implements OfficeWorldApi {
     this.entities.set(m.id, e)
     this.scene.add(avatar.root)
     this.applyMember(e, m)
+    const tl = this.taskLabels.get(m.id)
+    if (tl) this.setTaskLabel(m.id, tl)
 
     if (viaDoor) {
       const office = this.offices[m.office]
@@ -499,7 +541,6 @@ export class OfficeWorld implements OfficeWorldApi {
       } else if (moved && !e.busy) {
         this.walkTo(e, home, lane, () => this.settle(e))
       }
-      if (e.task) this.placeTask(e)
     }
   }
 
@@ -528,7 +569,6 @@ export class OfficeWorld implements OfficeWorldApi {
   private dropEntity(e: Entity): void {
     e.tag.removeFromParent()
     e.bubble?.obj.removeFromParent()
-    e.task?.obj.removeFromParent()
     e.avatar.dispose()
     if (this.selected === e.id) this.selRing.visible = false
     this.entities.delete(e.id)
@@ -639,16 +679,6 @@ export class OfficeWorld implements OfficeWorldApi {
     e.avatar.root.scale.setScalar(Math.max(0.001, e.scale))
   }
 
-  private placeTask(e: Entity): void {
-    if (!e.task) return
-    if (e.member.kind === 'nexmax' || e.member.deskIndex < 0) {
-      e.task.obj.position.copy(toWorld(e.office, e.home.u, e.home.z + 0.75, 0.25))
-      return
-    }
-    const d = deskSpot(e.member.deskIndex)
-    e.task.obj.position.copy(toWorld(e.office, d.desk.u, d.desk.z + 0.42, d.overflow ? 0.2 : 0.5))
-  }
-
   private step(e: Entity, dt: number): void {
     const s = officeSign(e.office)
     if (e.path.length) {
@@ -685,7 +715,8 @@ export class OfficeWorld implements OfficeWorldApi {
     if (this.disposed) return
     this.raf = requestAnimationFrame(this.loop)
     const now = performance.now()
-    const dt = Math.min(0.05, (now - this.last) / 1000)
+    const realDt = Math.min(0.5, (now - this.last) / 1000)
+    const dt = Math.min(0.05, realDt)
     this.last = now
     this.t += dt
     const date = new Date()
@@ -734,9 +765,17 @@ export class OfficeWorld implements OfficeWorldApi {
       }
     }
 
+    if (this.viewOff.x !== this.viewOffTarget.x || this.viewOff.y !== this.viewOffTarget.y) {
+      const k = 1 - Math.exp(-realDt / 0.18)
+      this.viewOff.x += (this.viewOffTarget.x - this.viewOff.x) * k
+      this.viewOff.y += (this.viewOffTarget.y - this.viewOff.y) * k
+      if (Math.abs(this.viewOff.x - this.viewOffTarget.x) < 0.5 && Math.abs(this.viewOff.y - this.viewOffTarget.y) < 0.5) this.viewOff = { ...this.viewOffTarget }
+      this.applyViewOffset()
+    }
+
     if (this.tween) {
       const tw = this.tween
-      tw.t += dt
+      tw.t += realDt
       const u = easeInOut(Math.min(1, tw.t / tw.dur))
       this.camera.position.lerpVectors(tw.from, tw.to, u)
       this.controls.target.lerpVectors(tw.tFrom, tw.tTo, u)
@@ -746,7 +785,7 @@ export class OfficeWorld implements OfficeWorldApi {
 
     // 遠いときは名札を小さく
     const dist = this.camera.position.distanceTo(this.controls.target)
-    const cls = dist > 34 ? 'ow-labels far very-far' : dist > 20 ? 'ow-labels far' : 'ow-labels'
+    const cls = dist > 62 ? 'ow-labels far very-far' : dist > 22 ? 'ow-labels far' : 'ow-labels'
     if (cls !== this.lastLabelClass) {
       this.labels.domElement.className = cls
       this.lastLabelClass = cls
@@ -780,6 +819,9 @@ export class OfficeWorld implements OfficeWorldApi {
     this.renderer.domElement.style.height = `${h}px`
     this.labels.setSize(w, h)
     this.camera.aspect = w / h
+    this.updateViewOffsetTarget()
+    this.viewOff = { ...this.viewOffTarget }
+    this.applyViewOffset()
     this.camera.updateProjectionMatrix()
     const size = new THREE.Vector2()
     this.renderer.getDrawingBufferSize(size)
@@ -791,12 +833,18 @@ export class OfficeWorld implements OfficeWorldApi {
 
   /** 幅 width・奥行き depth の範囲が収まる距離 */
   private fitDistance(width: number, depth: number, elev: number): number {
+    const w = Math.max(1, this.container.clientWidth)
+    const h = Math.max(1, this.container.clientHeight)
+    const i = this.effInsets()
+    const visW = Math.max(1, w - i.left - i.right) / w
+    const visH = Math.max(1, h - i.top - i.bottom) / h
     const vfov = THREE.MathUtils.degToRad(this.camera.fov)
-    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * this.camera.aspect)
-    const dW = width / 2 / Math.tan(hfov / 2)
+    const tanV = Math.tan(vfov / 2) * visH
+    const tanH = Math.tan(vfov / 2) * this.camera.aspect * visW
+    const dW = width / 2 / tanH
     const projDepth = depth * Math.sin(elev) + 2.5 * Math.cos(elev)
-    const dH = projDepth / 2 / Math.tan(vfov / 2)
-    return Math.max(dW, dH) * 1.04
+    const dH = projDepth / 2 / tanV
+    return Math.max(dW, dH) * 1.13
   }
 
   private applyFocus(target: FocusTarget, instant: boolean): void {

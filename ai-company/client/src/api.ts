@@ -35,6 +35,8 @@ export const Api = {
   registerHuman: (body: Record<string, unknown>) => api<{ member: Member }>('/api/members', body),
   retire: (id: string) => api(`/api/members/${id}/retire`, {}),
   setEngine: (mode: 'claude' | 'sim') => api('/api/engine', { mode }),
+  talk: (to: string, text: string) => api('/api/talk', { to, text }),
+  reply: (messageId: string, text: string) => api(`/api/messages/${messageId}/reply`, { text }),
   file: (goalId: string, path: string) => api<{ path: string; content: string }>(`/api/goals/${goalId}/files?path=${encodeURIComponent(path)}`),
 }
 

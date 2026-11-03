@@ -412,10 +412,10 @@ export function paintClock(c: HTMLCanvasElement, city: string, time: string, pha
   g.textAlign = 'left'
   g.font = `800 64px ${FONT}`
   g.fillText(time, H + 8, H / 2 + 3)
-  g.font = `700 26px ${FONT}`
+  g.font = `700 30px ${FONT}`
   g.fillStyle = phase === 'night' ? '#c9d3ff' : '#6b7896'
   g.textAlign = 'right'
-  g.fillText(city, W - 34, H / 2 + 2)
+  g.fillText(city, W - 40, H / 2 + 2)
 }
 
 // ------------------------------------------------------------------ 光

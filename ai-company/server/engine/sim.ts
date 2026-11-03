@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { EngineInfo } from '../../shared/types'
 import { pick, sleep } from '../util'
-import type { ConsultInput, Engine, HireSpec, Plan, PlanInput, PlanTask, ReportInput, RunTaskInput, RunTaskResult } from './types'
+import type { ConsultInput, Engine, HireSpec, MemberContext, Plan, PlanInput, PlanTask, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
 type Tpl = { match: RegExp; tasks: Omit<PlanTask, 'assignee'>[]; hires: HireSpec[] }
 
@@ -185,6 +185,12 @@ export class SimEngine implements Engine {
     const mem = [...to.memories].reverse().find((m) => m.includes('完了'))
     const title = mem?.match(/「([^」]+)」/)?.[1]
     return `${pick(ANSWERS)}${title ? `（「${title}」のときもそうでした）` : ''}`
+  }
+
+  async reflect(me: MemberContext): Promise<string> {
+    await this.wait(800)
+    const tasks = me.memories.filter((m) => m.includes('完了') || m.includes('対応')).length
+    return `- これまで ${tasks} 件の仕事を担当。${me.member.skills[0] ?? '仕事'}の進め方が安定してきた\n- 相手には結論を先に、根拠を後に伝えると早く決まる\n- カンボジア側とのやり取りは短い文で`
   }
 
   async report({ goal, tasks }: ReportInput): Promise<string> {

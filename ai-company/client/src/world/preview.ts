@@ -191,6 +191,15 @@ function demoTick(): void {
   }
 }
 
+if (params.has('insets')) {
+  const [left, right, top, bottom] = params.get('insets')!.split(',').map(Number)
+  world.setInsets({ left, right, top, bottom })
+  for (const [k, v] of Object.entries({ left, right, top, bottom })) {
+    const d = document.createElement('div')
+    d.style.cssText = `position:fixed;z-index:5;background:rgba(255,255,255,.35);backdrop-filter:blur(2px);${k}:0;${k === 'left' || k === 'right' ? `top:0;bottom:0;width:${v}px` : `left:0;right:0;height:${v}px`}`
+    document.body.appendChild(d)
+  }
+}
 if (params.has('focus')) world.focus(params.get('focus') as 'all' | 'jp' | 'kh')
 if (params.has('select')) {
   const id = params.get('select')!

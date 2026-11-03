@@ -24,6 +24,11 @@ export interface OfficeWorldApi {
   celebrate(memberId: string): void
   /** カメラ：全体（2 つのオフィスが一度に見える）/ 日本 / カンボジア / 人に寄る */
   focus(target: FocusTarget): void
+  /**
+   * 画面の上に重なる UI（パネル）で隠れる幅（CSS px）。カメラの写し方を、見えている長方形の中心に合わせ、
+   * focus（全体・各オフィス・人）もその長方形に収まるように撮り直す（なめらかに動く）。見える所が狭すぎるときは無視する
+   */
+  setInsets(insets: { left: number; right: number; top: number; bottom: number }): void
   /** 選択中の人（輪が光る）。null で解除 */
   setSelected(memberId: string | null): void
   /** クリックで人を選んだとき（何もない所なら null） */

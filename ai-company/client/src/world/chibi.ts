@@ -5,6 +5,8 @@ import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import type { Look, Member, MemberStatus } from '../../../shared/types'
 import { ghostOf, glowMat, shade, toonMat } from './mats'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { toonGradient } from './textures'
 
 export type Mode = 'sit' | 'stand' | 'walk'
 
@@ -107,6 +109,10 @@ function hairBack(t: number): THREE.SphereGeometry {
 const HEAD_Y = 0.93
 const SHOULDER_Y = 0.58
 const HIP_Y = 0.27
+/** 机・いすに対する大きさ（大きめにして顔が見えるように） */
+export const CHIBI_SCALE = 1.3
+/** 座ったときに体を持ち上げる量（体の内側の単位） */
+const SIT_LIFT = 0.06
 
 function mesh(geo: THREE.BufferGeometry, mat: THREE.Material, shadow = true): THREE.Mesh {
   const m = new THREE.Mesh(geo, mat)
@@ -120,10 +126,67 @@ function faceZ(x: number, y: number, r = 0.33): number {
   return Math.sqrt(Math.max(0.001, v))
 }
 
+// ------------------------------------------------------------------ まとめる（ドローコールを減らす）
+
+let vcToon: THREE.MeshToonMaterial | null = null
+let vcGlow: THREE.MeshBasicMaterial | null = null
+function vcMats(): { toon: THREE.MeshToonMaterial; glow: THREE.MeshBasicMaterial } {
+  if (!vcToon) vcToon = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: toonGradient() })
+  if (!vcGlow) vcGlow = new THREE.MeshBasicMaterial({ vertexColors: true })
+  return { toon: vcToon, glow: vcGlow }
+}
+
+/** 同じ関節に付いた部品を、色を頂点色にして 1〜2 個のメッシュにまとめる（keep は残す） */
+function consolidate(parent: THREE.Object3D, keep: Set<THREE.Object3D>, shadow: boolean): THREE.Mesh[] {
+  parent.updateMatrixWorld(true)
+  // メッシュの子（ねこ耳の内側など）は先に親へ付け替える
+  for (const child of [...parent.children]) {
+    const m = child as THREE.Mesh
+    if (m.isMesh && !keep.has(m)) for (const gc of [...m.children]) parent.attach(gc)
+  }
+  const buckets: Record<'toon' | 'glow', THREE.BufferGeometry[]> = { toon: [], glow: [] }
+  for (const child of [...parent.children]) {
+    const m = child as THREE.Mesh
+    if (!m.isMesh || keep.has(m)) continue
+    const mat = m.material as THREE.MeshBasicMaterial
+    const key = (mat as THREE.Material & { isMeshBasicMaterial?: boolean }).isMeshBasicMaterial ? 'glow' : 'toon'
+    m.updateMatrix()
+    const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone()
+    for (const name of Object.keys(g.attributes)) if (name !== 'position' && name !== 'normal') g.deleteAttribute(name)
+    g.applyMatrix4(m.matrix)
+    const n = g.attributes.position.count
+    const col = new Float32Array(n * 3)
+    const c = mat.color
+    for (let i = 0; i < n; i++) {
+      col[i * 3] = c.r
+      col[i * 3 + 1] = c.g
+      col[i * 3 + 2] = c.b
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    buckets[key].push(g)
+    parent.remove(m)
+  }
+  const out: THREE.Mesh[] = []
+  const mats = vcMats()
+  for (const key of ['toon', 'glow'] as const) {
+    const list = buckets[key]
+    if (!list.length) continue
+    const merged = list.length === 1 ? list[0] : mergeGeometries(list, false)
+    if (list.length > 1) for (const g of list) g.dispose()
+    if (!merged) continue
+    const mesh = new THREE.Mesh(merged, key === 'toon' ? mats.toon : mats.glow)
+    mesh.castShadow = shadow && key === 'toon'
+    parent.add(mesh)
+    out.push(mesh)
+  }
+  return out
+}
+
 export class Chibi implements Avatar {
   readonly root = new THREE.Group()
   readonly tagAnchor = new THREE.Object3D()
   readonly headAnchor = new THREE.Object3D()
+  private readonly scaler = new THREE.Group()
   private readonly body = new THREE.Group()
   private readonly head = new THREE.Group()
   private readonly legL = new THREE.Group()
@@ -137,6 +200,7 @@ export class Chibi implements Avatar {
   private bulbMat: THREE.MeshBasicMaterial | null = null
   private readonly meshes: THREE.Mesh[] = []
   private readonly ownMats: THREE.Material[] = []
+  private readonly geoms: THREE.BufferGeometry[] = []
   private mode: Mode = 'stand'
   private status: MemberStatus = 'idle'
   private talking = false
@@ -154,11 +218,13 @@ export class Chibi implements Avatar {
     this.look = member.look
     this.isRobot = member.kind === 'agent'
     const g = geos()
-    this.root.add(this.body)
+    this.root.add(this.scaler)
+    this.scaler.scale.setScalar(CHIBI_SCALE)
+    this.scaler.add(this.body)
     this.body.add(this.head)
     this.head.position.y = HEAD_Y
-    this.tagAnchor.position.y = 1.45
-    this.headAnchor.position.y = 1.0
+    this.tagAnchor.position.y = 1.45 * CHIBI_SCALE
+    this.headAnchor.position.y = 1.0 * CHIBI_SCALE
     this.root.add(this.tagAnchor, this.headAnchor)
 
     const L = this.look
@@ -221,6 +287,22 @@ export class Chibi implements Avatar {
     if (this.isRobot) this.buildRobotHead(dark)
     else this.buildHumanHead()
     this.buildAccessory()
+    this.compact()
+  }
+
+  /** 部品をまとめる（1 体あたり約 10 ドローコール、影を落とすのは胴と頭だけ） */
+  private compact(): void {
+    const keep = new Set<THREE.Object3D>([this.smile, this.openMouth])
+    if (this.bulb) keep.add(this.bulb)
+    this.meshes.length = 0
+    this.geoms.push(...consolidate(this.body, keep, true).map((m) => m.geometry))
+    this.geoms.push(...consolidate(this.head, keep, true).map((m) => m.geometry))
+    for (const e of this.eyes) this.geoms.push(...consolidate(e, keep, false).map((m) => m.geometry))
+    for (const limb of [this.legL, this.legR, this.armL, this.armR]) this.geoms.push(...consolidate(limb, keep, false).map((m) => m.geometry))
+    this.root.traverse((o) => {
+      const m = o as THREE.Mesh
+      if (m.isMesh && m.castShadow) this.meshes.push(m)
+    })
   }
 
   private buildHumanHead(): void {
@@ -237,17 +319,19 @@ export class Chibi implements Avatar {
       const e = new THREE.Group()
       e.position.set(x, -0.005, faceZ(x, 0) - 0.012)
       const ball = mesh(g.eye, glowMat('#1d1b26'), false)
-      ball.scale.set(0.82, 1.18, 0.5)
+      ball.scale.set(1.0, 1.42, 0.55)
       const hi = mesh(g.dot, glowMat('#ffffff'), false)
-      hi.position.set(0.014, 0.024, 0.024)
+      hi.scale.setScalar(1.25)
+      hi.position.set(0.018, 0.03, 0.027)
       e.add(ball, hi)
       this.head.add(e)
       this.eyes.push(e)
     }
     // ほっぺ
     for (const x of [-0.19, 0.19]) {
-      const b = mesh(g.blush, glowMat('#ff9fb4', 0.6), false)
-      const y = -0.075
+      const b = mesh(g.blush, glowMat('#ff9fb4', 0.75), false)
+      b.scale.set(1.1, 0.75, 1)
+      const y = -0.08
       b.position.set(x, y, faceZ(x, y) + 0.004)
       b.lookAt(b.position.clone().multiply(new THREE.Vector3(1 / 1.05 ** 2, 1 / 0.95 ** 2, 1)).multiplyScalar(4))
       this.head.add(b)
@@ -586,10 +670,10 @@ export class Chibi implements Avatar {
     this.head.getWorldPosition(h)
     const b = new THREE.Vector3()
     this.body.getWorldPosition(b)
-    b.y += 0.42
+    b.y += 0.42 * CHIBI_SCALE
     return [
-      { c: h, r: 0.38 },
-      { c: b, r: 0.3 },
+      { c: h, r: 0.38 * CHIBI_SCALE },
+      { c: b, r: 0.3 * CHIBI_SCALE },
     ]
   }
 
@@ -620,10 +704,10 @@ export class Chibi implements Avatar {
       bob += Math.abs(Math.sin(ts * 9)) * 0.025
       squash = 1 + Math.sin(ts * 18) * 0.02
     }
-    this.body.position.y = s * 0.11 + bob + this.hopY
+    this.body.position.y = s * SIT_LIFT + bob + this.hopY
     this.body.scale.set(1 / Math.sqrt(squash), squash, 1 / Math.sqrt(squash))
-    this.tagAnchor.position.y = 1.45 + s * 0.11 + this.hopY
-    this.headAnchor.position.y = 1.0 + s * 0.11 + this.hopY
+    this.tagAnchor.position.y = (1.42 + s * SIT_LIFT + this.hopY) * CHIBI_SCALE
+    this.headAnchor.position.y = (1.0 + s * SIT_LIFT + this.hopY) * CHIBI_SCALE
 
     // 脚：座ると前へ、歩くと交互に
     const legSwing = walking ? Math.sin(this.walkPhase) * 0.65 : 0
@@ -705,6 +789,7 @@ export class Chibi implements Avatar {
 
   dispose(): void {
     for (const m of this.ownMats) m.dispose()
+    for (const g of this.geoms) g.dispose()
     this.root.removeFromParent()
   }
 }
