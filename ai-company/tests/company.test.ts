@@ -1,0 +1,131 @@
+// 司令塔の流れをシミュレーションのエンジンで通す（Claude は呼ばない）
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { beforeAll, describe, expect, it } from 'vitest'
+import type { ServerEvent } from '../shared/types'
+
+process.env.PACE = '0'
+process.env.SIM_SPEED = '200'
+
+const { Store } = await import('../server/store')
+const { Company } = await import('../server/company')
+const { SimEngine } = await import('../server/engine/sim')
+const { seed } = await import('../server/seed')
+const { contextOf, score } = await import('../server/memory')
+const { normalizePlan } = await import('../server/engine/claude')
+const { splitMemory, extractJson } = await import('../server/engine/prompts')
+
+const until = async (cond: () => boolean, ms = 8000) => {
+  const t0 = Date.now()
+  while (!cond()) {
+    if (Date.now() - t0 > ms) throw new Error('timeout')
+    await new Promise((r) => setTimeout(r, 10))
+  }
+}
+
+describe('Company（シミュレーション）', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+  const store = new Store(join(dir, 'state.json'))
+  const events: ServerEvent[] = []
+  store.on('event', (e: ServerEvent) => events.push(e))
+  let company: InstanceType<typeof Company>
+
+  beforeAll(() => {
+    seed(store, join(dir, 'cred.txt'))
+    company = new Company(store, () => new SimEngine(200), join(dir, 'ws'))
+  })
+
+  it('ゴールを分解し、足りない職種を採用し、人間の仕事を人間に渡す', async () => {
+    const admin = store.state.members.find((m) => m.isAdmin)!
+    const g = company.createGoal(admin, 'プノンペンで交流イベントを開く', '')
+    await until(() => store.goal(g.id)!.status !== 'planning')
+    const tasks = store.tasksOf(g.id)
+    expect(tasks.length).toBeGreaterThan(3)
+    expect(events.some((e) => e.t === 'hired')).toBe(true)
+    // 人間のタスクは人間に、AI のタスクは AI社員に
+    for (const t of tasks) {
+      const a = store.member(t.assigneeId)!
+      expect(a.kind).toBe(t.requiresHuman ? 'human' : 'agent')
+    }
+    // カンボジアの現地の仕事はカンボジアの人へ
+    const venue = tasks.find((t) => t.office === 'kh' && t.requiresHuman)
+    if (venue) expect(store.member(venue.assigneeId)!.office).toBe('kh')
+
+    // 人間の対応待ちになったら完了にしていく
+    for (let i = 0; i < 6 && store.goal(g.id)!.status !== 'done'; i++) {
+      await until(() => ['waiting_human', 'done'].includes(store.goal(g.id)!.status), 15000)
+      for (const t of store.tasksOf(g.id).filter((x) => x.status === 'waiting_human')) {
+        company.completeHumanTask(t.id, store.member(t.assigneeId)!, '対応しました')
+      }
+    }
+    await until(() => store.goal(g.id)!.status === 'done', 15000)
+    expect(store.goal(g.id)!.report).toBeTruthy()
+
+    // 担当した全員にコンテキストがたまっている
+    for (const t of store.tasksOf(g.id)) {
+      const mem = store.memoryOf(t.assigneeId!)
+      expect(mem.some((m) => m.taskId === t.id)).toBe(true)
+    }
+    // AI どうしのやり取りがある
+    expect(events.some((e) => e.t === 'message' && e.message.kind === 'question')).toBe(true)
+  }, 60000)
+
+  it('同じ職種は二重に採用しない', async () => {
+    const before = store.state.members.filter((m) => m.kind === 'agent').map((m) => m.role)
+    const admin = store.state.members.find((m) => m.isAdmin)!
+    const g = company.createGoal(admin, '次のイベントの準備', 'セミナー')
+    await until(() => store.goal(g.id)!.status !== 'planning')
+    const after = store.state.members.filter((m) => m.kind === 'agent').map((m) => m.role)
+    expect(after.length).toBe(before.length)
+    company.cancelGoal(g.id, admin)
+    expect(store.goal(g.id)!.status).toBe('cancelled')
+  })
+
+  it('担当者以外は人間のタスクを完了にできない', () => {
+    const t = store.state.tasks.find((x) => x.requiresHuman)!
+    store.patchTask(t.id, { status: 'waiting_human' })
+    const other = store.state.members.find((m) => m.kind === 'human' && !m.isAdmin && m.id !== t.assigneeId)!
+    expect(() => company.completeHumanTask(t.id, other, 'x')).toThrow()
+  })
+})
+
+describe('記憶', () => {
+  it('新しく重要な記憶ほど点数が高い', () => {
+    const now = Date.now()
+    const e = (h: number, imp: number) => ({ id: '', memberId: '', kind: 'task' as const, text: '', importance: imp, at: new Date(now - h * 3600_000).toISOString() })
+    expect(score(e(1, 5), now)).toBeGreaterThan(score(e(200, 5), now))
+    expect(score(e(1, 9), now)).toBeGreaterThan(score(e(1, 2), now))
+  })
+  it('contextOf は古い順に並べる', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+    const store = new Store(join(dir, 's.json'))
+    seed(store, join(dir, 'c.txt'))
+    const m = store.state.members[0]
+    const c = contextOf(store, m)
+    expect(c.memories.length).toBeGreaterThan(0)
+  })
+})
+
+describe('プロンプトの道具', () => {
+  it('記憶メモを切り分ける', () => {
+    const r = splitMemory('成果です\n---MEMORY---\n- 学び1\n- 学び2')
+    expect(r.output).toBe('成果です')
+    expect(r.memoryNote).toContain('学び1')
+  })
+  it('JSON を取り出す', () => {
+    expect(extractJson('はい\n```json\n{"a":1}\n```')).toEqual({ a: 1 })
+  })
+  it('計画の依存関係から存在しない key と自分自身を外す', () => {
+    const p = normalizePlan({
+      summary: 's',
+      hires: [],
+      tasks: [
+        { key: 'a', title: 'A', description: '', skills: [], requiresHuman: false, dependsOn: ['a', 'zzz'] },
+        { key: 'b', title: 'B', description: '', skills: [], requiresHuman: true, dependsOn: ['a'] },
+      ],
+    })
+    expect(p.tasks[0].dependsOn).toEqual([])
+    expect(p.tasks[1].dependsOn).toEqual(['a'])
+  })
+})

@@ -125,7 +125,7 @@ ${requester ? describeMember(requester) : '不明'}
 - 採用する AI社員：role（職種名）、name（カタカナの短い愛称。カンボジア拠点ならクメール風の名前）、office、skills、languages（ja/km/en）、persona（性格と仕事の流儀を 1〜2 文）、reason（採用理由）。
 - カンボジアに関わる現地の仕事・クメール語の仕事は office=kh。
 - dependsOn には先に終わるべきタスクの key を書く。最後のタスクは「成果のまとめ・最終確認」にする（人間の承認が要るなら人間）。
-- description は担当者がそのまま着手できるよう、成果物の形（例：Markdown の資料 1 枚）まで具体的に。`
+- description は担当者がそのまま着手できるよう、成果物の形（例：Markdown の資料 1 枚）まで具体的に。AI社員が作れるのはテキストのファイル（Markdown・HTML・CSV・JSON・コード）だけ。PDF・画像・動画は作れないので、必要なら「印刷用の HTML」などにする。`
 
     const q = query({
       prompt,

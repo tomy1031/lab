@@ -12,6 +12,9 @@ import type { Store } from './store'
 import { agentName, clip, hashStr, id, lookForAgent, now, sleep } from './util'
 
 const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_AGENTS || 3)
+/** 演出の間（採用の登場・ネクマックスが歩く時間）。テストでは 0 */
+const PACE = Number(process.env.PACE ?? 1)
+const beat = (ms: number) => sleep(ms * PACE)
 
 export class Company {
   private running = new Map<string, AbortController>()
@@ -122,7 +125,7 @@ export class Company {
         if (m) {
           hiredByKey.set(h.key, m.id)
           this.say(nx, null, 'hire', `${m.name}さん（${m.role}）を採用しました！`, goal.id)
-          await sleep(1400)
+          await beat(1400)
         }
       }
 
@@ -254,7 +257,7 @@ export class Company {
     const nx = this.nexmaxFor(agent.office)
     this.say(nx, agent, 'assign', `${agent.name}さん、「${t.title}」をお願いします`, g.id, t.id)
     this.status(agent, 'thinking', t.title, t.id)
-    await sleep(1500)
+    await beat(1500)
 
     const workdir = join(this.workspaceRoot, g.id)
     mkdirSync(workdir, { recursive: true })
