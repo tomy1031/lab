@@ -1,0 +1,66 @@
+# NEXTMAKE AI COMPANY ― AI社員と人間が一緒に働く 3D バーチャルオフィス
+
+人間が**ゴール**を伝えると、統括 AI の**ネクマックス**（裏側は Claude Code）が仕事を分解し、
+足りない職種は **AI社員を「採用」** し、**人間にしかできない仕事は人間へ**振り分けます。
+AI社員どうしの相談・引き継ぎは、three.js の**かわいい 3D オフィス**（🇯🇵 大阪本社 × 🇰🇭 プノンペン）で光の粒として見えます。
+2 つのオフィスは 1 つの画面に並んでいて、一元的に状況を確認できます。複数人が同時にログインして同じ状況を見られます。
+
+```
+人間「プノンペンで IT 人材の交流イベントを開きたい」
+  └─ ネクマックス（Claude Code）がタスクに分解
+       ├─ 足りない職種 → イベントプランナー・クメール語翻訳・広報ライターを採用（入口から登場して席へ）
+       ├─ AI の仕事   → AI社員 1 人 = Claude Code の 1 セッション（作業フォルダにファイルを書く・同僚に相談する）
+       └─ 人間の仕事  → 会場の下見（現地）・予算の承認（責任）→ 担当者の「マイタスク」へ
+  └─ 終わるたびに、担当者ごとのコンテキスト（記憶）がたまり、次の仕事のプロンプトに入る
+  └─ 全部終わったら完了報告
+```
+
+## 動かす
+
+```bash
+cd ai-company
+npm install
+npm run dev          # サーバー（:8787）と画面（:5173）を同時に起動 → http://localhost:5173
+```
+
+最初の起動で、管理者とデモの人間のアカウントが作られ、ターミナルと `data/credentials.txt` に出ます。
+
+| 環境変数 | 意味 |
+|---|---|
+| `AI_ENGINE=claude` | Claude Code（Claude Agent SDK）で本当に動かす。未指定なら画面右上で管理者が切り替え（初期値はシミュレーション） |
+| `AI_ENGINE=sim` | Claude を呼ばないシミュレーション（デモ・画面の確認用。同じ流れを通る） |
+| `AI_MODEL` | Claude のモデル（省略時は Claude Code の既定） |
+| `MAX_PARALLEL_AGENTS` | 同時に作業する AI社員の数（既定 3） |
+| `TASK_BUDGET_USD` | 1 タスクあたりの上限（既定 1.5 USD） |
+| `AGENT_ALLOW_BASH=1` | AI社員にシェル（Bash）を許可する（既定は ファイル読み書き・Web 検索だけ） |
+| `ADMIN_LOGIN` / `ADMIN_PASSWORD` / `ADMIN_NAME` | 管理者の初期アカウント |
+| `SEED_DEMO=0` | デモの人間（さくら・ソカ・ダリス）を作らない |
+| `PORT` / `DATA_DIR` / `WORKSPACE_DIR` | ポート・状態の保存先・AI社員の作業フォルダ |
+
+Claude Code モードは、`claude` にログイン済み（または `ANTHROPIC_API_KEY` を設定済み）の環境で動きます。
+本番：`npm run build && npm start`（http://localhost:8787）。
+
+## しくみ
+
+| 場所 | 中身 |
+|---|---|
+| `server/company.ts` | 司令塔：分解 → 採用 → 割り振り → 依存関係の順に着手 → 記憶 → 完了報告 |
+| `server/engine/claude.ts` | Claude Agent SDK：分解（JSON スキーマで構造化出力）、AI社員の作業（`claude_code` プリセット＋人物設定＋記憶、社内ツール `ask_colleague`・`post_update` を SDK の MCP で提供、`tools` で道具を限定、`permissionMode: dontAsk`、予算上限）、同僚への相談、完了報告 |
+| `server/engine/sim.ts` | オフラインのシミュレーション |
+| `server/memory.ts` | 人物ごとの記憶。新しさ（72 時間で半減）＋重要度で選んでプロンプトへ（Generative Agents の記憶の流れを簡略化） |
+| `server/index.ts` | REST・WebSocket・ログイン（scrypt・HttpOnly クッキー） |
+| `shared/types.ts` | サーバーと画面の共通の型 |
+| `client/src/main.ts`・`ui/` | 画面：ゴール・タスクボード・マイタスク・社員と記憶・ログ |
+| `client/src/world/` | 3D のバーチャルオフィス（日本・カンボジア・データの橋・ちびキャラ社員・ネクマックス） |
+| `docs/research.md` | AI社員の作り方の調査メモ（出典つき） |
+
+### 人間にしかできない仕事
+
+ネクマックスは、対面・現地での行動、電話や訪問での関係づくり、契約・署名、支払いや発注の最終承認、法的責任を伴う判断、
+最終の意思決定、実物の確認を「人間の仕事」にし、理由（`humanReason`）を添えて、拠点・スキル・これまでの仕事が合う人に渡します。
+人間が「対応して完了にする」と書いたメモは、その人の記憶になり、続きの AI社員の入力にもなります。
+
+### ネクマックス
+
+[tomy1031/nexmax_chronicle](https://github.com/tomy1031/nexmax_chronicle) の手続きモデル（コードで組んだ 3D のネクマックス）を流用しています。
+大阪本社には初号機、プノンペンには量産型（NX-086）がいて、それぞれの拠点の仕事を配って回ります。
