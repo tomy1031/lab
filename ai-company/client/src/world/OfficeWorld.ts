@@ -148,7 +148,7 @@ export class OfficeWorld implements OfficeWorldApi {
     this.renderer.toneMapping = THREE.NeutralToneMapping
     this.renderer.toneMappingExposure = 1.0
     this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    this.renderer.shadowMap.type = THREE.PCFShadowMap
     this.renderer.setClearColor(0x000000, 0)
     this.root.appendChild(this.renderer.domElement)
 
@@ -784,8 +784,10 @@ export class OfficeWorld implements OfficeWorldApi {
     this.controls.update()
 
     // 遠いときは名札を小さく
+    // 画面上の大きさ（1 m が何 px か）で名札の細かさを変える
     const dist = this.camera.position.distanceTo(this.controls.target)
-    const cls = dist > 62 ? 'ow-labels far very-far' : dist > 22 ? 'ow-labels far' : 'ow-labels'
+    const ppu = this.container.clientHeight / 2 / (dist * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2))
+    const cls = ppu < 19 ? 'ow-labels far very-far' : ppu < 42 ? 'ow-labels far' : 'ow-labels'
     if (cls !== this.lastLabelClass) {
       this.labels.domElement.className = cls
       this.lastLabelClass = cls

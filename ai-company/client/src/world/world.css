@@ -59,7 +59,10 @@
 .ow-tag.selected .ow-chip { border-color: #ffd23f; box-shadow: 0 0 0 2px #ffd23f, 0 2px 10px rgba(255, 190, 40, 0.5); }
 .ow-labels.far .ow-tag .ow-role { display: none; }
 .ow-labels.far .ow-tag .ow-chip { font-size: 10px; padding: 1px 6px 1px 4px; }
-.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax) .ow-name { display: none; }
+.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax) .ow-name,
+.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax) .ow-ico { display: none; }
+.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax) .ow-chip { padding: 2px; gap: 0; }
+.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax) .ow-chip::before { display: none; }
 
 .ow-bubble {
   pointer-events: none;
