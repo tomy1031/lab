@@ -79,7 +79,13 @@ function startApp(): void {
   // import.meta.glob：ファイルが無い（作りかけ）ときも画面は動く
   const worldModules = import.meta.glob<{ OfficeWorld: new (el: HTMLElement) => OfficeWorldApi }>('./world/OfficeWorld.ts')
   const loadWorld = worldModules['./world/OfficeWorld.ts']
-  void (loadWorld ? loadWorld() : Promise.reject(new Error('OfficeWorld.ts がありません')))
+  // 看板（canvas に描く文字）が豆腐にならないよう、日本語・クメール語のフォントを先に読む（最大 2.5 秒待つ）
+  const fontsReady = Promise.race([
+    Promise.all([document.fonts.load('700 32px "Noto Sans JP"', '大阪本社'), document.fonts.load('700 32px "Noto Sans Khmer"', 'ភ្នំពេញ')]).catch(() => {}),
+    new Promise((r) => setTimeout(r, 2500)),
+  ])
+  void fontsReady
+    .then(() => (loadWorld ? loadWorld() : Promise.reject(new Error('OfficeWorld.ts がありません'))))
     .then(({ OfficeWorld }) => {
       world = new OfficeWorld(worldEl)
       world.onSelect = (id) => {
