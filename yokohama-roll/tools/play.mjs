@@ -20,7 +20,8 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, r));
 const port = server.address().port;
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+const [VW, VH] = (process.env.VIEW || '1280x760').split('x').map(Number);
+const page = await browser.newPage({ viewport: { width: VW, height: VH } });
 const logs = [];
 page.on('console', (m) => logs.push(m.type() + ': ' + m.text()));
 page.on('pageerror', (e) => logs.push('pageerror: ' + e.message + '\n' + e.stack));
