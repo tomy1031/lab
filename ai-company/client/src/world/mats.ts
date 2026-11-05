@@ -15,12 +15,22 @@ export function toonMat(color: string): THREE.MeshToonMaterial {
   return m
 }
 
+/**
+ * 光る色の明るさの倍率。1 を超える（HDR の）明るさにして、ブルーム（やわらかい光のにじみ）が
+ * 光る部分だけに掛かるようにする（照らされた白い床は 2 を超えない）
+ */
+export const GLOW_BOOST = 2.6
+
+export function hdr(color: string, k = GLOW_BOOST): THREE.Color {
+  return new THREE.Color(color).multiplyScalar(k)
+}
+
 /** 光る部分（目・アンテナ・画面）：ライトの影響を受けない */
 export function glowMat(color: string, opacity = 1): THREE.MeshBasicMaterial {
   const key = `${color}|${opacity}`
   let m = basic.get(key)
   if (!m) {
-    m = new THREE.MeshBasicMaterial({ color, transparent: opacity < 1, opacity, depthWrite: opacity >= 1 })
+    m = new THREE.MeshBasicMaterial({ color: hdr(color), transparent: opacity < 1, opacity, depthWrite: opacity >= 1 })
     basic.set(key, m)
   }
   return m

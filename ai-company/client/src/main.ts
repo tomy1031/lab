@@ -9,7 +9,7 @@ import { AppState } from './state'
 import { clock, h } from './ui/dom'
 import { activeProjects } from './ui/derive'
 import { assistantCard, dock, feedCard, humanCard, projectCard, topbar, worldCard, type SheetId, type View } from './ui/hud'
-import { icon } from './ui/icons'
+import { flag, icon } from './ui/icons'
 import { initialUi, mePop, notificationsPop, profilePanel, searchPop, settingsPop, sheet, timelinePop, type Actions, type UiState } from './ui/sheets'
 import type { OfficeBoard, OfficeWorldApi } from './world/api'
 
@@ -25,13 +25,16 @@ async function boot(): Promise<void> {
 
 function showLogin(msg = ''): void {
   root.replaceChildren()
-  const loginIn = h('input', { name: 'login', placeholder: 'ログイン名', autocomplete: 'username', required: true }) as HTMLInputElement
-  const passIn = h('input', { name: 'password', type: 'password', placeholder: 'パスワード', autocomplete: 'current-password', required: true }) as HTMLInputElement
+  root.className = ''
+  const field = (label: string, ic: string, input: HTMLInputElement, extra?: HTMLElement) => h('label', { class: 'lg-field' }, h('span', {}, label), h('div', { class: 'lg-input' }, icon(ic, 18), input, extra ?? null))
+  const loginIn = h('input', { name: 'login', placeholder: 'ログイン名を入力', autocomplete: 'username', required: true }) as HTMLInputElement
+  const passIn = h('input', { name: 'password', type: 'password', placeholder: 'パスワードを入力', autocomplete: 'current-password', required: true }) as HTMLInputElement
+  const eye = h('button', { type: 'button', class: 'lg-eye', title: 'パスワードを表示', onclick: () => (passIn.type = passIn.type === 'password' ? 'text' : 'password') }, icon('eye', 16))
   const err = h('p', { class: 'err' }, msg)
   const form = h(
     'form',
     {
-      class: 'login-card glass',
+      class: 'login-card',
       onsubmit: async (e: Event) => {
         e.preventDefault()
         err.textContent = ''
@@ -44,14 +47,17 @@ function showLogin(msg = ''): void {
       },
     },
     h('div', { class: 'brand big' }, h('img', { src: '/brand/nextmake-logo.png', alt: 'NEXTMAKE', class: 'brand-logo' }), h('span', { class: 'brand-ai' }, 'AI')),
-    h('p', { class: 'lead' }, '日本とカンボジアを結ぶ AI オフィス。ゴールを伝えると、ネクマックスが仕事を分け、AI社員を採用し、人間にしかできない仕事は人間へ。'),
-    loginIn,
-    passIn,
-    h('button', { class: 'btn primary', type: 'submit' }, 'ログイン'),
+    h('h1', {}, 'おかえりなさい'),
+    h('p', { class: 'lead' }, '日本とカンボジアを結ぶ AI オフィス'),
+    h('div', { class: 'lg-flags' }, flag('jp', 26), h('span', {}, '⇄'), flag('kh', 26)),
+    field('ログイン名', 'user', loginIn),
+    field('パスワード', 'lock', passIn, eye),
+    h('button', { class: 'btn primary lg-btn', type: 'submit' }, 'ログイン', h('span', { class: 'lg-arrow' }, '→')),
     err,
     h('small', { class: 'hint' }, '初期アカウントはサーバーを最初に起動したときに表示され、data/credentials.txt に保存されます'),
   )
-  root.append(h('div', { class: 'login-wrap' }, h('div', { class: 'login-bg' }), form))
+  const welcome = h('div', { class: 'lg-welcome' }, h('div', { class: 'lg-bubble' }, 'ようこそ！'), h('img', { src: '/brand/nexmax-face.webp', alt: 'ネクマックス' }), h('span', { class: 'lg-ready' }, h('i', { class: 'live-dot-i' }), '接続準備完了'))
+  root.append(h('div', { class: 'login-wrap' }, h('div', { class: 'login-bg' }), form, welcome))
   loginIn.focus()
 }
 

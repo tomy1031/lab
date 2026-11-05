@@ -7,6 +7,10 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { STATUS_LABEL, countryOf, normalizeOffice, officeInfo, type Member, type MemberStatus, type MessageKind, type OfficeId } from '../../../shared/types'
 import type { FocusTarget, OfficeBoard, OfficeWorldApi, TaskLabelOptions } from './api'
 import { Chibi, type Avatar } from './chibi'
@@ -16,6 +20,30 @@ import { disposeAllMats } from './mats'
 import { NexmaxAvatar } from './nexmaxAvatar'
 import { setOutlineViewport } from './nexmax/materials'
 import { buildBridge, buildClouds, buildOffice, buildTokyoWalkway, type BridgeBuild, type OfficeBuild, type WalkwayBuild } from './offices'
+import { SpriteAvatar, hasSprite } from './spriteAvatar'
+
+const PARAMS = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams()
+const FORCE_CHIBI = PARAMS.has('chibi')
+/** ?lowfx：やわらかい光（ブルーム）を使わない。重い端末では自動でも切る */
+const LOW_FX = PARAMS.has('lowfx')
+
+/** 空のグラデーション（参考デザインの明るい空色）。キャンバスを不透明にして、光のにじみをきれいに重ねる */
+function skyTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas')
+  c.width = 4
+  c.height = 512
+  const g = c.getContext('2d')!
+  const gr = g.createLinearGradient(0, 0, 0, 512)
+  gr.addColorStop(0, '#a9d8ff')
+  gr.addColorStop(0.38, '#cfeaff')
+  gr.addColorStop(0.7, '#e9f5ff')
+  gr.addColorStop(1, '#fbeef6')
+  g.fillStyle = gr
+  g.fillRect(0, 0, 4, 512)
+  const t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  return t
+}
 import './world.css'
 
 const KIND_LABEL: Record<MessageKind, string> = {
@@ -119,6 +147,13 @@ export class OfficeWorld implements OfficeWorldApi {
   private readonly container: HTMLElement
   private readonly root: HTMLDivElement
   private readonly renderer: THREE.WebGLRenderer
+  /** やわらかい光（ブルーム）つきの描画。重いときは null にして直接描く */
+  private composer: EffectComposer | null = null
+  private bloom: UnrealBloomPass | null = null
+  private readonly sky = skyTexture()
+  /** 重さの見張り：直近のフレーム時間の平均 */
+  private frameAvg = 1 / 60
+  private slowFor = 0
   private readonly labels: CSS2DRenderer
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(30, 1, 0.1, 260)
@@ -187,8 +222,10 @@ export class OfficeWorld implements OfficeWorldApi {
     this.renderer.toneMappingExposure = 1.0
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFShadowMap
-    this.renderer.setClearColor(0x000000, 0)
+    this.renderer.toneMappingExposure = 1.04
+    this.renderer.setClearColor(0xcfeaff, 1)
     this.root.appendChild(this.renderer.domElement)
+    this.scene.background = this.sky
 
     this.labels = new CSS2DRenderer()
     this.labels.domElement.className = 'ow-labels'
@@ -201,7 +238,7 @@ export class OfficeWorld implements OfficeWorldApi {
     this.scene.environmentIntensity = 0.55
 
     // 光：空の色の半球光 + 影を落とす太陽 1 つ
-    this.scene.add(new THREE.HemisphereLight('#fdfbff', '#cfd9e8', 1.7))
+    this.scene.add(new THREE.HemisphereLight('#fdfdff', '#d3dfee', 1.8))
     const sun = new THREE.DirectionalLight('#fff6e8', 2.0)
     sun.position.set(6, 26, 16)
     sun.target.position.set(-2, 0, -3)
@@ -276,6 +313,7 @@ export class OfficeWorld implements OfficeWorldApi {
     this.ro = new ResizeObserver(() => this.resize())
     this.ro.observe(container)
     document.addEventListener('visibilitychange', this.onVis)
+    if (!LOW_FX) this.setupComposer()
     this.resize()
     this.applyFocus('all', true)
     this.loop()
@@ -467,6 +505,8 @@ export class OfficeWorld implements OfficeWorldApi {
     this.envTex.dispose()
     this.pmrem.dispose()
     this.controls.dispose()
+    this.composer?.dispose()
+    this.sky.dispose()
     this.renderer.dispose()
     disposeAllMats()
     this.root.remove()
@@ -475,7 +515,9 @@ export class OfficeWorld implements OfficeWorldApi {
   // ------------------------------------------------------------------ 社員
 
   private makeAvatar(m: Member): Avatar {
-    return m.kind === 'nexmax' ? new NexmaxAvatar(m.look) : new Chibi(m)
+    if (m.kind === 'nexmax') return new NexmaxAvatar(m.look)
+    // 参考デザインの画風の絵（スプライト）。?chibi でコードのちびキャラに戻せる
+    return hasSprite(m) && !FORCE_CHIBI ? new SpriteAvatar(m) : new Chibi(m)
   }
 
   private homeOf(m: Member, nIndex: number): Spot {
@@ -1072,8 +1114,15 @@ export class OfficeWorld implements OfficeWorldApi {
     const dt = Math.min(0.05, realDt)
     this.last = now
     this.simulate(dt, realDt)
-    this.renderer.render(this.scene, this.camera)
+    if (this.composer) this.composer.render(dt)
+    else this.renderer.render(this.scene, this.camera)
     this.labels.render(this.scene, this.camera)
+    // 3 秒続けて 24fps を下回ったら軽くする（見えていないときの長い間隔は数えない）
+    if (realDt < 0.25) {
+      this.frameAvg += (realDt - this.frameAvg) * 0.05
+      this.slowFor = this.frameAvg > 1 / 24 ? this.slowFor + realDt : 0
+      if (this.slowFor > 3 && this.composer && !PARAMS.has('debug')) this.dropQuality()
+    }
   }
 
   private simulate(dt: number, realDt: number): void {
@@ -1202,10 +1251,43 @@ export class OfficeWorld implements OfficeWorldApi {
     }
   }
 
+  /** ブルーム：地球儀・光の橋・ホログラム・モニターなど明るい所だけを、やわらかくにじませる */
+  private setupComposer(): void {
+    const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 })
+    const composer = new EffectComposer(this.renderer, rt)
+    composer.addPass(new RenderPass(this.scene, this.camera))
+    // 調整用：?bloom=強さ&thr=しきい値&brad=広がり
+    const num = (k: string, d: number) => (PARAMS.has(k) ? Number(PARAMS.get(k)) : d)
+    const strength = num('bloom', 0.6)
+    if (strength > 0) {
+      this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), strength, num('brad', 0.45), num('thr', 2.1))
+      composer.addPass(this.bloom)
+    }
+    composer.addPass(new OutputPass())
+    this.composer = composer
+  }
+
+  /** 重い端末：ブルームをやめて直接描き、画素比も下げる */
+  private dropQuality(): void {
+    if (!this.composer) return
+    this.composer.dispose()
+    this.composer = null
+    this.bloom = null
+    this.renderer.setPixelRatio(Math.min(1.25, window.devicePixelRatio || 1))
+    this.resize()
+  }
+
   private resize(): void {
     const w = Math.max(1, this.container.clientWidth)
     const h = Math.max(1, this.container.clientHeight)
     this.renderer.setSize(w, h, false)
+    if (this.composer) {
+      const pr = this.renderer.getPixelRatio()
+      this.composer.setPixelRatio(pr)
+      this.composer.setSize(w, h)
+      // にじみは半分の解像度で十分
+      this.bloom?.setSize(Math.max(1, Math.round((w * pr) / 2)), Math.max(1, Math.round((h * pr) / 2)))
+    }
     this.renderer.domElement.style.width = `${w}px`
     this.renderer.domElement.style.height = `${h}px`
     this.labels.setSize(w, h)

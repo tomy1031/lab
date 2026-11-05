@@ -27,6 +27,9 @@ const P: Record<string, string> = {
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.7 5.3 3.7 8.5s-1.1 6.1-3.7 8.5c-2.6-2.4-3.7-5.3-3.7-8.5S9.4 5.9 12 3.5z"/>',
   edit: '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14 7.5l3 3"/>',
   location: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  eye: '<path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   flow: '<rect x="3" y="4" width="6" height="5" rx="1.5"/><rect x="15" y="4" width="6" height="5" rx="1.5"/><rect x="9" y="15" width="6" height="5" rx="1.5"/><path d="M6 9v2.5h12V9M12 11.5V15"/>',
 }
 
@@ -45,4 +48,19 @@ export function flag(country: 'jp' | 'kh', size = 16): SVGSVGElement {
       ? `<svg class="flag" width="${w}" height="${size}" viewBox="0 0 30 20"><rect x=".75" y=".75" width="28.5" height="18.5" rx="2.5" fill="#fff" stroke="#c9d3e0" stroke-width="1.5"/><circle cx="15" cy="10" r="5.6" fill="#d7263d"/></svg>`
       : `<svg class="flag" width="${w}" height="${size}" viewBox="0 0 30 20"><rect width="30" height="20" rx="2.5" fill="#032ea1"/><rect y="5" width="30" height="10" fill="#e00025"/><path d="M10.5 13.6h9l-.6-1.2h-.8l-.3-1.4h-.6l-.4-1.6h-.5l-.6-2-.7-1.2-.7 1.2-.6 2h-.5l-.4 1.6h-.6l-.3 1.4h-.8z" fill="#fff"/></svg>`
   return wrap.firstElementChild as SVGSVGElement
+}
+
+/** 立体的でつやのあるアイコン（client/public/icons/*.webp。codex で参考デザインのドックの質感に合わせて生成） */
+export type GlossyIcon = 'folder' | 'task' | 'chat' | 'doc' | 'people' | 'chart' | 'target' | 'robot' | 'globe' | 'hand' | 'bell' | 'calendar' | 'settings' | 'search' | 'spark' | 'check'
+
+export function gicon(name: GlossyIcon, size = 28, cls = ''): HTMLImageElement {
+  const img = document.createElement('img')
+  img.src = `/icons/${name}.webp`
+  img.alt = ''
+  img.width = size
+  img.height = size
+  img.className = `gicon ${cls}`
+  img.decoding = 'async'
+  img.draggable = false
+  return img
 }

@@ -9,7 +9,7 @@ import type { OfficeId, OfficeInfo } from '../../../shared/types'
 import type { OfficeBoard } from './api'
 import { buildBackdrop, type Backdrop } from './backdrops'
 import { DESK_TOP, OFFICE_GAP_X, bridgeCurve, layoutOf, tokyoCurve, toWorld, type OfficeLayout } from './layout'
-import { glowMat, shade, toonMat } from './mats'
+import { glowMat, hdr, shade, toonMat } from './mats'
 import { bannerTexture, globeTexture, paintBoard } from './screens'
 import { type DayPhase, canvas, flowTexture, glowTexture, localTime, paintClock, phaseOfHour, tileFloor, toTexture, woodFloor } from './textures'
 
@@ -214,10 +214,10 @@ function execDesk(b: Builder, us: number[], z: number): void {
   // 前板の NM ライン
   b.add(GEO.box, glowMat('#7fd4ff'), cu, DESK_TOP - 0.12, z + 0.445, { sx: w - 0.4, sy: 0.03, sz: 0.01 })
   for (const u of us) {
-    // モニター（背面がカメラ側）
-    b.add(GEO.rboxS, toonMat('#2b3550'), u, DESK_TOP + 0.33, z + 0.12, { sx: 0.62, sy: 0.38, sz: 0.04 })
-    b.add(GEO.box, toonMat('#9aa8bd'), u, DESK_TOP + 0.12, z + 0.14, { sx: 0.05, sy: 0.18, sz: 0.05 })
-    b.add(GEO.box, toonMat('#9aa8bd'), u, DESK_TOP + 0.065, z + 0.14, { sx: 0.22, sy: 0.02, sz: 0.14 })
+    // ノート PC（低いので、座っている社長とネクマックスの顔が見える）
+    b.add(GEO.rboxS, toonMat('#dfe5ee'), u, DESK_TOP + 0.07, z + 0.02, { sx: 0.46, sy: 0.022, sz: 0.3 })
+    b.add(GEO.rboxS, toonMat('#c3cddb'), u, DESK_TOP + 0.2, z + 0.17, { sx: 0.46, sy: 0.27, sz: 0.022, rx: -0.2 })
+    b.add(GEO.disc, glowMat('#9fe3ff'), u, DESK_TOP + 0.21, z + 0.185, { sx: 0.035, sy: 0.035, rx: -0.2 })
     // 背の高いいす
     const ch = toonMat('#34416a')
     const cz = z - 0.72
@@ -376,7 +376,8 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
 
   const floorTex = id === 'phnompenh' ? tileFloor() : woodFloor()
   disposables.push(floorTex)
-  const floorMat = new THREE.MeshLambertMaterial({ map: floorTex })
+  // 少しつやのある床（参考デザインのように、明るい空と部屋の光がうっすら映る）
+  const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.42, metalness: 0, envMapIntensity: 0.75 })
   const floor = new THREE.Mesh(GEO.plane, floorMat)
   floor.rotation.x = -Math.PI / 2
   floor.scale.set(HW * 2, HD * 2, 1)
@@ -525,7 +526,7 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
   const holo = new THREE.Group()
   holo.position.set(mc.u, 0.64, mc.z)
   const beamGeo = new THREE.CylinderGeometry(0.12, M.table * 0.75, 0.9, 24, 1, true)
-  const beamMat = new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+  const beamMat = new THREE.MeshBasicMaterial({ color: hdr('#7fe3ff', 1.8), transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
   const beam = new THREE.Mesh(beamGeo, beamMat)
   beam.position.y = 0.45
   const iconTex = holoIconTexture()
@@ -533,7 +534,7 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
   const icon = new THREE.Sprite(iconMat)
   icon.scale.set(0.9, 0.45, 1)
   icon.position.y = 1.05
-  const discMat = new THREE.MeshBasicMaterial({ color: '#8fe8ff', transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })
+  const discMat = new THREE.MeshBasicMaterial({ color: hdr('#8fe8ff', 2.2), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })
   const disc = new THREE.Mesh(GEO.disc, discMat)
   disc.rotation.x = -Math.PI / 2
   disc.scale.setScalar(0.16)
@@ -584,7 +585,7 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
     b.add(GEO.cyl, toonMat('#e6f3ff'), p.pos.u, 0.025, p.pos.z, { sx: 0.7, sy: 0.05, sz: 0.7 })
   }
   const padRings: THREE.Mesh[] = []
-  const padMat = new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+  const padMat = new THREE.MeshBasicMaterial({ color: hdr('#7fe3ff', 2.4), transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
   const padGeo = new THREE.RingGeometry(0.55, 0.72, 40)
   disposables.push(padMat, padGeo)
   for (const p of L.pads.slice(0, id === 'phnompenh' ? 1 : 0)) {
@@ -809,7 +810,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
   const chev = chevronTexture()
   chev.repeat.set(3, 1)
   disposables.push(chev)
-  const chevMat = new THREE.MeshBasicMaterial({ map: chev, color: '#7fe3ff', transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending })
+  const chevMat = new THREE.MeshBasicMaterial({ map: chev, color: hdr('#7fe3ff', 2.8), transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending })
   disposables.push(chevMat)
   const chevMesh = new THREE.Mesh(GEO.plane, chevMat)
   chevMesh.rotation.x = -Math.PI / 2
@@ -821,7 +822,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
   const flow = flowTexture()
   disposables.push(flow)
   const coreGeo = new THREE.TubeGeometry(curve, 80, 0.06, 10, false)
-  const coreMat = new THREE.MeshBasicMaterial({ map: flow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: '#9ff0ff', opacity: 0.8 })
+  const coreMat = new THREE.MeshBasicMaterial({ map: flow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: hdr('#9ff0ff', 2.6), opacity: 0.8 })
   const haloGeo = new THREE.TubeGeometry(curve, 80, 0.2, 12, false)
   const haloMat = new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false })
   disposables.push(coreGeo, coreMat, haloGeo, haloMat)
@@ -834,7 +835,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
   const gTex = globeTexture()
   disposables.push(gTex)
   const sphereGeo = new THREE.SphereGeometry(1.55, 48, 32)
-  const sphereMat = new THREE.MeshBasicMaterial({ map: gTex, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  const sphereMat = new THREE.MeshBasicMaterial({ map: gTex, color: hdr('#ffffff', 1.9), transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
   const sphere = new THREE.Mesh(sphereGeo, sphereMat)
   const innerMat = new THREE.MeshBasicMaterial({ color: '#4aa8ff', transparent: true, opacity: 0.18, depthWrite: false })
   const innerSphere = new THREE.Mesh(sphereGeo, innerMat)
@@ -843,7 +844,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
   globeGroup.add(innerSphere, sphere)
   // 軌道の輪
   const orbitGeo = new THREE.TorusGeometry(2.15, 0.025, 6, 80)
-  const orbitMat = new THREE.MeshBasicMaterial({ color: '#c8f6ff', transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
+  const orbitMat = new THREE.MeshBasicMaterial({ color: hdr('#c8f6ff', 2.4), transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })
   disposables.push(orbitGeo, orbitMat)
   const orbit1 = new THREE.Mesh(orbitGeo, orbitMat)
   orbit1.rotation.set(Math.PI / 2 - 0.35, 0.2, 0)
@@ -865,7 +866,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
     disposables.push(tex)
   })
   // 光のにじみ
-  const glowSpriteMat = new THREE.SpriteMaterial({ map: glowTexture(), color: '#8fdcff', transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending })
+  const glowSpriteMat = new THREE.SpriteMaterial({ map: glowTexture(), color: hdr('#8fdcff', 2.0), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending })
   disposables.push(glowSpriteMat)
   const glowSprite = new THREE.Sprite(glowSpriteMat)
   glowSprite.scale.set(6.5, 6.5, 1)
@@ -873,7 +874,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
   group.add(globeGroup)
 
   // 行き交う小さな光
-  const dotMat = new THREE.SpriteMaterial({ map: glowTexture(), color: '#c8fbff', blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })
+  const dotMat = new THREE.SpriteMaterial({ map: glowTexture(), color: hdr('#c8fbff', 2.6), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })
   disposables.push(dotMat)
   const dots: { s: THREE.Sprite; u: number; dir: number; v: number }[] = []
   for (let i = 0; i < 8; i++) {
@@ -999,7 +1000,7 @@ export function buildTokyoWalkway(): WalkwayBuild {
   const flow = flowTexture()
   disposables.push(flow)
   const coreGeo = new THREE.TubeGeometry(curve, 40, 0.05, 8, false)
-  const coreMat = new THREE.MeshBasicMaterial({ map: flow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: '#9ff0ff', opacity: 0.7 })
+  const coreMat = new THREE.MeshBasicMaterial({ map: flow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: hdr('#9ff0ff', 2.6), opacity: 0.7 })
   disposables.push(coreGeo, coreMat)
   group.add(new THREE.Mesh(coreGeo, coreMat))
   let glow = 0
