@@ -174,3 +174,15 @@
 .ow-bridge-label.small { font-size: 9.5px; padding: 2px 8px; background: linear-gradient(90deg, #ff6f4f, #ff7aa2); }
 @keyframes ow-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes ow-req { 0%, 100% { box-shadow: 0 3px 10px rgba(255, 120, 30, 0.35); } 50% { box-shadow: 0 3px 16px rgba(255, 120, 30, 0.7); } }
+
+/* 名札の重なりを減らす：1 列おきに少し上げる・遠いときは短い名前だけ */
+.ow-tag .ow-short { display: none; font-weight: 700; }
+.ow-tag.stag { margin-bottom: 17px; }
+.ow-labels.far .ow-tag .ow-name { display: none; }
+.ow-labels.far .ow-tag .ow-short { display: inline; }
+.ow-labels.far .ow-tag .ow-ico { display: none !important; }
+.ow-labels.far .ow-tag .ow-chip { font-size: 9.5px; gap: 3px; padding: 1px 5px 1px 3px; }
+.ow-labels.far .ow-tag.kind-human .ow-chip::before, .ow-labels.far .ow-tag.kind-agent .ow-chip::before { font-size: 7.5px; padding: 0 2px; }
+.ow-labels.far .ow-tag.stag { margin-bottom: 13px; }
+.ow-labels.far .ow-task:not(.human) { font-size: 8.5px; max-width: 8em; }
+.ow-labels.very-far .ow-tag:not(.selected):not(.kind-nexmax):not(.has-request) .ow-short { display: none; }

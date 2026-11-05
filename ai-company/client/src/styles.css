@@ -552,3 +552,6 @@ h4 { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(-
   .tb-me .ico { display: none; }
   .topbar { gap: 6px; }
 }
+
+.no-anim { animation: none !important; }
+.fr.no-anim { animation: none; }

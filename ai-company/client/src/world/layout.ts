@@ -74,7 +74,8 @@ function gridLayout(o: {
   corridor: number
   exec?: { z: number; us: number[] }
   meeting: { center: P2; radius: number; table: number; seatsN: number }
-  lounge: P2[]
+  /** ソファの座る位置（u は座面の中心、walkU はソファの前の通り道） */
+  lounge: { u: number; zs: number[]; walkU: number }
   board: { u: number; w: number }
 }): OfficeLayout {
   const lanes = [...o.rows.map((z) => z - ROW_LANE), o.corridor]
@@ -132,7 +133,8 @@ function gridLayout(o: {
     seats.push({ pos, approach, face: Math.atan2(m.center.u - pos.u, m.center.z - pos.z), sit: true })
   }
 
-  const lounge: Spot[] = o.lounge.map((p) => ({ pos: p, approach: [{ u: p.u, z: o.corridor }], face: -Math.PI / 2 }))
+  const lo = o.lounge
+  const lounge: Spot[] = lo.zs.map((z) => ({ pos: { u: lo.u, z }, approach: [{ u: lo.walkU, z: o.corridor }, { u: lo.walkU, z }], face: -Math.PI / 2, sit: true }))
   const backLane = lanes[0]
   const windows: Spot[] = [-0.6, 0.6, 0.35, -0.35].map((f) => ({ pos: { u: f * o.halfW, z: -o.halfD + 0.45 }, approach: [{ u: f * o.halfW, z: backLane }], face: Math.PI }))
   const doorU = o.halfW - 1.2
@@ -183,11 +185,7 @@ export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
     corridor: 1.85,
     exec: { z: 3.45, us: [0.85, -0.85] },
     meeting: { center: { u: -5.05, z: 4.05 }, radius: 1.75, table: 0.62, seatsN: 5 },
-    lounge: [
-      { u: 5.0, z: 4.6 },
-      { u: 6.0, z: 4.0 },
-      { u: 5.5, z: 3.2 },
-    ],
+    lounge: { u: 6.2, zs: [2.9, 3.7, 4.5], walkU: 5.3 },
     board: { u: -0.4, w: 6.4 },
   }),
   phnompenh: gridLayout({
@@ -200,11 +198,7 @@ export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
     rows: [-3.9, -1.5, 0.9],
     corridor: 1.85,
     meeting: { center: { u: -5.05, z: 4.05 }, radius: 1.75, table: 0.62, seatsN: 5 },
-    lounge: [
-      { u: 5.0, z: 4.6 },
-      { u: 6.0, z: 4.0 },
-      { u: 5.5, z: 3.2 },
-    ],
+    lounge: { u: 6.2, zs: [2.9, 3.7, 4.5], walkU: 5.3 },
     board: { u: -0.4, w: 6.4 },
   }),
   // 東京：大阪の外側（左）に並ぶ小さめの島。少し高く・少し奥。大阪の通り道（z = -0.7）と東京の通り道の高さをそろえ、短いガラスの橋でつなぐ
@@ -218,10 +212,7 @@ export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
     rows: [-2.15, 0.25],
     corridor: 1.2,
     meeting: { center: { u: 1.2, z: 2.7 }, radius: 1.25, table: 0.45, seatsN: 3 },
-    lounge: [
-      { u: 3.95, z: 2.35 },
-      { u: 3.95, z: 3.15 },
-    ],
+    lounge: { u: 3.95, zs: [2.3, 3.1], walkU: 3.15 },
     board: { u: -0.3, w: 4.2 },
   }),
 }
@@ -230,8 +221,8 @@ export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
 export const TOKYO_LINK_Z = -0.7
 
 // 拠点のあいだの出入口（大阪の外側の壁の切れ目 ⇄ 東京の内側の手すりの切れ目）
-LAYOUTS.osaka.gates.tokyo = { pos: { u: LAYOUTS.osaka.halfW - 0.45, z: TOKYO_LINK_Z }, approach: [], face: -Math.PI / 2 }
-LAYOUTS.tokyo.gates.osaka = { pos: { u: -LAYOUTS.tokyo.halfW + 0.45, z: TOKYO_LINK_Z - LAYOUTS.tokyo.center.z }, approach: [], face: Math.PI / 2 }
+LAYOUTS.osaka.gates.tokyo = { pos: { u: LAYOUTS.osaka.halfW - 0.45, z: TOKYO_LINK_Z }, approach: [], face: Math.PI / 2 }
+LAYOUTS.tokyo.gates.osaka = { pos: { u: -LAYOUTS.tokyo.halfW + 0.45, z: TOKYO_LINK_Z - LAYOUTS.tokyo.center.z }, approach: [], face: -Math.PI / 2 }
 LAYOUTS.osaka.gates.phnompenh = { pos: { u: -LAYOUTS.osaka.halfW + 0.5, z: 0.4 }, approach: [{ u: -LAYOUTS.osaka.halfW + 1.3, z: LAYOUTS.osaka.lanes[2] }, { u: -LAYOUTS.osaka.halfW + 0.5, z: 0.4 }], face: -Math.PI / 2 }
 LAYOUTS.phnompenh.gates.osaka = { pos: { u: -LAYOUTS.phnompenh.halfW + 0.5, z: 0.4 }, approach: [{ u: -LAYOUTS.phnompenh.halfW + 1.3, z: LAYOUTS.phnompenh.lanes[2] }, { u: -LAYOUTS.phnompenh.halfW + 0.5, z: 0.4 }], face: -Math.PI / 2 }
 

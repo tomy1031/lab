@@ -66,6 +66,7 @@ type Entity = {
   tag: CSS2DObject
   tagEl: HTMLDivElement
   nameEl: HTMLElement
+  shortEl: HTMLElement
   roleEl: HTMLElement
   icoEl: HTMLElement
   taskEl: HTMLElement
@@ -161,6 +162,12 @@ export class OfficeWorld implements OfficeWorldApi {
   private viewOffTarget = { x: 0, y: 0 }
   private nextWander = 8
   private nextSlowTick = 0
+  /** シミュレーションの時間で動くタイマー（debugAdvance でもすすむ） */
+  private timers: { at: number; fn: () => void }[] = []
+
+  private after(sec: number, fn: () => void): void {
+    this.timers.push({ at: this.t + sec, fn })
+  }
   /** 描画の統計（調整用） */
   get stats(): { calls: number; triangles: number; entities: number } {
     const r = this.renderer.info.render
@@ -311,7 +318,7 @@ export class OfficeWorld implements OfficeWorldApi {
       this.talkFor(a, 1.6)
       const p = this.worldPos(a)
       this.fx.ripple(p, color, 3.2, 1.3)
-      setTimeout(() => !this.disposed && this.fx.ripple(this.worldPos(a), color, 4.2, 1.5), 260)
+      this.after(0.26, () => this.fx.ripple(this.worldPos(a), color, 4.2, 1.5))
       if (a.avatar instanceof NexmaxAvatar) a.avatar.wave(1.6)
       return
     }
@@ -374,7 +381,7 @@ export class OfficeWorld implements OfficeWorldApi {
     const e = this.entities.get(memberId)
     if (!e) return
     e.avatar.hop(1)
-    setTimeout(() => !this.disposed && e.avatar.hop(0.7), 520)
+    this.after(0.52, () => e.avatar.hop(0.7))
     const p = this.worldPos(e)
     p.y += 1.1
     this.fx.burst(p, 'sparkle', 28)
@@ -404,13 +411,20 @@ export class OfficeWorld implements OfficeWorldApi {
     const w = Math.max(1, this.container.clientWidth)
     const h = Math.max(1, this.container.clientHeight)
     const i = { ...this.insets }
-    if (w - i.left - i.right < Math.min(360, w * 0.45)) {
-      i.left = 0
-      i.right = 0
+    // 見える所が狭すぎるときは、隠れ幅を比率を保って縮める（少なくとも画面の 45% か 360×240 px は見せる）
+    const minW = Math.min(360, w * 0.45)
+    const minH = Math.min(240, h * 0.45)
+    const sw = i.left + i.right
+    if (w - sw < minW && sw > 0) {
+      const k = Math.max(0, w - minW) / sw
+      i.left *= k
+      i.right *= k
     }
-    if (h - i.top - i.bottom < Math.min(260, h * 0.45)) {
-      i.top = 0
-      i.bottom = 0
+    const sh = i.top + i.bottom
+    if (h - sh < minH && sh > 0) {
+      const k = Math.max(0, h - minH) / sh
+      i.top *= k
+      i.bottom *= k
     }
     return i
   }
@@ -489,10 +503,12 @@ export class OfficeWorld implements OfficeWorldApi {
     dot.className = 'ow-dot'
     const name = document.createElement('b')
     name.className = 'ow-name'
+    const short = document.createElement('b')
+    short.className = 'ow-short'
     const nw = document.createElement('span')
     nw.className = 'ow-new'
     nw.textContent = 'NEW'
-    chip.append(ico, dot, name, nw)
+    chip.append(ico, dot, name, short, nw)
     const role = document.createElement('div')
     role.className = 'ow-role'
     const task = document.createElement('div')
@@ -525,6 +541,7 @@ export class OfficeWorld implements OfficeWorldApi {
       tag,
       tagEl,
       nameEl: name,
+      shortEl: short,
       roleEl: role,
       icoEl: ico,
       taskEl: task,
@@ -554,7 +571,7 @@ export class OfficeWorld implements OfficeWorldApi {
       this.fx.burst(doorPos, 'confetti', 70)
       this.fx.ripple(toWorld(m.office, L.door.pos.u, L.door.pos.z + 0.3, 0.05), KIND_COLOR.hire, 2.4, 1.2)
       this.bridge.pulse()
-      setTimeout(() => {
+      this.after(0.45, () => {
         if (this.disposed || e.removing) return
         e.avatar.hop(1)
         if (m.kind === 'nexmax' && m.deskIndex < 0) {
@@ -569,7 +586,7 @@ export class OfficeWorld implements OfficeWorldApi {
             this.afterArrive(e)
           })
         }
-      }, 450)
+      })
     } else {
       this.settle(e)
       if (m.status === 'talking') this.goMeeting(e)
@@ -622,11 +639,24 @@ export class OfficeWorld implements OfficeWorldApi {
     if ((st === 'working' || st === 'thinking') && e.activity === 'wander') this.goHome(e)
   }
 
+  /** 隣の列の名札と重ならないよう、1 列おきに名札を少し上げる */
+  private staggered(m: Member): boolean {
+    if (m.deskIndex < 0) return false
+    const d = deskSpot(m.office, m.deskIndex)
+    if (d.overflow) return m.deskIndex % 2 === 1
+    if (d.exec) return m.kind === 'nexmax'
+    const cols = layoutOf(m.office).cols
+    const i = cols.findIndex((c) => Math.abs(c - d.desk.u) < 0.01)
+    return i % 2 === 1
+  }
+
   private applyMember(e: Entity, m: Member): void {
     e.nameEl.textContent = m.name
+    e.shortEl.textContent = truncate(m.name.replace(/（[^）]*）|\([^)]*\)/g, '').trim() || m.name, 6)
     e.roleEl.textContent = m.role
     e.tagEl.title = `${m.name}（${m.role}）— ${STATUS_LABEL[m.status]}${m.statusText ? `：${m.statusText}` : ''}`
-    e.tagEl.className = `ow-tag kind-${m.kind} st-${m.status}${e.newUntil > this.t ? ' is-new' : ''}${this.selected === m.id ? ' selected' : ''}${e.request ? ' has-request' : ''}`
+    const stag = this.staggered(m) ? ' stag' : ''
+    e.tagEl.className = `ow-tag kind-${m.kind} st-${m.status}${stag}${e.newUntil > this.t ? ' is-new' : ''}${this.selected === m.id ? ' selected' : ''}${e.request ? ' has-request' : ''}`
     e.icoEl.textContent = STATUS_ICON[m.status] ?? ''
     e.avatar.setStatus(m.status)
     e.avatar.setGhost(m.status === 'offline' || m.status === 'away')
@@ -810,11 +840,11 @@ export class OfficeWorld implements OfficeWorldApi {
       this.talkFor(e, 1.6)
       this.setCard(e, null)
       this.sendPacket(e, target, color, 0.6)
-      setTimeout(() => {
+      this.after(1.4, () => {
         if (this.disposed || !this.entities.has(e.id)) return
         if (e.visits.length) this.nextVisit(e)
         else this.goHome(e)
-      }, 1400)
+      })
     }
     if (target.office === e.office) {
       const d = target.member.deskIndex >= 0 ? deskSpot(target.office, target.member.deskIndex) : null
@@ -1029,6 +1059,12 @@ export class OfficeWorld implements OfficeWorldApi {
     e.scale += (e.scaleTarget - e.scale) * (1 - Math.exp(-dt / (e.scaleTarget > e.scale ? 0.12 : 0.08)))
   }
 
+  /** 確認用：描画せずに時間だけ sec 秒すすめる（遅い端末のテストで歩く様子を見る） */
+  debugAdvance(sec: number): void {
+    const n = Math.ceil(sec / 0.05)
+    for (let i = 0; i < n; i++) this.simulate(0.05, 0.05)
+  }
+
   private loop = (): void => {
     if (this.disposed) return
     this.raf = requestAnimationFrame(this.loop)
@@ -1036,8 +1072,21 @@ export class OfficeWorld implements OfficeWorldApi {
     const realDt = Math.min(0.5, (now - this.last) / 1000)
     const dt = Math.min(0.05, realDt)
     this.last = now
+    this.simulate(dt, realDt)
+    this.renderer.render(this.scene, this.camera)
+    this.labels.render(this.scene, this.camera)
+  }
+
+  private simulate(dt: number, realDt: number): void {
     this.t += dt
     const date = new Date()
+    if (this.timers.length) {
+      const due = this.timers.filter((x) => x.at <= this.t)
+      if (due.length) {
+        this.timers = this.timers.filter((x) => x.at > this.t)
+        for (const x of due) x.fn()
+      }
+    }
 
     const pulse = 0.55 + Math.sin(this.t * 5) * 0.3
     this.reqMat.opacity = pulse
@@ -1142,9 +1191,6 @@ export class OfficeWorld implements OfficeWorldApi {
     this.walkway.update(dt, this.t)
     this.clouds.update(dt, this.t)
     this.fx.update(dt)
-
-    this.renderer.render(this.scene, this.camera)
-    this.labels.render(this.scene, this.camera)
   }
 
   private onVis = (): void => {

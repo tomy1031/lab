@@ -8,7 +8,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { OfficeId, OfficeInfo } from '../../../shared/types'
 import type { OfficeBoard } from './api'
 import { buildBackdrop, type Backdrop } from './backdrops'
-import { DESK_TOP, OFFICE_GAP_X, bridgeCurve, tokyoCurve, toWorld, type OfficeLayout } from './layout'
+import { DESK_TOP, OFFICE_GAP_X, bridgeCurve, layoutOf, tokyoCurve, toWorld, type OfficeLayout } from './layout'
 import { glowMat, shade, toonMat } from './mats'
 import { bannerTexture, globeTexture, paintBoard } from './screens'
 import { type DayPhase, canvas, flowTexture, glowTexture, localTime, paintClock, phaseOfHour, tileFloor, toTexture, woodFloor } from './textures'
@@ -340,8 +340,8 @@ function sofa(b: Builder, u: number, z0: number, z1: number, color: string): voi
 
 /** 街の絵の置き場所（世界座標の中心と幅） */
 const BACKDROP_PLACE: Record<OfficeId, { x: number; y: number; z: number; w: number }> = {
-  osaka: { x: -9, y: -5.0, z: -32, w: 36 },
-  tokyo: { x: -27, y: -0.5, z: -28, w: 22 },
+  osaka: { x: -12, y: -5.0, z: -32, w: 34 },
+  tokyo: { x: -36, y: -4.0, z: -30, w: 26 },
   phnompenh: { x: 12, y: -5.0, z: -32, w: 36 },
 }
 
@@ -392,10 +392,21 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
   b.add(GEO.box, frame, 0, WALL_H, -HD, { sx: HW * 2 + 0.2, sy: 0.12, sz: 0.16 })
   b.add(GEO.box, frame, 0, 0.06, -HD, { sx: HW * 2, sy: 0.12, sz: 0.12 })
   for (let u = -HW; u <= HW + 0.01; u += (HW * 2) / Math.round((HW * 2) / 1.8)) b.add(GEO.box, frame, u, WALL_H / 2, -HD, { sx: 0.08, sy: WALL_H, sz: 0.1 })
-  // 外側の壁
-  b.add(GEO.plane, glass, HW, WALL_H / 2, 0, { sx: HD * 2, sy: WALL_H, ry: Math.PI / 2 })
+  // 外側の壁（大阪は東京への橋の出入口を空ける）
+  const outerGap = id === 'osaka' ? [L.gates.tokyo!.pos.z - 0.75, L.gates.tokyo!.pos.z + 0.75] : null
+  const outerWall = (z0: number, z1: number) => b.add(GEO.plane, glass, HW, WALL_H / 2, (z0 + z1) / 2, { sx: z1 - z0, sy: WALL_H, ry: Math.PI / 2 })
+  if (outerGap) {
+    outerWall(-HD, outerGap[0])
+    outerWall(outerGap[1], HD)
+    b.add(GEO.box, frame, HW, 1.05, outerGap[0], { sx: 0.12, sy: 2.1, sz: 0.12 })
+    b.add(GEO.box, frame, HW, 1.05, outerGap[1], { sx: 0.12, sy: 2.1, sz: 0.12 })
+    b.add(GEO.box, frame, HW, 2.1, (outerGap[0] + outerGap[1]) / 2, { sx: 0.12, sy: 0.1, sz: 1.5 })
+  } else outerWall(-HD, HD)
   b.add(GEO.box, frame, HW, WALL_H, 0, { sx: 0.16, sy: 0.12, sz: HD * 2 + 0.2 })
-  for (let z = -HD; z <= HD + 0.01; z += (HD * 2) / Math.round((HD * 2) / 1.8)) b.add(GEO.box, frame, HW, WALL_H / 2, z, { sx: 0.1, sy: WALL_H, sz: 0.08 })
+  for (let z = -HD; z <= HD + 0.01; z += (HD * 2) / Math.round((HD * 2) / 1.8)) {
+    if (outerGap && z > outerGap[0] - 0.05 && z < outerGap[1] + 0.05) continue
+    b.add(GEO.box, frame, HW, WALL_H / 2, z, { sx: 0.1, sy: WALL_H, sz: 0.08 })
+  }
   // 手前の手すり（光る天板）
   const RAIL_H = 0.85
   const railTop = glowMat('#aef2ff', 0.95)
@@ -413,7 +424,9 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
     b.add(GEO.box, frame, -HW, RAIL_H / 2, z1, { sx: 0.06, sy: RAIL_H, sz: 0.06 })
   }
   if (id === 'tokyo') {
-    sideRail(-HD, HD)
+    const gz = L.gates.osaka!.pos.z
+    sideRail(-HD, gz - 0.75)
+    sideRail(gz + 0.75, HD)
   } else {
     sideRail(-HD, gapZ0)
     sideRail(gapZ1, HD)
@@ -537,20 +550,21 @@ export function buildOffice(L: OfficeLayout, info: OfficeInfo): OfficeBuild {
     const zs = L.lounge.map((p) => p.pos.z)
     const lu = Math.max(...L.lounge.map((p) => p.pos.u))
     sofa(b, lu + 0.05, Math.min(...zs) - 0.1, Math.max(...zs) + 0.1, theme.sofa)
-    // 小さなテーブルと照明
-    b.add(GEO.cyl, toonMat('#ffffff'), lu - 1.0, 0.36, Math.max(...zs) + 0.9, { sx: 0.32, sy: 0.04, sz: 0.32 })
-    b.add(GEO.cyl, toonMat('#c9d4e3'), lu - 1.0, 0.18, Math.max(...zs) + 0.9, { sx: 0.03, sy: 0.34, sz: 0.03 })
-    b.add(GEO.cyl, toonMat('#ffe9b0'), lu - 0.95, 0.42, Math.max(...zs) + 0.85, { sx: 0.05, sy: 0.07, sz: 0.05 })
-    b.add(GEO.rbox, toonMat(shade(theme.sofa, 0.55)), lu - 0.45, 0.006, (Math.min(...zs) + Math.max(...zs)) / 2, { sx: 1.5, sy: 0.012, sz: Math.max(...zs) - Math.min(...zs) + 1.2 })
+    // ラグと、小さなテーブル
+    b.add(GEO.rbox, toonMat(shade(theme.sofa, 0.55)), lu - 0.55, 0.006, (Math.min(...zs) + Math.max(...zs)) / 2, { sx: 1.5, sy: 0.012, sz: Math.max(...zs) - Math.min(...zs) + 1.0 })
+    const tz = (Math.min(...zs) + Math.max(...zs)) / 2
+    b.add(GEO.cyl, toonMat('#ffffff'), lu - 0.62, 0.3, tz, { sx: 0.26, sy: 0.04, sz: 0.26 })
+    b.add(GEO.cyl, toonMat('#c9d4e3'), lu - 0.62, 0.15, tz, { sx: 0.03, sy: 0.28, sz: 0.03 })
+    b.add(GEO.cyl, toonMat('#ffe9b0'), lu - 0.58, 0.36, tz + 0.05, { sx: 0.05, sy: 0.07, sz: 0.05 })
   }
 
   // --- 本棚（外側の壁ぞい）
   if (id === 'tokyo') bookshelf(b, HW - 0.25, -HD + 0.9, -0.6, 1.8)
-  else bookshelf(b, HW - 0.25, -HD + 1.2, -0.9, 2.1)
+  else bookshelf(b, HW - 0.25, -HD + 1.2, id === 'osaka' ? -1.7 : -0.9, 2.1)
 
   // --- 観葉植物・拠点らしさ
   plant(b, -HW + 0.5, -HD + 0.5, 1.0, true)
-  plant(b, HW - 0.55, 0.1, 0.9)
+  if (id !== 'osaka') plant(b, HW - 0.55, id === 'tokyo' ? 1.2 : 0.1, 0.9)
   plant(b, -HW + 0.45, HD - 0.5, 0.85)
   plant(b, L.aisles[0], HD - 0.45, 0.8)
   if (id === 'osaka') {
@@ -951,39 +965,40 @@ export function buildTokyoWalkway(): WalkwayBuild {
   const disposables: { dispose(): void }[] = []
   const curve = tokyoCurve()
   const reverse = new THREE.CubicBezierCurve3(curve.v3.clone(), curve.v2.clone(), curve.v1.clone(), curve.v0.clone())
-  // 床面の坂（大阪の奥の壁 → 東京の手前）
-  const a = toWorld('osaka', 3.3, -6.2, 0)
-  const bb = toWorld('tokyo', -3.1, 4.0, 0)
-  const ramp = new THREE.CatmullRomCurve3([a, a.clone().lerp(bb, 0.5).add(new THREE.Vector3(0, 0.25, 0)), bb])
-  const deckGeo = ribbon(ramp, 1.4, 0.16, 30)
+  // 大阪の外側の壁の切れ目 → 東京の内側の手すりの切れ目（少し上り坂）
+  const a = toWorld('osaka', 7.2 + 0.2, -0.7, 0)
+  const tk = layoutOf('tokyo')
+  const bb = toWorld('tokyo', -tk.halfW - 0.2, -0.7 - tk.center.z, 0)
+  const ramp = new THREE.LineCurve3(a, bb)
+  const deckGeo = ribbon(ramp, 1.4, 0.18, 8)
   const deckMat = new THREE.MeshLambertMaterial({ color: '#f2f7fd' })
   disposables.push(deckGeo, deckMat)
   const deck = new THREE.Mesh(deckGeo, deckMat)
   deck.receiveShadow = true
   group.add(deck)
-  const edgeGeo = ribbon(ramp, 1.5, 0.02, 30, -0.17)
-  const edgeMat = new THREE.MeshBasicMaterial({ color: '#8fe8ff', transparent: true, opacity: 0.8 })
+  const edgeGeo = ribbon(ramp, 1.5, 0.02, 8, -0.19)
+  const edgeMat = new THREE.MeshBasicMaterial({ color: '#8fe8ff', transparent: true, opacity: 0.85 })
   disposables.push(edgeGeo, edgeMat)
   group.add(new THREE.Mesh(edgeGeo, edgeMat))
-  // 両脇の光る手すり
-  const railMat = new THREE.MeshBasicMaterial({ color: '#aef2ff', transparent: true, opacity: 0.9 })
+  // 手すり（ガラス＋光る天板）
+  const railMat = new THREE.MeshBasicMaterial({ color: '#aef2ff', transparent: true, opacity: 0.95 })
+  const glass = glassMat()
   disposables.push(railMat)
-  for (const side of [-1, 1]) {
-    const pts = [0, 0.25, 0.5, 0.75, 1].map((t) => {
-      const p = ramp.getPoint(t)
-      return p.add(new THREE.Vector3(side * 0.72, 0.85, 0))
-    })
-    const rc = new THREE.CatmullRomCurve3(pts)
-    const rg = new THREE.TubeGeometry(rc, 30, 0.03, 6, false)
+  for (const side of [-0.7, 0.7]) {
+    const p0 = a.clone().add(new THREE.Vector3(0, 0, side))
+    const p1 = bb.clone().add(new THREE.Vector3(0, 0, side))
+    const rg = new THREE.TubeGeometry(new THREE.LineCurve3(p0.clone().setY(p0.y + 0.85), p1.clone().setY(p1.y + 0.85)), 4, 0.03, 6, false)
     disposables.push(rg)
     group.add(new THREE.Mesh(rg, railMat))
+    const pg = new THREE.BufferGeometry().setFromPoints([p0, p1, p1.clone().setY(p1.y + 0.85), p0.clone().setY(p0.y + 0.85)])
+    pg.setIndex([0, 1, 2, 0, 2, 3])
+    disposables.push(pg)
+    group.add(new THREE.Mesh(pg, glass))
   }
-  const glassMatW = new THREE.MeshBasicMaterial({ color: '#d4f0ff', transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide })
-  disposables.push(glassMatW)
   // 光の道
   const flow = flowTexture()
   disposables.push(flow)
-  const coreGeo = new THREE.TubeGeometry(curve, 50, 0.05, 8, false)
+  const coreGeo = new THREE.TubeGeometry(curve, 40, 0.05, 8, false)
   const coreMat = new THREE.MeshBasicMaterial({ map: flow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, color: '#9ff0ff', opacity: 0.7 })
   disposables.push(coreGeo, coreMat)
   group.add(new THREE.Mesh(coreGeo, coreMat))

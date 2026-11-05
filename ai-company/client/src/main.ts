@@ -107,10 +107,26 @@ function startApp(): void {
       worldEl.append(h('div', { class: 'world-fallback' }, '3D の空間を表示できませんでした（WebGL が使えない端末かもしれません）。下のドックから操作できます。'))
     })
 
+  /** 3D に「カードで隠れていない帯」を伝える：上 = 上のカードの下端、下 = 下のカード・ドックの上端（実際の位置から測る） */
+  let lastInsets = ''
   const applyInsets = () => {
     if (!world || typeof world.setInsets !== 'function') return
-    const mobile = innerWidth <= 860
-    world.setInsets({ left: 0, right: 0, top: mobile ? 64 : 84, bottom: mobile ? 92 : 126 })
+    const visible = (el: Element | null) => {
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return r.width > 0 && r.height > 0 && getComputedStyle(el).display !== 'none' ? r : null
+    }
+    const tops = [...cardsEl.children].map(visible).filter((r): r is DOMRect => !!r)
+    const dockR = visible(dockEl.firstElementChild)
+    const corners = [humanEl.firstElementChild, feedEl.firstElementChild].map(visible).filter((r): r is DOMRect => !!r)
+    const top = tops.length ? Math.max(...tops.map((r) => r.bottom)) + 8 : 72
+    // 角のカードは中身で高さが変わるので、画面の 27% までに抑えて構図が揺れないようにする
+    const cornerInset = corners.length ? Math.min(innerHeight * 0.27, innerHeight - Math.min(...corners.map((r) => r.top))) : 0
+    const bottom = Math.max(dockR ? innerHeight - dockR.top + 8 : 100, cornerInset)
+    const key = `${Math.round(top / 8)}:${Math.round(bottom / 8)}:${innerWidth}:${innerHeight}`
+    if (key === lastInsets) return
+    lastInsets = key
+    world.setInsets({ left: 0, right: 0, top, bottom })
   }
   addEventListener('resize', () => {
     applyInsets()
@@ -293,6 +309,9 @@ function startApp(): void {
     }
   }
 
+  // 描き直しのたびに出現アニメーションが繰り返されないよう、前回と同じものには no-anim を付ける
+  let shown = { sheet: '', profile: '', pop: '', feedTop: '' }
+
   const renderNow = () => {
     if (!state.snap) return
     const restoreSheet = keepInputs(sheetEl)
@@ -331,11 +350,18 @@ function startApp(): void {
       }),
     )
     humanEl.replaceChildren(humanCard(state, (taskId) => act.open('tasks', { focusTaskId: taskId, taskFilter: 'all', taskOffice: 'all' }), (taskId) => act.complete(taskId)))
-    feedEl.replaceChildren(feedCard(state, () => act.open('chat', { chatWith: null })))
+    const feed = feedCard(state, () => act.open('chat', { chatWith: null }))
+    const topMsg = state.snap.messages.at(-1)?.id ?? ''
+    feed.querySelectorAll('.fr').forEach((el, i) => i === 0 && topMsg !== shown.feedTop ? null : el.classList.add('no-anim'))
+    shown.feedTop = topMsg
+    feedEl.replaceChildren(feed)
     dockEl.replaceChildren(dock(state, openSheet, (id) => (openSheet === id ? act.close() : act.open(id))))
     const sheetScroll = sheetEl.querySelector('.sheet-body')?.scrollTop ?? 0
     const splitScroll = [...sheetEl.querySelectorAll<HTMLElement>('.split-l, .split-r, .kcol, .thread')].map((e) => e.scrollTop)
-    sheetEl.replaceChildren(...(openSheet ? [sheet(openSheet, state, ui, act)] : []))
+    const sh = openSheet ? sheet(openSheet, state, ui, act) : null
+    if (sh && shown.sheet === openSheet) sh.classList.add('no-anim')
+    shown.sheet = openSheet ?? ''
+    sheetEl.replaceChildren(...(sh ? [sh] : []))
     const body = sheetEl.querySelector('.sheet-body')
     if (body) body.scrollTop = sheetScroll
     sheetEl.querySelectorAll<HTMLElement>('.split-l, .split-r, .kcol, .thread').forEach((e, i) => (e.scrollTop = splitScroll[i] ?? 0))
@@ -346,10 +372,14 @@ function startApp(): void {
     if (thread && thread.dataset.stick !== '0') thread.scrollTop = thread.scrollHeight
     root.classList.toggle('sheet-open', !!openSheet)
     const pf = profilePanel(state, ui, act)
+    if (pf && shown.profile === ui.profileId) pf.classList.add('no-anim')
+    shown.profile = pf ? (ui.profileId ?? '') : ''
     profileEl.replaceChildren(...(pf ? [pf] : []))
     restoreProfile()
     root.classList.toggle('profile-open', !!pf)
     renderPop()
+    // シートを開いている間はカードが隠れるので、撮り直さない
+    if (!openSheet) applyInsets()
   }
 
   const togglePop = (kind: NonNullable<typeof pop>['kind'], anchor: HTMLElement) => {
@@ -359,10 +389,14 @@ function startApp(): void {
   const renderPop = () => {
     if (!pop) {
       popEl.replaceChildren()
+      shown.pop = ''
       return
     }
+    const sameKind = shown.pop === pop.kind
+    shown.pop = pop.kind
     const el = pop.kind === 'search' ? searchPop(state, act) : pop.kind === 'bell' ? notificationsPop(state, act) : pop.kind === 'timeline' ? timelinePop(state) : pop.kind === 'settings' ? settingsPop(state, act) : mePop(state, act)
     const r = pop.anchor.getBoundingClientRect()
+    if (sameKind && popEl.firstElementChild) el.classList.add('no-anim')
     el.style.top = `${r.bottom + 10}px`
     el.style.right = `${Math.max(10, innerWidth - r.right - 10)}px`
     if (pop.kind === 'search' && popEl.firstElementChild?.classList.contains('wide') && popEl.querySelector('input')?.value) return
