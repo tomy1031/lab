@@ -1010,3 +1010,17 @@ h4 { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(-
 .ap-btns { margin-left: auto; }
 .hud-human .ap-btns { width: 100%; justify-content: flex-end; }
 .hud-human .ap-btns .btn { padding: 5px 14px; }
+
+/* ------------------------------------------------------------------ アーティファクト版：ロゴの代わりの表記・参加の画面・確かめの画面 */
+.brand-face { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(33, 92, 180, 0.25); display: block; }
+.brand-word { font-weight: 800; font-size: 17px; letter-spacing: 0.12em; background: linear-gradient(90deg, #0b5ba8, #1496d6); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; }
+.brand.big .brand-face { width: 44px; height: 44px; }
+.brand.big .brand-word { font-size: 24px; }
+.login-wrap { overflow-y: auto; }
+.join-card { text-align: left; gap: 8px; margin-block: 16px; }
+.join-card h1, .join-card .lead, .join-card .brand { text-align: center; }
+.join-card .lg-field { display: grid; gap: 4px; }
+.join-card .lg-field > span { font-size: 12.5px; font-weight: 800; color: var(--ink-2); }
+.join-card select, .join-card input, .join-card textarea { width: 100%; }
+.ask-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.btn.danger { background: linear-gradient(180deg, #ff7a6e, #d8463a); color: #fff; }

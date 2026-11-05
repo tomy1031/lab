@@ -11,7 +11,9 @@
     "build": "vite build",
     "start": "tsx server/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:artifact": "vite build -c vite.artifact.config.ts && node scripts/artifact-page.mjs",
+    "dev:artifact": "vite -c vite.artifact.config.ts --port 5180"
   },
   "engines": {
     "node": ">=20"

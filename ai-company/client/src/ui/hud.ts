@@ -6,6 +6,7 @@ import type { AppState } from '../state'
 import { face, nexmaxBadge } from './avatar'
 import { activeProjects, approvals, approverOf, humanRequests, isApprover, minutesLabel, officeStats, project, unansweredQuestions, upcomingHuman } from './derive'
 import { approvalRow, type Actions } from './sheets'
+import { IS_ARTIFACT, brandMark } from '../brand'
 import { clock, esc, h } from './dom'
 import { flag, gicon, icon, type GlossyIcon } from './icons'
 import { MAP_DOTS } from './mapDots'
@@ -65,7 +66,7 @@ export function topbar(state: AppState, hd: TopbarHandlers): HTMLElement {
   return h(
     'header',
     { class: 'topbar' },
-    h('div', { class: 'brand' }, h('img', { src: '/brand/nextmake-logo.png', alt: 'NEXTMAKE', class: 'brand-logo' }), h('span', { class: 'brand-ai' }, 'AI')),
+    brandMark(),
     h('nav', { class: 'pills' }, ...views.map(([v, label]) => h('button', { class: `pill ${hd.view === v ? 'on' : ''}`, onclick: () => hd.onView(v) }, label))),
     h('button', { class: 'pill cta', onclick: hd.onGoal }, icon('plus', 16), 'ゴールを伝える'),
     h('div', { class: 'tb-spacer' }),
@@ -166,7 +167,7 @@ export function assistantCard(state: AppState, hd: AssistantHandlers): HTMLEleme
         h('div', { class: 'as-status' }, h('i', { class: `pres st-${nx?.status ?? 'idle'}` }), status),
         h('button', { class: 'as-chip', onclick: hd.onGoal }, icon('target', 16), 'ゴールを伝える'),
         h('button', { class: 'as-chip', onclick: hd.onAsk }, icon('chat', 16), 'いまの進み具合を聞く'),
-        h('button', { class: 'as-chip', onclick: hd.onReport }, icon('mic', 16), '話してストック'),
+        IS_ARTIFACT ? h('button', { class: 'as-chip', onclick: hd.onReport }, icon('inbox', 16), 'メモしてストック') : h('button', { class: 'as-chip', onclick: hd.onReport }, icon('mic', 16), '話してストック'),
       ),
     ),
   )
@@ -364,7 +365,14 @@ export interface Captured {
 }
 
 /** ドックの右のマイク。押すと聞き始め、もう一度押すと止まる。上の小さなボタンでストックを開く */
-export function micButton(listening: boolean, readyCount: number, onToggle: () => void, onOpen: () => void): HTMLElement {
+export function micButton(listening: boolean, readyCount: number, onToggle: () => void, onOpen: () => void, mode: 'voice' | 'text' = 'voice'): HTMLElement {
+  if (mode === 'text')
+    return h(
+      'div',
+      { class: 'mic-dock' },
+      h('button', { class: 'stock-chip', onclick: onOpen, title: 'やることストックを開く' }, gicon('inbox', 18), 'ストック', readyCount ? h('b', {}, String(readyCount)) : null),
+      h('button', { class: 'mic-btn', onclick: onToggle, title: '思いついたことを書いてストックする' }, gicon('inbox', 66, 'warm'), h('span', { class: 'dock-label' }, 'メモ')),
+    )
   return h(
     'div',
     { class: `mic-dock ${listening ? 'on' : ''}` },

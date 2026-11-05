@@ -1,4 +1,5 @@
 // 2D の小さな似顔絵（3D のちびキャラと同じ色・同じ印象）。人間 = 髪と顔、AI社員 = 画面の顔のロボット、ネクマックス = 青い頭
+import { asset } from '../brand'
 import type { Member } from '../../../shared/types'
 import { faceUrl, spriteIdFor, spriteUrl, type SpritePose } from '../sprites'
 
@@ -30,7 +31,7 @@ function nexmax(m: Member): string {
 /** 顔の画像（生成したキャラクターの顔・ネクマックスは chronicle の公式ポートレート） */
 export function faceSrc(m: Member | undefined): string | null {
   if (!m) return null
-  if (m.kind === 'nexmax') return m.look.nexmaxVariant === 'production' ? '/brand/nexmax-unit-face.webp' : '/brand/nexmax-face.webp'
+  if (m.kind === 'nexmax') return m.look.nexmaxVariant === 'production' ? asset('brand/nexmax-unit-face.webp') : asset('brand/nexmax-face.webp')
   const id = spriteIdFor(m)
   return id ? faceUrl(id) : null
 }
@@ -74,7 +75,7 @@ export function figure(m: Pick<Member, 'id' | 'kind' | 'office' | 'role' | 'look
   img.draggable = false
   img.style.height = `${height}px`
   const id = 'sprite' in m ? m.sprite : spriteIdFor(m)
-  img.src = id ? spriteUrl(id, pose) : '/brand/nexmax-face.webp'
+  img.src = id ? spriteUrl(id, pose) : asset('brand/nexmax-face.webp')
   return img
 }
 
@@ -84,7 +85,7 @@ export function nexmaxBadge(size = 64): HTMLElement {
   el.className = 'nx-badge'
   el.style.width = el.style.height = `${size}px`
   const img = document.createElement('img')
-  img.src = '/brand/nexmax-face.webp'
+  img.src = asset('brand/nexmax-face.webp')
   img.alt = 'ネクマックス'
   el.append(img)
   return el

@@ -5,6 +5,7 @@
 //   kh-0..3（カンボジアの社員：0 = ネクタイの男性、1 = 長い髪の女性、2 = ポロシャツの男性、3 = おだんごの女性）
 //   robot-0..3（AI社員：耳と胸の色が 0 水色・1 ミント・2 ピンク・3 黄色）
 // ポーズは stand / walk / sit。ネクマックスは 3D モデルのまま（スプライトなし）。
+import { asset } from './brand'
 import type { Member } from '../../shared/types'
 import { countryOf } from '../../shared/types'
 
@@ -67,16 +68,16 @@ export function spriteIdFor(m: Pick<Member, 'id' | 'kind' | 'office' | 'role' | 
 }
 
 export function spriteUrl(id: string, pose: SpritePose): string {
-  return `/sprites/${id}-${pose}.webp`
+  return asset(`sprites/${id}-${pose}.webp`)
 }
 
 export function faceUrl(id: string): string {
-  return `/sprites/faces/${id}.webp`
+  return asset(`sprites/faces/${id}.webp`)
 }
 
 let meta: Promise<Record<string, SpriteMeta>> | null = null
 export function spriteMeta(): Promise<Record<string, SpriteMeta>> {
-  meta ??= fetch('/sprites/sprites.json')
+  meta ??= fetch(asset('sprites/sprites.json'))
     .then((r) => (r.ok ? r.json() : {}))
     .catch(() => ({}))
   return meta

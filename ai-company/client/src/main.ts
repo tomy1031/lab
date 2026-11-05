@@ -4,7 +4,8 @@
 import './styles.css'
 import type { Goal, Member, Message, OfficeId, Task } from '../../shared/types'
 import { OFFICES, officeInfo } from '../../shared/types'
-import { Api, connect } from './api'
+import { Api, connect, setNotifier } from './api'
+import { IS_ARTIFACT, asset, brandMark } from './brand'
 import { VOICE_LANGS, Voice } from './voice'
 import { AppState } from './state'
 import { clock, h } from './ui/dom'
@@ -17,9 +18,63 @@ import type { OfficeBoard, OfficeWorldApi } from './world/api'
 const root = document.getElementById('app')!
 
 async function boot(): Promise<void> {
-  const { me } = await Api.me().catch(() => ({ me: null }))
-  if (me) startApp()
-  else showLogin()
+  try {
+    const r = await Api.me()
+    if (r.me) startApp()
+    else if (r.join) showJoin(r.join)
+    else showLogin()
+  } catch (e) {
+    if (IS_ARTIFACT) showProblem((e as Error).message)
+    else showLogin()
+  }
+}
+
+// ------------------------------------------------------------------ アーティファクト版：参加（claude.ai のアカウントで入る。パスワードは無い）
+
+function showProblem(msg: string): void {
+  root.replaceChildren(h('div', { class: 'login-wrap' }, h('div', { class: 'login-bg', style: `background-image:url(${asset('brand/login-bg.webp')})` }), h('div', { class: 'login-card' }, brandMark(true), h('h1', {}, '開けませんでした'), h('p', { class: 'lead' }, msg))))
+}
+
+function showJoin(info: { name: string; owner: boolean }): void {
+  root.replaceChildren()
+  root.className = ''
+  const name = h('input', { id: 'join-name', value: info.name, placeholder: '名前（例：山田 花子）', autocomplete: 'name', required: true, maxlength: 40 }) as HTMLInputElement
+  const office = h('select', { id: 'join-office' }, ...OFFICES.map((o) => h('option', { value: o.id }, `${o.country === 'jp' ? '🇯🇵' : '🇰🇭'} ${o.name}`))) as HTMLSelectElement
+  const role = h('input', { id: 'join-role', placeholder: info.owner ? '役割（例：代表）' : '役割（例：営業・現地マネージャー）', maxlength: 40 }) as HTMLInputElement
+  const skills = h('input', { id: 'join-skills', placeholder: 'スキル（読点区切り：営業、顧客対応、クメール語）' }) as HTMLInputElement
+  const persona = h('textarea', { id: 'join-persona', rows: 2, placeholder: '自己紹介・得意なこと（仕事の割り振りに使います）' }) as HTMLTextAreaElement
+  const err = h('p', { class: 'err' })
+  const field = (label: string, el: HTMLElement) => h('label', { class: 'lg-field' }, h('span', {}, label), el)
+  const form = h(
+    'form',
+    {
+      class: 'login-card join-card',
+      onsubmit: async (e: Event) => {
+        e.preventDefault()
+        err.textContent = ''
+        try {
+          await Api.join({ name: name.value, office: office.value, role: role.value, skills: skills.value, persona: persona.value })
+          startApp()
+        } catch (x) {
+          err.textContent = (x as Error).message
+        }
+      },
+    },
+    brandMark(true),
+    h('h1', {}, info.owner ? 'オフィスを開きましょう' : 'オフィスに参加'),
+    h('p', { class: 'lead' }, info.owner ? 'あなたが承認する人です。ほかの人のゴールは、あなたが「始める」を押してから、あなたの Claude で動きます。' : '参加すると、人間にしかできない仕事があなたに届きます。ゴールは承認する人が「始める」を押してから動きます。'),
+    field('名前', name),
+    field('拠点', office),
+    field('役割', role),
+    field('スキル', skills),
+    field('自己紹介', persona),
+    h('button', { class: 'btn primary lg-btn', type: 'submit' }, info.owner ? '開く' : '参加する', h('span', { class: 'lg-arrow' }, '→')),
+    err,
+    h('small', { class: 'hint' }, '名前と自己紹介は、このページを開ける人に見えます'),
+  )
+  const welcome = h('div', { class: 'lg-welcome' }, h('div', { class: 'lg-bubble' }, 'ようこそ！'), h('img', { src: asset('brand/nexmax-face.webp'), alt: 'ネクマックス' }))
+  root.append(h('div', { class: 'login-wrap' }, h('div', { class: 'login-bg', style: `background-image:url(${asset('brand/login-bg.webp')})` }), form, welcome))
+  name.focus()
 }
 
 // ------------------------------------------------------------------ ログイン
@@ -47,7 +102,7 @@ function showLogin(msg = ''): void {
         }
       },
     },
-    h('div', { class: 'brand big' }, h('img', { src: '/brand/nextmake-logo.png', alt: 'NEXTMAKE', class: 'brand-logo' }), h('span', { class: 'brand-ai' }, 'AI')),
+    brandMark(true),
     h('h1', {}, 'おかえりなさい'),
     h('p', { class: 'lead' }, '日本とカンボジアを結ぶ AI オフィス'),
     h('div', { class: 'lg-flags' }, flag('jp', 26), h('span', {}, '⇄'), flag('kh', 26)),
@@ -57,7 +112,7 @@ function showLogin(msg = ''): void {
     err,
     h('small', { class: 'hint' }, '初期アカウントはサーバーを最初に起動したときに表示され、data/credentials.txt に保存されます'),
   )
-  const welcome = h('div', { class: 'lg-welcome' }, h('div', { class: 'lg-bubble' }, 'ようこそ！'), h('img', { src: '/brand/nexmax-face.webp', alt: 'ネクマックス' }), h('span', { class: 'lg-ready' }, h('i', { class: 'live-dot-i' }), '接続準備完了'))
+  const welcome = h('div', { class: 'lg-welcome' }, h('div', { class: 'lg-bubble' }, 'ようこそ！'), h('img', { src: asset('brand/nexmax-face.webp'), alt: 'ネクマックス' }), h('span', { class: 'lg-ready' }, h('i', { class: 'live-dot-i' }), '接続準備完了'))
   root.append(h('div', { class: 'login-wrap' }, h('div', { class: 'login-bg' }), form, welcome))
   loginIn.focus()
 }
@@ -256,7 +311,9 @@ function startApp(): void {
       }
     },
     cancelGoal(g) {
-      if (confirm(`「${g.title}」を中止しますか？`)) Api.cancelGoal(g.id).catch((e) => toast(e.message, 'warn'))
+      void ask({ title: g.status === 'awaiting_approval' ? 'ゴールを取り下げますか？' : 'ゴールを中止しますか？', body: `「${g.title}」`, ok: g.status === 'awaiting_approval' ? '取り下げる' : '中止する', danger: true }).then((r) => {
+        if (r !== null) Api.cancelGoal(g.id).catch((e) => toast(e.message, 'warn'))
+      })
     },
     retryTask(t) {
       Api.retryTask(t.id).catch((e) => toast(e.message, 'warn'))
@@ -306,11 +363,12 @@ function startApp(): void {
     changePassword: () => openPassword(),
     edit: (m) => openEdit(m),
     retire(m) {
-      if (confirm(`${m.name}（${m.role}）を退職させますか？記憶は残ります。`)) {
+      void ask({ title: `${m.name}（${m.role}）を退職させますか？`, body: '記憶は残ります。', ok: '退職させる', danger: true }).then((r) => {
+        if (r === null) return
         Api.retire(m.id)
           .then(() => act.set({ profileId: null }))
           .catch((e) => toast(e.message, 'warn'))
-      }
+      })
     },
     addMemory(m, text) {
       Api.addMemory(m.id, text)
@@ -319,7 +377,9 @@ function startApp(): void {
     },
     setEngine(mode) {
       const msg = mode === 'claude' ? 'Claude Code で本当に動かします（API の利用料がかかります）。切り替えますか？' : 'シミュレーション（Claude を呼ばないデモ）に切り替えますか？'
-      if (confirm(msg)) Api.setEngine(mode).catch((e) => toast(e.message, 'warn'))
+      void ask({ title: '頭脳を切り替えますか？', body: msg, ok: '切り替える' }).then((r) => {
+        if (r !== null) Api.setEngine(mode).catch((e) => toast(e.message, 'warn'))
+      })
     },
     stockAct(item, action, patch = {}) {
       Api.stockAct(item.id, action, patch)
@@ -340,20 +400,30 @@ function startApp(): void {
         .catch((e) => toast(e.message, 'warn'))
     },
     decline(kind, id) {
-      const note = prompt('見送る理由（出した人に伝わります。空でも可）') ?? null
-      if (note === null) return
-      Api.decline(kind, id, note.trim())
-        .then(() => toast('見送りました', 'info'))
-        .catch((e) => toast(e.message, 'warn'))
+      void ask({ title: kind === 'goal' ? 'このゴールを見送りますか？' : 'この話しかけを見送りますか？', body: '理由は出した人に伝わります（空でもかまいません）。', input: '見送る理由（例：来月にしましょう）', ok: '見送る' }).then((note) => {
+        if (note === null) return
+        Api.decline(kind, id, note.trim())
+          .then(() => toast('見送りました', 'info'))
+          .catch((e) => toast(e.message, 'warn'))
+      })
     },
     setGate(patch) {
-      if (patch.mode === 'auto' && !confirm('自動承認にすると、決めた上限まで、承認を待たずに Claude が動きます。よろしいですか？')) return
-      Api.setGate(patch).catch((e) => toast(e.message, 'warn'))
+      const go = () => Api.setGate(patch).catch((e) => toast(e.message, 'warn'))
+      if (patch.mode !== 'auto') return void go()
+      void ask({
+        title: '自動承認にしますか？',
+        body: IS_ARTIFACT
+          ? '決めた上限まで、承認を待たずにあなたの Claude が動きます。動くのは、あなたがこのページを開いていて、画面に見えている間だけです。'
+          : '決めた上限まで、承認を待たずに Claude が動きます（使った分の費用がかかります）。',
+        ok: '自動承認にする',
+      }).then((r) => {
+        if (r !== null) go()
+      })
     },
     get voice() {
       return {
         listening: voice.state === 'listening',
-        supported: voice.state !== 'unsupported',
+        supported: !IS_ARTIFACT && voice.state !== 'unsupported',
         lang: voice.lang,
         langs: VOICE_LANGS,
         toggle: () => voice.toggle(),
@@ -438,7 +508,7 @@ function startApp(): void {
           act.talk('nexmax', 'いまの進み具合を、人間の対応待ちを中心に 3 行でまとめて')
           act.open('chat', { chatWith: 'nexmax' })
         },
-        onReport: () => voice.start(),
+        onReport: () => (IS_ARTIFACT ? act.open('stock') : voice.start()),
         onNexmax: () => act.openProfile('nexmax'),
       }),
       worldCard(state, pulse, (id) => {
@@ -459,7 +529,7 @@ function startApp(): void {
         'div',
         { class: 'dock-row' },
         dock(state, openSheet, (id) => (openSheet === id ? act.close() : act.open(id))),
-        micButton(voice.state === 'listening', readyStock, () => voice.toggle(), () => (openSheet === 'stock' ? act.close() : act.open('stock'))),
+        micButton(voice.state === 'listening', readyStock, () => (IS_ARTIFACT ? act.open('stock') : voice.toggle()), () => (openSheet === 'stock' ? act.close() : act.open('stock')), IS_ARTIFACT ? 'text' : 'voice'),
       ),
     )
     const vp = openSheet === 'stock' ? null : voicePanel(state, { listening: voice.state === 'listening', interim: voice.interim, lang: voice.lang, captured }, VOICE_LANGS, { onStop: () => voice.stop(), onLang: (l) => voice.setLang(l), onOpen: () => act.open('stock') })
@@ -536,6 +606,30 @@ function startApp(): void {
     modal.classList.remove('hidden')
   }
   modal.addEventListener('click', (e) => e.target === modal && closeModal())
+
+  /** ページの中で確かめる（claude.ai のページでは confirm・prompt が出ないため）。やめたら null、入力欄があればその文 */
+  const ask = (o: { title: string; body?: string; ok: string; danger?: boolean; input?: string }): Promise<string | null> =>
+    new Promise((resolve) => {
+      let settled = false
+      const done = (v: string | null) => {
+        if (settled) return
+        settled = true
+        observer.disconnect()
+        closeModal()
+        resolve(v)
+      }
+      const input = o.input ? (h('textarea', { id: 'ask-input', rows: 2, placeholder: o.input }) as HTMLTextAreaElement) : null
+      showModal(
+        h('h3', {}, o.title),
+        o.body ? h('p', {}, o.body) : null,
+        input,
+        h('div', { class: 'ask-btns' }, h('button', { class: 'btn ghost', onclick: () => done(null) }, 'やめる'), h('button', { class: `btn ${o.danger ? 'danger' : 'primary'}`, onclick: () => done(input ? input.value : '') }, o.ok)),
+      )
+      // ×・背景・Esc で閉じたら「やめる」
+      const observer = new MutationObserver(() => modal.classList.contains('hidden') && done(null))
+      observer.observe(modal, { attributes: true, attributeFilter: ['class'] })
+      ;(input ?? modal.querySelector<HTMLButtonElement>('.ask-btns .btn:last-child'))?.focus()
+    })
 
   const openComplete = (t: Task) => {
     const g = state.snap?.goals.find((x) => x.id === t.goalId)
@@ -692,6 +786,8 @@ function startApp(): void {
     setTimeout(() => el.classList.add('out'), action ? 6500 : 4200)
     setTimeout(() => el.remove(), action ? 7100 : 4800)
   }
+
+  setNotifier((text) => toast(text, 'info'))
 
   // ---- 状態の変化 → 画面と 3D
   state.on((c) => {

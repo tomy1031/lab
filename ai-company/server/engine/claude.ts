@@ -6,9 +6,8 @@
 import { createSdkMcpServer, query, tool, type HookCallbackMatcher, type Options, type SDKMessage } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 import type { EngineInfo } from '../../shared/types'
-import { normalizeOffice } from '../../shared/types'
 import { checkTool } from './guard'
-import { COMPANY_CONTEXT, describeContext, describeMember, extractJson, personaPrompt, splitMemory } from './prompts'
+import { COMPANY_CONTEXT, describeContext, describeMember, extractJson, normalizePlan, personaPrompt, planPrompt, splitMemory } from './prompts'
 import type { ConsultInput, Engine, MemberContext, OrganizeInput, OrganizedStock, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
 const MODEL = process.env.AI_MODEL || undefined
@@ -119,34 +118,7 @@ export class ClaudeEngine implements Engine {
   }
 
   async plan({ goal, roster, requester, ceo }: PlanInput): Promise<Plan> {
-    const people = roster
-      .filter((c) => c.member.kind !== 'nexmax')
-      .map((c) => `${describeMember(c.member)}\n  これまでの仕事：\n${describeContext(c, 4)}`)
-      .join('\n')
-    const prompt = `${COMPANY_CONTEXT}
-
-# いまの社員（id を使って担当を決める）
-${people || '（統括AI以外まだ誰もいない）'}
-
-# 依頼者
-${requester ? describeMember(requester) : '不明'}
-
-# 社長（${ceo?.member.name ?? '松井社長'}）の方針・これまでの判断（あなたは社長の分身として、これに沿って判断する）
-${ceo ? describeContext(ceo, 8) : '    ・（まだ記録なし）'}
-
-# ゴール
-タイトル：${goal.title}
-内容：${goal.description || '（説明なし）'}
-
-# やること
-あなたは統括AI「ネクマックス」（社長の分身）。このゴールを、AI社員と人間が分担できるタスク（3〜8 個）に分解する。
-- requiresHuman=true にするのは人間にしかできない仕事だけ：対面・現地での行動、電話や訪問での関係づくり、契約・署名・押印、支払いや発注の最終承認、法的責任を伴う判断、最終の意思決定、実物の確認。humanReason にその理由を書く。
-- 人間のタスクの assignee は既存の人間の id（拠点・スキル・これまでの仕事で選ぶ。適任がいなければ依頼者の id）。assigneeReason に「なぜその人か」を書く（例：プノンペン在籍・学校との調整を担当してきた）。社長本人には、社長にしかできない最終判断だけを回す。
-- AI のタスク（調査・企画・文章・翻訳・設計・コード・資料作り・分析など）は、合う AI社員がいればその id、いなければ hires に採用を提案し、assignee にその hires の key を書く。採用は最小限（同じ職種を重複して採用しない。既存の AI社員で足りるなら採用しない）。
-- 採用する AI社員：role（職種名）、name（カタカナの短い愛称。カンボジア拠点ならクメール風の名前）、office、skills、languages（ja/km/en）、persona（性格と仕事の流儀を 1〜2 文）、reason（採用理由）。
-- 拠点（office）は osaka / tokyo / phnompenh。カンボジアに関わる現地の仕事・クメール語の仕事は phnompenh、東京での対面の仕事は tokyo。
-- dependsOn には先に終わるべきタスクの key を書く。最後のタスクは「成果のまとめ・最終確認」にする（人間の承認が要るなら人間）。
-- description は担当者がそのまま着手できるよう、成果物の形（例：Markdown の資料 1 枚）まで具体的に。AI社員が作れるのはテキストのファイル（Markdown・HTML・CSV・JSON・コード）だけ。PDF・画像・動画は作れないので、必要なら「印刷用の HTML」などにする。`
+    const prompt = planPrompt({ goal, roster, requester, ceo }, COMPANY_CONTEXT)
 
     const q = query({
       prompt,
@@ -346,25 +318,4 @@ function guardHook(workdir: string): HookCallbackMatcher {
   }
 }
 
-export function normalizePlan(raw: Plan): Plan {
-  const tasks = (raw.tasks ?? []).filter((t) => t && t.key && t.title)
-  const keys = new Set(tasks.map((t) => t.key))
-  return {
-    summary: String(raw.summary ?? ''),
-    hires: (raw.hires ?? []).filter((h) => h && h.key && h.role).map((h) => ({
-      ...h,
-      office: normalizeOffice(h.office),
-      skills: h.skills ?? [],
-      languages: h.languages?.length ? h.languages : ['ja'],
-      persona: h.persona ?? '',
-      reason: h.reason ?? '',
-    })),
-    tasks: tasks.map((t) => ({
-      ...t,
-      skills: t.skills ?? [],
-      requiresHuman: !!t.requiresHuman,
-      office: t.office ? normalizeOffice(t.office) : undefined,
-      dependsOn: (t.dependsOn ?? []).filter((d) => keys.has(d) && d !== t.key),
-    })),
-  }
-}
+export { normalizePlan } from './prompts'

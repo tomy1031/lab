@@ -3,6 +3,7 @@
 // 右上に「いま見るべき数」のバッジ、人間の対応待ちはオレンジ、完了は緑、アバターは生成したキャラクターの顔。
 // アイコンは参考デザインと同じ「白いガラスのタイル＋青い線画」（ui/icons.ts の gicon）。
 import type { Goal, Member, MemoryEntry, Message, MessageKind, OfficeId, StockItem, StockKind, Task } from '../../../shared/types'
+import { asset } from '../brand'
 import { GOAL_STATUS_LABEL, OFFICES, STATUS_LABEL, TASK_STATUS_LABEL, countryOf, officeInfo } from '../../../shared/types'
 import type { GateSettings } from '../../../shared/types'
 import type { AppState } from '../state'
@@ -325,7 +326,7 @@ function projectDetail(state: AppState, p: ProjectView, act: Actions): HTMLEleme
       ? h(
           'div',
           { class: 'plan-card card-in' },
-          h('img', { class: 'plan-nx', src: '/brand/nexmax-face.webp', alt: '' }),
+          h('img', { class: 'plan-nx', src: asset('brand/nexmax-face.webp'), alt: '' }),
           h(
             'div',
             { class: 'plan-main' },
@@ -382,7 +383,7 @@ function projectsSheet(state: AppState, ui: UiState, act: Actions): HTMLElement 
       composer(act, ui.composeFocus),
       seg(ui.projFilter, [['active', `進行中 ${all.filter(isActive).length}`], ['done', '完了'], ['all', 'すべて']], (v) => act.set({ projFilter: v }), 'full'),
       list.length ? h('ul', { class: 'plist' }, ...list.map((p) => projectRow(p, p.goal.id === sel?.goal.id, act))) : h('p', { class: 'empty' }, 'ここに表示するプロジェクトはありません'),
-      h('div', { class: 'deco-pair' }, figure({ sprite: 'jp-0' }, 'stand', 96), h('img', { class: 'figure nx', src: '/brand/nexmax-face.webp', alt: '' })),
+      h('div', { class: 'deco-pair' }, figure({ sprite: 'jp-0' }, 'stand', 96), h('img', { class: 'figure nx', src: asset('brand/nexmax-face.webp'), alt: '' })),
     ),
     h('div', { class: 'split-r' }, sel ? projectDetail(state, sel, act) : h('div', { class: 'empty big' }, gicon('target', 72), h('p', {}, '左の欄にゴールを書くと、ネクマックスが分解して、AI社員と人間に仕事を配ります'))),
   )
@@ -685,7 +686,7 @@ function peopleSheet(state: AppState, ui: UiState, act: Actions): HTMLElement {
         return h(
           'div',
           { class: `office-col oc-${o.id}` },
-          h('div', { class: 'office-banner', style: `background-image:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.85)),url(/backdrops/${o.id}.webp)` }, flag(o.country, 18), h('div', {}, h('b', {}, o.name), h('small', {}, o.nameEn)), h('span', { class: 'office-count' }, icon('user', 12), `人間 ${st.humans}・AI ${st.agents}`)),
+          h('div', { class: 'office-banner', style: `background-image:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.85)),url(${asset(`backdrops/${o.id}.webp`)})` }, flag(o.country, 18), h('div', {}, h('b', {}, o.name), h('small', {}, o.nameEn)), h('span', { class: 'office-count' }, icon('user', 12), `人間 ${st.humans}・AI ${st.agents}`)),
           o.id === 'osaka' && (ceo || nx)
             ? h('div', { class: 'pair' }, h('div', { class: 'pair-tag' }, '社長と分身AI'), h('div', { class: 'pair-cards' }, ceo ? personCard(state, ceo, act) : null, h('span', { class: 'pair-link' }, icon('flow', 16)), nx ? personCard(state, nx, act) : null))
             : null,
@@ -811,7 +812,7 @@ function reportsSheet(state: AppState, act: Actions): HTMLElement {
       h(
         'div',
         { class: 'chart-card card-in' },
-        h('div', { class: 'flow-title' }, gicon('doc', 24), h('b', {}, '完了報告'), h('span', { class: 'by-nx' }, h('img', { src: '/brand/nexmax-face.webp', alt: '' }), 'ネクマックス')),
+        h('div', { class: 'flow-title' }, gicon('doc', 24), h('b', {}, '完了報告'), h('span', { class: 'by-nx' }, h('img', { src: asset('brand/nexmax-face.webp'), alt: '' }), 'ネクマックス')),
         reports.length
           ? h('div', { class: 'report-list' }, ...reports.map((g) => h('details', { class: 'report-item' }, h('summary', {}, h('b', {}, g.title), h('small', {}, g.finishedAt ? timeAgo(g.finishedAt) : '')), h('div', { class: 'md', html: md(g.report!) }))))
           : h('div', { class: 'report-empty' }, gicon('doc', 64), h('div', {}, h('b', {}, 'まだ完了報告はありません'), h('small', {}, 'プロジェクトが完了すると、ネクマックスがここに報告します'), h('button', { class: 'btn small', onclick: () => act.open('projects') }, 'プロジェクトを見る', icon('chevron', 12, 'chev-r')))),
@@ -991,7 +992,7 @@ function stockSheet(state: AppState, ui: UiState, act: Actions): HTMLElement {
       ? h('div', { class: 'stock-grid' }, ...ready.map((it) => stockCard(it, act)))
       : organizing.length
         ? null
-        : h('div', { class: 'empty big stock-empty' }, h('img', { src: '/brand/nexmax-face.webp', alt: '' }), h('b', {}, 'ぜんぶ片づいています'), h('p', {}, 'マイクを押して話すと、ネクマックスが用件ごとに分けて、ここに並べます')),
+        : h('div', { class: 'empty big stock-empty' }, h('img', { src: asset('brand/nexmax-face.webp'), alt: '' }), h('b', {}, 'ぜんぶ片づいています'), h('p', {}, 'マイクを押して話すと、ネクマックスが用件ごとに分けて、ここに並べます')),
     later.length
       ? h('details', { class: 'stock-later card-in' }, h('summary', {}, `あとで（${later.length}）`), h('ul', {}, ...later.map((it) => h('li', {}, h('span', {}, it.title), h('button', { class: 'link', onclick: () => act.stockAct(it, 'restore') }, '戻す'), h('button', { class: 'link danger', onclick: () => act.stockAct(it, 'archive') }, '消す')))))
       : null,
@@ -1072,7 +1073,9 @@ export function settingsPop(state: AppState, act: Actions): HTMLElement {
     { class: 'pop glass' },
     h('h4', {}, '頭脳（AI の動かし方）'),
     h('p', { class: 'pop-note' }, eng?.detail ?? ''),
-    me?.isAdmin
+    eng?.mode === 'artifact'
+      ? null
+      : me?.isAdmin
       ? h(
           'div',
           { class: 'seg' },
@@ -1168,7 +1171,7 @@ export function mePop(state: AppState, act: Actions): HTMLElement {
     me ? h('div', { class: 'pop-me' }, face(me, 40), h('div', {}, h('b', {}, me.name), h('small', {}, `${me.role}・${officeInfo(me.office).name}`))) : null,
     me ? h('button', { class: 'pop-btn', onclick: () => act.openProfile(me.id) }, icon('user', 16), '自分のプロフィールと記憶') : null,
     me?.login ? h('button', { class: 'pop-btn', onclick: act.changePassword }, icon('lock', 16), 'パスワードを変更') : null,
-    h('button', { class: 'pop-btn', onclick: act.logout }, icon('logout', 16), 'ログアウト'),
+    state.snap?.engine.mode === 'artifact' ? null : h('button', { class: 'pop-btn', onclick: act.logout }, icon('logout', 16), 'ログアウト'),
   )
 }
 

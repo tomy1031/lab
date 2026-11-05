@@ -22,8 +22,13 @@ export async function api<T = unknown>(path: string, body?: unknown, method = bo
   return data as T
 }
 
+/** アーティファクト版と同じ形にするため（サーバー版では使わない） */
+export function setNotifier(_fn: (text: string) => void): void {}
+
 export const Api = {
-  me: () => api<{ me: Member | null }>('/api/me'),
+  mode: 'server' as 'server' | 'artifact',
+  me: () => api<{ me: Member | null; join?: { name: string; owner: boolean } }>('/api/me'),
+  join: (_body: { name: string; office: string; role: string; skills: string; persona: string }): Promise<{ me: Member }> => Promise.reject(new ApiError(400, 'サーバー版はログインして使います')),
   login: (login: string, password: string) => api<{ me: Member }>('/api/login', { login, password }),
   logout: () => api('/api/logout', {}),
   createGoal: (title: string, description: string) => api('/api/goals', { title, description }),

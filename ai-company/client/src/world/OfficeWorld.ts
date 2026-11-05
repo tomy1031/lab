@@ -3,6 +3,7 @@
 // 動き：ネクマックスが依頼の札を届けに歩く／相談中（talking）は会議室へ／引き継ぎは相手の席まで／ひまな人はときどきラウンジや窓へ。
 // 人間へのお願いは、オレンジの札・頭の上の「！」・足元の輪で目立たせる。
 // 外向きの約束は ./api.ts（OfficeWorldApi）。
+import { BRIDGE_MARK } from '../brand'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
@@ -265,7 +266,7 @@ export class OfficeWorld implements OfficeWorldApi {
       this.scene.add(b.group)
       this.seats[id] = layoutOf(id).meeting.seats.map(() => null)
     }
-    this.bridge = buildBridge('/brand/nextmake-mark-270.png')
+    this.bridge = buildBridge(BRIDGE_MARK)
     this.scene.add(this.bridge.group)
     const bl = document.createElement('div')
     bl.className = 'ow-bridge-label'

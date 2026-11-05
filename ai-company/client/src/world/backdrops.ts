@@ -1,6 +1,7 @@
 // オフィスの奥に立てる「街の絵」（パステルのイラスト）。キャンバスで描く。
 // 大阪：通天閣と大阪城・ビル街・桜 / 東京：東京タワーとビル街 / プノンペン：王宮（玉座殿の金の尖塔・チャンチャヤー・パビリオン）とヤシ・川沿い。
 // client/public/backdrops/manifest.json に書かれた画像（osaka.webp など）があれば、そちらを使う（codex などで生成した絵に差し替えられる）。
+import { asset } from '../brand'
 import * as THREE from 'three'
 import type { OfficeId } from '../../../shared/types'
 import { canvas, toTexture } from './textures'
@@ -518,7 +519,7 @@ export interface Backdrop {
 let manifest: Promise<string[]> | null = null
 function availableImages(): Promise<string[]> {
   if (!manifest) {
-    manifest = fetch('/backdrops/manifest.json', { cache: 'no-cache' })
+    manifest = fetch(asset('backdrops/manifest.json'), { cache: 'no-cache' })
       .then((r) => (r.ok ? r.json() : { images: [] }))
       .then((j: { images?: string[] }) => (Array.isArray(j.images) ? j.images : []))
       .catch(() => [])
@@ -540,7 +541,7 @@ export function buildBackdrop(id: OfficeId, w: number): Backdrop {
   void availableImages().then((list) => {
     const file = list.find((f) => f.replace(/\.[a-z]+$/i, '') === id)
     if (!file) return
-    new THREE.TextureLoader().load(`/backdrops/${file}`, (t) => {
+    new THREE.TextureLoader().load(asset(`backdrops/${file}`), (t) => {
       t.colorSpace = THREE.SRGBColorSpace
       img = t
       mat.map = t
