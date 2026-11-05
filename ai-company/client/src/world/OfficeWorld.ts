@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { OFFICES, STATUS_LABEL, countryOf, normalizeOffice, officeInfo, type Member, type MemberStatus, type MessageKind, type OfficeId } from '../../../shared/types'
+import { STATUS_LABEL, countryOf, normalizeOffice, officeInfo, type Member, type MemberStatus, type MessageKind, type OfficeId } from '../../../shared/types'
 import type { FocusTarget, OfficeBoard, OfficeWorldApi, TaskLabelOptions } from './api'
 import { Chibi, type Avatar } from './chibi'
 import { Fx, KIND_COLOR } from './fx'
@@ -242,7 +242,7 @@ export class OfficeWorld implements OfficeWorldApi {
     wl.className = 'ow-bridge-label small'
     wl.textContent = 'TOKYO ⇄ OSAKA'
     const wlo = wrapLabel(wl, 0.5)
-    wlo.position.copy(this.walkway.curve.getPoint(0.5)).add(new THREE.Vector3(0, 0.5, 0))
+    wlo.position.copy(this.walkway.curve.getPoint(0)).lerp(this.walkway.curve.getPoint(1), 0.5).add(new THREE.Vector3(0, 0.6, 0))
     this.scene.add(wlo)
     this.clouds = buildClouds()
     this.scene.add(this.clouds.group)
@@ -839,7 +839,7 @@ export class OfficeWorld implements OfficeWorldApi {
       this.say(e.id, v.text, 3200, v.kind)
       this.talkFor(e, 1.6)
       this.setCard(e, null)
-      this.sendPacket(e, target, color, 0.6)
+      this.sendPacket(e, target, color)
       this.after(1.4, () => {
         if (this.disposed || !this.entities.has(e.id)) return
         if (e.visits.length) this.nextVisit(e)
@@ -979,8 +979,7 @@ export class OfficeWorld implements OfficeWorldApi {
     return [br.reverse, w.curve]
   }
 
-  private sendPacket(a: Entity, b: Entity, color: string, delayOk = 0): void {
-    void delayOk
+  private sendPacket(a: Entity, b: Entity, color: string): void {
     const pa = this.headPos(a)
     const pb = this.headPos(b)
     let curve: THREE.Curve<THREE.Vector3>
@@ -1362,5 +1361,3 @@ export class OfficeWorld implements OfficeWorldApi {
   }
 }
 
-// 拠点の名前（デバッグ用）
-export const OFFICE_NAMES = Object.fromEntries(OFFICES.map((o) => [o.id, o.name]))
