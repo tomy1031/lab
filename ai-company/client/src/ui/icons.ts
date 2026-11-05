@@ -27,6 +27,9 @@ const P: Record<string, string> = {
   globe: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.7 5.3 3.7 8.5s-1.1 6.1-3.7 8.5c-2.6-2.4-3.7-5.3-3.7-8.5S9.4 5.9 12 3.5z"/>',
   edit: '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14 7.5l3 3"/>',
   location: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>',
+  inbox: '<path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2v5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 13h5l1.5 2.5h4l1.5-2.5h5"/>',
+  undo: '<path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9a5 5 0 0 1 0 10h-2"/>',
   eye: '<path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
   lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
@@ -54,7 +57,7 @@ export function flag(country: 'jp' | 'kh', size = 16): SVGSVGElement {
  * 参考デザイン（docs/img/design_reference.jpg）のアイコン：白いガラスのタイルに、青いグラデーションの線画＋うすい塗り。
  * size が 34 以上ならタイル付き、それより小さいと線画だけ。cls に 'warm' でオレンジ、'white' で白
  */
-export type GlossyIcon = 'folder' | 'task' | 'chat' | 'doc' | 'people' | 'chart' | 'target' | 'robot' | 'globe' | 'hand' | 'bell' | 'calendar' | 'settings' | 'search' | 'spark' | 'check'
+export type GlossyIcon = 'folder' | 'task' | 'chat' | 'doc' | 'people' | 'chart' | 'target' | 'robot' | 'globe' | 'hand' | 'bell' | 'calendar' | 'settings' | 'search' | 'spark' | 'check' | 'mic' | 'inbox'
 
 /** [塗り, 線]（24×24） */
 const DUO: Record<GlossyIcon, [string, string]> = {
@@ -74,6 +77,8 @@ const DUO: Record<GlossyIcon, [string, string]> = {
   search: ['<circle cx="11" cy="11" r="6.5"/>', '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>'],
   spark: ['<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>'],
   check: ['<circle cx="12" cy="12" r="8.5"/>', '<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.8 2.8 5.2-5.6"/>'],
+  mic: ['<rect x="9" y="3" width="6" height="11" rx="3"/>', '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>'],
+  inbox: ['<path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2v5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>', '<path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2v5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 13h5l1.5 2.5h4l1.5-2.5h5"/>'],
 }
 
 let defsAdded = false

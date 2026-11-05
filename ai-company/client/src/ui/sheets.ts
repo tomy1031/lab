@@ -2,7 +2,7 @@
 // デザインは codex が出した改善案（docs/design/ の画像とメモ）に合わせている：大きな見出し＋立体アイコン＋ひとことの説明、
 // 右上に「いま見るべき数」のバッジ、人間の対応待ちはオレンジ、完了は緑、アバターは生成したキャラクターの顔。
 // アイコンは参考デザインと同じ「白いガラスのタイル＋青い線画」（ui/icons.ts の gicon）。
-import type { Goal, Member, MemoryEntry, Message, MessageKind, OfficeId, Task } from '../../../shared/types'
+import type { Goal, Member, MemoryEntry, Message, MessageKind, OfficeId, StockItem, StockKind, Task } from '../../../shared/types'
 import { GOAL_STATUS_LABEL, OFFICES, STATUS_LABEL, TASK_STATUS_LABEL, countryOf, officeInfo } from '../../../shared/types'
 import type { AppState } from '../state'
 import { face, figure } from './avatar'
@@ -64,6 +64,10 @@ export interface Actions {
   addMemory(m: Member, text: string): void
   setEngine(mode: 'claude' | 'sim'): void
   changePassword(): void
+  /** やることストック */
+  stockAct(item: StockItem, action: 'send' | 'done' | 'later' | 'archive' | 'restore', patch?: { title?: string; kind?: StockKind }): void
+  addStock(text: string): void
+  voice: { listening: boolean; supported: boolean; lang: string; langs: [string, string][]; toggle(): void; setLang(l: string): void }
   logout(): void
 }
 
@@ -74,6 +78,7 @@ const TITLES: Record<SheetId, [GlossyIcon, string, string]> = {
   docs: ['doc', '資料', 'AI社員の成果物が、ここに集まる。'],
   people: ['people', '人材', '人と AI で、ひとつのチーム。'],
   reports: ['chart', 'レポート', '会社のいまを、ひと目で。'],
+  stock: ['inbox', 'やることストック', '話したことを、ネクマックスが整理しておきます。'],
 }
 
 export function sheet(id: SheetId, state: AppState, ui: UiState, act: Actions): HTMLElement {
@@ -89,7 +94,9 @@ export function sheet(id: SheetId, state: AppState, ui: UiState, act: Actions): 
             ? docsSheet(state, ui, act)
             : id === 'people'
               ? peopleSheet(state, ui, act)
-              : reportsSheet(state, act)
+              : id === 'stock'
+                ? stockSheet(state, ui, act)
+                : reportsSheet(state, act)
   return h(
     'section',
     { class: `sheet glass sheet-${id}`, role: 'dialog', 'aria-label': title },
@@ -122,6 +129,10 @@ function headBadge(id: SheetId, state: AppState, ui: UiState, act: Actions): HTM
       h('span', {}, icon('user', 15), '人間', h('b', {}, String(members.filter((m) => m.kind === 'human').length))),
       h('span', {}, icon('robot', 15), 'AI', h('b', {}, String(members.filter((m) => m.kind !== 'human').length))),
     )
+  if (id === 'stock') {
+    const n = (state.snap?.stock ?? []).filter((s) => s.status === 'ready').length
+    return n ? h('span', { class: 'hbadge soft' }, icon('inbox', 15), `整理済み ${n} 件`) : h('span', { class: 'hbadge ok' }, icon('check', 15), 'ぜんぶ片づいています')
+  }
   if (id === 'reports') return h('span', { class: 'hbadge soft' }, icon('clock', 14), `最終更新 ${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}`)
   void ui
   return null
@@ -881,6 +892,104 @@ export function profilePanel(state: AppState, ui: UiState, act: Actions): HTMLEl
         h('div', { class: 'ctx-add' }, h('div', { class: 'ctx-add-head' }, icon('doc', 15), h('b', {}, '記憶を追加'), h('small', {}, 'このメンバーの次の判断に活かされます')), h('div', { class: 'ctx-add-row' }, note, h('button', { class: 'btn primary small', onclick: addNote }, icon('plus', 14), '記憶に追加'))),
       ),
     ),
+  )
+}
+
+// ------------------------------------------------------------------ やることストック（認知の負担を小さく）
+// 見せるのは「題名＋一言」だけ。用件の種類（ネクマックスが決める）で、押すボタンは 1 つに決まる。
+// 元の発言はたたんでおく。並びはおすすめ順（急ぎ → 新しい順）。消してもすぐ戻せる。
+
+const STOCK_KIND: Record<StockKind, { label: string; icon: string; action: string; next: StockKind }> = {
+  goal: { label: 'AI に任せる', icon: 'robot', action: 'ネクマックスに任せる', next: 'self' },
+  self: { label: '自分でやる', icon: 'user', action: 'やった', next: 'memo' },
+  memo: { label: 'メモ', icon: 'doc', action: '記憶に残す', next: 'goal' },
+}
+
+function stockCard(it: StockItem, act: Actions): HTMLElement {
+  const k = STOCK_KIND[it.kind]
+  return h(
+    'article',
+    { class: `scard k-${it.kind} p${it.priority}` },
+    h(
+      'div',
+      { class: 'sc-top' },
+      h('button', { class: `skind k-${it.kind}`, title: '種類を変える（押すたびに切り替え）', onclick: () => act.stockAct(it, 'restore', { kind: k.next }) }, icon(k.icon, 13), k.label),
+      it.priority === 1 ? h('span', { class: 'urgent' }, '急ぎ') : null,
+      h('button', { class: 'sc-x', title: '消す（あとで戻せます）', onclick: () => act.stockAct(it, 'archive') }, icon('close', 14)),
+    ),
+    h('h4', {}, it.title),
+    it.summary && it.summary !== it.title ? h('p', { class: 'sc-sum' }, it.summary) : null,
+    h(
+      'div',
+      { class: 'sc-actions' },
+      h('button', { class: `btn small ${it.kind === 'goal' ? 'primary' : it.kind === 'self' ? 'human' : ''}`, onclick: () => act.stockAct(it, it.kind === 'goal' ? 'send' : 'done') }, it.kind === 'goal' ? gicon('spark', 16, 'white') : icon('check', 14), k.action),
+      h('button', { class: 'btn small ghost', onclick: () => act.stockAct(it, 'later') }, 'あとで'),
+    ),
+    h('details', { class: 'sc-raw' }, h('summary', {}, '話したこと'), h('p', {}, it.raw)),
+  )
+}
+
+function stockSheet(state: AppState, ui: UiState, act: Actions): HTMLElement {
+  const all = [...(state.snap?.stock ?? [])].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  const ready = all.filter((s) => s.status === 'ready').sort((a, b) => a.priority - b.priority || b.updatedAt.localeCompare(a.updatedAt))
+  const organizing = all.filter((s) => s.status === 'organizing')
+  const later = all.filter((s) => s.status === 'later')
+  const doneList = all.filter((s) => s.status === 'sent' || s.status === 'done').slice(0, 8)
+  const v = act.voice
+  const text = h('input', { 'data-keep': 'stock-text', placeholder: '書いてストック（Enter で追加）' }) as HTMLInputElement
+  text.addEventListener('keydown', (e) => {
+    const k = e as KeyboardEvent
+    if (k.key === 'Enter' && !k.isComposing && text.value.trim()) {
+      act.addStock(text.value.trim())
+      text.value = ''
+    }
+  })
+  const lang = h('select', { class: 'vp-lang' }, ...v.langs.map(([key, label]) => h('option', { value: key, selected: key === v.lang }, label))) as HTMLSelectElement
+  lang.addEventListener('change', () => v.setLang(lang.value))
+  const goals = ready.filter((s) => s.kind === 'goal')
+  return h(
+    'div',
+    { class: 'stock' },
+    h(
+      'div',
+      { class: 'stock-input card-in' },
+      h('button', { class: `mic-big ${v.listening ? 'on' : ''}`, onclick: v.toggle, disabled: !v.supported, title: v.supported ? '' : 'このブラウザは音声入力に対応していません' }, h('span', { class: 'mic-ring' }), gicon('mic', 54, v.listening ? 'white' : 'warm')),
+      h(
+        'div',
+        { class: 'si-main' },
+        h('b', {}, v.listening ? '聞いています。思いついたことを、どんどん話してください' : 'マイクを押して、思いついたことをどんどん話してください'),
+        h('small', {}, '用件ごとにネクマックスが分けて、短い題名にします。話しっぱなしで大丈夫です。'),
+        h('div', { class: 'si-row' }, text, lang),
+      ),
+    ),
+    organizing.length
+      ? h('div', { class: 'stock-org' }, h('i', { class: 'spin' }), h('b', {}, `ネクマックスが整理しています（${organizing.length}）`), ...organizing.slice(0, 3).map((s) => h('span', {}, s.raw.slice(0, 24) + (s.raw.length > 24 ? '…' : ''))))
+      : null,
+    ready.length
+      ? h(
+          'div',
+          { class: 'stock-head' },
+          h('b', {}, 'おすすめ順'),
+          h('small', {}, '上から 1 タップずつ片づけられます'),
+          goals.length > 1 ? h('button', { class: 'btn small', onclick: () => goals.forEach((g) => act.stockAct(g, 'send')) }, gicon('spark', 16), `AI に任せるものを全部任せる（${goals.length}）`) : null,
+        )
+      : null,
+    ready.length
+      ? h('div', { class: 'stock-grid' }, ...ready.map((it) => stockCard(it, act)))
+      : organizing.length
+        ? null
+        : h('div', { class: 'empty big stock-empty' }, h('img', { src: '/brand/nexmax-face.webp', alt: '' }), h('b', {}, 'ぜんぶ片づいています'), h('p', {}, 'マイクを押して話すと、ネクマックスが用件ごとに分けて、ここに並べます')),
+    later.length
+      ? h('details', { class: 'stock-later card-in' }, h('summary', {}, `あとで（${later.length}）`), h('ul', {}, ...later.map((it) => h('li', {}, h('span', {}, it.title), h('button', { class: 'link', onclick: () => act.stockAct(it, 'restore') }, '戻す'), h('button', { class: 'link danger', onclick: () => act.stockAct(it, 'archive') }, '消す')))))
+      : null,
+    doneList.length
+      ? h(
+          'details',
+          { class: 'stock-later card-in' },
+          h('summary', {}, `片づけたもの（${doneList.length}）`),
+          h('ul', {}, ...doneList.map((it) => h('li', {}, icon('check', 13), h('span', {}, it.title), it.goalId ? h('button', { class: 'link', onclick: () => act.open('projects', { goalId: it.goalId! }) }, 'プロジェクトを見る') : h('small', {}, it.status === 'done' ? (it.kind === 'memo' ? '記憶に残した' : 'やった') : '')))),
+        )
+      : null,
   )
 }
 

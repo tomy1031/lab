@@ -4,8 +4,8 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { EngineInfo, OfficeId } from '../../shared/types'
 import { countryOf, officeInfo } from '../../shared/types'
-import { pick, sleep } from '../util'
-import type { ConsultInput, Engine, HireSpec, MemberContext, Plan, PlanInput, PlanTask, ReportInput, RunTaskInput, RunTaskResult } from './types'
+import { clip, pick, sleep } from '../util'
+import type { ConsultInput, Engine, HireSpec, MemberContext, OrganizeInput, OrganizedStock, Plan, PlanInput, PlanTask, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
 type Tpl = { match: RegExp; tasks: Omit<PlanTask, 'assignee'>[]; hires: HireSpec[] }
 
@@ -196,6 +196,26 @@ export class SimEngine implements Engine {
     const mem = [...to.memories].reverse().find((m) => m.includes('完了'))
     const title = mem?.match(/「([^」]+)」/)?.[1]
     return `${pick(ANSWERS)}${title ? `（「${title}」のときもそうでした）` : ''}`
+  }
+
+  /** 話した内容を、つなぎの言葉（あと・それから…）と句点で分け、言い方から種類と急ぎを当てる */
+  async organize({ items, existing }: OrganizeInput): Promise<OrganizedStock[]> {
+    await this.wait(900)
+    const out: OrganizedStock[] = []
+    for (const it of items) {
+      const parts = it.raw
+        .split(/[。\n！？!?]|、?(?:あと(?:は)?|それから|それと|あとね|次に)、?/)
+        .map((p) => p.replace(/^(えー|えっと|あの|まあ|うーん)[、\s]*/g, '').trim())
+        .filter((p) => p.length >= 4)
+      for (const p of parts.length ? parts : [it.raw.trim()]) {
+        const kind: OrganizedStock['kind'] = /覚えて|メモ|気づ|忘れない/.test(p) ? 'memo' : /電話|会う|会って|行く|訪問|払|決め|確認して(?:おく)?$|自分で/.test(p) ? 'self' : 'goal'
+        const priority: 1 | 2 | 3 = /至急|急ぎ|今日|明日|すぐ/.test(p) ? 1 : /いつか|そのうち|余裕/.test(p) ? 3 : 2
+        const title = clip(p.replace(/(?:してほしい|しておいて|しといて|お願い(?:します)?|したい|しないと|しなきゃ)$/, 'する'), 20)
+        const dup = existing.find((e) => e.title.slice(0, 8) === title.slice(0, 8))
+        out.push({ from: it.id, title, summary: clip(p, 40), kind, priority, duplicateOf: dup?.id })
+      }
+    }
+    return out
   }
 
   async reflect(me: MemberContext): Promise<string> {

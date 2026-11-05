@@ -9,7 +9,7 @@ import { clock, esc, h } from './dom'
 import { flag, gicon, icon, type GlossyIcon } from './icons'
 import { MAP_DOTS } from './mapDots'
 
-export type SheetId = 'projects' | 'tasks' | 'chat' | 'docs' | 'people' | 'reports'
+export type SheetId = 'projects' | 'tasks' | 'chat' | 'docs' | 'people' | 'reports' | 'stock'
 export type View = 'all' | 'jp' | 'tokyo' | 'osaka' | 'phnompenh'
 
 export const KIND_LABEL: Record<string, string> = {
@@ -164,7 +164,7 @@ export function assistantCard(state: AppState, hd: AssistantHandlers): HTMLEleme
         h('div', { class: 'as-status' }, h('i', { class: `pres st-${nx?.status ?? 'idle'}` }), status),
         h('button', { class: 'as-chip', onclick: hd.onGoal }, icon('target', 16), 'ゴールを伝える'),
         h('button', { class: 'as-chip', onclick: hd.onAsk }, icon('chat', 16), 'いまの進み具合を聞く'),
-        h('button', { class: 'as-chip', onclick: hd.onReport }, icon('chart', 16), 'レポートを見る'),
+        h('button', { class: 'as-chip', onclick: hd.onReport }, icon('mic', 16), '話してストック'),
       ),
     ),
   )
@@ -336,4 +336,60 @@ export function officeClocks(): HTMLElement {
 export function progressOf(state: AppState, goalId: string): number {
   const g = state.snap?.goals.find((x) => x.id === goalId)
   return g ? project(state, g).pct : 0
+}
+
+// ------------------------------------------------------------------ マイク（話したことを、やることストックへ）
+
+export interface Captured {
+  text: string
+  at: number
+}
+
+/** ドックの右のマイク。押すと聞き始め、もう一度押すと止まる。上の小さなボタンでストックを開く */
+export function micButton(listening: boolean, readyCount: number, onToggle: () => void, onOpen: () => void): HTMLElement {
+  return h(
+    'div',
+    { class: `mic-dock ${listening ? 'on' : ''}` },
+    h('button', { class: 'stock-chip', onclick: onOpen, title: 'やることストックを開く' }, gicon('inbox', 18), 'ストック', readyCount ? h('b', {}, String(readyCount)) : null),
+    h('button', { class: 'mic-btn', onclick: onToggle, title: listening ? '止める' : '話してストックする', 'aria-pressed': listening ? 'true' : 'false' }, h('span', { class: 'mic-ring' }), gicon('mic', 66, listening ? 'white' : 'warm'), h('span', { class: 'dock-label' }, listening ? '聞いています' : '話す')),
+  )
+}
+
+/** 聞いている間だけ出る、ドックの上のパネル：いま話している言葉と、ストックに入ったもの */
+export function voicePanel(
+  state: AppState,
+  v: { listening: boolean; interim: string; lang: string; captured: Captured[] },
+  langs: [string, string][],
+  hd: { onStop: () => void; onLang: (l: string) => void; onOpen: () => void },
+): HTMLElement | null {
+  if (!v.listening && !v.captured.some((c) => Date.now() - c.at < 6000)) return null
+  const stock = state.snap?.stock ?? []
+  const organizing = stock.filter((s) => s.status === 'organizing').length
+  const recentReady = stock
+    .filter((s) => s.status === 'ready' && Date.now() - Date.parse(s.updatedAt) < 120_000)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, 3)
+  const sel = h('select', { class: 'vp-lang', title: '話す言葉' }, ...langs.map(([k, label]) => h('option', { value: k, selected: k === v.lang }, label))) as HTMLSelectElement
+  sel.addEventListener('change', () => hd.onLang(sel.value))
+  return h(
+    'section',
+    { class: 'voice-panel glass' },
+    h(
+      'div',
+      { class: 'vp-head' },
+      h('span', { class: `vp-dot ${v.listening ? 'on' : ''}` }),
+      h('b', {}, v.listening ? h('span', {}, '聞いています', h('small', { class: 'vp-hint' }, ' — 思いついたことを、どんどん話してください')) : 'ストックしました'),
+      sel,
+      v.listening ? h('button', { class: 'btn small', onclick: hd.onStop }, '止める') : null,
+    ),
+    h('p', { class: `vp-live ${v.interim ? '' : 'muted'}` }, v.interim || (v.listening ? '（ひと息つくと、ストックに入ります）' : '')),
+    h(
+      'div',
+      { class: 'vp-foot' },
+      organizing ? h('span', { class: 'vp-org' }, h('i', { class: 'spin' }), `ネクマックスが整理中（${organizing}）`) : null,
+      ...recentReady.map((s) => h('span', { class: `vp-item k-${s.kind}` }, icon('check', 13), s.title)),
+      h('div', { class: 'tb-spacer' }),
+      h('button', { class: 'link', onclick: hd.onOpen }, `ストックを見る（${stock.filter((s) => s.status === 'ready').length}）`),
+    ),
+  )
 }

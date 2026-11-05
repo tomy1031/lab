@@ -142,6 +142,34 @@ export interface Message {
   replyTo?: string
 }
 
+/**
+ * やることストック：マイクで話した（または書いた）ことを、ネクマックスが用件ごとに分けて短くまとめたもの。本人だけが見る。
+ * goal = AI社員と進める仕事（ネクマックスに任せる）/ self = 自分でやること / memo = 覚えておくこと
+ */
+export type StockKind = 'goal' | 'self' | 'memo'
+/** organizing 整理中 / ready 整理済み / later あとで / sent ネクマックスに任せた / done やった・記憶に残した / archived 消した・まとめた */
+export type StockStatus = 'organizing' | 'ready' | 'later' | 'sent' | 'done' | 'archived'
+
+export interface StockItem {
+  id: string
+  owner: string
+  at: string
+  updatedAt: string
+  /** 話した（書いた）ままの言葉 */
+  raw: string
+  /** 20 字くらいの題名（〜する） */
+  title: string
+  /** 40 字くらいの一言 */
+  summary?: string
+  kind: StockKind
+  /** 1 = 急ぎ / 2 = ふつう / 3 = いつか */
+  priority: 1 | 2 | 3
+  status: StockStatus
+  goalId?: string
+  /** 同じ用件のストックにまとめたとき、まとめ先 */
+  mergedInto?: string
+}
+
 export interface Activity {
   id: string
   at: string
@@ -178,6 +206,8 @@ export interface Snapshot {
   messages: Message[]
   activities: Activity[]
   engine: EngineInfo
+  /** 自分のやることストック（新しい順に最大 200） */
+  stock: StockItem[]
 }
 
 /** WebSocket：サーバー → クライアント */
@@ -191,6 +221,8 @@ export type ServerEvent =
   | { t: 'message'; message: Message }
   | { t: 'activity'; activity: Activity }
   | { t: 'memory'; entry: MemoryEntry }
+  /** やることストックの追加・更新（持ち主の画面にだけ届く） */
+  | { t: 'stock'; item: StockItem }
   /** Claude が作業中に書いている途中の文（ライブ表示用） */
   | { t: 'stream'; memberId: string; taskId: string; text: string }
 

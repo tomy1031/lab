@@ -61,7 +61,9 @@ const onlineCount = new Map<string, number>()
 
 store.on('event', (ev: ServerEvent) => {
   const data = JSON.stringify(ev)
-  for (const ws of clients.keys()) if (ws.readyState === ws.OPEN) ws.send(data)
+  // やることストックは持ち主の画面にだけ届ける
+  const only = ev.t === 'stock' ? ev.item.owner : null
+  for (const [ws, mid] of clients) if (ws.readyState === ws.OPEN && (!only || mid === only)) ws.send(data)
 })
 
 function snapshot(me: Member | null): Snapshot {
@@ -75,6 +77,7 @@ function snapshot(me: Member | null): Snapshot {
     messages: mergeMessages(s.messages.slice(-200), me ? s.messages.filter((m) => m.toId === me.id && m.kind === 'question').slice(-30) : []),
     activities: s.activities.slice(-200),
     engine: engines[engineMode].info,
+    stock: me ? store.stockOf(me.id).filter((x) => x.status !== 'archived' || Date.now() - Date.parse(x.updatedAt) < 3600_000).slice(-200) : [],
   }
 }
 
@@ -209,6 +212,31 @@ route('POST', '/api/messages/:id/reply', true, (_req, _res, me, [mid], b) => {
   need(text, 400, '返事を書いてください')
   try {
     return { message: company.reply(mid, me!, text) }
+  } catch (e) {
+    throw new HttpError(400, (e as Error).message)
+  }
+})
+
+// ------------------------------------------------------------------ やることストック（本人だけ）
+
+/** 話した（書いた）ことを 1 つ受け取る。1 人 1 分に 40 件まで */
+const stockRate = new Map<string, number[]>()
+route('POST', '/api/stock', true, (_req, _res, me, _p, b) => {
+  const text = str(b.text, 1000)
+  need(text.length >= 2, 400, '話した内容が空です')
+  const recent = (stockRate.get(me!.id) ?? []).filter((t) => Date.now() - t < 60_000)
+  need(recent.length < 40, 429, '少し待ってから話してください')
+  stockRate.set(me!.id, [...recent, Date.now()])
+  return { item: company.addStock(me!, text) }
+})
+
+route('POST', '/api/stock/:id/:action', true, (_req, _res, me, [sid, action], b) => {
+  need(['send', 'done', 'later', 'archive', 'restore'].includes(action), 400, '操作が違います')
+  const patch: { title?: string; kind?: 'goal' | 'self' | 'memo' } = {}
+  if (typeof b.title === 'string' && str(b.title, 60)) patch.title = str(b.title, 60)
+  if (b.kind === 'goal' || b.kind === 'self' || b.kind === 'memo') patch.kind = b.kind
+  try {
+    return { item: company.actOnStock(sid, me!, action as 'send' | 'done' | 'later' | 'archive' | 'restore', patch) }
   } catch (e) {
     throw new HttpError(400, (e as Error).message)
   }
@@ -402,7 +430,8 @@ function securityHeaders(req: IncomingMessage, res: ServerResponse): void {
   res.setHeader('Referrer-Policy', 'no-referrer')
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()')
+  // マイクは自分のページだけ（やることストックの音声入力）。ほかは使わせない
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=(), usb=()')
   if (isHttps(req)) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
 }
 
@@ -412,6 +441,8 @@ function originOk(req: IncomingMessage): boolean {
   if (!origin) return true // ブラウザ以外（curl など）。それでもログインのクッキーは要る
   if (ALLOWED_ORIGINS.includes(origin)) return true
   try {
+    // 開発中（npm run dev）は Vite の開発サーバー（localhost の別ポート）から来る。本番では認めない
+    if (process.env.NODE_ENV !== 'production' && ['localhost', '127.0.0.1'].includes(new URL(origin).hostname) && HOST === '127.0.0.1') return true
     const host = String(req.headers['x-forwarded-host'] && process.env.TRUST_PROXY === '1' ? req.headers['x-forwarded-host'] : req.headers.host ?? '')
     return new URL(origin).host === host
   } catch {

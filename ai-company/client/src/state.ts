@@ -1,5 +1,5 @@
 // 画面側の状態：サーバーのスナップショット＋WebSocket のイベントで更新し、購読者へ知らせる
-import type { Activity, Goal, Member, Message, ServerEvent, Snapshot, Task } from '../../shared/types'
+import type { Activity, Goal, Member, Message, ServerEvent, Snapshot, StockItem, Task } from '../../shared/types'
 
 export type Change =
   | { kind: 'all' }
@@ -12,6 +12,7 @@ export type Change =
   | { kind: 'activity'; activity: Activity }
   | { kind: 'memory'; memberId: string }
   | { kind: 'stream'; memberId: string; taskId: string; text: string }
+  | { kind: 'stock'; item: StockItem; prev?: StockItem }
 
 export class AppState {
   snap: Snapshot | null = null
@@ -86,6 +87,13 @@ export class AppState {
       case 'memory':
         this.fire({ kind: 'memory', memberId: ev.entry.memberId })
         break
+      case 'stock': {
+        const list = (s.stock ??= [])
+        const prev = list.find((x) => x.id === ev.item.id)
+        upsert(list, ev.item)
+        this.fire({ kind: 'stock', item: ev.item, prev: prev ? { ...prev } : undefined })
+        break
+      }
       case 'stream':
         this.streams.set(ev.taskId, ev.text)
         this.fire({ kind: 'stream', memberId: ev.memberId, taskId: ev.taskId, text: ev.text })

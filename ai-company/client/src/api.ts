@@ -36,6 +36,8 @@ export const Api = {
   retire: (id: string) => api(`/api/members/${id}/retire`, {}),
   updateMember: (id: string, body: Record<string, unknown>) => api<{ member: Member }>(`/api/members/${id}/update`, body),
   setEngine: (mode: 'claude' | 'sim') => api('/api/engine', { mode }),
+  addStock: (text: string) => api('/api/stock', { text }),
+  stockAct: (id: string, action: 'send' | 'done' | 'later' | 'archive' | 'restore', patch: { title?: string; kind?: string } = {}) => api(`/api/stock/${id}/${action}`, patch),
   changePassword: (current: string, next: string) => api('/api/password', { current, next }),
   talk: (to: string, text: string) => api('/api/talk', { to, text }),
   reply: (messageId: string, text: string) => api(`/api/messages/${messageId}/reply`, { text }),

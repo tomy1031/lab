@@ -48,6 +48,8 @@ export interface OfficeWorldApi {
    * focus（全体・各オフィス・人）もその長方形に収まるように撮り直す（なめらかに動く）。見える所が狭すぎるときは無視する
    */
   setInsets(insets: { left: number; right: number; top: number; bottom: number }): void
+  /** 拡大・縮小（ピンチ・Ctrl+ホイール）。factor < 1 で寄る、> 1 で引く。範囲は内部で制限 */
+  zoomBy(factor: number): void
   /** 選択中の人（輪が光る）。null で解除 */
   setSelected(memberId: string | null): void
   /** クリックで人を選んだとき（何もない所なら null） */

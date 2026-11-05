@@ -157,3 +157,31 @@ describe('プロンプトの道具', () => {
     expect(p.tasks[1].dependsOn).toEqual(['a'])
   })
 })
+
+describe('やることストック（音声）', () => {
+  it('話したことを用件ごとに分け、急ぎ・種類を付け、同じ用件はまとめ、任せるとゴールになる', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+    const store = new Store(join(dir, 's.json'))
+    seed(store, join(dir, 'c.txt'))
+    const company = new Company(store, () => new SimEngine(200), join(dir, 'ws'))
+    const me = store.state.members.find((m) => m.isAdmin)!
+    const other = store.state.members.find((m) => m.kind === 'human' && m.id !== me.id)!
+    company.addStock(me, 'えっと、カンボジアの大学向けの説明資料を作りたい。あと明日までに会場の担当者に電話する。それから名刺の渡し方は先に結論を言うと覚えておく')
+    await until(() => store.stockOf(me.id).every((s) => s.status !== 'organizing'), 5000)
+    const ready = store.stockOf(me.id).filter((s) => s.status === 'ready')
+    expect(ready.length).toBe(3)
+    expect(ready.find((s) => s.kind === 'self')?.priority).toBe(1)
+    expect(ready.some((s) => s.kind === 'memo')).toBe(true)
+    // 同じ用件をもう一度言うとまとまる
+    company.addStock(me, 'カンボジアの大学向けの説明資料を作りたい。急ぎで')
+    await until(() => store.stockOf(me.id).every((s) => s.status !== 'organizing'), 5000)
+    expect(store.stockOf(me.id).filter((s) => s.status === 'ready').length).toBe(3)
+    // 任せるとゴールになる
+    const goalItem = store.stockOf(me.id).find((s) => s.status === 'ready' && s.kind === 'goal')!
+    const sent = company.actOnStock(goalItem.id, me, 'send')
+    expect(sent.status).toBe('sent')
+    expect(store.goal(sent.goalId!)?.title).toBe(goalItem.title)
+    // ほかの人のストックは触れない
+    expect(() => company.actOnStock(goalItem.id, other, 'archive')).toThrow()
+  }, 20000)
+})

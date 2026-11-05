@@ -9,7 +9,7 @@ import type { EngineInfo } from '../../shared/types'
 import { normalizeOffice } from '../../shared/types'
 import { checkTool } from './guard'
 import { COMPANY_CONTEXT, describeContext, describeMember, extractJson, personaPrompt, splitMemory } from './prompts'
-import type { ConsultInput, Engine, MemberContext, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
+import type { ConsultInput, Engine, MemberContext, OrganizeInput, OrganizedStock, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
 const MODEL = process.env.AI_MODEL || undefined
 const ALLOW_BASH = process.env.AGENT_ALLOW_BASH === '1'
@@ -229,6 +229,61 @@ ${prev}
       }),
     })
     return (await collect(q)).text.trim()
+  }
+
+  async organize({ member, items, existing }: OrganizeInput): Promise<OrganizedStock[]> {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              from: { type: 'string' },
+              title: { type: 'string' },
+              summary: { type: 'string' },
+              kind: { type: 'string', enum: ['goal', 'self', 'memo'] },
+              priority: { type: 'integer', enum: [1, 2, 3] },
+              duplicateOf: { type: 'string' },
+            },
+            required: ['from', 'title', 'summary', 'kind', 'priority'],
+          },
+        },
+      },
+      required: ['items'],
+    }
+    const prompt = `${member.name}さん（${member.role}）が、思いついたことをマイクで話しました（音声認識なので、聞き間違いや言いよどみを含みます）。
+これを「やることストック」に整理してください。
+
+# 話したこと（id: 内容）
+${items.map((i) => `- ${i.id}: ${i.raw}`).join('\n')}
+
+# すでにあるストック（id: 題名）
+${existing.map((e) => `- ${e.id}: ${e.title}`).join('\n') || '（なし）'}
+
+# 整理のしかた
+- 1 つの発言に用件がいくつかあれば、用件ごとに分ける（from には元の発言の id）。用件が無い発言（相づち・独り言）は出さない。
+- title：20 字以内。「〜する」で終わる、見ただけで分かる言い方。聞き間違いは文脈で直す。
+- summary：40 字以内の一言。だれと・いつまで・何のため、が分かれば書く。分からないことは書かない（作らない）。
+- kind：goal = AI社員に任せて進められる仕事（調査・資料・企画・翻訳など）／ self = 本人がやること（電話・会う・行く・決める・払う）／ memo = 覚えておくこと・気づき。
+- priority：1 = 急ぎ（今日・明日・至急などと言った）／ 2 = ふつう ／ 3 = いつか。
+- すでにあるストックと同じ用件なら duplicateOf にその id を入れる。`
+    const q = query({
+      prompt,
+      options: baseOptions({
+        systemPrompt: `${COMPANY_CONTEXT}\n\nあなたは統括AI「ネクマックス」。人の話を、短く分かりやすい「やること」に整える。指示どおりの JSON だけを返す。`,
+        allowedTools: [],
+        tools: [],
+        maxTurns: 2,
+        outputFormat: { type: 'json_schema', schema },
+      }),
+    })
+    const { text, structured } = await collect(q)
+    const raw = (structured ?? extractJson(text)) as { items?: OrganizedStock[] }
+    return (raw.items ?? []).filter((x) => x && x.from && x.title)
   }
 
   async reflect(me: MemberContext): Promise<string> {

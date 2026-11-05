@@ -1362,6 +1362,18 @@ export class OfficeWorld implements OfficeWorldApi {
     return pts
   }
 
+  /** ピンチ・Ctrl+ホイールで寄る・引く（いまの注視点を中心に、なめらかに） */
+  zoomBy(factor: number): void {
+    if (!Number.isFinite(factor) || factor <= 0) return
+    const off = this.camera.position.clone().sub(this.controls.target)
+    const d = THREE.MathUtils.clamp(off.length() * factor, this.controls.minDistance, this.controls.maxDistance)
+    off.setLength(d)
+    this.camera.position.copy(this.controls.target).add(off)
+    this.tween = null
+    this.followId = null
+    this.controls.update()
+  }
+
   private applyFocus(target: FocusTarget, instant: boolean): void {
     this.focusTarget = target
     this.followId = null

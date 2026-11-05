@@ -5,10 +5,11 @@ import './styles.css'
 import type { Goal, Member, Message, OfficeId, Task } from '../../shared/types'
 import { OFFICES, officeInfo } from '../../shared/types'
 import { Api, connect } from './api'
+import { VOICE_LANGS, Voice } from './voice'
 import { AppState } from './state'
 import { clock, h } from './ui/dom'
 import { activeProjects } from './ui/derive'
-import { assistantCard, dock, feedCard, humanCard, projectCard, topbar, worldCard, type SheetId, type View } from './ui/hud'
+import { assistantCard, dock, feedCard, humanCard, micButton, projectCard, topbar, voicePanel, worldCard, type Captured, type SheetId, type View } from './ui/hud'
 import { flag, icon } from './ui/icons'
 import { initialUi, mePop, notificationsPop, profilePanel, searchPop, settingsPop, sheet, timelinePop, type Actions, type UiState } from './ui/sheets'
 import type { OfficeBoard, OfficeWorldApi } from './world/api'
@@ -81,12 +82,53 @@ function startApp(): void {
   const humanEl = h('div', { class: 'hud-left' })
   const feedEl = h('div', { class: 'hud-right' })
   const dockEl = h('div', { class: 'dock-layer' })
+  const voiceEl = h('div', { class: 'voice-layer' })
   const sheetEl = h('div', { class: 'sheet-layer' })
   const profileEl = h('div', { class: 'profile-layer' })
   const popEl = h('div', { class: 'pop-layer' })
   const modal = h('div', { class: 'modal hidden' })
   const toasts = h('div', { class: 'toasts' })
-  root.append(worldEl, cardsEl, humanEl, feedEl, dockEl, sheetEl, profileEl, topEl, popEl, modal, toasts)
+  root.append(worldEl, cardsEl, humanEl, feedEl, dockEl, voiceEl, sheetEl, profileEl, topEl, popEl, modal, toasts)
+
+  // ---- マイク：話したことは区切りごとにやることストックへ（ネクマックスがまとめて整理する）
+  const captured: Captured[] = []
+  const voice = new Voice(
+    (text) => {
+      captured.push({ text, at: Date.now() })
+      if (captured.length > 20) captured.shift()
+      Api.addStock(text).catch((e) => toast(e.message, 'warn'))
+      render()
+      // 「ストックしました」の表示を数秒で消すため
+      setTimeout(render, 6500)
+    },
+    (_v, message) => {
+      if (message) toast(message, 'warn')
+      render()
+    },
+  )
+
+  // ---- 拡大・縮小：3D の上でも、カードの上でも、ピンチ（Ctrl+ホイール・Safari のジェスチャー）は 3D の大きさを変える
+  addEventListener(
+    'wheel',
+    (e) => {
+      if (!e.ctrlKey) return
+      e.preventDefault() // ページ全体の拡大を止める
+      if ((e.target as Element | null)?.tagName === 'CANVAS') return // 3D の上は OrbitControls が受け持つ
+      world?.zoomBy(Math.exp(Math.max(-60, Math.min(60, e.deltaY)) * 0.012))
+    },
+    { passive: false },
+  )
+  let gestureScale = 1
+  const onGesture = (e: Event) => {
+    e.preventDefault()
+    const scale = (e as Event & { scale?: number }).scale ?? 1
+    if (e.type === 'gesturestart') gestureScale = 1
+    else if (e.type === 'gesturechange' && (e.target as Element | null)?.tagName !== 'CANVAS') {
+      world?.zoomBy(gestureScale / scale)
+      gestureScale = scale
+    }
+  }
+  for (const t of ['gesturestart', 'gesturechange', 'gestureend']) addEventListener(t, onGesture, { passive: false } as AddEventListenerOptions)
 
   // ---- 3D の空間（作れなくても画面は動く）
   const worldModules = import.meta.glob<{ OfficeWorld: new (el: HTMLElement) => OfficeWorldApi }>('./world/OfficeWorld.ts')
@@ -273,7 +315,31 @@ function startApp(): void {
       const msg = mode === 'claude' ? 'Claude Code で本当に動かします（API の利用料がかかります）。切り替えますか？' : 'シミュレーション（Claude を呼ばないデモ）に切り替えますか？'
       if (confirm(msg)) Api.setEngine(mode).catch((e) => toast(e.message, 'warn'))
     },
+    stockAct(item, action, patch = {}) {
+      Api.stockAct(item.id, action, patch)
+        .then(() => {
+          if (action === 'archive') toast('消しました', 'info', { label: '元に戻す', run: () => void Api.stockAct(item.id, 'restore') })
+          if (action === 'send') toast(`ネクマックスに任せました：${item.title}`, 'success')
+          if (action === 'done') toast(item.kind === 'memo' ? '記憶に残しました' : 'おつかれさまです！', 'success')
+          if (action === 'later') toast('あとでに回しました', 'info', { label: '元に戻す', run: () => void Api.stockAct(item.id, 'restore') })
+        })
+        .catch((e) => toast(e.message, 'warn'))
+    },
+    addStock(text) {
+      Api.addStock(text).catch((e) => toast(e.message, 'warn'))
+    },
+    get voice() {
+      return {
+        listening: voice.state === 'listening',
+        supported: voice.state !== 'unsupported',
+        lang: voice.lang,
+        langs: VOICE_LANGS,
+        toggle: () => voice.toggle(),
+        setLang: (l: string) => voice.setLang(l),
+      }
+    },
     async logout() {
+      voice.stop()
       await Api.logout().catch(() => {})
       stop()
       world?.dispose()
@@ -350,7 +416,7 @@ function startApp(): void {
           act.talk('nexmax', 'いまの進み具合を、人間の対応待ちを中心に 3 行でまとめて')
           act.open('chat', { chatWith: 'nexmax' })
         },
-        onReport: () => act.open('reports'),
+        onReport: () => voice.start(),
         onNexmax: () => act.openProfile('nexmax'),
       }),
       worldCard(state, pulse, (id) => {
@@ -365,7 +431,17 @@ function startApp(): void {
     feed.querySelectorAll('.fr').forEach((el, i) => i === 0 && topMsg !== shown.feedTop ? null : el.classList.add('no-anim'))
     shown.feedTop = topMsg
     feedEl.replaceChildren(feed)
-    dockEl.replaceChildren(dock(state, openSheet, (id) => (openSheet === id ? act.close() : act.open(id))))
+    const readyStock = (state.snap.stock ?? []).filter((s) => s.status === 'ready').length
+    dockEl.replaceChildren(
+      h(
+        'div',
+        { class: 'dock-row' },
+        dock(state, openSheet, (id) => (openSheet === id ? act.close() : act.open(id))),
+        micButton(voice.state === 'listening', readyStock, () => voice.toggle(), () => (openSheet === 'stock' ? act.close() : act.open('stock'))),
+      ),
+    )
+    const vp = openSheet === 'stock' ? null : voicePanel(state, { listening: voice.state === 'listening', interim: voice.interim, lang: voice.lang, captured }, VOICE_LANGS, { onStop: () => voice.stop(), onLang: (l) => voice.setLang(l), onOpen: () => act.open('stock') })
+    voiceEl.replaceChildren(...(vp ? [vp] : []))
     const sheetScroll = sheetEl.querySelector('.sheet-body')?.scrollTop ?? 0
     const splitScroll = [...sheetEl.querySelectorAll<HTMLElement>('.split-l, .split-r, .kcol, .thread')].map((e) => e.scrollTop)
     const sh = openSheet ? sheet(openSheet, state, ui, act) : null
@@ -577,11 +653,22 @@ function startApp(): void {
     )
   }
 
-  const toast = (text: string, level: 'info' | 'success' | 'warn' | 'hire' = 'info') => {
-    const el = h('div', { class: `toast glass tl-${level}` }, text)
+  const toast = (text: string, level: 'info' | 'success' | 'warn' | 'hire' = 'info', action?: { label: string; run: () => void }) => {
+    const el = h('div', { class: `toast glass tl-${level} ${action ? 'has-action' : ''}` }, text)
+    if (action) {
+      el.append(
+        h('button', {
+          class: 'toast-act',
+          onclick: () => {
+            action.run()
+            el.remove()
+          },
+        }, action.label),
+      )
+    }
     toasts.append(el)
-    setTimeout(() => el.classList.add('out'), 4200)
-    setTimeout(() => el.remove(), 4800)
+    setTimeout(() => el.classList.add('out'), action ? 6500 : 4200)
+    setTimeout(() => el.remove(), action ? 7100 : 4800)
   }
 
   // ---- 状態の変化 → 画面と 3D

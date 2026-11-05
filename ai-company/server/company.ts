@@ -4,7 +4,7 @@
 // → 終わるたびに担当者の記憶（コンテキスト）を足す → 全部終わったら完了報告。
 import { mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
-import type { Goal, Member, Message, MessageKind, OfficeId, Task } from '../shared/types'
+import type { Goal, Member, Message, MessageKind, OfficeId, StockItem, StockKind, StockStatus, Task } from '../shared/types'
 import { OFFICES, countryOf, officeInfo } from '../shared/types'
 import type { Engine, HireSpec } from './engine/types'
 import { contextOf, remember } from './memory'
@@ -497,9 +497,99 @@ export class Company {
     }
   }
 
+  // ------------------------------------------------------------------ やることストック（マイクで話したこと）
+
+  private organizeTimers = new Map<string, NodeJS.Timeout>()
+  private organizing = new Set<string>()
+
+  /** 話した（書いた）ことを受け取る。少し待って、まとめてネクマックスが整理する */
+  addStock(member: Member, text: string): StockItem {
+    const t = now()
+    const item = this.store.putStock({ id: id('stk'), owner: member.id, at: t, updatedAt: t, raw: text, title: clip(text, 20), kind: 'goal', priority: 2, status: 'organizing' })
+    this.scheduleOrganize(member.id, 2500)
+    return item
+  }
+
+  private scheduleOrganize(memberId: string, ms: number): void {
+    clearTimeout(this.organizeTimers.get(memberId))
+    this.organizeTimers.set(
+      memberId,
+      setTimeout(() => void this.organizeFor(memberId), ms * Math.max(PACE, 0.01)),
+    )
+  }
+
+  private async organizeFor(memberId: string): Promise<void> {
+    if (this.organizing.has(memberId)) return this.scheduleOrganize(memberId, 1500)
+    const member = this.store.member(memberId)
+    const pending = this.store.stockOf(memberId).filter((s) => s.status === 'organizing')
+    if (!member || !pending.length) return
+    this.organizing.add(memberId)
+    const existing = this.store
+      .stockOf(memberId)
+      .filter((s) => s.status === 'ready' || s.status === 'later')
+      .slice(-40)
+    try {
+      const out = await this.engine.organize({ member, items: pending.map((p) => ({ id: p.id, raw: p.raw })), existing: existing.map((e) => ({ id: e.id, title: e.title })) })
+      for (const src of pending) {
+        const mine = out.filter((o) => o.from === src.id)
+        if (!mine.length) {
+          // 用件が無い（相づちなど）と判断されたら消す
+          this.store.putStock({ ...src, status: 'archived', updatedAt: now() })
+          continue
+        }
+        mine.forEach((o, i) => {
+          const dup = o.duplicateOf ? this.store.state.stock.find((s) => s.id === o.duplicateOf && s.owner === memberId && (s.status === 'ready' || s.status === 'later')) : undefined
+          const base: StockItem = i === 0 ? src : { ...src, id: id('stk') }
+          if (dup) {
+            // 同じ用件：まとめ先に言葉を足し、急ぎなら上げる
+            this.store.putStock({ ...dup, raw: `${dup.raw}\n${src.raw}`, priority: Math.min(dup.priority, o.priority) as 1 | 2 | 3, updatedAt: now(), status: 'ready' })
+            if (i === 0) this.store.putStock({ ...base, status: 'archived', mergedInto: dup.id, title: clip(o.title, 24), updatedAt: now() })
+            return
+          }
+          this.store.putStock({ ...base, title: clip(o.title, 24), summary: clip(o.summary, 60), kind: o.kind, priority: o.priority, status: 'ready', updatedAt: now() })
+        })
+      }
+    } catch (e) {
+      console.error('[organize]', e)
+      // 整理に失敗しても、話したことは失わない（そのままの言葉で並べる）
+      for (const src of pending) this.store.putStock({ ...src, status: 'ready', updatedAt: now() })
+    } finally {
+      this.organizing.delete(memberId)
+    }
+  }
+
+  /** ストックへの 1 タップの操作 */
+  actOnStock(itemId: string, by: Member, action: 'send' | 'done' | 'later' | 'archive' | 'restore', patch: { title?: string; kind?: StockKind } = {}): StockItem {
+    const item = this.store.state.stock.find((s) => s.id === itemId)
+    if (!item || item.owner !== by.id) throw new Error('あなたのストックではありません')
+    const set = (status: StockStatus, extra: Partial<StockItem> = {}) => this.store.putStock({ ...item, ...patch, ...extra, status, updatedAt: now() })
+    const title = patch.title ?? item.title
+    switch (action) {
+      case 'send': {
+        // ネクマックスに任せる：そのままゴールにする（話した言葉も添える）
+        const g = this.createGoal(by, title, [item.summary, `（話したこと）${item.raw}`].filter(Boolean).join('\n'))
+        return set('sent', { goalId: g.id })
+      }
+      case 'done': {
+        // 自分でやった・覚えておく：本人の記憶に入れる（次の割り振りに活きる）
+        const kind = patch.kind ?? item.kind
+        remember(this.store, by.id, kind === 'memo' ? 'note' : 'task', kind === 'memo' ? `メモ：${title}${item.summary ? `（${item.summary}）` : ''}` : `自分でやった：${title}`, { importance: kind === 'memo' ? 6 : 5 })
+        return set('done')
+      }
+      case 'later':
+        return set('later')
+      case 'archive':
+        return set('archived')
+      case 'restore':
+        return set('ready')
+    }
+  }
+
   /** 起動時：途中で止まったタスクを戻す */
   recover(): void {
     for (const t of this.store.state.tasks) if (t.status === 'in_progress') this.store.patchTask(t.id, { status: 'todo' })
+    // 整理の途中で止まったストックは、もう一度整理する
+    for (const owner of new Set(this.store.state.stock.filter((s) => s.status === 'organizing').map((s) => s.owner))) this.scheduleOrganize(owner, 1000)
     for (const g of this.store.state.goals) if (g.status === 'planning') this.store.patchGoal(g.id, { status: 'failed', report: 'サーバーの再起動で分解が中断しました。もう一度ゴールを伝えてください。' })
     for (const m of this.store.state.members) {
       if (m.kind !== 'human' && m.status !== 'idle') this.store.patchMember(m.id, { status: 'idle', statusText: undefined, currentTaskId: null })

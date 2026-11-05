@@ -86,6 +86,26 @@ export interface ReportInput {
   tasks: (Task & { assigneeName: string })[]
 }
 
+/** やることストックの整理（話したことを用件ごとに分けて短くする） */
+export interface OrganizeInput {
+  member: Member
+  /** 整理する発言（話したまま） */
+  items: { id: string; raw: string }[]
+  /** すでにあるストック（同じ用件ならまとめるため） */
+  existing: { id: string; title: string }[]
+}
+
+export interface OrganizedStock {
+  /** どの発言から（OrganizeInput.items[].id） */
+  from: string
+  title: string
+  summary: string
+  kind: 'goal' | 'self' | 'memo'
+  priority: 1 | 2 | 3
+  /** 既存のストックと同じ用件ならその id */
+  duplicateOf?: string
+}
+
 export interface Engine {
   readonly info: EngineInfo
   plan(input: PlanInput): Promise<Plan>
@@ -94,4 +114,5 @@ export interface Engine {
   report(input: ReportInput): Promise<string>
   /** ふりかえり：たまった記憶から、次に活かす気づきを 2〜3 行にまとめる（Generative Agents の reflection） */
   reflect(me: MemberContext): Promise<string>
+  organize(input: OrganizeInput): Promise<OrganizedStock[]>
 }

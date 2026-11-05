@@ -3,7 +3,7 @@
 import { EventEmitter } from 'node:events'
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import type { Activity, Goal, Member, MemoryEntry, Message, ServerEvent, Task } from '../shared/types'
+import type { Activity, Goal, Member, MemoryEntry, Message, ServerEvent, StockItem, Task } from '../shared/types'
 
 export interface UserRecord {
   login: string
@@ -30,6 +30,7 @@ export interface State {
   messages: Message[]
   activities: Activity[]
   memory: MemoryEntry[]
+  stock: StockItem[]
   settings: { engine?: 'claude' | 'sim' }
 }
 
@@ -37,7 +38,7 @@ const MAX_MESSAGES = 2000
 const MAX_ACTIVITIES = 1000
 
 export function emptyState(): State {
-  return { version: 1, members: [], users: [], sessions: [], goals: [], tasks: [], messages: [], activities: [], memory: [], settings: {} }
+  return { version: 1, members: [], users: [], sessions: [], goals: [], tasks: [], messages: [], activities: [], memory: [], stock: [], settings: {} }
 }
 
 export class Store extends EventEmitter {
@@ -177,6 +178,19 @@ export class Store extends EventEmitter {
     this.state.activities.push(a)
     this.send({ t: 'activity', activity: a })
     return a
+  }
+
+  putStock(item: StockItem): StockItem {
+    const i = this.state.stock.findIndex((x) => x.id === item.id)
+    if (i >= 0) this.state.stock[i] = item
+    else this.state.stock.push(item)
+    if (this.state.stock.length > 3000) this.state.stock.splice(0, this.state.stock.length - 3000)
+    this.send({ t: 'stock', item })
+    return item
+  }
+
+  stockOf(owner: string): StockItem[] {
+    return this.state.stock.filter((s) => s.owner === owner)
   }
 
   addMemory(e: MemoryEntry): MemoryEntry {
