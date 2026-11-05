@@ -5,14 +5,14 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { extname, join, normalize, resolve, sep } from 'node:path'
 import { WebSocketServer, type WebSocket } from 'ws'
 import type { Member, Message, OfficeId, ServerEvent, Snapshot } from '../shared/types'
-import { OFFICES } from '../shared/types'
+import { OFFICES, countryOf, normalizeOffice, officeInfo } from '../shared/types'
 import { login, logout, memberFrom, sessionCookie, setPassword, tokenFrom } from './auth'
 import { Company } from './company'
 import { ClaudeEngine } from './engine/claude'
 import { SimEngine } from './engine/sim'
 import type { Engine } from './engine/types'
 import { contextOf, remember } from './memory'
-import { seed } from './seed'
+import { ensureCore, seed } from './seed'
 import { Store } from './store'
 import { hashStr, id, lookForHuman, now } from './util'
 
@@ -28,6 +28,14 @@ if (store.isFresh) {
   console.log('\n=== 初期アカウントを作りました（data/credentials.txt にも保存）===')
   for (const l of lines) console.log('  ' + l)
   console.log('')
+}
+{
+  // 古いデータの読み替え・社長とネクマックスの社長席・東京オフィス（何度呼んでも同じ）
+  const lines = ensureCore(store, join(DATA, 'credentials.txt'))
+  if (lines.length) {
+    console.log('\n=== 新しいアカウント（data/credentials.txt に追記）===')
+    for (const l of lines) console.log('  ' + l)
+  }
 }
 
 // ------------------------------------------------------------------ エンジン
@@ -191,7 +199,7 @@ route('POST', '/api/members', true, (_req, _res, me, _p, b) => {
   need(me!.isAdmin, 403, '管理者だけが登録できます')
   const name = str(b.name, 40)
   need(name, 400, '名前を書いてください')
-  const office: OfficeId = b.office === 'kh' ? 'kh' : 'jp'
+  const office: OfficeId = normalizeOffice(b.office)
   const place = company.placeFor(office)
   need(place, 409, '席が満席です')
   const loginName = str(b.login, 40)
@@ -203,7 +211,7 @@ route('POST', '/api/members', true, (_req, _res, me, _p, b) => {
     role: str(b.role, 40) || 'メンバー',
     office: place!.office,
     skills: list(b.skills),
-    languages: list(b.languages).length ? list(b.languages) : [office === 'kh' ? 'km' : 'ja'],
+    languages: list(b.languages).length ? list(b.languages) : [countryOf(office) === 'kh' ? 'km' : 'ja'],
     persona: str(b.persona, 400) || undefined,
     look: lookForHuman(name + hashStr(now()), place!.office),
     deskIndex: place!.desk,
@@ -222,8 +230,33 @@ route('POST', '/api/members', true, (_req, _res, me, _p, b) => {
     setPassword(store, m.id, loginName, pw)
   }
   remember(store, m.id, 'note', `${me!.name} さんが登録`, { importance: 2 })
-  company.activity('hire', `👤 ${m.name} さん（${m.role}）を${m.office === 'jp' ? '大阪本社' : 'プノンペン'}に登録`, m.id)
+  company.activity('hire', `👤 ${m.name} さん（${m.role}）を${officeInfo(m.office).name}に登録`, m.id)
   return { member: m }
+})
+
+/** 人物の編集：本人か管理者。拠点の移動は管理者だけ */
+route('POST', '/api/members/:id/update', true, (_req, _res, me, [mid], b) => {
+  const m = store.member(mid)
+  need(m, 404, '見つかりません')
+  need(me!.isAdmin || me!.id === mid, 403, '本人か管理者だけが編集できます')
+  const patch: Partial<Member> = {}
+  if (typeof b.name === 'string' && str(b.name, 40)) patch.name = str(b.name, 40)
+  if (typeof b.role === 'string' && str(b.role, 40)) patch.role = str(b.role, 40)
+  if (b.skills !== undefined) patch.skills = list(b.skills)
+  if (b.languages !== undefined) patch.languages = list(b.languages)
+  if (typeof b.persona === 'string') patch.persona = str(b.persona, 400) || undefined
+  if (b.office !== undefined && me!.isAdmin && m!.kind !== 'nexmax') {
+    const office = normalizeOffice(b.office)
+    if (office !== m!.office) {
+      const place = company.placeFor(office)
+      need(place && place.office === office, 409, 'その拠点は満席です')
+      patch.office = office
+      patch.deskIndex = place!.desk
+    }
+  }
+  store.patchMember(mid, patch)
+  company.activity('info', `${me!.name} さんが ${m!.name} のプロフィールを更新しました`, mid)
+  return { member: store.member(mid) }
 })
 
 route('POST', '/api/members/:id/retire', true, (_req, _res, me, [mid]) => {

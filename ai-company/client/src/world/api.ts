@@ -2,7 +2,24 @@
 // 実装は client/src/world/OfficeWorld.ts。
 import type { Member, MessageKind, OfficeId } from '../../../shared/types'
 
-export type FocusTarget = 'all' | OfficeId | { memberId: string }
+/** 'jp' = 日本の 2 拠点（東京・大阪）をまとめて */
+export type FocusTarget = 'all' | 'jp' | OfficeId | { memberId: string }
+
+/** 奥の壁の大きなモニターに出す、その拠点の「いま」 */
+export interface OfficeBoard {
+  /** 例：「進行中 2 件・人間待ち 1 件」 */
+  headline: string
+  /** 0..1（その拠点が関わるタスクの完了率） */
+  progress: number
+  rows: { label: string; value: string; tone?: 'ai' | 'human' | 'done' | 'warn' }[]
+}
+
+export interface TaskLabelOptions {
+  /** 人間へのお願い（オレンジの札・頭の上の「！」・足元の輪で目立たせる） */
+  human?: boolean
+  /** お願いした時刻（ISO）。札に「◯分待ち」を出す */
+  since?: string
+}
 
 export interface OfficeWorldApi {
   /** 社員の一覧をまるごと渡す（差分は内部で取る）：増えた人は席に出す、減った人は消す、状態・見た目・名前の変化を反映 */
@@ -18,8 +35,10 @@ export interface OfficeWorldApi {
   message(fromId: string, toId: string | null, kind: MessageKind, text: string): void
   /** 吹き出しだけ */
   say(memberId: string, text: string, ms?: number): void
-  /** 机の上に浮かぶ「いまの仕事」の札。null で消す */
-  setTaskLabel(memberId: string, label: string | null): void
+  /** 机の上に浮かぶ「いまの仕事」の札。null で消す。human のときは人間へのお願いとして目立たせる */
+  setTaskLabel(memberId: string, label: string | null, opts?: TaskLabelOptions): void
+  /** 拠点の奥のモニター（ダッシュボード）の中身 */
+  setOfficeBoard(office: OfficeId, board: OfficeBoard): void
   /** タスク完了のお祝い（小さくジャンプ＋きらきら） */
   celebrate(memberId: string): void
   /** カメラ：全体（2 つのオフィスが一度に見える）/ 日本 / カンボジア / 人に寄る */

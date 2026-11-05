@@ -5,7 +5,7 @@
 import { mkdirSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import type { Goal, Member, Message, MessageKind, OfficeId, Task } from '../shared/types'
-import { OFFICES } from '../shared/types'
+import { OFFICES, countryOf, officeInfo } from '../shared/types'
 import type { Engine, HireSpec } from './engine/types'
 import { contextOf, remember } from './memory'
 import type { Store } from './store'
@@ -32,9 +32,15 @@ export class Company {
 
   // ------------------------------------------------------------------ 人
 
+  /** その拠点に仕事を配るネクマックス（東京は大阪の初号機が受け持つ） */
   nexmaxFor(office: OfficeId): Member {
     const all = this.store.state.members.filter((m) => m.kind === 'nexmax')
-    return all.find((m) => m.office === office) ?? all[0]
+    return all.find((m) => m.office === office) ?? all.find((m) => countryOf(m.office) === countryOf(office)) ?? all[0]
+  }
+
+  /** 社長（ネクマックスはその分身） */
+  ceo(): Member | undefined {
+    return this.store.state.members.find((m) => m.kind === 'human' && /代表|社長|CEO/i.test(m.role))
   }
 
   private freeDesk(office: OfficeId): number | null {
@@ -46,11 +52,13 @@ export class Company {
 
   /** 席の空いている拠点（希望の拠点が満席ならもう一方） */
   placeFor(office: OfficeId): { office: OfficeId; desk: number } | null {
-    const d = this.freeDesk(office)
-    if (d !== null) return { office, desk: d }
-    const other: OfficeId = office === 'jp' ? 'kh' : 'jp'
-    const d2 = this.freeDesk(other)
-    return d2 !== null ? { office: other, desk: d2 } : null
+    // 希望の拠点 → 同じ国の別の拠点 → どこか
+    const order = [office, ...OFFICES.filter((o) => o.id !== office && o.country === countryOf(office)).map((o) => o.id), ...OFFICES.filter((o) => o.country !== countryOf(office)).map((o) => o.id)]
+    for (const o of order) {
+      const d = this.freeDesk(o)
+      if (d !== null) return { office: o, desk: d }
+    }
+    return null
   }
 
   hireAgent(spec: HireSpec, by: Member): Member | null {
@@ -80,7 +88,7 @@ export class Company {
     }
     this.store.state.members.push(m)
     this.store.send({ t: 'hired', member: m, reason: spec.reason, by: by.id })
-    this.activity('hire', `🎉 ${m.name}（${m.role}）を${place.office === 'jp' ? '大阪本社' : 'プノンペン'}に採用：${spec.reason}`, m.id)
+    this.activity('hire', `🎉 ${m.name}（${m.role}）を${officeInfo(place.office).name}に採用：${spec.reason}`, m.id)
     remember(this.store, m.id, 'note', `入社。採用理由：${spec.reason}`, { importance: 4 })
     return m
   }
@@ -152,7 +160,8 @@ export class Company {
     this.status(nx, 'thinking', 'ゴールを分解中…')
     try {
       const roster = this.store.state.members.map((m) => contextOf(this.store, m, 6))
-      const plan = await this.engine.plan({ goal, roster, requester: by })
+      const ceo = this.ceo()
+      const plan = await this.engine.plan({ goal, roster, requester: by, ceo: ceo ? contextOf(this.store, ceo, 10) : undefined })
       if (this.store.goal(goal.id)?.status === 'cancelled') return
 
       // 採用
@@ -171,10 +180,14 @@ export class Company {
       for (const t of plan.tasks) keyToId.set(t.key, id('task'))
       const tasks: Task[] = plan.tasks.map((t, i) => {
         let assignee = t.assignee ? (hiredByKey.get(t.assignee) ?? (this.store.member(t.assignee) ? t.assignee : undefined)) : undefined
+        let assignReason = t.assigneeReason
         const am = this.store.member(assignee)
         if (!am || am.kind === 'nexmax' || (t.requiresHuman && am.kind !== 'human') || (!t.requiresHuman && am.kind === 'human' && !am.login)) {
-          assignee = this.staff(t.requiresHuman, t.skills, t.office, by)?.id
+          const s = this.staff(t.requiresHuman, t.skills, t.office, by)
+          assignee = s?.id
+          assignReason = s ? this.reasonFor(s, t.skills, t.office) : undefined
         }
+        if (!assignReason && assignee && t.requiresHuman) assignReason = this.reasonFor(this.store.member(assignee)!, t.skills, t.office)
         return {
           id: keyToId.get(t.key)!,
           goalId: goal.id,
@@ -186,6 +199,7 @@ export class Company {
           humanReason: t.humanReason,
           office: t.office,
           assigneeId: assignee ?? null,
+          assignReason,
           dependsOn: t.dependsOn.map((d) => keyToId.get(d)!).filter(Boolean),
           status: 'todo',
           order: i,
@@ -206,6 +220,16 @@ export class Company {
     }
   }
 
+  /** 「なぜこの人か」の短い説明 */
+  reasonFor(m: Member, skills: string[], office?: OfficeId): string {
+    const matched = skills.filter((s) => m.skills.some((x) => x.includes(s) || s.includes(x)))
+    const past = this.store.memoryOf(m.id).filter((e) => e.kind === 'task').length
+    const parts = [`${officeInfo(m.office).name}${office && m.office === office ? '（現地）' : ''}`]
+    if (matched.length) parts.push(`${matched.slice(0, 3).join('・')}ができる`)
+    if (past) parts.push(`これまで ${past} 件担当`)
+    return parts.join('・')
+  }
+
   /** 担当者を選ぶ（スキルの一致・拠点・いまの仕事量） */
   staff(human: boolean, skills: string[], office: OfficeId | undefined, requester: Member): Member | undefined {
     const pool = this.store.state.members.filter((m) => (human ? m.kind === 'human' : m.kind === 'agent'))
@@ -213,7 +237,8 @@ export class Company {
     const load = (m: Member) => this.store.state.tasks.filter((t) => t.assigneeId === m.id && !['done', 'failed', 'cancelled'].includes(t.status)).length
     const scoreOf = (m: Member) =>
       skills.filter((s) => m.skills.some((x) => x.includes(s) || s.includes(x)) || m.role.includes(s)).length * 2 +
-      (office && m.office === office ? 1.5 : 0) -
+      (office && m.office === office ? 1.5 : office && countryOf(m.office) === countryOf(office) ? 0.7 : 0) -
+      (human && /代表|社長/.test(m.role) ? 1.5 : 0) -
       load(m) * 0.5 +
       (human && m.login ? 0.5 : 0)
     return [...pool].sort((a, b) => scoreOf(b) - scoreOf(a))[0]
@@ -448,7 +473,7 @@ export class Company {
     if (this.finishing.has(g.id)) return
     this.finishing.add(g.id)
     const requester = this.store.member(g.createdBy)
-    const nx = this.nexmaxFor(requester?.office ?? 'jp')
+    const nx = this.nexmaxFor(requester?.office ?? 'osaka')
     this.status(nx, 'thinking', '完了報告を作成中…')
     try {
       const tasks = this.store.tasksOf(g.id).map((t) => ({ ...t, assigneeName: this.store.member(t.assigneeId)?.name ?? '不明' }))
@@ -460,6 +485,9 @@ export class Company {
       }
       this.store.patchGoal(g.id, { status: 'done', report, finishedAt: now() })
       this.say(nx, requester ?? null, 'report', `「${g.title}」完了です！報告書をどうぞ`, g.id)
+      // 社長の分身として、依頼者が社長でなくても社長には必ず報告する
+      const ceo = this.ceo()
+      if (ceo && ceo.id !== requester?.id) this.say(this.nexmaxFor('osaka'), ceo, 'report', `社長、「${g.title}」が完了しました（依頼：${requester?.name ?? '不明'}）`, g.id)
       this.activity('success', `🎊 ゴール「${g.title}」完了！`, nx.id, g.id)
       remember(this.store, nx.id, 'task', `ゴール「${g.title}」完了。担当：${[...new Set(tasks.map((t) => t.assigneeName))].join('、')}`, { importance: 6, goalId: g.id })
       if (requester) remember(this.store, requester.id, 'feedback', `依頼したゴール「${g.title}」が完了`, { importance: 4, goalId: g.id })

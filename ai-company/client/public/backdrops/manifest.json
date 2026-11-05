@@ -1,0 +1,4 @@
+{
+  "note": "画像で街の背景を差し替えるときは、このフォルダに osaka.webp / tokyo.webp / phnompenh.webp（横長・上は透明か空色）を置き、images にファイル名を足す",
+  "images": []
+}

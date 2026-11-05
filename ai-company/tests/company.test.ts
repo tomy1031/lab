@@ -49,8 +49,10 @@ describe('Company（シミュレーション）', () => {
       expect(a.kind).toBe(t.requiresHuman ? 'human' : 'agent')
     }
     // カンボジアの現地の仕事はカンボジアの人へ
-    const venue = tasks.find((t) => t.office === 'kh' && t.requiresHuman)
-    if (venue) expect(store.member(venue.assigneeId)!.office).toBe('kh')
+    const venue = tasks.find((t) => t.office === 'phnompenh' && t.requiresHuman)
+    if (venue) expect(store.member(venue.assigneeId)!.office).toBe('phnompenh')
+    // 人間のタスクには「なぜこの人か」が付く
+    for (const t of tasks.filter((x) => x.requiresHuman)) expect(t.assignReason).toBeTruthy()
 
     // 人間の対応待ちになったら完了にしていく
     for (let i = 0; i < 6 && store.goal(g.id)!.status !== 'done'; i++) {
@@ -87,6 +89,32 @@ describe('Company（シミュレーション）', () => {
     store.patchTask(t.id, { status: 'waiting_human' })
     const other = store.state.members.find((m) => m.kind === 'human' && !m.isAdmin && m.id !== t.assigneeId)!
     expect(() => company.completeHumanTask(t.id, other, 'x')).toThrow()
+  })
+})
+
+describe('初期メンバー', () => {
+  it('社長とネクマックスが大阪本社の社長席に並び、東京に人間が 1 人いる', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+    const store = new Store(join(dir, 's.json'))
+    seed(store, join(dir, 'c.txt'))
+    const ceo = store.state.members.find((m) => m.kind === 'human' && /社長/.test(m.role))!
+    const nx = store.member('nexmax')!
+    expect([ceo.office, ceo.deskIndex]).toEqual(['osaka', 0])
+    expect([nx.office, nx.deskIndex]).toEqual(['osaka', 1])
+    expect(store.state.members.filter((m) => m.office === 'tokyo' && m.kind === 'human').length).toBe(1)
+    // 同じ拠点の同じ席に 2 人いない
+    const keys = store.state.members.filter((m) => m.deskIndex >= 0).map((m) => `${m.office}:${m.deskIndex}`)
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+  it('古いデータ（jp / kh）を読み替える', async () => {
+    const { ensureCore } = await import('../server/seed')
+    const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+    const store = new Store(join(dir, 's.json'))
+    seed(store, join(dir, 'c.txt'))
+    for (const m of store.state.members) (m as { office: string }).office = m.office === 'phnompenh' ? 'kh' : 'jp'
+    ensureCore(store)
+    expect(store.state.members.every((m) => ['osaka', 'tokyo', 'phnompenh'].includes(m.office))).toBe(true)
+    expect(store.member('nexmax_kh')!.office).toBe('phnompenh')
   })
 })
 

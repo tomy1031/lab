@@ -3,7 +3,9 @@
 // 人間がゴールを伝える → ネクマックス（Claude Code）がタスクに分解 → 足りない職種は AI社員を「採用」→
 // AI社員と人間で分担 → タスクのたびに担当者のコンテキスト（記憶）がたまる。
 
-export type OfficeId = 'jp' | 'kh'
+/** 拠点：東京・大阪（日本）とプノンペン（カンボジア） */
+export type OfficeId = 'tokyo' | 'osaka' | 'phnompenh'
+export type Country = 'jp' | 'kh'
 
 /** human = 登録された人間 / agent = 採用された AI社員 / nexmax = 会社の統括 AI（ネクマックス） */
 export type MemberKind = 'human' | 'agent' | 'nexmax'
@@ -109,6 +111,8 @@ export interface Task {
   humanReason?: string
   office?: OfficeId
   assigneeId?: string | null
+  /** なぜこの人に任せたか（拠点・スキル・これまでの仕事）。人間へのお願いを分かりやすくする */
+  assignReason?: string
   /** 先に終わっている必要がある Task.id */
   dependsOn: string[]
   status: TaskStatus
@@ -150,7 +154,10 @@ export interface Activity {
 export interface OfficeInfo {
   id: OfficeId
   name: string
+  /** 英語の名前（看板の小さい文字） */
+  nameEn: string
   city: string
+  country: Country
   /** IANA タイムゾーン */
   tz: string
   desks: number
@@ -187,10 +194,24 @@ export type ServerEvent =
   /** Claude が作業中に書いている途中の文（ライブ表示用） */
   | { t: 'stream'; memberId: string; taskId: string; text: string }
 
+/**
+ * 拠点の一覧。大阪本社の 0 番・1 番の席は「社長席」：松井社長とネクマックス（社長の分身として働く統括 AI）が並んで座る。
+ * 東京オフィスは小さめ（いまは人間 1 人）。
+ */
 export const OFFICES: OfficeInfo[] = [
-  { id: 'jp', name: '大阪本社', city: 'Osaka', tz: 'Asia/Tokyo', desks: 12 },
-  { id: 'kh', name: 'プノンペン オフィス', city: 'Phnom Penh', tz: 'Asia/Phnom_Penh', desks: 12 },
+  { id: 'osaka', name: '大阪本社', nameEn: 'Osaka HQ', city: 'Osaka', country: 'jp', tz: 'Asia/Tokyo', desks: 12 },
+  { id: 'tokyo', name: '東京オフィス', nameEn: 'Tokyo Office', city: 'Tokyo', country: 'jp', tz: 'Asia/Tokyo', desks: 6 },
+  { id: 'phnompenh', name: 'プノンペンオフィス', nameEn: 'Phnom Penh Office', city: 'Phnom Penh', country: 'kh', tz: 'Asia/Phnom_Penh', desks: 12 },
 ]
+
+export const officeInfo = (id: OfficeId): OfficeInfo => OFFICES.find((o) => o.id === id) ?? OFFICES[0]
+export const countryOf = (id: OfficeId): Country => officeInfo(id).country
+/** 古いデータ（jp / kh）を今の拠点に読み替える */
+export function normalizeOffice(v: unknown): OfficeId {
+  if (v === 'tokyo' || v === 'osaka' || v === 'phnompenh') return v
+  if (v === 'kh') return 'phnompenh'
+  return 'osaka'
+}
 
 export const STATUS_LABEL: Record<MemberStatus, string> = {
   idle: '待機中',

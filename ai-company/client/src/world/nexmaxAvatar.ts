@@ -19,6 +19,9 @@ export class NexmaxAvatar implements Avatar {
   private waveT = 0
   private hopV = 0
   private hopY = 0
+  /** 座っている度合い（0..1）。社長の隣の席に座るとき、体を下げて机に隠す */
+  private sitK = 0
+  private carry: THREE.Mesh | null = null
 
   constructor(look: Look) {
     this.nx = createNexmax(NEXMAX_HEIGHT, { variant: look.nexmaxVariant ?? 'protagonist', serial: look.serial })
@@ -44,6 +47,23 @@ export class NexmaxAvatar implements Avatar {
 
   setMode(m: Mode): void {
     this.mode = m
+  }
+
+  /** 運んでいる光るカード（依頼の札）。null でしまう */
+  setCarry(color: string | null): void {
+    if (!color) {
+      if (this.carry) this.carry.visible = false
+      return
+    }
+    if (!this.carry) {
+      const geo = new THREE.BoxGeometry(0.34, 0.24, 0.02)
+      const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 })
+      this.carry = new THREE.Mesh(geo, mat)
+      this.carry.position.set(0, NEXMAX_HEIGHT * 0.5, 0.42)
+      this.root.add(this.carry)
+    }
+    ;(this.carry.material as THREE.MeshBasicMaterial).color.set(color)
+    this.carry.visible = true
   }
 
   setStatus(s: MemberStatus): void {
@@ -82,19 +102,33 @@ export class NexmaxAvatar implements Avatar {
       this.hopY = Math.max(0, this.hopY + this.hopV * dt)
       if (this.hopY === 0 && this.hopV < 0) this.hopV = 0
     }
-    this.inner.position.y = this.hopY
-    this.tagAnchor.position.y = NEXMAX_HEIGHT + 0.25 + this.hopY
+    const k = 1 - Math.exp(-dt / 0.15)
+    this.sitK += ((this.mode === 'sit' ? 1 : 0) - this.sitK) * k
+    const sink = this.sitK * 0.55
+    this.inner.position.y = this.hopY - sink
+    this.inner.position.z = -this.sitK * 0.1
+    this.tagAnchor.position.y = NEXMAX_HEIGHT + 0.25 + this.hopY - sink
+    this.headAnchor.position.y = NEXMAX_HEIGHT * 0.78 - sink
+    if (this.carry && this.carry.visible) {
+      this.carry.rotation.y += dt * 2
+      this.carry.position.y = NEXMAX_HEIGHT * 0.5 + Math.sin(_t * 5) * 0.03
+    }
     this.waveT = Math.max(0, this.waveT - dt)
     const walking = this.mode === 'walk' && speed > 0.05
     if (walking) this.nx.setPose('walk')
     else if (this.waveT > 0 || this.talking) this.nx.setPose('wave')
     else if (this.hopY > 0.05) this.nx.setPose('jump')
+    else if (this.mode === 'sit' && (this.status === 'working' || this.status === 'thinking')) this.nx.setPose('crank')
     else this.nx.setPose('idle')
     this.nx.update(dt, walking ? speed : 0)
     void this.status
   }
 
   dispose(): void {
+    if (this.carry) {
+      this.carry.geometry.dispose()
+      ;(this.carry.material as THREE.Material).dispose()
+    }
     this.nx.dispose()
     this.root.removeFromParent()
   }

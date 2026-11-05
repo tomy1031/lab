@@ -131,3 +131,46 @@
 @keyframes ow-flip { 0%, 40% { transform: rotate(0); } 60%, 100% { transform: rotate(180deg); } }
 @keyframes ow-pulse { 50% { transform: scale(1.15); } }
 @keyframes ow-pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* 人間へのお願い：オレンジの札・頭の上の「！」 */
+.ow-task.human {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 13em;
+  padding: 3px 9px 4px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fff3e6, #ffe2c4);
+  color: #8a3c00;
+  border: 2px solid #ff8a2a;
+  box-shadow: 0 3px 10px rgba(255, 120, 30, 0.35);
+  font-size: 10px;
+  line-height: 1.3;
+  animation: ow-req 1.6s ease-in-out infinite;
+}
+.ow-task.human .ow-req-head { font-weight: 800; font-size: 9px; color: #fff; background: #ff8a2a; border-radius: 6px; padding: 0 6px; margin-bottom: 1px; }
+.ow-task.human .ow-req-body { font-weight: 700; max-width: 12em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ow-task.human .ow-req-wait { font-size: 9px; color: #c25a00; }
+.ow-labels.very-far .ow-task.human { display: flex; font-size: 9px; padding: 2px 6px; }
+.ow-labels.very-far .ow-task.human .ow-req-body, .ow-labels.very-far .ow-task.human .ow-req-wait { display: none; }
+.ow-alert {
+  pointer-events: none;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  background: #ff6b1a;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 3px 10px rgba(255, 100, 20, 0.5);
+  animation: ow-bounce 0.9s ease-in-out infinite;
+}
+.ow-alert[hidden] { display: none; }
+.ow-tag.has-request .ow-chip { border-color: #ff8a2a; box-shadow: 0 0 0 2px rgba(255, 138, 42, 0.55), 0 2px 6px rgba(40, 60, 110, 0.18); }
+.ow-bridge-label.small { font-size: 9.5px; padding: 2px 8px; background: linear-gradient(90deg, #ff6f4f, #ff7aa2); }
+@keyframes ow-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ow-req { 0%, 100% { box-shadow: 0 3px 10px rgba(255, 120, 30, 0.35); } 50% { box-shadow: 0 3px 16px rgba(255, 120, 30, 0.7); } }

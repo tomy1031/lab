@@ -1,7 +1,10 @@
 // バーチャルオフィスだけを試すページ（client/world-preview.html）。
-// 仮の社員 16 人＋ネクマックス 2 体で、やり取り・採用・状態の変化・作業札をくり返し見せる。
-// URL パラメータ：?still（デモを動かさない）&focus=jp|kh|all&select=<id>
+// 大阪（松井社長とネクマックスが社長席）・東京（人間 1 人＋AI）・プノンペン（NX-086）に仮の社員を置き、
+// 依頼・相談（会議室）・引き継ぎ・人間へのお願い・モニター・採用をくり返し見せる。
+// URL パラメータ：?still（デモを動かさない）&focus=all|jp|osaka|tokyo|phnompenh&select=<id>&insets=L,R,T,B
 import type { Member, MemberStatus, MessageKind, OfficeId } from '../../../shared/types'
+import { countryOf } from '../../../shared/types'
+import type { FocusTarget } from './api'
 import { OfficeWorld } from './OfficeWorld'
 
 const params = new URLSearchParams(location.search)
@@ -16,10 +19,11 @@ function human(name: string, role: string, office: OfficeId, desk: number, look:
     role,
     office,
     skills: [],
-    languages: office === 'jp' ? ['ja'] : ['km', 'en'],
+    languages: countryOf(office) === 'jp' ? ['ja'] : ['km', 'en'],
     look: { body: '#7aa7ff', accent: '#ff7aa2', hair: '#3b2a20', skin: '#ffd9c0', style: 0, accessory: 'none', ...look },
     deskIndex: desk,
     status,
+    online: status !== 'offline',
     hiredAt: now,
     stats: { tasksDone: 0, messages: 0 },
   }
@@ -41,17 +45,19 @@ function agent(name: string, role: string, office: OfficeId, desk: number, look:
   }
 }
 
+const ceo = human('松井社長', '代表取締役社長', 'osaka', 0, { body: '#2f4a8a', accent: '#ffffff', hair: '#2b2b2b', skin: '#f6d0b1', style: 1, accessory: 'none' }, 'idle')
 const members: Member[] = [
+  ceo,
   {
     id: 'nexmax',
     kind: 'nexmax',
     name: 'ネクマックス',
-    role: 'AI統括',
-    office: 'jp',
+    role: 'AI統括（社長の分身）',
+    office: 'osaka',
     skills: [],
     languages: ['ja', 'km', 'en'],
-    look: { body: '#66b2f0', accent: '#ffffff', style: 0, nexmaxVariant: 'protagonist' },
-    deskIndex: -1,
+    look: { body: '#66b2f0', accent: '#59e6ff', style: 0, nexmaxVariant: 'protagonist' },
+    deskIndex: 1,
     status: 'idle',
     hiredAt: now,
     stats: { tasksDone: 0, messages: 0 },
@@ -59,33 +65,32 @@ const members: Member[] = [
   {
     id: 'nx086',
     kind: 'nexmax',
-    name: 'NX-086',
-    role: 'カンボジア統括',
-    office: 'kh',
+    name: 'ネクマックス NX-086',
+    role: 'AI統括（量産型）',
+    office: 'phnompenh',
     skills: [],
-    languages: ['km', 'ja', 'en'],
-    look: { body: '#66b2f0', accent: '#ffffff', style: 0, nexmaxVariant: 'production', serial: 86 },
+    languages: ['ja', 'km', 'en'],
+    look: { body: '#66b2f0', accent: '#ffd166', style: 1, nexmaxVariant: 'production', serial: 86 },
     deskIndex: -1,
     status: 'idle',
     hiredAt: now,
     stats: { tasksDone: 0, messages: 0 },
   },
-  human('さくら', '営業', 'jp', 0, { body: '#ff9fb4', hair: '#5a3a2a', style: 0, accessory: 'ribbon', accent: '#ff5f8f' }),
-  human('たけし', 'PM', 'jp', 1, { body: '#5b8def', hair: '#222233', style: 2, accessory: 'glasses', accent: '#ffd23f' }, 'working'),
-  agent('リサ', 'リサーチャー', 'jp', 2, { body: '#9be3c9', accent: '#1dd1a1', style: 1, accessory: 'headset' }, 'thinking'),
-  agent('コード丸', 'エンジニア', 'jp', 3, { body: '#a7b8ff', accent: '#54a0ff', style: 0 }, 'working'),
-  human('ゆい', 'デザイナー', 'jp', 4, { body: '#ffd166', hair: '#8a4b2a', style: 4, accessory: 'flower', accent: '#ff9f43' }, 'offline'),
-  agent('ペン子', 'ライター', 'jp', 5, { body: '#ffc4dd', accent: '#ff6b9a', style: 1, accessory: 'beret' }, 'working'),
-  agent('カズ', '経理', 'jp', 6, { body: '#cfd8e3', accent: '#ffb347', style: 3, accessory: 'bowtie' }, 'waiting'),
-  human('けんじ', '代表補佐', 'jp', 8, { body: '#3d4a6b', hair: '#1a1a22', style: 5, accent: '#ff5a4f', skin: '#f5c9a8' }),
-  human('Sokha', '現地コーディネーター', 'kh', 0, { body: '#4fc3a1', hair: '#1a1410', style: 3, accessory: 'none', accent: '#ffd23f', skin: '#d9a47a' }, 'working'),
-  human('Dara', '営業', 'kh', 1, { body: '#f0a04b', hair: '#15110e', style: 2, accessory: 'cap', accent: '#5b8def', skin: '#c99068' }),
-  agent('Srey', 'クメール語翻訳', 'kh', 2, { body: '#ffd6a5', accent: '#ff9f43', style: 2, accessory: 'flower' }, 'working'),
-  agent('Bot-Lin', 'QAテスター', 'kh', 3, { body: '#b9f3e4', accent: '#10c9a0', style: 5 }, 'thinking'),
-  human('Chanthy', '講師', 'kh', 4, { body: '#c3a6ff', hair: '#2a1d14', style: 1, accessory: 'glasses', accent: '#a06cff', skin: '#e0b08a' }, 'away'),
-  agent('Vibol', 'データ分析', 'kh', 5, { body: '#9fc8ff', accent: '#a06cff', style: 6, accessory: 'headset' }, 'working'),
-  human('Piseth', 'インターン', 'kh', 8, { body: '#ff8fa3', hair: '#18120e', style: 6, accent: '#1dd1a1', skin: '#cf9a72' }),
-  agent('マモル', 'セキュリティ', 'jp', 9, { body: '#ffb3a7', accent: '#ff5a4f', style: 7, accessory: 'cap' }, 'idle'),
+  human('さくら', '営業', 'osaka', 2, { body: '#ef6f6c', hair: '#4a3426', style: 2, accessory: 'flower' }),
+  agent('リサ', 'リサーチャー', 'osaka', 3, { body: '#8ecae6', accent: '#ffb703', style: 1, accessory: 'glasses' }),
+  agent('コード丸', 'Webエンジニア', 'osaka', 4, { body: '#90be6d', accent: '#277da1', style: 2, accessory: 'headset' }),
+  human('たけし', 'ディレクター', 'osaka', 5, { body: '#5b8def', hair: '#1f2a44', style: 4, accessory: 'glasses' }),
+  agent('ミライ', 'マーケター', 'osaka', 6, { body: '#ff9f80', accent: '#4361ee', style: 3, accessory: 'bowtie' }, 'idle'),
+  human('ゆい', 'デザイナー', 'osaka', 7, { body: '#f08bb6', hair: '#6b4423', style: 5, accessory: 'beret' }, 'idle'),
+  agent('カズ', '経理AI', 'osaka', 8, { body: '#a3c4bc', accent: '#e76f51', style: 4 }, 'idle'),
+  human('東京メンバー', '東京オフィス（営業）', 'tokyo', 0, { body: '#56c596', hair: '#2b2b2b', style: 6, accessory: 'none' }),
+  agent('ソラ', 'セールスライター', 'tokyo', 1, { body: '#bde0fe', accent: '#fb8500', style: 5, accessory: 'headset' }),
+  human('Sokha', '現地マネージャー', 'phnompenh', 0, { body: '#56c596', hair: '#2b2b2b', skin: '#c98e66', style: 3 }),
+  human('Dara', '会場・総務', 'phnompenh', 1, { body: '#f2b134', hair: '#1f1f1f', skin: '#a86f4c', style: 6, accessory: 'cap' }, 'idle'),
+  agent('Srey', 'クメール語翻訳', 'phnompenh', 2, { body: '#b8a1e8', accent: '#43aa8b', style: 6, accessory: 'ribbon' }),
+  human('Chanthy', '学校との調整', 'phnompenh', 3, { body: '#9b7ede', hair: '#2b2b2b', skin: '#c98e66', style: 7, accessory: 'glasses' }, 'offline'),
+  agent('Vibol', 'Webエンジニア', 'phnompenh', 4, { body: '#90be6d', accent: '#277da1', style: 7, accessory: 'headset' }),
+  agent('Bot-Lin', 'データ分析', 'phnompenh', 5, { body: '#cdb4db', accent: '#ff7b9c', style: 0 }, 'idle'),
 ]
 
 const container = document.getElementById('world')!
@@ -94,119 +99,164 @@ const world = new OfficeWorld(container)
 world.syncMembers(members)
 world.onSelect = (id) => {
   world.setSelected(id)
-  if (id) world.focus({ memberId: id })
   log(id ? `選択：${members.find((m) => m.id === id)?.name}` : '選択解除')
 }
+
+const ins = params.get('insets')
+if (ins) {
+  const [l, r, t, b] = ins.split(',').map(Number)
+  world.setInsets({ left: l || 0, right: r || 0, top: t || 0, bottom: b || 0 })
+}
+const f = params.get('focus') as FocusTarget | null
+if (f) world.focus(f)
+if (params.get('select')) world.setSelected(params.get('select'))
+
+const byName = (n: string) => members.find((m) => m.name === n)!
+// 人間へのお願い（待ち時間つき）
+world.setTaskLabel(byName('Sokha').id, '会場の下見と仮押さえ', { human: true, since: new Date(Date.now() - 23 * 60000).toISOString() })
+world.setTaskLabel(byName('東京メンバー').id, 'お客様へのヒアリング', { human: true, since: new Date(Date.now() - 4 * 60000).toISOString() })
+world.setTaskLabel(byName('リサ').id, '💻 市場調査')
+world.setTaskLabel(byName('コード丸').id, '💻 LP制作')
+world.setTaskLabel(byName('Srey').id, '💻 翻訳（日→クメール）')
+
+function boards(): void {
+  world.setOfficeBoard('osaka', {
+    headline: '進行中 2 件・人間待ち 1 件',
+    progress: 0.62,
+    rows: [
+      { label: 'IT人材 交流イベント', value: '4/6 完了・会場の確認待ち', tone: 'human' },
+      { label: 'LP リニューアル', value: '実装中（コード丸）', tone: 'ai' },
+      { label: '市場調査レポート', value: '完了', tone: 'done' },
+      { label: '予算の承認', value: '松井社長の確認待ち', tone: 'warn' },
+    ],
+  })
+  world.setOfficeBoard('tokyo', {
+    headline: 'ヒアリング準備中',
+    progress: 0.35,
+    rows: [
+      { label: 'お客様ヒアリング', value: '東京メンバーの対応待ち', tone: 'human' },
+      { label: '提案資料', value: '作成中（ソラ）', tone: 'ai' },
+    ],
+  })
+  world.setOfficeBoard('phnompenh', {
+    headline: '交流イベント準備・翻訳中',
+    progress: 0.48,
+    rows: [
+      { label: '告知文のクメール語版', value: '翻訳中（Srey）', tone: 'ai' },
+      { label: '会場の下見', value: 'Sokha の対応待ち', tone: 'human' },
+      { label: '学校への案内', value: '完了', tone: 'done' },
+    ],
+  })
+}
+boards()
 
 const logEl = document.getElementById('log')!
 function log(s: string): void {
   const d = document.createElement('div')
   d.textContent = s
   logEl.prepend(d)
-  while (logEl.childElementCount > 14) logEl.lastElementChild!.remove()
+  while (logEl.children.length > 12) logEl.lastElementChild?.remove()
 }
 
-for (const b of document.querySelectorAll<HTMLButtonElement>('[data-f]')) b.onclick = () => world.focus(b.dataset.f as 'all' | 'jp' | 'kh')
+document.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', () => world.focus(b.dataset.f as FocusTarget)))
 
+const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
 const LINES: Record<MessageKind, string[]> = {
-  assign: ['市場調査をお願いします！', 'LPの文章を作ってください', 'クメール語に翻訳をお願い', 'テストケースの作成をお願いします'],
-  chat: ['了解です！', 'いい感じです', 'このデータ見ました？', 'ちょっと相談いいですか'],
-  question: ['締め切りはいつですか？', '対象は日本企業だけ？', 'この数字の出典は？'],
-  answer: ['金曜までです', 'はい、まずは大阪の企業です', '経産省の調査です'],
-  handoff: ['調査結果を渡します→ライターさんへ', '下書きできたのでレビューへ'],
-  report: ['完了しました！成果物をアップしました', '3社分まとめました'],
-  review: ['2か所だけ直しましょう', 'OK、承認です'],
-  hire: ['新しい仲間です'],
-  system: ['全体連絡：15時から定例です'],
-}
-const KINDS: MessageKind[] = ['assign', 'chat', 'question', 'answer', 'handoff', 'report', 'review']
-const STATUSES: MemberStatus[] = ['idle', 'working', 'thinking', 'talking', 'waiting']
-const TASKS = ['市場調査', 'LP制作', '翻訳（日→クメール）', '見積書の作成', 'テスト設計', '現地の会場手配', '契約書のレビュー']
-
-function pick<T>(a: T[]): T {
-  return a[Math.floor(Math.random() * a.length)]
+  assign: ['この調査をお願いします', '告知文の翻訳をお願いします', '会場の下見をお願いします！', '見積もりの確認をお願いします'],
+  chat: ['数字を確認しています', 'たたき台ができました'],
+  question: ['締め切りはいつですか？', '優先順位はどれが上ですか？', 'この表現、現地で誤解されませんか？'],
+  answer: ['はい、まずは大阪の企業です', '金曜までにお願いします', 'やわらかい言い方にしましょう'],
+  handoff: ['「告知文」できました。翻訳に使ってください'],
+  report: ['3社分まとめました', '完了しました！成果物をアップしました'],
+  review: ['表現を少し直しました'],
+  hire: ['新しい仲間です！'],
+  system: ['ゴールを 5 つに分けました'],
 }
 
-const NAMES = ['ミライ', 'ハル', 'Kosal', 'ソラ', 'Mealea', 'ツムギ', 'Rithy', 'ノア']
-const ROLES = ['マーケター', 'カスタマーサポート', '法務アシスタント', '動画編集', 'SNS運用', '採用担当']
 let hireN = 0
+let paused = params.has('still')
+document.getElementById('pause')!.addEventListener('click', (ev) => {
+  paused = !paused
+  ;(ev.target as HTMLButtonElement).textContent = paused ? 'デモ再開' : 'デモ停止'
+})
 function hireOne(): void {
-  const office: OfficeId = hireN % 2 ? 'kh' : 'jp'
+  const office: OfficeId = pick(['osaka', 'tokyo', 'phnompenh'] as OfficeId[])
   const used = new Set(members.filter((m) => m.office === office).map((m) => m.deskIndex))
   let desk = 0
   while (used.has(desk)) desk++
-  const m = agent(NAMES[hireN % NAMES.length], ROLES[hireN % ROLES.length], office, desk, {
-    body: pick(['#ffd6a5', '#caffbf', '#9bf6ff', '#bdb2ff', '#ffc6ff', '#fdffb6']),
-    accent: pick(['#ff7aa2', '#54a0ff', '#1dd1a1', '#ff9f43', '#a06cff']),
-    style: hireN % 8,
-    accessory: pick(['none', 'headset', 'ribbon', 'glasses', 'cap', 'bowtie']),
-  })
-  hireN++
+  const name = pick(['ハル', 'ユメ', 'Rina', 'Pisey', 'ナギ', 'Bopha'])
+  const m = agent(`${name}${++hireN}`, pick(['広報ライター', 'イベントプランナー', 'UIデザイナー', 'データ分析']), office, desk, { body: pick(['#ffd6a5', '#caffbf', '#a0c4ff', '#ffc6ff']), accent: '#ff7b9c', style: hireN % 8, accessory: pick(['none', 'headset', 'bowtie', 'ribbon'] as const) }, 'idle')
   members.push(m)
-  const nx = office === 'jp' ? 'nexmax' : 'nx086'
   world.hire(m)
-  setTimeout(() => world.syncMembers(members), 50)
-  world.message(nx, null, 'hire', `${m.name}（${m.role}）を採用しました！`)
   log(`採用：${m.name}（${m.role}）@${office}`)
+  world.message(office === 'phnompenh' ? 'nx086' : 'nexmax', null, 'hire', `${m.name}さんを採用しました！`)
 }
-document.getElementById('hire')!.onclick = hireOne
+document.getElementById('hire')!.addEventListener('click', hireOne)
 
-let running = !params.has('still')
-const pauseBtn = document.getElementById('pause')!
-pauseBtn.onclick = () => {
-  running = !running
-  pauseBtn.textContent = running ? 'デモ停止' : 'デモ再開'
+function setStatus(m: Member, status: MemberStatus, statusText?: string): void {
+  m.status = status
+  m.statusText = statusText
+  world.syncMembers(members.map((x) => ({ ...x })))
 }
 
-function demoTick(): void {
-  if (!running) return
-  const pool = members.filter((m) => m.status !== 'offline')
+function meeting(): void {
+  // 2 人で相談（同じ拠点か、拠点をまたぐ）
+  const cand = members.filter((m) => m.kind === 'agent' || (m.kind === 'human' && m.status !== 'offline'))
+  const a = pick(cand)
+  const b = pick(cand.filter((x) => x !== a))
+  if (!a || !b) return
+  setStatus(a, 'talking', `${b.name}に相談中`)
+  setStatus(b, 'talking', `${a.name}と相談中`)
+  world.message(a.id, b.id, 'question', pick(LINES.question))
+  setTimeout(() => world.message(b.id, a.id, 'answer', pick(LINES.answer)), 3500)
+  setTimeout(() => {
+    setStatus(a, a.kind === 'agent' ? 'working' : 'idle')
+    setStatus(b, b.kind === 'agent' ? 'idle' : 'idle')
+  }, 11000)
+  log(`相談：${a.name} ⇄ ${b.name}`)
+}
+
+let tick = 0
+setInterval(() => {
+  if (paused) return
+  tick++
   const r = Math.random()
+  if (tick % 9 === 0) {
+    hireOne()
+    return
+  }
   if (r < 0.3) {
-    // ネクマックスからの依頼
-    const nx = Math.random() < 0.6 ? 'nexmax' : 'nx086'
-    const to = pick(pool.filter((m) => m.kind !== 'nexmax'))
-    const task = pick(TASKS)
-    world.message(nx, to.id, 'assign', `${to.name}さん、「${task}」をお願いします！`)
-    world.setTaskLabel(to.id, task)
-    to.status = 'working'
-    to.currentTaskId = task
-    world.syncMembers(members)
-    log(`依頼：${to.name} ← ${task}`)
-  } else if (r < 0.85) {
-    const a = pick(pool)
-    const b = pick(pool.filter((m) => m.id !== a.id))
-    const k = pick(KINDS)
-    world.message(a.id, b.id, k, pick(LINES[k]))
-    log(`${a.name} → ${b.name}（${k}）${a.office !== b.office ? ' 🌉' : ''}`)
-  } else if (r < 0.93) {
-    const a = pick(members.filter((m) => m.kind !== 'nexmax' && m.status !== 'offline'))
-    a.status = pick(STATUSES)
-    world.syncMembers(members)
+    // ネクマックスが仕事を配る（人間なら目立つお願い）
+    const nx = pick(['nexmax', 'nexmax', 'nx086'])
+    const country = nx === 'nx086' ? 'kh' : 'jp'
+    const to = pick(members.filter((m) => m.kind !== 'nexmax' && countryOf(m.office) === country))
+    world.message(nx, to.id, 'assign', `${to.name}さん、${pick(LINES.assign)}`)
+    if (to.kind === 'human') world.setTaskLabel(to.id, pick(['会場の下見', '契約書の確認', '予算の承認', 'お客様へ電話']), { human: true, since: new Date().toISOString() })
+    else world.setTaskLabel(to.id, `💻 ${pick(['市場調査', '翻訳', 'LP制作', '資料作り'])}`)
+    log(`依頼：${members.find((m) => m.id === nx)?.name} → ${to.name}`)
+  } else if (r < 0.48) {
+    meeting()
+  } else if (r < 0.62) {
+    // 引き継ぎ（同じ拠点）
+    const a = pick(members.filter((m) => m.kind === 'agent'))
+    const b = pick(members.filter((m) => m.office === a.office && m !== a && m.kind !== 'nexmax'))
+    if (b) {
+      world.message(a.id, b.id, 'handoff', pick(LINES.handoff))
+      log(`引き継ぎ：${a.name} → ${b.name}`)
+    }
+  } else if (r < 0.8) {
+    const a = pick(members)
+    const b = pick(members.filter((m) => m !== a))
+    const kind = pick(['report', 'chat', 'question'] as MessageKind[])
+    world.message(a.id, b.id, kind, pick(LINES[kind]))
+  } else if (r < 0.9) {
+    // お願いが片づく
+    const m = pick(members.filter((x) => x.kind === 'human'))
+    world.setTaskLabel(m.id, null)
+    world.celebrate(m.id)
+    log(`対応完了：${m.name}`)
   } else {
-    const a = pick(members.filter((m) => m.kind !== 'nexmax'))
-    world.celebrate(a.id)
-    world.setTaskLabel(a.id, null)
-    log(`完了：${a.name}`)
+    const m = pick(members.filter((x) => x.kind === 'agent'))
+    setStatus(m, pick(['working', 'thinking', 'idle', 'waiting'] as MemberStatus[]))
   }
-}
-
-if (params.has('insets')) {
-  const [left, right, top, bottom] = params.get('insets')!.split(',').map(Number)
-  world.setInsets({ left, right, top, bottom })
-  for (const [k, v] of Object.entries({ left, right, top, bottom })) {
-    const d = document.createElement('div')
-    d.style.cssText = `position:fixed;z-index:5;background:rgba(255,255,255,.35);backdrop-filter:blur(2px);${k}:0;${k === 'left' || k === 'right' ? `top:0;bottom:0;width:${v}px` : `left:0;right:0;height:${v}px`}`
-    document.body.appendChild(d)
-  }
-}
-if (params.has('focus')) world.focus(params.get('focus') as 'all' | 'jp' | 'kh')
-if (params.has('select')) {
-  const id = params.get('select')!
-  world.setSelected(id)
-}
-setInterval(demoTick, 1400)
-setInterval(() => running && hireOne(), 8000)
-world.setTaskLabel(members[3].id, 'LP制作')
-world.setTaskLabel(members[4].id, '市場調査')
-world.setTaskLabel(members[12].id, '翻訳（日→クメール）')
+}, 2200)

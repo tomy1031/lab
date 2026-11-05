@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { Look, OfficeId } from '../shared/types'
+import { countryOf } from '../shared/types'
 
 export const now = (): string => new Date().toISOString()
 export const id = (prefix: string): string => `${prefix}_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
@@ -61,7 +62,7 @@ export function lookForHuman(name: string, office: OfficeId): Look {
     body: pick(CLOTHES, h),
     accent: pick(['#ffffff', '#ffd166', '#06d6a0', '#ef476f'], h >> 4),
     hair: pick(HAIRS, h >> 7),
-    skin: office === 'kh' ? pick(SKINS.slice(1), h >> 10) : pick(SKINS.slice(0, 3), h >> 10),
+    skin: countryOf(office) === 'kh' ? pick(SKINS.slice(1), h >> 10) : pick(SKINS.slice(0, 3), h >> 10),
     style: (h >> 13) % 8,
     accessory: pick(['none', 'glasses', 'none', 'cap', 'flower', 'none', 'beret'] as const, h >> 16),
   }
@@ -73,7 +74,7 @@ const JP_AGENT_NAMES = ['アイ', 'ルミ', 'ソラ', 'ハル', 'ミライ', '�
 const KH_AGENT_NAMES = ['ダラ', 'ソピア', 'リナ', 'ボパ', 'チャンティ', 'ヴィチェア', 'スレイ', 'ピセイ', 'ナリー', 'ソカー', 'ラタナ', 'メアリー']
 
 export function agentName(office: OfficeId, taken: Set<string>): string {
-  const pool = office === 'kh' ? KH_AGENT_NAMES : JP_AGENT_NAMES
+  const pool = countryOf(office) === 'kh' ? KH_AGENT_NAMES : JP_AGENT_NAMES
   for (const n of pool) if (!taken.has(n)) return n
   let i = 2
   for (;;) {

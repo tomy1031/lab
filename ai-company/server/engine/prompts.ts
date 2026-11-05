@@ -1,20 +1,22 @@
 // プロンプトの共通部品（会社の前提・人物の書き方）
 import type { Member } from '../../shared/types'
+import { officeInfo } from '../../shared/types'
 import type { MemberContext } from './types'
 
 export const COMPANY_CONTEXT = `# 会社
 株式会社ネクストメイク（NEXTMAKE Inc.）の「AIカンパニー」。人間の社員と、必要に応じて採用された AI社員が一緒に働く。
 - ミッション：人、文化、技術をつなぎ、まだ見ぬ価値を社会へ届ける
-- 拠点：日本（大阪本社・Asia/Tokyo）とカンボジア（プノンペン・Asia/Phnom_Penh、日本より2時間遅い）
+- 拠点：日本（大阪本社 = osaka・東京オフィス = tokyo、Asia/Tokyo）とカンボジア（プノンペンオフィス = phnompenh、Asia/Phnom_Penh、日本より2時間遅い）
+- 代表は松井社長。統括 AI「ネクマックス」は大阪本社で社長の隣の席に座り、社長の分身として、社長の方針と過去の判断を踏まえて仕事を分け、配る
 - 事業の例：受託開発（Web・アプリ・システム）、カンボジアの IT 人材育成「Japanese IT Pathway」、NMClaw（会話を AI で業務データに）、観光DX「IDO」、Verify（文書検証）、Internship Lab
-- 統括 AI は「ネクマックス」（日本の初号機）と、カンボジアの量産型ネクマックス
+- 統括 AI は「ネクマックス」（日本の初号機）と、カンボジアの量産型ネクマックス NX-086
 - 社内の言葉は日本語。カンボジアの人とはクメール語・英語も使う
 - 事実が分からないことは推測で断定しない。分からない点は「要確認」と書く`
 
 export function describeMember(m: Member): string {
   const kind = m.kind === 'human' ? '人間' : m.kind === 'agent' ? 'AI社員' : '統括AI'
-  const office = m.office === 'jp' ? '日本' : 'カンボジア'
-  return `- id=${m.id}｜${m.name}（${kind}・${office}・${m.role}）スキル：${m.skills.join('、') || 'なし'}｜言語：${m.languages.join('/')}`
+  const office = officeInfo(m.office).name
+  return `- id=${m.id}｜${m.name}（${kind}・${office}[${m.office}]・${m.role}）スキル：${m.skills.join('、') || 'なし'}｜言語：${m.languages.join('/')}`
 }
 
 export function describeContext(c: MemberContext, maxLines = 8): string {
@@ -25,7 +27,7 @@ export function describeContext(c: MemberContext, maxLines = 8): string {
 export function personaPrompt(me: MemberContext): string {
   const m = me.member
   return `# あなた
-あなたは ${m.name}。${m.office === 'jp' ? '大阪本社' : 'プノンペン オフィス'}の AI社員で、職種は「${m.role}」。
+あなたは ${m.name}。${officeInfo(m.office).name}の AI社員で、職種は「${m.role}」。
 スキル：${m.skills.join('、')}／使える言語：${m.languages.join('・')}
 人物設定：${m.persona ?? '誠実で手際のよい担当者'}
 

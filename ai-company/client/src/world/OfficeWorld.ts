@@ -1,22 +1,22 @@
-// 3D バーチャルオフィス：日本（大阪本社・左）とカンボジア（プノンペン・右）を 1 つの画面で見渡す。
+// 3D バーチャルオフィス：大阪本社（左手前）・東京オフィス（大阪の奥に浮かぶ島）・プノンペンオフィス（右）を 1 つの画面で見渡す。
 // 社員（人間・AI社員・ネクマックス）を席に出し、やり取りを光の粒で、採用をドアからの登場で見せる。
+// 動き：ネクマックスが依頼の札を届けに歩く／相談中（talking）は会議室へ／引き継ぎは相手の席まで／ひまな人はときどきラウンジや窓へ。
+// 人間へのお願いは、オレンジの札・頭の上の「！」・足元の輪で目立たせる。
 // 外向きの約束は ./api.ts（OfficeWorldApi）。
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
-import { OFFICES, STATUS_LABEL, type Member, type MemberStatus, type MessageKind, type OfficeId } from '../../../shared/types'
-import type { FocusTarget, OfficeWorldApi } from './api'
+import { OFFICES, STATUS_LABEL, countryOf, normalizeOffice, officeInfo, type Member, type MemberStatus, type MessageKind, type OfficeId } from '../../../shared/types'
+import type { FocusTarget, OfficeBoard, OfficeWorldApi, TaskLabelOptions } from './api'
 import { Chibi, type Avatar } from './chibi'
 import { Fx, KIND_COLOR } from './fx'
-import { DOOR_U, DOOR_Z, HALF_D, OFFICE_CENTER_X, deskSpot, nexmaxHome, officeCenter, officeSign, route, toWorld } from './layout'
+import { ALL_OFFICES, deskSpot, exitOf, layoutOf, routeTo, toWorld, type P2, type Spot } from './layout'
 import { disposeAllMats } from './mats'
 import { NexmaxAvatar } from './nexmaxAvatar'
 import { setOutlineViewport } from './nexmax/materials'
-import { buildBridge, buildClouds, buildOffice, type BridgeBuild, type OfficeBuild } from './offices'
+import { buildBridge, buildClouds, buildOffice, buildTokyoWalkway, type BridgeBuild, type OfficeBuild, type WalkwayBuild } from './offices'
 import './world.css'
-
-type P2 = { u: number; z: number }
 
 const KIND_LABEL: Record<MessageKind, string> = {
   assign: '依頼',
@@ -39,6 +39,12 @@ const STATUS_ICON: Partial<Record<MemberStatus, string>> = {
   offline: '💤',
 }
 
+const HUMAN_COLOR = '#ff8a2a'
+
+type Activity = 'home' | 'visit' | 'meeting' | 'wander' | 'walking-home' | 'hire'
+
+type Visit = { toId: string; text: string; kind: MessageKind }
+
 type Entity = {
   id: string
   member: Member
@@ -46,22 +52,24 @@ type Entity = {
   office: OfficeId
   /** いまいる場所（オフィスの中の u, z） */
   pos: P2
-  /** 向き（世界の yaw）と目標 */
+  /** 通り道へ出るまでの点列（いまの場所から） */
+  exit: P2[]
   yaw: number
   yawTarget: number
   path: P2[]
   speed: number
   onArrive: (() => void) | null
-  /** 席（座る場所）または立ち位置 */
-  home: P2
-  homeLane?: number
-  seated: boolean
+  /** 歩いている先 */
+  dest: Spot | null
+  home: Spot
+  activity: Activity
   tag: CSS2DObject
   tagEl: HTMLDivElement
   nameEl: HTMLElement
   roleEl: HTMLElement
   icoEl: HTMLElement
   taskEl: HTMLElement
+  alertEl: HTMLElement
   bubble: { obj: CSS2DObject; el: HTMLDivElement; until: number } | null
   newUntil: number
   talkUntil: number
@@ -69,9 +77,14 @@ type Entity = {
   scaleTarget: number
   removing: boolean
   lookKey: string
-  /** ネクマックス：届け物の予定 */
-  visits: { toId: string; text: string; kind: MessageKind }[]
-  busy: boolean
+  visits: Visit[]
+  /** 会議室の席（office, 番号） */
+  seat: number | null
+  /** 手に持つ光る札 */
+  card: THREE.Mesh | null
+  /** 人間へのお願い（足元の輪） */
+  request: { since: number; ring: THREE.Mesh } | null
+  wanderUntil: number
 }
 
 function easeInOut(u: number): number {
@@ -91,6 +104,14 @@ function wrapLabel(inner: HTMLElement, centerY = 1): CSS2DObject {
   return o
 }
 
+function waitText(sinceMs: number): string {
+  const min = Math.max(0, Math.floor((Date.now() - sinceMs) / 60000))
+  if (min < 1) return 'いま届いた'
+  if (min < 60) return `${min}分待ち`
+  const h = Math.floor(min / 60)
+  return h < 24 ? `${h}時間待ち` : `${Math.floor(h / 24)}日待ち`
+}
+
 export class OfficeWorld implements OfficeWorldApi {
   onSelect: ((memberId: string | null) => void) | null = null
 
@@ -99,20 +120,30 @@ export class OfficeWorld implements OfficeWorldApi {
   private readonly renderer: THREE.WebGLRenderer
   private readonly labels: CSS2DRenderer
   private readonly scene = new THREE.Scene()
-  private readonly camera = new THREE.PerspectiveCamera(30, 1, 0.1, 220)
+  private readonly camera = new THREE.PerspectiveCamera(30, 1, 0.1, 260)
   private readonly controls: OrbitControls
   private readonly offices: Record<OfficeId, OfficeBuild>
   private readonly bridge: BridgeBuild
+  private readonly walkway: WalkwayBuild
   private readonly clouds: ReturnType<typeof buildClouds>
   private readonly fx = new Fx()
   private readonly entities = new Map<string, Entity>()
   private readonly hired = new Set<string>()
   private readonly selRing: THREE.Mesh
   private readonly selMat: THREE.MeshBasicMaterial
+  private readonly reqGeo = new THREE.RingGeometry(0.45, 0.62, 40)
+  private readonly reqMat = new THREE.MeshBasicMaterial({ color: HUMAN_COLOR, transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide })
+  private readonly cardGeo = new THREE.BoxGeometry(0.3, 0.21, 0.02)
+  private readonly cardMats = new Map<string, THREE.MeshBasicMaterial>()
   private readonly pmrem: THREE.PMREMGenerator
   private readonly envTex: THREE.Texture
   private readonly ro: ResizeObserver
   private readonly raycaster = new THREE.Raycaster()
+  /** 会議室の席の使用者（拠点ごと） */
+  private readonly seats: Record<OfficeId, (string | null)[]>
+  /** 拠点をまたぐ会議（ホログラム通話）の光 */
+  private readonly calls = new Map<string, { mesh: THREE.Mesh; geo: THREE.BufferGeometry }>()
+  private readonly callMat = new THREE.MeshBasicMaterial({ color: '#8fe8ff', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
   private selected: string | null = null
   private raf = 0
   private last = performance.now()
@@ -123,13 +154,13 @@ export class OfficeWorld implements OfficeWorldApi {
   private followId: string | null = null
   private down: { x: number; y: number; t: number } | null = null
   private hoverId: string | null = null
-  /** 作業札（作り直しても残す） */
-  private readonly taskLabels = new Map<string, string | null>()
+  private readonly taskLabels = new Map<string, { label: string | null; opts?: TaskLabelOptions }>()
   private lastLabelClass = ''
-  /** UI のパネルで隠れる幅（CSS px）。見える長方形の中心に向けて写す */
   private insets = { left: 0, right: 0, top: 0, bottom: 0 }
   private viewOff = { x: 0, y: 0 }
   private viewOffTarget = { x: 0, y: 0 }
+  private nextWander = 8
+  private nextSlowTick = 0
   /** 描画の統計（調整用） */
   get stats(): { calls: number; triangles: number; entities: number } {
     const r = this.renderer.info.render
@@ -156,7 +187,6 @@ export class OfficeWorld implements OfficeWorldApi {
     this.labels.domElement.className = 'ow-labels'
     this.root.appendChild(this.labels.domElement)
 
-    // 環境光（ネクマックスの質感用）
     this.pmrem = new THREE.PMREMGenerator(this.renderer)
     const room = new RoomEnvironment()
     this.envTex = this.pmrem.fromScene(room, 0.04).texture
@@ -164,31 +194,34 @@ export class OfficeWorld implements OfficeWorldApi {
     this.scene.environmentIntensity = 0.55
 
     // 光：空の色の半球光 + 影を落とす太陽 1 つ
-    this.scene.add(new THREE.HemisphereLight('#fdf7ff', '#d8c8b4', 1.55))
-    const sun = new THREE.DirectionalLight('#fff3df', 2.1)
-    sun.position.set(7, 24, 15)
-    sun.target.position.set(0, 0, 0)
+    this.scene.add(new THREE.HemisphereLight('#fdfbff', '#cfd9e8', 1.7))
+    const sun = new THREE.DirectionalLight('#fff6e8', 2.0)
+    sun.position.set(6, 26, 16)
+    sun.target.position.set(-2, 0, -3)
     sun.castShadow = true
-    sun.shadow.mapSize.set(2048, 1024)
+    sun.shadow.mapSize.set(2048, 2048)
     const sc = sun.shadow.camera
-    sc.left = -19
-    sc.right = 19
-    sc.top = 9
-    sc.bottom = -9
+    sc.left = -22
+    sc.right = 22
+    sc.top = 16
+    sc.bottom = -12
     sc.near = 5
-    sc.far = 60
+    sc.far = 70
     sun.shadow.bias = -0.0008
     sun.shadow.normalBias = 0.03
     sun.shadow.radius = 3
     this.scene.add(sun, sun.target)
 
-    // オフィス・光の道・雲
-    this.offices = {
-      jp: buildOffice(OFFICES.find((o) => o.id === 'jp')!),
-      kh: buildOffice(OFFICES.find((o) => o.id === 'kh')!),
+    // オフィス・橋・坂道・雲
+    this.offices = {} as Record<OfficeId, OfficeBuild>
+    this.seats = {} as Record<OfficeId, (string | null)[]>
+    for (const id of ALL_OFFICES) {
+      const b = buildOffice(layoutOf(id), officeInfo(id))
+      this.offices[id] = b
+      this.scene.add(b.group)
+      this.seats[id] = layoutOf(id).meeting.seats.map(() => null)
     }
-    this.scene.add(this.offices.jp.group, this.offices.kh.group)
-    this.bridge = buildBridge()
+    this.bridge = buildBridge('/brand/nextmake-mark-270.png')
     this.scene.add(this.bridge.group)
     const bl = document.createElement('div')
     bl.className = 'ow-bridge-label'
@@ -196,32 +229,39 @@ export class OfficeWorld implements OfficeWorldApi {
     const blo = wrapLabel(bl, 0.5)
     blo.position.copy(this.bridge.top)
     this.scene.add(blo)
+    this.walkway = buildTokyoWalkway()
+    this.scene.add(this.walkway.group)
+    const wl = document.createElement('div')
+    wl.className = 'ow-bridge-label small'
+    wl.textContent = 'TOKYO ⇄ OSAKA'
+    const wlo = wrapLabel(wl, 0.5)
+    wlo.position.copy(this.walkway.curve.getPoint(0.5)).add(new THREE.Vector3(0, 0.5, 0))
+    this.scene.add(wlo)
     this.clouds = buildClouds()
     this.scene.add(this.clouds.group)
     this.scene.add(this.fx.group)
 
-    // 選択の輪
     this.selMat = new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
     this.selRing = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.56, 40), this.selMat)
     this.selRing.rotation.x = -Math.PI / 2
     this.selRing.visible = false
     this.scene.add(this.selRing)
 
-    // カメラ
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.controls.enableDamping = true
     this.controls.dampingFactor = 0.08
     this.controls.minDistance = 3.5
-    this.controls.maxDistance = 80
-    this.controls.minPolarAngle = 0.2
-    this.controls.maxPolarAngle = 1.32
+    this.controls.maxDistance = 95
+    this.controls.minPolarAngle = 0.25
+    this.controls.maxPolarAngle = 1.3
+    this.controls.minAzimuthAngle = -1.1
+    this.controls.maxAzimuthAngle = 1.1
     this.controls.screenSpacePanning = true
     this.controls.addEventListener('start', () => {
       this.tween = null
       this.followId = null
     })
 
-    // 入力
     const el = this.renderer.domElement
     el.addEventListener('pointerdown', this.onDown)
     el.addEventListener('pointerup', this.onUp)
@@ -238,10 +278,11 @@ export class OfficeWorld implements OfficeWorldApi {
 
   syncMembers(members: Member[]): void {
     const seen = new Set<string>()
-    const nexCount: Record<OfficeId, number> = { jp: 0, kh: 0 }
-    for (const m of members) {
+    const nexCount: Record<OfficeId, number> = { osaka: 0, tokyo: 0, phnompenh: 0 }
+    for (const raw of members) {
+      const m = raw.office === normalizeOffice(raw.office) ? raw : { ...raw, office: normalizeOffice(raw.office) }
       seen.add(m.id)
-      const nIndex = m.kind === 'nexmax' ? nexCount[m.office]++ : 0
+      const nIndex = m.kind === 'nexmax' && m.deskIndex < 0 ? nexCount[m.office]++ : 0
       const e = this.entities.get(m.id)
       if (!e) this.spawn(m, false, nIndex)
       else this.updateEntity(e, m, nIndex)
@@ -252,42 +293,47 @@ export class OfficeWorld implements OfficeWorldApi {
   hire(member: Member): void {
     if (this.hired.has(member.id)) return
     this.hired.add(member.id)
-    const existing = this.entities.get(member.id)
-    if (existing) {
-      // 席に出たばかりなら、ドアから出直す
-      this.dropEntity(existing)
-    }
-    const nIndex = member.kind === 'nexmax' ? [...this.entities.values()].filter((e) => e.member.kind === 'nexmax' && e.office === member.office).length : 0
-    this.spawn(member, true, nIndex)
+    const m = { ...member, office: normalizeOffice(member.office) }
+    const existing = this.entities.get(m.id)
+    if (existing) this.dropEntity(existing)
+    const nIndex = m.kind === 'nexmax' && m.deskIndex < 0 ? [...this.entities.values()].filter((e) => e.member.kind === 'nexmax' && e.office === m.office && e.member.deskIndex < 0).length : 0
+    this.spawn(m, true, nIndex)
   }
 
   message(fromId: string, toId: string | null, kind: MessageKind, text: string): void {
     const a = this.entities.get(fromId)
     if (!a) return
-    this.say(fromId, text, undefined, kind)
-    a.talkUntil = this.t + 1.6
-    a.avatar.setTalking(true)
-    const color = KIND_COLOR[kind] ?? '#54a0ff'
+    const b = toId ? this.entities.get(toId) : undefined
+    const color = kind === 'assign' && b?.member.kind === 'human' ? HUMAN_COLOR : (KIND_COLOR[kind] ?? '#54a0ff')
 
     if (toId === null) {
+      this.say(fromId, text, undefined, kind)
+      this.talkFor(a, 1.6)
       const p = this.worldPos(a)
       this.fx.ripple(p, color, 3.2, 1.3)
       setTimeout(() => !this.disposed && this.fx.ripple(this.worldPos(a), color, 4.2, 1.5), 260)
       if (a.avatar instanceof NexmaxAvatar) a.avatar.wave(1.6)
       return
     }
-    const b = this.entities.get(toId)
     if (!b || b === a) return
 
-    // ネクマックスの依頼：同じオフィスなら本人が席まで届けに行く
-    if (kind === 'assign' && a.avatar instanceof NexmaxAvatar && a.office === b.office && !b.removing) {
-      if (a.visits.length < 4) {
-        a.visits.push({ toId, text, kind })
-        if (!a.busy) this.nextVisit(a)
-        return
-      }
+    // ネクマックスの依頼：同じ国なら本人が席まで（東京へは坂道の下まで）届けに行く
+    const nx = a.avatar instanceof NexmaxAvatar
+    const walkable = a.office === b.office || (nx && countryOf(a.office) === countryOf(b.office) && this.gateSpot(a.office, b.office))
+    if (kind === 'assign' && nx && walkable && !b.removing && a.visits.length < 5) {
+      a.visits.push({ toId, text, kind })
+      if (a.activity === 'home') this.nextVisit(a)
+      return
     }
-    if (a.avatar instanceof NexmaxAvatar) a.avatar.wave(1.4)
+    // 引き継ぎ：同じ拠点なら、手渡しに行く
+    if (kind === 'handoff' && !nx && a.office === b.office && a.activity === 'home' && a.member.status !== 'talking' && a.visits.length < 2) {
+      a.visits.push({ toId, text, kind })
+      this.nextVisit(a)
+      return
+    }
+    this.say(fromId, text, undefined, kind)
+    this.talkFor(a, 1.6)
+    if (nx) (a.avatar as NexmaxAvatar).wave(1.4)
     this.sendPacket(a, b, color)
   }
 
@@ -313,13 +359,15 @@ export class OfficeWorld implements OfficeWorldApi {
     e.bubble = { obj, el, until: this.t + dur / 1000 }
   }
 
-  setTaskLabel(memberId: string, label: string | null): void {
+  setTaskLabel(memberId: string, label: string | null, opts?: TaskLabelOptions): void {
+    this.taskLabels.set(memberId, { label, opts })
     const e = this.entities.get(memberId)
     if (!e) return
-    this.taskLabels.set(memberId, label)
-    e.taskEl.hidden = !label
-    e.taskEl.textContent = label ? `📄 ${truncate(label, 16)}` : ''
-    e.taskEl.title = label ?? ''
+    this.applyTaskLabel(e)
+  }
+
+  setOfficeBoard(office: OfficeId, board: OfficeBoard): void {
+    this.offices[normalizeOffice(office)]?.setBoard(board)
   }
 
   celebrate(memberId: string): void {
@@ -352,7 +400,6 @@ export class OfficeWorld implements OfficeWorldApi {
     if (typeof this.focusTarget === 'string' || this.followId) this.applyFocus(this.focusTarget, false)
   }
 
-  /** 実際に使う隠れ幅（見える所が狭すぎるときは無視する） */
   private effInsets(): { left: number; right: number; top: number; bottom: number } {
     const w = Math.max(1, this.container.clientWidth)
     const h = Math.max(1, this.container.clientHeight)
@@ -391,12 +438,18 @@ export class OfficeWorld implements OfficeWorldApi {
     el.removeEventListener('pointermove', this.onMove)
     for (const e of this.entities.values()) this.dropEntity(e)
     this.entities.clear()
-    this.offices.jp.dispose()
-    this.offices.kh.dispose()
+    for (const o of Object.values(this.offices)) o.dispose()
     this.bridge.dispose()
+    this.walkway.dispose()
+    for (const c of this.calls.values()) c.geo.dispose()
+    this.callMat.dispose()
     this.fx.dispose()
     this.selRing.geometry.dispose()
     this.selMat.dispose()
+    this.reqGeo.dispose()
+    this.reqMat.dispose()
+    this.cardGeo.dispose()
+    for (const m of this.cardMats.values()) m.dispose()
     this.envTex.dispose()
     this.pmrem.dispose()
     this.controls.dispose()
@@ -411,18 +464,23 @@ export class OfficeWorld implements OfficeWorldApi {
     return m.kind === 'nexmax' ? new NexmaxAvatar(m.look) : new Chibi(m)
   }
 
-  private homeOf(m: Member, nIndex: number): { home: P2; lane?: number; seated: boolean } {
-    if (m.kind === 'nexmax' || m.deskIndex < 0) return { home: nexmaxHome(nIndex), seated: false }
-    const d = deskSpot(m.deskIndex)
-    return { home: d.chair, lane: d.overflow ? undefined : d.laneZ, seated: !d.overflow }
+  private homeOf(m: Member, nIndex: number): Spot {
+    const L = layoutOf(m.office)
+    if (m.deskIndex < 0) return L.pads[Math.min(nIndex, L.pads.length - 1)]
+    return deskSpot(m.office, m.deskIndex).chair
   }
 
   private spawn(m: Member, viaDoor: boolean, nIndex: number): Entity {
     const avatar = this.makeAvatar(m)
-    const { home, lane, seated } = this.homeOf(m, nIndex)
+    const home = this.homeOf(m, nIndex)
+    const L = layoutOf(m.office)
 
     const tagEl = document.createElement('div')
     tagEl.className = 'ow-tag'
+    const alert = document.createElement('div')
+    alert.className = 'ow-alert'
+    alert.textContent = '!'
+    alert.hidden = true
     const chip = document.createElement('div')
     chip.className = 'ow-chip'
     const ico = document.createElement('span')
@@ -440,7 +498,7 @@ export class OfficeWorld implements OfficeWorldApi {
     const task = document.createElement('div')
     task.className = 'ow-task'
     task.hidden = true
-    tagEl.append(task, chip, role)
+    tagEl.append(alert, task, chip, role)
     tagEl.addEventListener('click', (ev) => {
       ev.stopPropagation()
       this.onSelect?.(m.id)
@@ -448,26 +506,29 @@ export class OfficeWorld implements OfficeWorldApi {
     const tag = wrapLabel(tagEl, 1)
     avatar.tagAnchor.add(tag)
 
+    const start = viaDoor && m.kind !== 'nexmax' ? L.door : home
     const e: Entity = {
       id: m.id,
       member: m,
       avatar,
       office: m.office,
-      pos: viaDoor && m.kind !== 'nexmax' ? { u: DOOR_U, z: DOOR_Z + 0.45 } : { ...home },
+      pos: { ...start.pos },
+      exit: exitOf(start),
       yaw: 0,
       yawTarget: 0,
       path: [],
       speed: 0,
       onArrive: null,
+      dest: null,
       home,
-      homeLane: lane,
-      seated,
+      activity: viaDoor ? 'hire' : 'home',
       tag,
       tagEl,
       nameEl: name,
       roleEl: role,
       icoEl: ico,
       taskEl: task,
+      alertEl: alert,
       bubble: null,
       newUntil: viaDoor ? this.t + 25 : 0,
       talkUntil: 0,
@@ -476,88 +537,144 @@ export class OfficeWorld implements OfficeWorldApi {
       removing: false,
       lookKey: JSON.stringify(m.look) + m.kind,
       visits: [],
-      busy: false,
+      seat: null,
+      card: null,
+      request: null,
+      wanderUntil: 0,
     }
     this.entities.set(m.id, e)
     this.scene.add(avatar.root)
     this.applyMember(e, m)
-    const tl = this.taskLabels.get(m.id)
-    if (tl) this.setTaskLabel(m.id, tl)
+    this.applyTaskLabel(e)
 
     if (viaDoor) {
       const office = this.offices[m.office]
       office.openDoor()
-      const doorPos = toWorld(m.office, DOOR_U, DOOR_Z + 0.6, 1.0)
+      const doorPos = toWorld(m.office, L.door.pos.u, L.door.pos.z, 1.0)
       this.fx.burst(doorPos, 'confetti', 70)
-      this.fx.ripple(toWorld(m.office, DOOR_U, DOOR_Z + 0.9, 0.05), KIND_COLOR.hire, 2.4, 1.2)
+      this.fx.ripple(toWorld(m.office, L.door.pos.u, L.door.pos.z + 0.3, 0.05), KIND_COLOR.hire, 2.4, 1.2)
       this.bridge.pulse()
       setTimeout(() => {
         if (this.disposed || e.removing) return
         e.avatar.hop(1)
-        if (m.kind === 'nexmax') {
+        if (m.kind === 'nexmax' && m.deskIndex < 0) {
           ;(e.avatar as NexmaxAvatar).wave(2)
+          e.activity = 'home'
+          this.settle(e)
         } else {
-          this.walkTo(e, home, lane, () => {
+          this.walkTo(e, home, () => {
+            e.activity = 'home'
             this.settle(e)
             this.celebrate(e.id)
+            this.afterArrive(e)
           })
         }
       }, 450)
-      e.yaw = e.yawTarget = 0
     } else {
       this.settle(e)
+      if (m.status === 'talking') this.goMeeting(e)
     }
     this.place(e)
     return e
   }
 
-  /** 名前・役割・状態を反映（見た目が変わったら作り直す） */
   private updateEntity(e: Entity, m: Member, nIndex: number): void {
     const lookKey = JSON.stringify(m.look) + m.kind
     if (lookKey !== e.lookKey) {
       const keepPos = e.pos
+      const office = e.office
       this.dropEntity(e)
       const ne = this.spawn(m, false, nIndex)
-      ne.pos = keepPos
+      if (office === m.office) ne.pos = keepPos
       return
     }
+    const prevStatus = e.member.status
     const officeChanged = m.office !== e.office
     const deskChanged = m.deskIndex !== e.member.deskIndex
     e.member = m
     this.applyMember(e, m)
-    if (officeChanged || deskChanged || (m.kind === 'nexmax' && !e.busy)) {
-      const { home, lane, seated } = this.homeOf(m, nIndex)
-      const moved = home.u !== e.home.u || home.z !== e.home.z
+    if (officeChanged || deskChanged) {
+      const home = this.homeOf(m, nIndex)
       e.home = home
-      e.homeLane = lane
-      e.seated = seated
       if (officeChanged) {
-        // 別のオフィスへ異動：その場で消えて、新しい席に現れる
+        // 別の拠点へ異動：その場で消えて、新しい席に現れる
+        this.releaseSeat(e)
         e.office = m.office
-        e.pos = { ...home }
         e.path = []
+        e.activity = 'home'
         this.settle(e)
-        this.fx.burst(this.worldPos(e).setY(1), 'sparkle', 24)
-      } else if (moved && !e.busy) {
-        this.walkTo(e, home, lane, () => this.settle(e))
+        this.fx.burst(this.worldPos(e).setY(this.worldPos(e).y + 1), 'sparkle', 24)
+      } else if (e.activity === 'home') {
+        this.goHome(e)
       }
     }
+    // 状態の変化で動く
+    if (m.status !== prevStatus) this.onStatus(e, prevStatus)
+  }
+
+  private onStatus(e: Entity, prev: MemberStatus): void {
+    const st = e.member.status
+    if (st === 'talking' && prev !== 'talking') {
+      if (e.activity === 'home' || e.activity === 'wander' || e.activity === 'walking-home') this.goMeeting(e)
+    } else if (prev === 'talking' && st !== 'talking') {
+      if (e.activity === 'meeting') this.goHome(e)
+    }
+    if ((st === 'working' || st === 'thinking') && e.activity === 'wander') this.goHome(e)
   }
 
   private applyMember(e: Entity, m: Member): void {
     e.nameEl.textContent = m.name
     e.roleEl.textContent = m.role
     e.tagEl.title = `${m.name}（${m.role}）— ${STATUS_LABEL[m.status]}${m.statusText ? `：${m.statusText}` : ''}`
-    e.tagEl.className = `ow-tag kind-${m.kind} st-${m.status}${e.newUntil > this.t ? ' is-new' : ''}${this.selected === m.id ? ' selected' : ''}`
+    e.tagEl.className = `ow-tag kind-${m.kind} st-${m.status}${e.newUntil > this.t ? ' is-new' : ''}${this.selected === m.id ? ' selected' : ''}${e.request ? ' has-request' : ''}`
     e.icoEl.textContent = STATUS_ICON[m.status] ?? ''
     e.avatar.setStatus(m.status)
     e.avatar.setGhost(m.status === 'offline' || m.status === 'away')
   }
 
+  private applyTaskLabel(e: Entity): void {
+    const t = this.taskLabels.get(e.id)
+    const label = t?.label ?? null
+    const human = !!t?.opts?.human && !!label
+    e.taskEl.hidden = !label
+    e.taskEl.classList.toggle('human', human)
+    e.taskEl.title = label ?? ''
+    if (!label) e.taskEl.textContent = ''
+    else if (human) {
+      const since = t?.opts?.since ? Date.parse(t.opts.since) : Date.now()
+      e.taskEl.innerHTML = ''
+      const head = document.createElement('span')
+      head.className = 'ow-req-head'
+      head.textContent = '👤 お願い'
+      const body = document.createElement('span')
+      body.className = 'ow-req-body'
+      body.textContent = truncate(label.replace(/^👤\s*/, ''), 18)
+      const wait = document.createElement('span')
+      wait.className = 'ow-req-wait'
+      wait.textContent = waitText(since)
+      e.taskEl.append(head, body, wait)
+      if (!e.request) {
+        const ring = new THREE.Mesh(this.reqGeo, this.reqMat)
+        ring.rotation.x = -Math.PI / 2
+        ring.renderOrder = 3
+        this.scene.add(ring)
+        e.request = { since, ring }
+      } else e.request.since = since
+    } else {
+      e.taskEl.textContent = `📄 ${truncate(label.replace(/^💻\s*/, ''), 16)}`
+    }
+    if (!human && e.request) {
+      e.request.ring.removeFromParent()
+      e.request = null
+    }
+    e.alertEl.hidden = !human
+    e.tagEl.classList.toggle('has-request', human)
+  }
+
   private remove(e: Entity): void {
     e.removing = true
     e.scaleTarget = 0
-    this.fx.burst(this.worldPos(e).setY(0.8), 'pop', 18)
+    this.fx.burst(this.worldPos(e).setY(this.worldPos(e).y + 0.8), 'pop', 18)
     setTimeout(() => {
       if (this.entities.get(e.id) === e) {
         this.dropEntity(e)
@@ -567,64 +684,248 @@ export class OfficeWorld implements OfficeWorldApi {
   }
 
   private dropEntity(e: Entity): void {
+    this.releaseSeat(e)
     e.tag.removeFromParent()
     e.bubble?.obj.removeFromParent()
+    e.request?.ring.removeFromParent()
+    e.request = null
     e.avatar.dispose()
     if (this.selected === e.id) this.selRing.visible = false
     this.entities.delete(e.id)
   }
 
-  private settle(e: Entity): void {
-    e.path = []
-    e.speed = 0
-    e.pos = { ...e.home }
-    if (e.seated) {
-      e.avatar.setMode('sit')
-      e.yawTarget = 0
-    } else {
-      e.avatar.setMode('stand')
-      e.yawTarget = 0
-    }
+  // ------------------------------------------------------------------ 歩く
+
+  private faceYaw(e: Entity, face: number): number {
+    const s = layoutOf(e.office).s
+    return Math.atan2(s * Math.sin(face), Math.cos(face))
   }
 
-  private walkTo(e: Entity, to: P2, lane: number | undefined, onArrive: () => void): void {
-    const atHome = Math.abs(e.pos.u - e.home.u) < 0.05 && Math.abs(e.pos.z - e.home.z) < 0.05
-    const fromLane = e.seated && atHome && e.avatar.root.visible ? e.homeLane : undefined
-    e.path = route(e.pos, to, lane, fromLane)
-    e.onArrive = onArrive
+  /** いまの場所に落ち着く（座る・立つ） */
+  private settleAt(e: Entity, spot: Spot): void {
+    e.path = []
+    e.speed = 0
+    e.pos = { ...spot.pos }
+    e.exit = exitOf(spot)
+    e.avatar.setMode(spot.sit ? 'sit' : 'stand')
+    e.yawTarget = this.faceYaw(e, spot.face ?? 0)
+  }
+
+  private settle(e: Entity): void {
+    this.settleAt(e, e.home)
+  }
+
+  /** 歩いている途中で行き先を変えるとき：机を横切らないよう、通り道へ戻る点列 */
+  private interruptExit(e: Entity): P2[] {
+    const next = e.path[0]
+    const d = e.dest
+    const same = (a: P2, b: P2) => Math.abs(a.u - b.u) < 0.01 && Math.abs(a.z - b.z) < 0.01
+    if (d) {
+      if (same(next, d.pos)) return [next, ...[...d.approach].reverse()]
+      const k = d.approach.findIndex((p) => same(p, next))
+      if (k >= 0) return d.approach.slice(0, k + 1).reverse()
+    }
+    return [next]
+  }
+
+  private walkTo(e: Entity, to: Spot, onArrive: () => void): void {
+    const L = layoutOf(e.office)
+    const exit = e.path.length ? this.interruptExit(e) : e.exit
+    e.path = routeTo(L, e.pos, exit, to)
+    e.dest = to
+    e.exit = []
+    e.onArrive = () => {
+      this.settleAt(e, to)
+      onArrive()
+    }
+    if (!e.path.length) {
+      const cb = e.onArrive
+      e.onArrive = null
+      cb()
+      return
+    }
     e.avatar.setMode('walk')
   }
 
-  private nextVisit(nx: Entity): void {
-    const v = nx.visits.shift()
+  private goHome(e: Entity): void {
+    this.releaseSeat(e)
+    this.setCard(e, null)
+    e.activity = 'walking-home'
+    this.walkTo(e, e.home, () => {
+      e.activity = 'home'
+      this.afterArrive(e)
+    })
+  }
+
+  /** 席に着いたあと：残っている用事・状態に合わせて次へ */
+  private afterArrive(e: Entity): void {
+    if (e.removing) return
+    if (e.visits.length) return this.nextVisit(e)
+    if (e.member.status === 'talking') return this.goMeeting(e)
+  }
+
+  private gateSpot(from: OfficeId, to: OfficeId): Spot | undefined {
+    return layoutOf(from).gates[to]
+  }
+
+  private setCard(e: Entity, color: string | null): void {
+    if (!color) {
+      if (e.card) e.card.visible = false
+      return
+    }
+    let mat = this.cardMats.get(color)
+    if (!mat) {
+      mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95 })
+      this.cardMats.set(color, mat)
+    }
+    if (!e.card) {
+      e.card = new THREE.Mesh(this.cardGeo, mat)
+      e.avatar.root.add(e.card)
+    }
+    e.card.material = mat
+    const h = e.avatar instanceof NexmaxAvatar ? 0.95 : 0.7
+    e.card.position.set(0, h, 0.42)
+    e.card.visible = true
+  }
+
+  /** 届け物（依頼・引き継ぎ）を 1 つずつ */
+  private nextVisit(e: Entity): void {
+    const v = e.visits.shift()
     if (!v) {
-      nx.busy = false
-      if (Math.abs(nx.pos.u - nx.home.u) > 0.05 || Math.abs(nx.pos.z - nx.home.z) > 0.05) this.walkTo(nx, nx.home, undefined, () => this.settle(nx))
+      this.goHome(e)
       return
     }
     const target = this.entities.get(v.toId)
-    if (!target || target.removing || target.office !== nx.office) {
-      this.nextVisit(nx)
-      return
-    }
-    nx.busy = true
-    const d = target.member.deskIndex >= 0 ? deskSpot(target.member.deskIndex) : null
-    const spot: P2 = d ? (d.overflow ? { u: d.front.u, z: d.front.z } : d.front) : { u: target.pos.u, z: target.pos.z + 0.9 }
-    this.walkTo(nx, spot, undefined, () => {
-      nx.avatar.setMode('stand')
-      nx.yawTarget = Math.PI
-      ;(nx.avatar as NexmaxAvatar).wave(1.5)
-      this.say(nx.id, v.text, 3200, v.kind)
-      this.sendPacket(nx, target, KIND_COLOR[v.kind])
+    if (!target || target.removing) return this.nextVisit(e)
+    e.activity = 'visit'
+    this.releaseSeat(e)
+    const human = target.member.kind === 'human'
+    const color = v.kind === 'assign' ? (human ? HUMAN_COLOR : KIND_COLOR.assign) : KIND_COLOR[v.kind]
+    this.setCard(e, color)
+    const handOver = (dest: Spot) => {
+      e.avatar.setMode('stand')
+      e.yawTarget = this.faceYaw(e, dest.face ?? Math.PI)
+      if (e.avatar instanceof NexmaxAvatar) e.avatar.wave(1.5)
+      this.say(e.id, v.text, 3200, v.kind)
+      this.talkFor(e, 1.6)
+      this.setCard(e, null)
+      this.sendPacket(e, target, color, 0.6)
       setTimeout(() => {
-        if (this.disposed || !this.entities.has(nx.id)) return
-        if (nx.visits.length) this.nextVisit(nx)
-        else {
-          nx.busy = false
-          this.walkTo(nx, nx.home, undefined, () => this.settle(nx))
-        }
-      }, 1500)
+        if (this.disposed || !this.entities.has(e.id)) return
+        if (e.visits.length) this.nextVisit(e)
+        else this.goHome(e)
+      }, 1400)
+    }
+    if (target.office === e.office) {
+      const d = target.member.deskIndex >= 0 ? deskSpot(target.office, target.member.deskIndex) : null
+      let dest: Spot
+      if (target.activity === 'meeting' || target.activity === 'wander') {
+        dest = { pos: { u: target.pos.u, z: target.pos.z + 0.9 }, approach: target.exit.length ? [target.exit[target.exit.length - 1]] : [], face: Math.PI }
+      } else if (d && !d.overflow) dest = d.front
+      else dest = { pos: { u: target.pos.u, z: target.pos.z + 0.9 }, approach: [{ u: target.pos.u, z: layoutOf(e.office).corridor }], face: Math.PI }
+      this.walkTo(e, dest, () => handOver(dest))
+    } else {
+      const gate = this.gateSpot(e.office, target.office)
+      if (!gate) {
+        e.activity = 'home'
+        this.setCard(e, null)
+        this.sendPacket(e, target, color)
+        return this.nextVisit(e)
+      }
+      this.walkTo(e, gate, () => handOver(gate))
+    }
+  }
+
+  // ------------------------------------------------------------------ 会議室
+
+  private goMeeting(e: Entity): void {
+    if (e.member.kind === 'nexmax' && e.member.deskIndex < 0) return
+    const list = this.seats[e.office]
+    const free = list.findIndex((x) => x === null)
+    if (free < 0) return
+    list[free] = e.id
+    e.seat = free
+    e.activity = 'meeting'
+    this.updateMeeting(e.office)
+    const spot = layoutOf(e.office).meeting.seats[free]
+    this.walkTo(e, spot, () => {
+      e.activity = 'meeting'
+      if (e.member.status !== 'talking') this.goHome(e)
     })
+  }
+
+  private releaseSeat(e: Entity): void {
+    if (e.seat === null) return
+    const list = this.seats[e.office]
+    if (list && list[e.seat] === e.id) list[e.seat] = null
+    e.seat = null
+    this.updateMeeting(e.office)
+  }
+
+  private updateMeeting(office: OfficeId): void {
+    const n = this.seats[office].filter(Boolean).length
+    this.offices[office].setMeeting(n)
+  }
+
+  /** 拠点をまたいで相談している 2 人の会議室を、ホログラムの光でつなぐ */
+  private updateCalls(): void {
+    const want = new Map<string, [OfficeId, OfficeId]>()
+    for (const e of this.entities.values()) {
+      if (e.activity !== 'meeting' || e.member.status !== 'talking') continue
+      const txt = e.member.statusText ?? ''
+      for (const o of this.entities.values()) {
+        if (o === e || o.office === e.office || o.member.status !== 'talking') continue
+        if (!txt.includes(o.member.name)) continue
+        const pair = [e.office, o.office].sort() as [OfficeId, OfficeId]
+        want.set(pair.join('|'), pair)
+      }
+    }
+    for (const [key, c] of this.calls) {
+      if (!want.has(key)) {
+        c.mesh.removeFromParent()
+        c.geo.dispose()
+        this.calls.delete(key)
+      }
+    }
+    for (const [key, [a, b]] of want) {
+      if (this.calls.has(key)) continue
+      const pa = this.offices[a].meetingPoint
+      const pb = this.offices[b].meetingPoint
+      const mid = pa.clone().lerp(pb, 0.5)
+      mid.y = Math.max(pa.y, pb.y) + 5
+      const geo = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(pa.clone(), mid, pb.clone()), 60, 0.05, 6, false)
+      const mesh = new THREE.Mesh(geo, this.callMat)
+      this.scene.add(mesh)
+      this.calls.set(key, { mesh, geo })
+    }
+  }
+
+  // ------------------------------------------------------------------ ひまなときの散歩
+
+  private wanderTick(): void {
+    const busy = [...this.entities.values()].filter((e) => e.activity === 'wander').length
+    if (busy >= 2) return
+    const cands = [...this.entities.values()].filter(
+      (e) => e.activity === 'home' && !e.removing && e.member.kind !== 'nexmax' && e.member.status === 'idle' && !e.request && e.home.sit,
+    )
+    if (!cands.length) return
+    const e = cands[Math.floor(Math.random() * cands.length)]
+    const L = layoutOf(e.office)
+    const taken = new Set([...this.entities.values()].filter((x) => x.activity === 'wander' && x.office === e.office).map((x) => `${x.pos.u},${x.pos.z}`))
+    const opts = [...L.lounge, ...L.windows].filter((s) => !taken.has(`${s.pos.u},${s.pos.z}`))
+    if (!opts.length) return
+    const dest = opts[Math.floor(Math.random() * opts.length)]
+    e.activity = 'wander'
+    e.wanderUntil = this.t + 1e9
+    this.walkTo(e, dest, () => {
+      if (e.activity !== 'wander') return
+      e.wanderUntil = this.t + 6 + Math.random() * 6
+    })
+  }
+
+  private talkFor(e: Entity, sec: number): void {
+    e.talkUntil = this.t + sec
+    e.avatar.setTalking(true)
   }
 
   // ------------------------------------------------------------------ やり取りの光
@@ -635,33 +936,49 @@ export class OfficeWorld implements OfficeWorldApi {
     return v
   }
 
-  private sendPacket(a: Entity, b: Entity, color: string): void {
+  /** 拠点のあいだの道（光の道を順につなぐ） */
+  private links(from: OfficeId, to: OfficeId): THREE.Curve<THREE.Vector3>[] {
+    const w = this.walkway
+    const br = this.bridge
+    if (from === to) return []
+    if (from === 'osaka' && to === 'tokyo') return [w.curve]
+    if (from === 'tokyo' && to === 'osaka') return [w.reverse]
+    if (from === 'osaka' && to === 'phnompenh') return [br.curve]
+    if (from === 'phnompenh' && to === 'osaka') return [br.reverse]
+    if (from === 'tokyo' && to === 'phnompenh') return [w.reverse, br.curve]
+    return [br.reverse, w.curve]
+  }
+
+  private sendPacket(a: Entity, b: Entity, color: string, delayOk = 0): void {
+    void delayOk
     const pa = this.headPos(a)
     const pb = this.headPos(b)
     let curve: THREE.Curve<THREE.Vector3>
-    let len: number
     if (a.office === b.office) {
       const mid = pa.clone().lerp(pb, 0.5)
       mid.y += 1.2 + pa.distanceTo(pb) * 0.22
       curve = new THREE.QuadraticBezierCurve3(pa, mid, pb)
-      len = curve.getLength()
     } else {
-      const br = a.office === 'jp' ? this.bridge.curve : this.bridge.reverse
-      const s0 = br.getPoint(0)
-      const s1 = br.getPoint(1)
+      const links = this.links(a.office, b.office)
       const path = new THREE.CurvePath<THREE.Vector3>()
-      const m1 = pa.clone().lerp(s0, 0.5)
-      m1.y = Math.max(pa.y, s0.y) + 1.6
-      const m2 = s1.clone().lerp(pb, 0.5)
-      m2.y = Math.max(pb.y, s1.y) + 1.6
-      path.add(new THREE.QuadraticBezierCurve3(pa, m1, s0))
-      path.add(br)
-      path.add(new THREE.QuadraticBezierCurve3(s1, m2, pb))
+      let cur = pa
+      for (const l of links) {
+        const s0 = l.getPoint(0)
+        const m = cur.clone().lerp(s0, 0.5)
+        m.y = Math.max(cur.y, s0.y) + 1.2
+        path.add(new THREE.QuadraticBezierCurve3(cur, m, s0))
+        path.add(l)
+        cur = l.getPoint(1)
+      }
+      const m2 = cur.clone().lerp(pb, 0.5)
+      m2.y = Math.max(cur.y, pb.y) + 1.2
+      path.add(new THREE.QuadraticBezierCurve3(cur, m2, pb))
       curve = path
-      len = path.getLength()
-      this.bridge.pulse()
+      if (countryOf(a.office) !== countryOf(b.office)) this.bridge.pulse()
+      if (a.office === 'tokyo' || b.office === 'tokyo') this.walkway.pulse()
     }
-    const dur = Math.max(0.75, Math.min(3.4, len / 9))
+    const len = curve.getLength()
+    const dur = Math.max(0.75, Math.min(3.8, len / 9))
     this.fx.packet(curve, color, dur, () => {
       if (this.disposed || !this.entities.has(b.id)) return
       b.avatar.hop(0.45)
@@ -682,7 +999,7 @@ export class OfficeWorld implements OfficeWorldApi {
   }
 
   private step(e: Entity, dt: number): void {
-    const s = officeSign(e.office)
+    const s = layoutOf(e.office).s
     if (e.path.length) {
       const target = e.path[0]
       const du = target.u - e.pos.u
@@ -706,7 +1023,6 @@ export class OfficeWorld implements OfficeWorldApi {
         e.yawTarget = Math.atan2(s * du, dz)
       }
     }
-    // 向き
     let d = e.yawTarget - e.yaw
     d = Math.atan2(Math.sin(d), Math.cos(d))
     e.yaw += d * (1 - Math.exp(-dt / 0.1))
@@ -723,14 +1039,23 @@ export class OfficeWorld implements OfficeWorldApi {
     this.t += dt
     const date = new Date()
 
+    const pulse = 0.55 + Math.sin(this.t * 5) * 0.3
+    this.reqMat.opacity = pulse
     for (const e of this.entities.values()) {
       this.step(e, dt)
       if (e.talkUntil && this.t > e.talkUntil) {
         e.talkUntil = 0
         e.avatar.setTalking(false)
       }
+      if (e.activity === 'wander' && this.t > e.wanderUntil) this.goHome(e)
       e.avatar.update(dt, this.t, e.path.length ? e.speed : 0)
       this.place(e)
+      if (e.request) {
+        this.worldPos(e, e.request.ring.position)
+        e.request.ring.position.y += 0.03
+        const k = 1 + Math.sin(this.t * 5) * 0.12
+        e.request.ring.scale.set(k, k, k)
+      }
       if (e.bubble && this.t > e.bubble.until) {
         const b = e.bubble
         if (!b.el.classList.contains('out')) {
@@ -747,11 +1072,29 @@ export class OfficeWorld implements OfficeWorldApi {
       }
     }
 
-    // 選択の輪とカメラの追従
+    // ゆっくりの用事（散歩・通話の光・待ち時間の表示）
+    if (this.t > this.nextSlowTick) {
+      this.nextSlowTick = this.t + 0.5
+      this.updateCalls()
+      if (this.t > this.nextWander) {
+        this.nextWander = this.t + 9 + Math.random() * 14
+        this.wanderTick()
+      }
+      if (Math.floor(this.t * 2) % 40 === 0) {
+        for (const e of this.entities.values()) {
+          if (!e.request) continue
+          const w = e.taskEl.querySelector('.ow-req-wait')
+          if (w) w.textContent = waitText(e.request.since)
+        }
+      }
+    }
+    this.callMat.opacity = 0.35 + Math.sin(this.t * 4) * 0.2
+
     if (this.selected) {
       const e = this.entities.get(this.selected)
       if (e) {
-        this.worldPos(e, this.selRing.position).setY(0.04)
+        this.worldPos(e, this.selRing.position)
+        this.selRing.position.y += 0.04
         const k = 1 + Math.sin(this.t * 4) * 0.08
         this.selRing.scale.set(k, k, k)
         this.selMat.opacity = 0.65 + Math.sin(this.t * 4) * 0.25
@@ -760,7 +1103,8 @@ export class OfficeWorld implements OfficeWorldApi {
     if (this.followId && !this.tween) {
       const e = this.entities.get(this.followId)
       if (e && e.path.length) {
-        const p = this.worldPos(e).setY(0.9)
+        const p = this.worldPos(e)
+        p.y += 0.9
         const delta = p.clone().sub(this.controls.target).multiplyScalar(1 - Math.exp(-dt / 0.4))
         this.controls.target.add(delta)
         this.camera.position.add(delta)
@@ -785,19 +1129,17 @@ export class OfficeWorld implements OfficeWorldApi {
     }
     this.controls.update()
 
-    // 遠いときは名札を小さく
-    // 画面上の大きさ（1 m が何 px か）で名札の細かさを変える
     const dist = this.camera.position.distanceTo(this.controls.target)
     const ppu = this.container.clientHeight / 2 / (dist * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2))
-    const cls = ppu < 19 ? 'ow-labels far very-far' : ppu < 42 ? 'ow-labels far' : 'ow-labels'
+    const cls = ppu < 17 ? 'ow-labels far very-far' : ppu < 38 ? 'ow-labels far' : 'ow-labels'
     if (cls !== this.lastLabelClass) {
       this.labels.domElement.className = cls
       this.lastLabelClass = cls
     }
 
-    this.offices.jp.update(dt, this.t, date)
-    this.offices.kh.update(dt, this.t, date)
+    for (const o of Object.values(this.offices)) o.update(dt, this.t, date)
     this.bridge.update(dt, this.t)
+    this.walkway.update(dt, this.t)
     this.clouds.update(dt, this.t)
     this.fx.update(dt)
 
@@ -835,20 +1177,62 @@ export class OfficeWorld implements OfficeWorldApi {
 
   // ------------------------------------------------------------------ カメラ
 
-  /** 幅 width・奥行き depth の範囲が収まる距離 */
-  private fitDistance(width: number, depth: number, elev: number): number {
+  /** 点の集まりが、見えている長方形（パネルを除く）に収まるカメラの注視点と距離を探す */
+  private fitPoints(pts: THREE.Vector3[], elev: number, margin = 1.06): { target: THREE.Vector3; dist: number } {
     const w = Math.max(1, this.container.clientWidth)
     const h = Math.max(1, this.container.clientHeight)
     const i = this.effInsets()
     const visW = Math.max(1, w - i.left - i.right) / w
     const visH = Math.max(1, h - i.top - i.bottom) / h
-    const vfov = THREE.MathUtils.degToRad(this.camera.fov)
-    const tanV = Math.tan(vfov / 2) * visH
-    const tanH = Math.tan(vfov / 2) * this.camera.aspect * visW
-    const dW = width / 2 / tanH
-    const projDepth = depth * Math.sin(elev) + 2.5 * Math.cos(elev)
-    const dH = projDepth / 2 / tanV
-    return Math.max(dW, dH) * 1.13
+    const cam = new THREE.PerspectiveCamera(this.camera.fov, this.camera.aspect, 0.1, 500)
+    const dir = new THREE.Vector3(0, Math.sin(elev), Math.cos(elev))
+    const target = new THREE.Vector3()
+    for (const p of pts) target.add(p)
+    target.multiplyScalar(1 / pts.length)
+    let dist = 40
+    const v = new THREE.Vector3()
+    for (let k = 0; k < 8; k++) {
+      cam.position.copy(target).addScaledVector(dir, dist)
+      cam.lookAt(target)
+      cam.updateMatrixWorld()
+      let minX = Infinity
+      let maxX = -Infinity
+      let minY = Infinity
+      let maxY = -Infinity
+      for (const p of pts) {
+        v.copy(p).project(cam)
+        minX = Math.min(minX, v.x)
+        maxX = Math.max(maxX, v.x)
+        minY = Math.min(minY, v.y)
+        maxY = Math.max(maxY, v.y)
+      }
+      // 中心のずれを直す（画面の 1 は、注視点の距離で tan(fov/2)*dist の長さ）
+      const halfH = Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * dist
+      const halfW = halfH * cam.aspect
+      const right = new THREE.Vector3(1, 0, 0)
+      const up = new THREE.Vector3(0, Math.cos(elev), -Math.sin(elev))
+      target.addScaledVector(right, ((minX + maxX) / 2) * halfW * 0.9)
+      target.addScaledVector(up, ((minY + maxY) / 2) * halfH * 0.9)
+      const sx = (maxX - minX) / 2 / visW
+      const sy = (maxY - minY) / 2 / visH
+      dist *= Math.max(sx, sy) * margin
+    }
+    return { target, dist }
+  }
+
+  /** 拠点たちの角（床・奥の壁の上・看板）の点 */
+  private officePoints(ids: OfficeId[]): THREE.Vector3[] {
+    const pts: THREE.Vector3[] = []
+    for (const id of ids) {
+      const L = layoutOf(id)
+      for (const u of [-L.halfW - 0.4, L.halfW + 0.4])
+        for (const z of [-L.halfD - 0.3, L.halfD + 0.5]) {
+          pts.push(toWorld(id, u, z, -0.3))
+          pts.push(toWorld(id, u, z, z < 0 ? 3.9 : 1.0))
+        }
+    }
+    if (ids.includes('osaka') && ids.includes('phnompenh')) pts.push(this.bridge.globe.clone().add(new THREE.Vector3(0, 1.8, 0)))
+    return pts
   }
 
   private applyFocus(target: FocusTarget, instant: boolean): void {
@@ -856,23 +1240,25 @@ export class OfficeWorld implements OfficeWorldApi {
     this.followId = null
     let tgt: THREE.Vector3
     let dist: number
-    let elev = THREE.MathUtils.degToRad(40)
-    const azim = 0
-    if (target === 'all') {
-      tgt = new THREE.Vector3(0, 0.2, 0.6)
-      dist = this.fitDistance((OFFICE_CENTER_X + 7.3) * 2, HALF_D * 2 + 1, elev)
-    } else if (target === 'jp' || target === 'kh') {
-      tgt = officeCenter(target).add(new THREE.Vector3(0, 0.4, 0.4))
-      dist = this.fitDistance(15.2, HALF_D * 2 + 0.6, elev)
-    } else {
+    let elev = THREE.MathUtils.degToRad(36)
+    if (target === 'all' || target === 'jp' || target === 'osaka' || target === 'tokyo' || target === 'phnompenh') {
+      const ids: OfficeId[] = target === 'all' ? ALL_OFFICES : target === 'jp' ? ['osaka', 'tokyo'] : [target]
+      if (target === 'tokyo') elev = THREE.MathUtils.degToRad(42)
+      const f = this.fitPoints(this.officePoints(ids), elev, target === 'all' ? 1.03 : 1.06)
+      tgt = f.target
+      dist = f.dist
+    } else if (typeof target === 'object') {
       const e = this.entities.get(target.memberId)
       if (!e) return
-      tgt = this.worldPos(e).setY(0.9)
+      tgt = this.worldPos(e)
+      tgt.y += 0.9
       dist = 7.5
       elev = THREE.MathUtils.degToRad(30)
       this.followId = e.id
+    } else {
+      return
     }
-    const pos = tgt.clone().add(new THREE.Vector3(Math.sin(azim) * Math.cos(elev), Math.sin(elev), Math.cos(azim) * Math.cos(elev)).multiplyScalar(dist))
+    const pos = tgt.clone().add(new THREE.Vector3(0, Math.sin(elev), Math.cos(elev)).multiplyScalar(dist))
     if (instant) {
       this.camera.position.copy(pos)
       this.controls.target.copy(tgt)
@@ -929,3 +1315,6 @@ export class OfficeWorld implements OfficeWorldApi {
     }
   }
 }
+
+// 拠点の名前（デバッグ用）
+export const OFFICE_NAMES = Object.fromEntries(OFFICES.map((o) => [o.id, o.name]))

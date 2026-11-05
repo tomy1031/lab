@@ -12,6 +12,8 @@ export interface PlanTask {
   dependsOn: string[]
   /** 担当の希望（既存メンバーの id か、hires[].key） */
   assignee?: string
+  /** なぜその担当か（人間のタスクでは画面に出す） */
+  assigneeReason?: string
 }
 
 export interface HireSpec {
@@ -42,6 +44,8 @@ export interface PlanInput {
   goal: Goal
   roster: MemberContext[]
   requester: Member | undefined
+  /** 社長（ネクマックスはその分身として判断する）の記憶 */
+  ceo?: MemberContext
 }
 
 export interface AgentToolbox {
