@@ -3,10 +3,11 @@
 // - runTask：AI社員 1 人 = Claude Code の 1 セッション。ゴールの作業フォルダでファイルを書き、同僚に相談できる（社内ツールは SDK の MCP）
 // - consult：同僚からの相談に、その人の記憶を踏まえて答える
 // - report：ゴール完了の報告書
-import { createSdkMcpServer, query, tool, type Options, type SDKMessage } from '@anthropic-ai/claude-agent-sdk'
+import { createSdkMcpServer, query, tool, type HookCallbackMatcher, type Options, type SDKMessage } from '@anthropic-ai/claude-agent-sdk'
 import { z } from 'zod'
 import type { EngineInfo } from '../../shared/types'
 import { normalizeOffice } from '../../shared/types'
+import { checkTool } from './guard'
 import { COMPANY_CONTEXT, describeContext, describeMember, extractJson, personaPrompt, splitMemory } from './prompts'
 import type { ConsultInput, Engine, MemberContext, Plan, PlanInput, ReportInput, RunTaskInput, RunTaskResult } from './types'
 
@@ -189,7 +190,8 @@ ${prev}
     const ac = new AbortController()
     signal.addEventListener('abort', () => ac.abort())
     // tools = 使える組み込みの道具（これ以外は存在しない）、allowedTools = 確認なしで使ってよい道具
-    const builtins = ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'WebSearch', 'WebFetch']
+    // AGENT_WEB=0 で Web の検索・取得を使わせない（外部のページに仕込まれた指示＝プロンプトインジェクションの入口を閉じる）
+    const builtins = ['Read', 'Write', 'Edit', 'Glob', 'Grep', ...(process.env.AGENT_WEB === '0' ? [] : ['WebSearch', 'WebFetch'])]
     if (ALLOW_BASH) builtins.push('Bash')
     const allowed = [...builtins, 'mcp__company__ask_colleague', 'mcp__company__post_update']
     const q = query({
@@ -205,6 +207,7 @@ ${prev}
         tools: builtins,
         allowedTools: allowed,
         permissionMode: 'dontAsk',
+        hooks: { PreToolUse: [guardHook(workdir)] },
         maxTurns: 40,
         maxBudgetUsd: TASK_BUDGET,
         includePartialMessages: true,
@@ -255,6 +258,21 @@ ${prev}
       }),
     })
     return (await collect(q)).text.trim()
+  }
+}
+
+/** 道具を使う直前の検査（作業フォルダの外・社内ネットワークへは行かせない）。止めた理由は AI社員にも伝わる */
+function guardHook(workdir: string): HookCallbackMatcher {
+  return {
+    hooks: [
+      async (input) => {
+        if (input.hook_event_name !== 'PreToolUse') return {}
+        const r = checkTool(workdir, input.tool_name, input.tool_input, ALLOW_BASH)
+        if (r.ok) return {}
+        console.warn(`[guard] ${input.tool_name} を止めました：${r.reason}`)
+        return { hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: r.reason } }
+      },
+    ],
   }
 }
 

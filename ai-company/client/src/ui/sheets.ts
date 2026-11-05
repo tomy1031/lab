@@ -63,6 +63,7 @@ export interface Actions {
   retire(m: Member): void
   addMemory(m: Member, text: string): void
   setEngine(mode: 'claude' | 'sim'): void
+  changePassword(): void
   logout(): void
 }
 
@@ -966,6 +967,7 @@ export function mePop(state: AppState, act: Actions): HTMLElement {
     { class: 'pop glass' },
     me ? h('div', { class: 'pop-me' }, face(me, 40), h('div', {}, h('b', {}, me.name), h('small', {}, `${me.role}・${officeInfo(me.office).name}`))) : null,
     me ? h('button', { class: 'pop-btn', onclick: () => act.openProfile(me.id) }, icon('user', 16), '自分のプロフィールと記憶') : null,
+    me?.login ? h('button', { class: 'pop-btn', onclick: act.changePassword }, icon('lock', 16), 'パスワードを変更') : null,
     h('button', { class: 'pop-btn', onclick: act.logout }, icon('logout', 16), 'ログアウト'),
   )
 }

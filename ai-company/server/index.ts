@@ -6,7 +6,7 @@ import { extname, join, normalize, resolve, sep } from 'node:path'
 import { WebSocketServer, type WebSocket } from 'ws'
 import type { Member, Message, OfficeId, ServerEvent, Snapshot } from '../shared/types'
 import { OFFICES, countryOf, normalizeOffice, officeInfo } from '../shared/types'
-import { login, logout, memberFrom, sessionCookie, setPassword, tokenFrom } from './auth'
+import { isHttps, login, logout, memberFrom, passwordProblem, pruneSessions, sessionCookie, setPassword, tokenFrom, verifyPassword } from './auth'
 import { Company } from './company'
 import { ClaudeEngine } from './engine/claude'
 import { SimEngine } from './engine/sim'
@@ -21,6 +21,10 @@ const DATA = resolve(process.env.DATA_DIR || join(ROOT, 'data'))
 const WORKSPACE = resolve(process.env.WORKSPACE_DIR || join(ROOT, 'workspace'))
 const DIST = join(ROOT, 'dist')
 const PORT = Number(process.env.PORT || 8787)
+/** 既定は自分の PC の中だけ（127.0.0.1）。外から直接つながせず、Cloudflare Tunnel などの入口だけを通す。直接公開するときだけ HOST=0.0.0.0 */
+const HOST = process.env.HOST || '127.0.0.1'
+/** 画面を開いてよい Origin（カンマ区切り）。未指定なら、リクエストの Host と同じ Origin だけ */
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? '').split(',').map((s) => s.trim()).filter(Boolean)
 
 const store = new Store(join(DATA, 'state.json'))
 if (store.isFresh) {
@@ -114,23 +118,53 @@ const str = (v: unknown, max = 2000) => (typeof v === 'string' ? v.trim().slice(
 const list = (v: unknown) =>
   (Array.isArray(v) ? v : typeof v === 'string' ? v.split(/[,、，\s]+/) : []).map((x) => String(x).trim()).filter(Boolean).slice(0, 20)
 
-/** ログインの失敗が続いたら少し待たせる（ログイン名ごと・10 分に 8 回まで） */
+/** ログインの失敗が続いたら待たせる（ログイン名ごと 10 分に 8 回・接続元ごと 10 分に 30 回まで） */
 const failures = new Map<string, number[]>()
-route('POST', '/api/login', false, (_req, res, _me, _p, b) => {
+const clientIp = (req: IncomingMessage) =>
+  (process.env.TRUST_PROXY === '1' ? String(req.headers['cf-connecting-ip'] ?? req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || '?'
+const tooMany = (key: string, limit: number) => (failures.get(key) ?? []).filter((t) => Date.now() - t < 10 * 60_000).length >= limit
+const fail = (key: string) => failures.set(key, [...(failures.get(key) ?? []).filter((t) => Date.now() - t < 10 * 60_000), Date.now()])
+setInterval(() => {
+  for (const [k, v] of failures) if (!v.some((t) => Date.now() - t < 10 * 60_000)) failures.delete(k)
+}, 10 * 60_000).unref()
+
+route('POST', '/api/login', false, (req, res, _me, _p, b) => {
   const name = str(b.login, 64)
-  const recent = (failures.get(name) ?? []).filter((t) => Date.now() - t < 10 * 60_000)
-  need(recent.length < 8, 429, 'ログインの失敗が続いたので、10 分ほど待ってからお試しください')
+  const ip = `ip:${clientIp(req)}`
+  need(!tooMany(name, 8) && !tooMany(ip, 30), 429, 'ログインの失敗が続いたので、10 分ほど待ってからお試しください')
   const r = login(store, name, str(b.password, 200))
-  if (!r) failures.set(name, [...recent, Date.now()])
+  if (!r) {
+    fail(name)
+    fail(ip)
+  }
   need(r, 401, 'ログイン名かパスワードが違います')
   failures.delete(name)
-  res.setHeader('Set-Cookie', sessionCookie(r!.token))
+  res.setHeader('Set-Cookie', sessionCookie(r!.token, isHttps(req)))
   return { me: r!.member }
 })
 
 route('POST', '/api/logout', false, (req, res) => {
   logout(store, tokenFrom(req))
-  res.setHeader('Set-Cookie', sessionCookie('', 0))
+  res.setHeader('Set-Cookie', sessionCookie('', isHttps(req), 0))
+  return { ok: true }
+})
+
+/** 自分のパスワードを変える（今のパスワードが要る）。変えたらほかの端末のログインは切れる */
+route('POST', '/api/password', true, (req, res, me, _p, b) => {
+  const u = store.state.users.find((x) => x.memberId === me!.id)
+  need(u, 400, 'この人はログインできません')
+  need(!tooMany(`pw:${me!.id}`, 8), 429, '失敗が続いたので、10 分ほど待ってからお試しください')
+  if (!verifyPassword(str(b.current, 200), u!.salt, u!.hash)) {
+    fail(`pw:${me!.id}`)
+    throw new HttpError(400, '今のパスワードが違います')
+  }
+  const next = typeof b.next === 'string' ? b.next : ''
+  const problem = passwordProblem(next)
+  need(!problem, 400, problem ?? '')
+  setPassword(store, me!.id, u!.login, next)
+  const r = login(store, u!.login, next)
+  if (r) res.setHeader('Set-Cookie', sessionCookie(r.token, isHttps(req)))
+  company.activity('info', `${me!.name} さんがパスワードを変更しました`, me!.id)
   return { ok: true }
 })
 
@@ -225,8 +259,12 @@ route('POST', '/api/members', true, (_req, _res, me, _p, b) => {
   }
   store.putMember(m)
   if (loginName) {
-    const pw = str(b.password, 200)
-    need(pw.length >= 6, 400, 'パスワードは 6 文字以上にしてください')
+    const pw = typeof b.password === 'string' ? b.password : ''
+    const problem = passwordProblem(pw)
+    if (problem) {
+      store.removeMember(m.id)
+      throw new HttpError(400, problem)
+    }
     setPassword(store, m.id, loginName, pw)
   }
   remember(store, m.id, 'note', `${me!.name} さんが登録`, { importance: 2 })
@@ -340,9 +378,56 @@ function serveStatic(req: IncomingMessage, res: ServerResponse): void {
   res.end(readFileSync(p))
 }
 
+/** すべての応答に付ける守りのヘッダー（読み込み先の制限・枠への埋め込み禁止・種類の推測禁止など） */
+function securityHeaders(req: IncomingMessage, res: ServerResponse): void {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob:",
+      "connect-src 'self'",
+      "frame-src 'self'",
+      "worker-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'none'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '),
+  )
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'no-referrer')
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()')
+  if (isHttps(req)) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+}
+
+/** よそのサイトからの操作（CSRF・WebSocket の乗っ取り）を断る：ブラウザが付ける Origin が自分と違えば拒否 */
+function originOk(req: IncomingMessage): boolean {
+  const origin = req.headers.origin
+  if (!origin) return true // ブラウザ以外（curl など）。それでもログインのクッキーは要る
+  if (ALLOWED_ORIGINS.includes(origin)) return true
+  try {
+    const host = String(req.headers['x-forwarded-host'] && process.env.TRUST_PROXY === '1' ? req.headers['x-forwarded-host'] : req.headers.host ?? '')
+    return new URL(origin).host === host
+  } catch {
+    return false
+  }
+}
+
 const server = createServer(async (req, res) => {
+  securityHeaders(req, res)
   const url = new URL(req.url ?? '/', 'http://x')
   if (!url.pathname.startsWith('/api/')) return serveStatic(req, res)
+  if (req.method !== 'GET' && !originOk(req)) {
+    res.writeHead(403, { 'content-type': 'application/json; charset=utf-8' })
+    res.end(JSON.stringify({ error: 'よそのサイトからの操作は受け付けません' }))
+    return
+  }
   const r = routes.find((x) => x.method === req.method && x.re.test(url.pathname))
   res.setHeader('content-type', 'application/json; charset=utf-8')
   try {
@@ -357,14 +442,20 @@ const server = createServer(async (req, res) => {
     const status = e instanceof HttpError ? e.status : 500
     if (status === 500) console.error(e)
     res.statusCode = status
-    res.end(JSON.stringify({ error: (e as Error).message }))
+    // 想定外のエラーの中身（内部の情報）は返さない
+    res.end(JSON.stringify({ error: status === 500 ? 'サーバーでエラーが起きました' : (e as Error).message }))
   }
 })
 
-const wss = new WebSocketServer({ noServer: true })
+// 画面からサーバーへは何も送らない作り。届いたら切る（maxPayload で大きな送りつけも防ぐ）
+const wss = new WebSocketServer({ noServer: true, maxPayload: 1024 })
 server.on('upgrade', (req, socket, head) => {
   const url = new URL(req.url ?? '/', 'http://x')
   if (url.pathname !== '/ws') return socket.destroy()
+  if (!originOk(req)) {
+    socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
+    return socket.destroy()
+  }
   const me = memberFrom(store, req)
   if (!me) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
@@ -375,6 +466,7 @@ server.on('upgrade', (req, socket, head) => {
     setOnline(me.id, +1)
     ws.send(JSON.stringify({ t: 'snapshot', data: snapshot(store.member(me.id) ?? me) } satisfies ServerEvent))
     const ping = setInterval(() => ws.readyState === ws.OPEN && ws.ping(), 25_000)
+    ws.on('message', () => ws.close(1008, 'unexpected'))
     ws.on('close', () => {
       clearInterval(ping)
       clients.delete(ws)
@@ -383,8 +475,13 @@ server.on('upgrade', (req, socket, head) => {
   })
 })
 
-server.listen(PORT, () => {
-  console.log(`NEXTMAKE AI Company  http://localhost:${PORT}  （頭脳：${engines[engineMode].info.detail}）`)
+pruneSessions(store)
+setInterval(() => pruneSessions(store), 3600_000).unref()
+server.headersTimeout = 20_000
+server.requestTimeout = 30_000
+
+server.listen(PORT, HOST, () => {
+  console.log(`NEXTMAKE AI Company  http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}  （頭脳：${engines[engineMode].info.detail}）${HOST === '127.0.0.1' ? '・この PC の中だけで待ち受け中' : ''}`)
 })
 
 for (const sig of ['SIGINT', 'SIGTERM'] as const) {

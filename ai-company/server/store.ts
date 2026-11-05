@@ -13,9 +13,11 @@ export interface UserRecord {
 }
 
 export interface SessionRecord {
-  token: string
+  /** セッションの鍵の SHA-256（鍵そのものは保存しない） */
+  tokenHash: string
   memberId: string
   createdAt: string
+  lastSeen: string
 }
 
 export interface State {
@@ -83,7 +85,8 @@ export class Store extends EventEmitter {
     if (s.activities.length > MAX_ACTIVITIES) s.activities.splice(0, s.activities.length - MAX_ACTIVITIES)
     mkdirSync(dirname(this.file), { recursive: true })
     const tmp = this.file + '.tmp'
-    writeFileSync(tmp, JSON.stringify(s, null, 1))
+    // 本人（サーバーを動かすユーザー）だけが読み書きできるように
+    writeFileSync(tmp, JSON.stringify(s, null, 1), { mode: 0o600 })
     renameSync(tmp, this.file)
   }
 

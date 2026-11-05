@@ -45,6 +45,13 @@ npm run dev          # サーバー（:8787）と画面（:5173）を同時に�
 | `TOKYO_NAME` / `TOKYO_LOGIN` | 東京オフィスの 1 人（既定：東京メンバー（仮）/ tokyo）。あとから画面のプロフィールの「編集」で名前を変えられます |
 | `SEED_DEMO=0` | デモの人間（さくら・ソカ・ダリス）を作らない |
 | `PORT` / `DATA_DIR` / `WORKSPACE_DIR` | ポート・状態の保存先・AI社員の作業フォルダ |
+| `HOST` | 待ち受けるアドレス（既定 `127.0.0.1` = その PC の中だけ。外へは Cloudflare Tunnel などを通す） |
+| `NODE_ENV=production` | 本番。デモの人間を作らない（`SEED_DEMO=1` で作る） |
+| `TRUST_PROXY=1` / `COOKIE_SECURE=1` / `ALLOWED_ORIGINS` | HTTPS の入口（Tunnel など）の裏で動かすとき |
+| `AGENT_WEB=0` | AI社員に Web の検索・取得を使わせない |
+
+**動かし方（無料・サブスクの範囲）とセキュリティは [`docs/deploy.md`](docs/deploy.md)** にまとめています。
+1 人のサブスクのログインで同僚の分まで AI を動かすことは規約上できないため、複数人で使うなら claude.ai のアーティファクト版か、会社の API キーにしてください。
 
 Claude Code モードは、`claude` にログイン済み（または `ANTHROPIC_API_KEY` を設定済み）の環境で動きます。
 本番：`npm run build && npm start`（http://localhost:8787）。

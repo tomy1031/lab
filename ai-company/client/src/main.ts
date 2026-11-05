@@ -255,6 +255,7 @@ function startApp(): void {
       render()
     },
     register: () => openRegister(),
+    changePassword: () => openPassword(),
     edit: (m) => openEdit(m),
     retire(m) {
       if (confirm(`${m.name}（${m.role}）を退職させますか？記憶は残ります。`)) {
@@ -480,7 +481,7 @@ function startApp(): void {
       languages: h('input', { placeholder: '言語（ja, km, en）' }) as HTMLInputElement,
       persona: h('textarea', { rows: 2, placeholder: '自己紹介・得意なこと（タスクの割り振りに使います）' }) as HTMLTextAreaElement,
       login: h('input', { placeholder: 'ログイン名（空ならログインなしの登録だけ）' }) as HTMLInputElement,
-      password: h('input', { type: 'password', placeholder: 'パスワード（6 文字以上）' }) as HTMLInputElement,
+      password: h('input', { type: 'password', placeholder: 'パスワード（10 文字以上・推測されにくいもの）', autocomplete: 'new-password' }) as HTMLInputElement,
     }
     showModal(
       h('h3', {}, '人間を登録する'),
@@ -503,6 +504,39 @@ function startApp(): void {
         '登録する',
       ),
     )
+  }
+
+  const openPassword = () => {
+    pop = null
+    renderPop()
+    const cur = h('input', { type: 'password', placeholder: '今のパスワード', autocomplete: 'current-password' }) as HTMLInputElement
+    const next = h('input', { type: 'password', placeholder: '新しいパスワード（10 文字以上）', autocomplete: 'new-password' }) as HTMLInputElement
+    const again = h('input', { type: 'password', placeholder: '新しいパスワード（もう一度）', autocomplete: 'new-password' }) as HTMLInputElement
+    showModal(
+      h('h3', {}, 'パスワードを変更'),
+      h('p', { class: 'hint' }, '変更すると、ほかの端末でのログインは切れます。初期パスワードのままの人は、必ず変更してください。'),
+      h('label', {}, '今のパスワード', cur),
+      h('label', {}, '新しいパスワード', next),
+      h('label', {}, 'もう一度', again),
+      h(
+        'button',
+        {
+          class: 'btn primary',
+          onclick: async () => {
+            if (next.value !== again.value) return toast('新しいパスワードが一致しません', 'warn')
+            try {
+              await Api.changePassword(cur.value, next.value)
+              closeModal()
+              toast('パスワードを変更しました', 'success')
+            } catch (e) {
+              toast((e as Error).message, 'warn')
+            }
+          },
+        },
+        '変更する',
+      ),
+    )
+    cur.focus()
   }
 
   const openEdit = (m: Member) => {

@@ -3,12 +3,11 @@
 // - ネクマックス NX-086（量産型）はプノンペンの統括
 // - 東京オフィスは、いまは人間 1 人
 // AI社員は最初はいない（ゴールに応じて「採用」される）。
-import { randomBytes } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import type { Member, OfficeId } from '../shared/types'
 import { OFFICES, normalizeOffice } from '../shared/types'
-import { setPassword } from './auth'
+import { randomPassword, setPassword } from './auth'
 import { remember } from './memory'
 import type { Store } from './store'
 import { id, lookForHuman, now } from './util'
@@ -91,7 +90,7 @@ function seat(store: Store, m: Member, office: OfficeId, desk: number): void {
 
 function account(store: Store, m: Member, login: string, lines: string[]): void {
   if (store.state.users.some((u) => u.login === login)) return
-  const pw = randomBytes(6).toString('base64url')
+  const pw = randomPassword()
   setPassword(store, m.id, login, pw)
   m.login = login
   lines.push(`${m.name.padEnd(12)} login=${login}  password=${pw}`)
@@ -102,13 +101,15 @@ export function seed(store: Store, credentialsFile: string): string[] {
   store.state.members.push(nexmax(), nexmaxKh())
 
   const adminLogin = process.env.ADMIN_LOGIN || 'admin'
-  const adminPass = process.env.ADMIN_PASSWORD || randomBytes(6).toString('base64url')
+  const adminPass = process.env.ADMIN_PASSWORD || randomPassword()
   const admin = human(process.env.ADMIN_NAME || '管理者', 'osaka', '管理者', ['意思決定', '承認', '顧客対応'], ['ja'], 2, adminLogin, true)
   store.state.members.push(admin)
   setPassword(store, admin.id, adminLogin, adminPass)
   lines.push(`${admin.name.padEnd(12)} login=${adminLogin}  password=${adminPass}`)
 
-  if (process.env.SEED_DEMO !== '0') {
+  // デモの人間は開発用。本番（NODE_ENV=production）では SEED_DEMO=1 のときだけ作る
+  const demo = process.env.SEED_DEMO ? process.env.SEED_DEMO === '1' : process.env.NODE_ENV !== 'production'
+  if (demo) {
     const demo: [string, OfficeId, string, string[], string[], string][] = [
       ['さくら（デモ）', 'osaka', '営業', ['営業', '顧客対応', '商談', '意思決定'], ['ja', 'en'], 'sakura'],
       ['ソカ（デモ）', 'phnompenh', '現地マネージャー', ['現地対応', '現地調整', 'クメール語', '学校との調整'], ['km', 'en', 'ja'], 'sokha'],
@@ -126,7 +127,7 @@ export function seed(store: Store, credentialsFile: string): string[] {
   }
   store.flush()
   mkdirSync(dirname(credentialsFile), { recursive: true })
-  writeFileSync(credentialsFile, `# 初期アカウント（このファイルはリポジトリに入れない）\n${lines.join('\n')}\n`)
+  writeFileSync(credentialsFile, `# 初期アカウント（このファイルはリポジトリに入れない。ログインしたら各自パスワードを変える）\n${lines.join('\n')}\n`, { mode: 0o600 })
   return lines
 }
 
@@ -184,7 +185,7 @@ export function ensureCore(store: Store, credentialsFile?: string): string[] {
   store.save()
   if (credentialsFile && lines.length) {
     mkdirSync(dirname(credentialsFile), { recursive: true })
-    if (!existsSync(credentialsFile)) writeFileSync(credentialsFile, '# 初期アカウント（このファイルはリポジトリに入れない）\n')
+    if (!existsSync(credentialsFile)) writeFileSync(credentialsFile, '# 初期アカウント（このファイルはリポジトリに入れない）\n', { mode: 0o600 })
     appendFileSync(credentialsFile, lines.join('\n') + '\n')
   }
   return lines
