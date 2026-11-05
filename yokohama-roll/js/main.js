@@ -4,6 +4,8 @@ import { makeToyMaterial, nightUniform } from './material.js';
 import { ProtoRegistry } from './engine/objects.js';
 import { buildTown } from './engine/town.js';
 import { buildGlobe, EARTH_R, latLonToVec, vecToLatLon } from './engine/globe.js';
+import { buildKanto } from './engine/kanto.js';
+import * as K from './kanto_map.js';
 import { Minimap } from './engine/minimap.js';
 import * as M from './map.js';
 
@@ -13,23 +15,33 @@ const $ = (id) => document.getElementById(id);
 
 // ---------------------------------------------------------------- tuning
 const PICK_K = 1.45;          // can pick items whose size < PICK_K * r  (≈ 72% of the diameter)
-const GROW_K = 4.0;           // how much of an item's volume is added to the ball
+const GROW_K = 4.6;           // how much of an item's volume is added to the ball
 const START_R = 0.15;
 const CITY_GOALS = [
   { d: 1, text: 'まずは 直径 1m をめざそう！', done: '1m！ 人や自転車も まきこめるぞ' },
-  { d: 5, text: '中華街の 屋台や クルマも まきこもう！ 目標 5m', done: '5m！ 海にも 入れるようになった！' },
-  { d: 25, text: '夕暮れのヨコハマ。ビルをめざせ！ 目標 25m', done: '25m！ ビルも まきこめる！' },
-  { d: 100, text: '夜のヨコハマ。観覧車も 客船も まきこめ！ 目標 100m', done: '100m！ 港が ちいさく見える！' },
-  { d: 330, text: 'ランドマークタワーごと ヨコハマを まるめろ！ 目標 330m', done: 'ヨコハマを まるめた！' },
+  { d: 5, text: '中華街の 屋台や 人も まきこもう！ 目標 5m', done: '5m！ 海にも 入れるようになった！' },
+  { d: 20, text: '夕暮れのヨコハマ。クルマや 木を まきこめ！ 目標 20m', done: '20m！ 家や お店も まきこめる！' },
+  { d: 60, text: '中華街の ビルを ねらえ！ 目標 60m', done: '60m！ オフィスビルも いける！' },
+  { d: 150, text: '夜のヨコハマ。観覧車も 客船も まきこめ！ 目標 150m', done: '150m！ 港が ちいさく見える！' },
+  { d: 300, text: 'ランドマークタワーごと ヨコハマを まるめろ！ 目標 300m', done: 'ヨコハマを まるめた！' },
 ];
-const WORLD_START_R = 6;      // world units (1 unit = 6.371 km)
-const WORLD_UNIT_KM = 6.371;
+const KANTO_GOALS = [
+  { d: 1000, text: '関東へ ようこそ！ 川崎の工場や 電車を まきこもう 目標 1km', done: '1km！ 東京が 見えてきた！' },
+  { d: 3000, text: '東京へ！ 東京タワーや スカイツリーを まきこめ 目標 3km', done: '3km！ 東京を まるめた！' },
+  { d: 8000, text: '空港も 遊園地も！ 関東平野を ころがれ 目標 8km', done: '8km！ 山も まきこめそうだ！' },
+  { d: 20000, text: '筑波山・丹沢・箱根… 山ごと 関東を まるめろ！ 目標 20km', done: '関東を まるめた！' },
+];
+const WORLD_UNIT_KM = 6.371;  // planet: 1 unit = 6.371 km (radius 1000)
 const WORLD_GOALS = [
-  { d: 30, text: '日本を まきこもう！ 目標 190km', done: '日本を まるめた！' },
-  { d: 90, text: 'アジアへ ころがれ！ 目標 570km', done: 'ユーラシアが ちいさく見える！' },
-  { d: 220, text: '世界中を ころがれ！ 目標 1400km', done: '大陸ごと いけそうだ！' },
-  { d: 440, text: '地球を まるごと まきこめ！ 目標 2800km', done: 'せかいが まるくなった！' },
+  { d: 16, text: '日本列島へ！ 富士山や 名古屋・大阪を めざせ 目標 100km', done: '100km！ 富士山も まきこめる！' },
+  { d: 47, text: '北海道から 沖縄まで 日本を まるめろ！ 目標 300km', done: '日本を まるめた！' },
+  { d: 157, text: 'アジアへ ころがれ！ 目標 1,000km', done: 'ユーラシアが ちいさく見える！' },
+  { d: 470, text: '世界中を ころがれ！ 目標 3,000km', done: '大陸ごと いけそうだ！' },
+  { d: 706, text: '地球を まるごと まきこめ！ 目標 4,500km', done: 'せかいが まるくなった！' },
 ];
+const SIZE_K = 0.12;          // planet: growth from an item's size (flat things count too)
+const SIZE_K_KANTO = 0.2;
+let stageStartD = START_R * 2;
 
 // ---------------------------------------------------------------- renderer / scene
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -75,13 +87,15 @@ const reg = new ProtoRegistry();
 async function loadMod(path) {
   try { return await import(path); } catch (e) { console.warn('module load failed', path, e); return null; }
 }
-const [small, mid, big, world, audioMod] = await Promise.all([
+const [small, mid, big, world, audioMod, kantoMod] = await Promise.all([
   loadMod('./models/town_small.js'), loadMod('./models/town_mid.js'), loadMod('./models/town_big.js'),
-  loadMod('./models/world.js'), loadMod('./audio.js'),
+  loadMod('./models/world.js'), loadMod('./audio.js'), loadMod('./models/kanto.js'),
 ]);
 for (const m of [small, mid, big]) if (m) reg.add(m.default || m.PROTOS, 'town');
 const worldReg = new ProtoRegistry();
 if (world) worldReg.add(world.default || world.PROTOS, 'world');
+const kantoReg = new ProtoRegistry();
+if (kantoMod) kantoReg.add(kantoMod.default || kantoMod.PROTOS, 'kanto');
 
 const audio = audioMod && audioMod.GameAudio ? new audioMod.GameAudio() : null;
 const sfx = (fn, ...a) => { try { audio && audio[fn] && audio[fn](...a); } catch (e) { /* ignore */ } };
@@ -89,9 +103,12 @@ const sfx = (fn, ...a) => { try { audio && audio[fn] && audio[fn](...a); } catch
 $('loading-text').textContent = 'ヨコハマを つくっています…';
 await new Promise((r) => setTimeout(r, 20));
 const town = buildTown(scene, reg, material, { log: DEBUG, density: parseFloat(qs.get('density') || '1') });
-let stage = town;      // current stage object (town or globe)
-let globe = null;
+let stage = town;      // current stage object (town, kanto or globe)
+let globe = null, kanto = null;
 let stageName = 'town';
+// flat stages share one interface for the ball physics
+const townFlat = { isLand: M.isLand, bounds: M.BOUNDS, seaMinR: M.SEA_MIN_R, seaY: M.SEA_Y, groundY: town.groundY };
+let flat = townFlat;
 
 const minimap = new Minimap($('minimap'), M);
 
@@ -192,7 +209,7 @@ function readInput() {
 }
 
 // ---------------------------------------------------------------- game state
-let state = 'title'; // title | play | toWorld | ending | result
+let state = 'title'; // title | play | trans | ending | result
 let paused = false;
 let goalIdx = 0;
 let stateT = 0;
@@ -201,7 +218,7 @@ let shake = 0;
 let bumpCool = 0;
 const camState = { dist: 1.2, height: 0.6, pos: new THREE.Vector3(), init: false };
 
-function goals() { return stageName === 'town' ? CITY_GOALS : WORLD_GOALS; }
+function goals() { return stageName === 'town' ? CITY_GOALS : stageName === 'kanto' ? KANTO_GOALS : WORLD_GOALS; }
 function diameterDisplay(r) {
   if (stageName === 'world') {
     const km = r * 2 * WORLD_UNIT_KM;
@@ -210,10 +227,11 @@ function diameterDisplay(r) {
   const d = r * 2;
   if (d < 1) return `${Math.floor(d * 100)}cm ${Math.floor((d * 1000) % 10)}mm`;
   if (d < 1000) return `${Math.floor(d)}m ${String(Math.floor((d * 100) % 100)).padStart(2, '0')}cm`;
-  return `${(d / 1000).toFixed(2)}km`;
+  return `${(d / 1000).toFixed(d < 10000 ? 2 : 1)}km`;
 }
 function goalDisplay(d) {
-  return stageName === 'world' ? `${Math.round(d * WORLD_UNIT_KM).toLocaleString()}km` : d < 1 ? `${d * 100}cm` : `${d}m`;
+  if (stageName === 'world') { const km = d * WORLD_UNIT_KM; return `${(Math.round(km / (km >= 1000 ? 100 : 10)) * (km >= 1000 ? 100 : 10)).toLocaleString()}km`; }
+  return d < 1 ? `${d * 100}cm` : d < 1000 ? `${d}m` : `${d / 1000}km`;
 }
 
 // ---------------------------------------------------------------- toast / banners
@@ -244,9 +262,44 @@ function message(text, time = 4) {
 // ---------------------------------------------------------------- picking / bumping
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion();
 
+// The most one item may add, as a fraction of the ball's volume: generous while the ball is small,
+// tighter once whole buildings are on the menu so the late city doesn't snowball in a minute.
+const CAP_CURVE = [[12, 0.5], [25, 0.14], [40, 0.05], [100, 0.02], [300, 0.013]]; // [diameter m, max fraction one item adds]
+function growCap() {
+  if (stageName === 'kanto') {
+    const D = ball.r * 2;
+    if (D < 3000) return 0.08;
+    const t = Math.min(1, (Math.log(D) - Math.log(3000)) / (Math.log(15000) - Math.log(3000)));
+    return Math.exp(Math.log(0.08) + (Math.log(0.035) - Math.log(0.08)) * t);
+  }
+  if (stageName === 'world') {
+    // planet: steady through Japan and Asia, stingier once whole countries are edible
+    const D = ball.r * 2;
+    if (D < 47) return 0.06;
+    const t = Math.min(1, (Math.log(D) - Math.log(47)) / (Math.log(470) - Math.log(47)));
+    return Math.exp(Math.log(0.05) + (Math.log(0.022) - Math.log(0.05)) * t);
+  }
+  const D = ball.r * 2;
+  if (D < CAP_CURVE[0][0]) return Infinity;
+  for (let i = 0; i < CAP_CURVE.length - 1; i++) {
+    const [d0, c0] = CAP_CURVE[i], [d1, c1] = CAP_CURVE[i + 1];
+    if (D <= d1) {
+      const t = (Math.log(D) - Math.log(d0)) / (Math.log(d1) - Math.log(d0));
+      return Math.exp(Math.log(c0) + (Math.log(c1) - Math.log(c0)) * t);
+    }
+  }
+  return CAP_CURVE[CAP_CURVE.length - 1][1];
+}
+function growthOf(o) {
+  const a = stageName === 'town' ? o.vol * GROW_K : o.size ** 3 * (stageName === 'kanto' ? SIZE_K_KANTO : SIZE_K);
+  const c = growCap() * ball.vol;
+  if (!isFinite(c)) return a;
+  return a / Math.cbrt(1 + (a / c) ** 3); // ~linear below the cap, flat above it
+}
 function pick(o) {
   o.picked = true;
-  ball.vol += o.vol * GROW_K;
+  const gained = growthOf(o);
+  ball.vol += gained;
   const newR = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
   const oldR = ball.r;
   ball.r = newR;
@@ -265,7 +318,7 @@ function pick(o) {
   const cOff = o.proto.center.clone().multiplyScalar(o.scale).applyQuaternion(localQ);
   mesh.position.copy(localDir).multiplyScalar(dist).sub(cOff);
   ballGroup.add(mesh);
-  ball.items.push({ mesh, o, dist, ext: o.size * 0.5 });
+  ball.items.push({ mesh, o, dist, ext: o.size * 0.5, gained });
   // stats
   stats.count++;
   stats.byName.set(o.name, (stats.byName.get(o.name) || 0) + 1);
@@ -298,13 +351,13 @@ function dropItems(n, normal) {
     ballGroup.remove(it.mesh);
     const o = it.o;
     if (o.size < ball.r * 0.3) continue; // tiny ones just vanish into the ball
-    ball.vol = Math.max(ball.vol - o.vol * GROW_K, (4 / 3) * Math.PI * START_R ** 3);
+    ball.vol = Math.max(ball.vol - (it.gained || 0), (4 / 3) * Math.PI * START_R ** 3);
     ball.r = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
     // throw it back onto the ground behind the bump
     const side = new THREE.Vector3().crossVectors(ball.up, normal).multiplyScalar((Math.random() - 0.5) * 2);
     const p = ball.pos.clone().addScaledVector(normal, ball.r * 1.4 + o.size).add(side.multiplyScalar(ball.r));
-    if (stageName === 'town') {
-      if (!M.isLand(p.x, p.z) && o.proto.def.move !== 'sail') continue;
+    if (stageName !== 'world') {
+      if (!flat.isLand(p.x, p.z) && o.proto.def.move !== 'sail') continue;
       p.y = o.mover && o.mover.type === 'sail' ? o.pos.y : 0;
       stage.objs.setTransform(o, p, o.quat);
       if (o.mover && o.mover.type === 'walk') { o.mover.hx = p.x; o.mover.hz = p.z; o.mover.tx = p.x; o.mover.tz = p.z; }
@@ -321,7 +374,14 @@ function dropItems(n, normal) {
 }
 
 // ---------------------------------------------------------------- physics step
-function maxSpeed(dash) { return (1.7 + 5.4 * ball.r) * (dash ? 1.65 : 1); }
+function maxSpeed(dash) {
+  const r = ball.r;
+  let base;
+  if (stageName === 'kanto') base = 1.8 * r;
+  else if (stageName === 'world') base = r <= 60 ? 1.8 * r : 108 * Math.pow(r / 60, 0.65);
+  else base = r <= 8 ? 1.7 + 5.4 * r : (1.7 + 5.4 * 8) * Math.pow(r / 8, 0.55);
+  return base * (dash ? 1.65 : 1);
+}
 
 let inpDash = false;
 function step(dt, inp) {
@@ -346,7 +406,7 @@ function step(dt, inp) {
   const sub = Math.min(4, Math.max(1, Math.ceil(travel / (ball.r * 0.6))));
   const h = dt / sub;
   for (let s = 0; s < sub; s++) {
-    if (stageName === 'town') moveFlat(h); else moveSphere(h);
+    if (stageName === 'world') moveSphere(h); else moveFlat(h);
     collide();
   }
   // roll the ball
@@ -361,13 +421,13 @@ function step(dt, inp) {
 }
 
 function moveFlat(h) {
-  const B = M.BOUNDS;
+  const B = flat.bounds;
   let nx = ball.pos.x + ball.vel.x * h, nz = ball.pos.z + ball.vel.z * h;
-  if (ball.r < M.SEA_MIN_R) {
+  if (ball.r < flat.seaMinR) {
     // the sea is too deep for a small ball: slide along the quay
-    if (!M.isLand(nx, nz)) {
-      if (M.isLand(nx, ball.pos.z)) { nz = ball.pos.z; ball.vel.z *= -0.2; }
-      else if (M.isLand(ball.pos.x, nz)) { nx = ball.pos.x; ball.vel.x *= -0.2; }
+    if (!flat.isLand(nx, nz)) {
+      if (flat.isLand(nx, ball.pos.z)) { nz = ball.pos.z; ball.vel.z *= -0.2; }
+      else if (flat.isLand(ball.pos.x, nz)) { nx = ball.pos.x; ball.vel.x *= -0.2; }
       else { nx = ball.pos.x; nz = ball.pos.z; ball.vel.multiplyScalar(-0.2); }
     }
   }
@@ -375,10 +435,10 @@ function moveFlat(h) {
   nz = Math.max(B.z0 + ball.r, Math.min(B.z1 - ball.r, nz));
   ball.pos.x = nx; ball.pos.z = nz;
   // ground: land at y=0, sea bed below; a ball resting over the quay edge is held up by it
-  let gy = town.groundY(nx, nz);
+  let gy = flat.groundY(nx, nz);
   if (gy < 0) {
     const e = ball.r * 0.7;
-    if (M.isLand(nx + e, nz) || M.isLand(nx - e, nz) || M.isLand(nx, nz + e) || M.isLand(nx, nz - e)) gy = 0;
+    if (flat.isLand(nx + e, nz) || flat.isLand(nx - e, nz) || flat.isLand(nx, nz + e) || flat.isLand(nx, nz - e)) gy = 0;
   }
   const ty = gy + ball.r;
   ball.pos.y += (ty - ball.pos.y) * Math.min(1, h * 10);
@@ -439,6 +499,8 @@ const autopilot = {
       let best = null, bd = Infinity;
       for (const o of stage.objs.objs) {
         if (o.picked || this.bad.has(o) || o.size >= ball.r * PICK_K || o.size < ball.r * 0.12) continue;
+        const alt = stageName === 'world' ? o.pos.length() - EARTH_R : o.pos.y;
+        if (alt > ball.r * 1.5) continue; // flying out of reach
         const d = o.center.distanceTo(ball.pos) / (0.4 + o.size / ball.r);
         if (d < bd) { bd = d; best = o; }
       }
@@ -490,6 +552,26 @@ function updateEnvironment(dt) {
     skyUniforms.sunDir.value.set(-0.55, el, -0.6).normalize();
     scene.fog.near = 40 + ball.r * 22;
     scene.fog.far = 1100 + ball.r * 45;
+  } else if (stageName === 'kanto') {
+    // dawn after the Yokohama night, turning into a clear morning as the ball grows
+    const D = ball.r * 2;
+    const k = THREE.MathUtils.clamp((Math.log(D) - Math.log(300)) / (Math.log(4000) - Math.log(300)), 0, 1);
+    const target = 0.5 * (1 - k);
+    tod += (target - tod) * Math.min(1, dt * 0.5);
+    skyUniforms.top.value.copy(lerpEnv('top', tod));
+    skyUniforms.bottom.value.copy(lerpEnv('bottom', tod));
+    skyUniforms.sunCol.value.copy(lerpEnv('sun', tod));
+    sun.color.copy(lerpEnv('sun', tod));
+    sun.intensity = lerpNum('sunI', tod);
+    hemi.intensity = lerpNum('hemi', tod);
+    hemi.color.set(0xffffff);
+    scene.fog.color.copy(lerpEnv('fog', tod));
+    kanto.waterMat.color.copy(lerpEnv('water', tod));
+    nightUniform.value = 0.4 * Math.max(0, tod * 2 - 0.2);
+    const el = THREE.MathUtils.lerp(0.1, 0.8, 1 - tod * 2);
+    skyUniforms.sunDir.value.set(0.7, el, -0.35).normalize();
+    scene.fog.near = 2000 + ball.r * 25;
+    scene.fog.far = 16000 + ball.r * 70;
   } else {
     nightUniform.value = 0.25;
   }
@@ -507,7 +589,7 @@ function updateCamera(dt, mode = 'play') {
   const want = _v2.copy(ball.pos).addScaledVector(ball.heading, -camState.dist).addScaledVector(ball.up, camState.height);
   if (!camState.init) { camState.pos.copy(want); camState.init = true; }
   camState.pos.lerp(want, 1 - Math.exp(-dt * 7));
-  if (stageName === 'town') camState.pos.y = Math.max(camState.pos.y, (M.isLand(camState.pos.x, camState.pos.z) ? 0 : M.SEA_Y) + 0.15 + r * 0.2);
+  if (stageName !== 'world') camState.pos.y = Math.max(camState.pos.y, (flat.isLand(camState.pos.x, camState.pos.z) ? 0 : flat.seaY) + 0.15 + r * 0.2);
   camera.position.copy(camState.pos);
   if (shake > 0) {
     camera.position.x += (Math.random() - 0.5) * shake * r * 0.5;
@@ -517,7 +599,7 @@ function updateCamera(dt, mode = 'play') {
   camera.up.copy(ball.up);
   camera.lookAt(target);
   const near = Math.max(0.03, r * 0.12);
-  const far = stageName === 'town' ? scene.fog.far * 1.6 + 2000 : 60000;
+  const far = stageName !== 'world' ? scene.fog.far * 1.6 + 2000 : 3000 + r * 300;
   if (Math.abs(camera.near - near) / near > 0.05 || camera.far !== far) {
     camera.near = near; camera.far = far; camera.updateProjectionMatrix();
   }
@@ -525,7 +607,7 @@ function updateCamera(dt, mode = 'play') {
   sky.scale.setScalar(camera.far * 0.9);
   // shadow box follows the ball
   const sd = skyUniforms.sunDir.value;
-  if (stageName === 'town') {
+  if (stageName !== 'world') {
     sun.position.copy(ball.pos).addScaledVector(sd, 60 + r * 30);
   } else {
     const right = _v.crossVectors(ball.heading, ball.up);
@@ -547,7 +629,7 @@ function updateHUD() {
   $('size').textContent = diameterDisplay(ball.r);
   const G = goals();
   const g = G[Math.min(goalIdx, G.length - 1)];
-  const prev = goalIdx > 0 ? G[goalIdx - 1].d : stageName === 'town' ? START_R * 2 : WORLD_START_R * 2;
+  const prev = goalIdx > 0 ? G[goalIdx - 1].d : stageStartD;
   const D = ball.r * 2;
   const p = THREE.MathUtils.clamp((Math.log(D) - Math.log(prev)) / (Math.log(g.d) - Math.log(prev)), 0, 1);
   $('goal-bar').style.width = (p * 100).toFixed(1) + '%';
@@ -569,7 +651,9 @@ function checkGoals() {
     goalIdx++;
     sfx('sfxLevelUp');
     if (goalIdx >= G.length) {
-      if (stageName === 'town') startToWorld(); else startEnding();
+      if (stageName === 'town') startTransition('kanto');
+      else if (stageName === 'kanto') startTransition('world');
+      else startEnding();
     } else {
       banner(g.done, '');
       setTimeout(() => state === 'play' && message(G[goalIdx].text, 6), 1800);
@@ -579,10 +663,19 @@ function checkGoals() {
 }
 
 function checkDistrict() {
-  if (stageName !== 'town') {
+  if (stageName === 'world') {
     const { lat, lon } = vecToLatLon(ball.pos);
     const name = worldRegion(lat, lon);
     if (name !== lastDistrict) { lastDistrict = name; $('district').textContent = name; }
+    return;
+  }
+  if (stageName === 'kanto') {
+    const rg = K.regionAt(ball.pos.x, ball.pos.z);
+    if (rg.name !== lastDistrict) {
+      lastDistrict = rg.name;
+      $('district').textContent = rg.name;
+      if (state === 'play' && rg.name !== '関東平野') banner(rg.name, 'エリア', 1.8);
+    }
     return;
   }
   const d = M.districtAt(ball.pos.x, ball.pos.z);
@@ -609,37 +702,67 @@ function worldRegion(lat, lon) {
 }
 
 // ---------------------------------------------------------------- stage transitions
-function startToWorld() {
-  state = 'toWorld'; stateT = 0;
-  banner('ヨコハマを まるめた！', 'つぎは…', 3.4);
+let transTo = null;
+function startTransition(next) {
+  state = 'trans'; stateT = 0; transTo = next;
+  if (next === 'kanto') banner('ヨコハマを まるめた！', 'つぎは 関東だ！', 3.4);
+  else banner('関東を まるめた！', 'つぎは 日本、そして世界へ', 3.4);
   sfx('sfxWhoosh');
 }
 
+function disposeFlatStage(st) {
+  if (!st) return;
+  scene.remove(st.group);
+  st.objs.dispose();
+  st.group.traverse((m) => { if (m.isMesh && m.material && m.material.map) m.material.map.dispose(); });
+}
+
+function enterKanto() {
+  disposeFlatStage(town);
+  kanto = buildKanto(scene, kantoReg, material, {
+    log: DEBUG, texSize: innerWidth < 900 ? 2048 : 4096, density: parseFloat(qs.get('density') || '1'),
+    fujiGeom: worldReg.get('mt_fuji') ? worldReg.get('mt_fuji').geom : null,
+  });
+  stage = kanto; stageName = 'kanto';
+  flat = { isLand: K.isLand, bounds: K.BOUNDS, seaMinR: 0, seaY: K.SEA_Y, groundY: kanto.groundY };
+  goalIdx = 0;
+  stageStartD = ball.r * 2;
+  ball.pos.set(K.START.x, ball.r, K.START.z);
+  ball.heading.set(Math.sin(K.START.yaw), 0, Math.cos(K.START.yaw));
+  ball.up.set(0, 1, 0);
+  ball.vel.set(0, 0, 0);
+  tod = 0.5;
+  camState.init = false;
+  minimap.setFlatMap(kanto.canvas, K.BOUNDS, K.LABELS.map(([n, x, z]) => [n, x, z, '#335']), 220000);
+  lastDistrict = null;
+}
+
 function enterWorld() {
-  const factor = WORLD_START_R / ball.r;
+  const startR = Math.max(1.2, ball.r / (WORLD_UNIT_KM * 1000)); // metres → planet units (1 unit = 6,371 m)
+  const factor = startR / ball.r;
   // shrink what's stuck on the ball into world units
   for (const it of ball.items) {
     it.mesh.position.multiplyScalar(factor);
     it.mesh.scale.multiplyScalar(factor);
     it.dist *= factor; it.ext *= factor;
   }
-  // keep only the most recent bits so the ball looks like a souvenir of Yokohama
+  // keep only the most recent bits so the ball looks like a souvenir of the journey
   while (ball.items.length > 160) { const it = ball.items.shift(); ballGroup.remove(it.mesh); }
-  // hide the town
-  town.group.visible = false;
-  for (const g of town.objs.byProto.values()) g.mesh.visible = false;
+  disposeFlatStage(kanto); kanto = null;
+  if (stage === town) disposeFlatStage(town);
   scene.fog = null;
   sky.visible = false;
   scene.background = new THREE.Color(0x02030c);
   globe = buildGlobe(scene, worldReg, material, world, { texW: qs.get('tex') ? +qs.get('tex') : innerWidth < 900 ? 2048 : 4096 });
   stage = globe; stageName = 'world';
   goalIdx = 0;
-  setR(WORLD_START_R);
+  setR(startR);
+  stageStartD = startR * 2;
   latLonToVec(35.45, 139.64, ball.up);
   ball.pos.copy(ball.up).multiplyScalar(EARTH_R + ball.r);
-  // head south-west toward the rest of Japan, then the world
+  // head west along Japan first
   const north = new THREE.Vector3(0, 1, 0).addScaledVector(ball.up, -ball.up.y).normalize();
-  ball.heading.copy(north).applyAxisAngle(ball.up, Math.PI * 0.8);
+  ball.heading.copy(north).applyAxisAngle(ball.up, Math.PI * 0.62);
   ball.vel.set(0, 0, 0);
   hemi.intensity = 1.3; hemi.color.set(0xffffff); hemi.groundColor.set(0x667788);
   sun.intensity = 2.3; sun.color.set(0xfff6e8);
@@ -699,7 +822,8 @@ async function startGame() {
 }
 $('btn-start').addEventListener('click', startGame);
 if (qs.has('autostart')) startGame();
-if (qs.get('stage') === 'world') { startGame().then(() => { setR(150); enterWorld(); }); }
+if (qs.get('stage') === 'kanto') { startGame().then(() => { setR(150); enterKanto(); sfx('setMusic', 'town'); message(KANTO_GOALS[0].text, 6); }); }
+if (qs.get('stage') === 'world') { startGame().then(() => { setR(10000); enterWorld(); sfx('setMusic', 'world'); message(WORLD_GOALS[0].text, 6); }); }
 
 // ---------------------------------------------------------------- main loop
 const clock = new THREE.Clock();
@@ -741,25 +865,33 @@ function frame() {
     checkGoals();
     if (frameNo % 10 === 0) checkDistrict();
     updateCamera(dt);
-  } else if (state === 'toWorld') {
+  } else if (state === 'trans') {
     stateT += dt;
     ball.vel.multiplyScalar(0.95);
-    if (stageName === 'town') {
-      step(dt, { f: 0, t: 0, dash: false });
+    step(dt, { f: 0, t: 0, dash: false });
+    if (transTo) {
       updateCamera(dt, 'pull');
       if (stateT > 3.0) $('fade').classList.add('show');
       if (stateT > 3.8) {
-        enterWorld();
+        const next = transTo; transTo = null;
+        if (next === 'kanto') {
+          enterKanto();
+          banner('関東へ ころがれ！', '夜が明けてきた', 3.2);
+          sfx('setMusic', 'town');
+          setTimeout(() => message(KANTO_GOALS[0].text, 6), 2500);
+        } else {
+          enterWorld();
+          banner('日本へ、そして せかいへ！', 'ここからは 地球サイズ', 3.2);
+          sfx('setMusic', 'world');
+          setTimeout(() => message(WORLD_GOALS[0].text, 6), 2500);
+        }
         updateCamera(dt);
         $('fade').classList.remove('show');
-        banner('せかいへ ころがれ！', 'ここからは 地球サイズ', 3.2);
-        sfx('setMusic', 'world');
-        setTimeout(() => message(WORLD_GOALS[0].text, 6), 2500);
+        stateT = 0;
       }
     } else {
-      step(dt, { f: 0, t: 0, dash: false });
       updateCamera(dt);
-      if (stateT > 4.6) state = 'play';
+      if (stateT > 1.2) state = 'play';
     }
   } else if (state === 'ending') {
     stateT += dt;
@@ -786,12 +918,12 @@ function frame() {
   }
 
   stage.updateMovers(dt, ball, PICK_K);
-  stage.objs.updateVisibility(camera.position, ball.r, stageName === 'world' ? 3 : 1);
+  stage.objs.updateVisibility(camera.position, ball.r, stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1);
   core.scale.setScalar(ball.r * 0.86);
   updateEnvironment(dt);
   if (state !== 'title') updateHUD();
   if (frameNo % 3 === 0) {
-    if (stageName === 'town') minimap.drawTown(ball.pos.x, ball.pos.z, Math.atan2(ball.heading.x, ball.heading.z), ball.r);
+    if (stageName !== 'world') minimap.drawTown(ball.pos.x, ball.pos.z, Math.atan2(ball.heading.x, ball.heading.z), ball.r);
     else minimap.drawWorld(vecToLatLon(ball.pos), ball.r);
   }
   // timers
@@ -813,12 +945,19 @@ addEventListener('resize', () => {
 window.__game = {
   ball, stats, get state() { return state; }, get stage() { return stageName; },
   setR(r) { setR(r); }, teleport(x, z) { ball.pos.set(x, ball.r, z); },
-  toWorld() { startToWorld(); }, ending() { startEnding(); }, autopilot, town, get globe() { return globe; },
-  renderer, scene, camera, reg, worldReg,
+  snapCamera() { camState.init = false; },
+  toKanto() { startTransition('kanto'); }, toWorld() { startTransition('world'); }, ending() { startEnding(); },
+  autopilot, town, get globe() { return globe; }, get kanto() { return kanto; },
+  renderer, scene, camera, reg, worldReg, kantoReg,
   simulate(seconds, fps = 30) {
     // run the game logic without rendering (for pacing tests)
     const dt = 1 / fps;
     for (let i = 0; i < seconds * fps; i++) {
+      if (state === 'trans' && transTo) {
+        const next = transTo; transTo = null;
+        if (next === 'kanto') enterKanto(); else enterWorld();
+        state = 'play';
+      }
       if (state !== 'play') break;
       stats.elapsed += dt;
       step(dt, readInput());
@@ -827,6 +966,6 @@ window.__game = {
       checkGoals();
       stage.updateMovers(dt, ball, PICK_K);
     }
-    return { r: ball.r, d: ball.r * 2, count: stats.count, goalIdx, state };
+    return { r: ball.r, d: ball.r * 2, count: stats.count, goalIdx, state: state === 'trans' ? 'play' : state };
   },
 };

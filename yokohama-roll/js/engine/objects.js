@@ -122,7 +122,7 @@ export class ObjectSet {
       let n = 0;
       for (const o of g.objs) {
         if (o.picked) continue;
-        const vd = Math.min(Math.max(o.size * 160, 50), 30000) * viewScale;
+        const vd = Math.min(Math.max(o.size * 160, 50), 2e6) * viewScale;
         const dx = o.center.x - camPos.x, dy = o.center.y - camPos.y, dz = o.center.z - camPos.z;
         const d2 = dx * dx + dy * dy + dz * dz;
         if (d2 > vd * vd) continue;

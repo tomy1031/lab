@@ -144,6 +144,7 @@ export function buildTown(scene, reg, material, opts = {}) {
     if (!p) continue;
     const y = extra.y ?? (extra.float ? M.SEA_Y - (extra.sink ?? p.h * 0.07) : 0);
     const o = place(p, x, y, z, yaw, { landmark: true });
+    if (id === 'landmark_tower') o.size = 200; // the city's finale: reachable at ~276 m
     landmarkObjs.push(o);
     // footprint rect (bbox centre offset rotated)
     const c = new THREE.Vector3(p.center.x, 0, p.center.z).applyAxisAngle(UP, yaw);

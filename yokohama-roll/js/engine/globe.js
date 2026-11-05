@@ -48,6 +48,26 @@ export function buildGlobe(scene, reg, material, worldMod, opts = {}) {
   earth.receiveShadow = true;
   group.add(earth);
 
+  // high-resolution patch over Japan: the ball rolls very close to the ground there
+  if (worldMod && worldMod.drawRegion && opts.region !== false) {
+    const R = { lonW: 122, latN: 46, lonE: 150, latS: 24 };
+    const pc = document.createElement('canvas');
+    pc.width = opts.patchW || 2048; pc.height = Math.round(pc.width * (R.latN - R.latS) / (R.lonE - R.lonW) / Math.cos(THREE.MathUtils.degToRad(35)) );
+    try {
+      worldMod.drawRegion(pc.getContext('2d'), pc.width, pc.height, R.lonW, R.latN, R.lonE, R.latS);
+      const ptex = new THREE.CanvasTexture(pc);
+      ptex.colorSpace = THREE.SRGBColorSpace;
+      ptex.anisotropy = 8;
+      const d2r = THREE.MathUtils.degToRad;
+      const patch = new THREE.Mesh(
+        new THREE.SphereGeometry(EARTH_R + 0.12, 140, 110, d2r(R.lonW + 180), d2r(R.lonE - R.lonW), d2r(90 - R.latN), d2r(R.latN - R.latS)),
+        new THREE.MeshLambertMaterial({ map: ptex, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
+      );
+      patch.receiveShadow = true;
+      group.add(patch);
+    } catch (e) { console.warn('drawRegion failed', e); }
+  }
+
   // atmosphere rim
   const atmo = new THREE.Mesh(
     new THREE.SphereGeometry(EARTH_R * 1.06, 64, 48),
@@ -97,8 +117,17 @@ export function buildGlobe(scene, reg, material, worldMod, opts = {}) {
       const o = objs.add(p, pos, q, scale, { up: n });
       if (pl.move === 'sail' || pl.move === 'fly') {
         // move along a great circle: rotate around an axis perpendicular to up
-        const axis = new THREE.Vector3().crossVectors(n, new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5)).normalize();
-        objs.addMover(o, { type: pl.move, axis, w: (pl.move === 'fly' ? 0.02 : 0.004) * (0.6 + rnd() * 0.8), t: rnd() * 10 });
+        let axis, w;
+        if (pl.toward) {
+          // trains: shuttle toward the next station and back
+          axis = new THREE.Vector3().crossVectors(n, latLonToVec(pl.toward[0], pl.toward[1])).normalize();
+          const span = n.angleTo(latLonToVec(pl.toward[0], pl.toward[1]));
+          objs.addMover(o, { type: 'shuttle', axis, w: 0.0015, t: 0, span, base: pos.clone(), phase: rnd() * Math.PI * 2 });
+          continue;
+        }
+        axis = new THREE.Vector3().crossVectors(n, new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5)).normalize();
+        w = (pl.move === 'fly' ? 0.02 : 0.004) * (0.6 + rnd() * 0.8);
+        objs.addMover(o, { type: pl.move, axis, w, t: rnd() * 10 });
       }
     }
   }
@@ -110,8 +139,16 @@ export function buildGlobe(scene, reg, material, worldMod, opts = {}) {
       if (o.picked) continue;
       const m = o.mover;
       m.t += dt;
-      _q.setFromAxisAngle(m.axis, m.w * dt);
-      const pos = o.pos.clone().applyQuaternion(_q);
+      let pos;
+      if (m.type === 'shuttle') {
+        // ping-pong between the start and the next station along the line
+        const ang = (0.5 - 0.5 * Math.cos(m.phase + m.t * m.w * 60 / Math.max(m.span, 1e-3) * 0.02)) * m.span;
+        _q.setFromAxisAngle(m.axis, ang);
+        pos = m.base.clone().applyQuaternion(_q);
+      } else {
+        _q.setFromAxisAngle(m.axis, m.w * dt);
+        pos = o.pos.clone().applyQuaternion(_q);
+      }
       _n.copy(pos).normalize();
       // face along the direction of travel
       _f.crossVectors(m.axis, _n).normalize();

@@ -24,14 +24,25 @@ export class Minimap {
       ['マリンタワー', 660, 255, '#445'], ['スタジアム', -130, 460, '#445'], ['ベイブリッジ', 1450, 0, '#445'],
     ];
     this.worldCanvas = null;
+    this.bounds = M.BOUNDS;
+    this.maxRange = 3000;
   }
 
   setWorld(canvas) { this.worldCanvas = canvas; }
 
+  // switch to another flat map (canvas covering `bounds`, labels [[name, x, z, colour]])
+  setFlatMap(canvas, bounds, labels, maxRange) {
+    this.map = canvas;
+    this.bounds = bounds;
+    this.scale = canvas.width / (bounds.x1 - bounds.x0);
+    this.labels = labels;
+    this.maxRange = maxRange;
+  }
+
   drawTown(x, z, yaw, r) {
-    const { ctx, cv, M } = this;
-    const W = cv.width, H = cv.height, B = M.BOUNDS;
-    const range = Math.min(Math.max(r * 70, 260), 3000); // metres across
+    const { ctx, cv } = this;
+    const W = cv.width, H = cv.height, B = this.bounds;
+    const range = Math.min(Math.max(r * 70, 260), this.maxRange); // metres across
     const k = W / range; // px per metre
     ctx.save();
     ctx.clearRect(0, 0, W, H);
