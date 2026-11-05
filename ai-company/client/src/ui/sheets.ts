@@ -1,6 +1,7 @@
 // ドックから開く画面（シート）と、人物のプロフィール、上のバーの小窓（お知らせ・検索・タイムライン・設定）。
 // デザインは codex が出した改善案（docs/design/ の画像とメモ）に合わせている：大きな見出し＋立体アイコン＋ひとことの説明、
 // 右上に「いま見るべき数」のバッジ、人間の対応待ちはオレンジ、完了は緑、アバターは生成したキャラクターの顔。
+// アイコンは参考デザインと同じ「白いガラスのタイル＋青い線画」（ui/icons.ts の gicon）。
 import type { Goal, Member, MemoryEntry, Message, MessageKind, OfficeId, Task } from '../../../shared/types'
 import { GOAL_STATUS_LABEL, OFFICES, STATUS_LABEL, TASK_STATUS_LABEL, countryOf, officeInfo } from '../../../shared/types'
 import type { AppState } from '../state'
@@ -110,7 +111,7 @@ function headBadge(id: SheetId, state: AppState, ui: UiState, act: Actions): HTM
   const members = state.snap?.members ?? []
   if (id === 'tasks' || id === 'projects') {
     if (!waiting) return h('span', { class: 'hbadge ok' }, icon('check', 15), '人間待ちはありません')
-    return h('button', { class: 'hbadge human', onclick: () => act.open('tasks', { taskFilter: 'human', taskOffice: 'all' }) }, gicon('hand', 22), `人間の対応待ち ${waiting} 件`)
+    return h('button', { class: 'hbadge human', onclick: () => act.open('tasks', { taskFilter: 'human', taskOffice: 'all' }) }, gicon('hand', 22, 'white'), `人間の対応待ち ${waiting} 件`)
   }
   if (id === 'chat') return h('span', { class: 'hbadge live' }, h('i', { class: 'live-dot-i' }), '日本・カンボジア 接続中')
   if (id === 'people')
@@ -214,7 +215,7 @@ function composer(act: Actions, focus: boolean): HTMLElement {
     h('div', { class: 'cp-head' }, gicon('target', 34), h('div', {}, h('b', {}, 'ゴールを伝える'), h('small', {}, 'ネクマックスが分解し、AI社員と人間に仕事を割り振ります'))),
     title,
     desc,
-    h('button', { class: 'btn primary block', type: 'submit' }, gicon('spark', 20), 'ネクマックスにお願いする'),
+    h('button', { class: 'btn primary block', type: 'submit' }, gicon('spark', 20, 'white'), 'ネクマックスにお願いする'),
   )
   if (focus) setTimeout(() => title.focus(), 50)
   return form
@@ -476,7 +477,7 @@ function chatSheet(state: AppState, ui: UiState, act: Actions): HTMLElement {
       ? h(
           'div',
           { class: 'chat-q' },
-          h('div', { class: 'q-head' }, gicon('hand', 30), h('div', {}, h('b', {}, 'あなたへの質問'), h('small', {}, '返信すると、AI の仕事が進みます')), h('span', { class: 'q-count' }, `${qs.length} 件`)),
+          h('div', { class: 'q-head' }, gicon('hand', 40, 'warm'), h('div', {}, h('b', {}, 'あなたへの質問'), h('small', {}, '返信すると、AI の仕事が進みます')), h('span', { class: 'q-count' }, `${qs.length} 件`)),
           ...qs.slice(-6).reverse().map((m) => {
             const box = h('textarea', { 'data-keep': `reply-${m.id}`, rows: 2, placeholder: '回答を入力…' }) as HTMLTextAreaElement
             const from = state.member(m.fromId)

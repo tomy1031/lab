@@ -822,3 +822,37 @@ h4 { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(-
 .ctx-add { position: sticky; bottom: -14px; background: rgba(255, 255, 255, 0.97); margin: 0 -14px -14px; padding: 8px 14px 14px; border-radius: 0 0 24px 24px; }
 .hud-project { width: 350px; }
 .pc-row { grid-template-columns: minmax(0, 1fr) 52px 34px; }
+
+/* 参考デザインのアイコン：白いガラスのタイル＋青い線画（うすい塗り） */
+.gicon { display: inline-grid; place-items: center; flex: none; vertical-align: middle; }
+.gicon svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.gicon .s { stroke: url(#nmIG); }
+.gicon .s circle[r='.6'], .gicon .s circle[r='1'], .gicon .s circle[r='1.1'], .gicon .s circle[r='1.2'] { fill: url(#nmIG); }
+.gicon .f { fill: url(#nmIF); stroke: none; }
+.gicon.tile { border-radius: 28%; background: linear-gradient(160deg, #ffffff 0%, #eaf4ff 55%, #d9ebff 100%); border: 1.5px solid rgba(255, 255, 255, 0.98); box-shadow: 0 8px 18px rgba(33, 92, 180, 0.18), inset 0 2px 0 #fff, inset 0 -4px 10px rgba(47, 128, 237, 0.14); }
+.gicon.tile svg { width: 58%; height: 58%; filter: drop-shadow(0 1px 1px rgba(27, 95, 201, 0.15)); }
+.gicon.warm .s { stroke: url(#nmIW); }
+.gicon.warm .f { fill: url(#nmIWF); }
+.gicon.warm .s circle { fill: url(#nmIW); }
+.gicon.white .s { stroke: #fff; }
+.gicon.white .f { fill: rgba(255, 255, 255, 0.3); }
+.gicon.tile.warm { background: linear-gradient(160deg, #fff 0%, #fff1e4 60%, #ffe2c8 100%); }
+.dock-item { width: 92px; padding: 2px 4px 2px; background: none !important; box-shadow: none !important; gap: 6px; }
+.dock-item .gicon { filter: none; transition: transform 0.18s; }
+.dock-item:hover .gicon { transform: translateY(-3px); }
+.dock-item.on .gicon.tile { background: linear-gradient(160deg, #6cb8ff, #1b5fc9); border-color: rgba(255, 255, 255, 0.7); box-shadow: 0 10px 22px rgba(27, 95, 201, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.45); }
+.dock-item.on .gicon .s { stroke: #fff; }
+.dock-item.on .gicon .s circle { fill: #fff; }
+.dock-item.on .gicon .f { fill: rgba(255, 255, 255, 0.28); }
+.dock-item.on .dock-label { color: var(--blue-deep); }
+.dock { padding: 12px 18px 10px; gap: 12px; border-radius: 32px; }
+.dock-label { font-size: 14px; }
+.tb-icon { color: var(--navy); }
+.tb-icon .ico { stroke-width: 2; }
+.sheet-gicon { filter: none; }
+.hbadge .gicon { width: 22px !important; height: 22px !important; }
+@media (max-width: 860px) {
+  .dock-item .gicon { width: 40px !important; height: 40px !important; }
+  .dock-item { width: auto; flex: 1; }
+  .dock { gap: 2px; padding: 6px; }
+}

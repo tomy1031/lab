@@ -340,9 +340,11 @@ function sofa(b: Builder, u: number, z0: number, z1: number, color: string): voi
 
 /** 街の絵の置き場所（世界座標の中心と幅） */
 const BACKDROP_PLACE: Record<OfficeId, { x: number; y: number; z: number; w: number }> = {
-  osaka: { x: -12, y: -5.0, z: -32, w: 34 },
-  tokyo: { x: -36, y: -4.0, z: -30, w: 26 },
-  phnompenh: { x: 12, y: -5.0, z: -32, w: 36 },
+  // 生成した絵（1536×1024・下の 1/4 はぼかし）の地面が床の陰に隠れ、名所（東京タワー・通天閣と桜・王宮）が
+  // 上のカードの左右の空いた所に見える位置
+  osaka: { x: -15.5, y: -4.6, z: -33, w: 34 },
+  tokyo: { x: -37, y: -3.8, z: -30, w: 27 },
+  phnompenh: { x: 17, y: -4.6, z: -33, w: 37 },
 }
 
 function textPlane(tex: THREE.Texture, w: number, h: number, mirror: number): THREE.Mesh {

@@ -48,7 +48,7 @@ export function topbar(state: AppState, hd: TopbarHandlers): HTMLElement {
     ['phnompenh', 'プノンペン'],
   ]
   const btn = (name: GlossyIcon, title: string, on: (el: HTMLElement) => void, badge?: number) => {
-    const b = h('button', { class: 'tb-icon', title, 'aria-label': title }, gicon(name, 28), badge ? h('i', { class: 'tb-dot' }, String(badge)) : null)
+    const b = h('button', { class: 'tb-icon', title, 'aria-label': title }, icon(name, 24), badge ? h('i', { class: 'tb-dot' }, String(badge)) : null)
     b.addEventListener('click', (e) => {
       e.stopPropagation()
       on(b)
@@ -99,7 +99,7 @@ export function projectCard(state: AppState, onOpen: (goalId?: string) => void):
   return h(
     'section',
     { class: 'card glass hud-project', onclick: () => onOpen() },
-    h('div', { class: 'card-title' }, gicon('chart', 26), 'プロジェクト進捗', h('span', { class: 'card-sub' }, active.length ? `進行中 ${active.length}` : '待機中')),
+    h('div', { class: 'card-title' }, gicon('chart', 20), 'プロジェクト進捗', h('span', { class: 'card-sub' }, active.length ? `進行中 ${active.length}` : '待機中')),
     h(
       'div',
       { class: 'pc-body' },
@@ -153,7 +153,7 @@ export function assistantCard(state: AppState, hd: AssistantHandlers): HTMLEleme
   return h(
     'section',
     { class: `card glass hud-assistant ${busy ? 'busy' : ''}` },
-    h('div', { class: 'card-title' }, gicon('robot', 26), 'AIアシスタント', h('span', { class: 'card-sub' }, 'ネクマックス')),
+    h('div', { class: 'card-title' }, gicon('robot', 20), 'AIアシスタント', h('span', { class: 'card-sub' }, 'ネクマックス')),
     h(
       'div',
       { class: 'as-body' },
@@ -216,7 +216,7 @@ export function worldCard(state: AppState, pulse: { from: string; to: string; at
       ),
     ),
   )
-  const card = h('section', { class: 'card glass hud-world' }, h('div', { class: 'card-title' }, gicon('globe', 26), '世界のチーム', h('span', { class: 'card-sub' }, '3 拠点')), h('div', { class: 'wc-body', html: svg }), legend)
+  const card = h('section', { class: 'card glass hud-world' }, h('div', { class: 'card-title' }, gicon('globe', 20), '世界のチーム', h('span', { class: 'card-sub' }, '3 拠点')), h('div', { class: 'wc-body', html: svg }), legend)
   card.querySelectorAll<SVGGElement>('.pin').forEach((g) => g.addEventListener('click', () => onOffice(g.dataset.office!)))
   return card
 }
@@ -230,7 +230,7 @@ export function humanCard(state: AppState, onOpenTask: (taskId: string) => void,
   return h(
     'section',
     { class: `card glass hud-human ${reqs.length ? 'has' : ''}` },
-    h('div', { class: 'card-title' }, gicon('hand', 26), '人間の対応待ち', h('span', { class: 'card-sub' }, reqs.length ? `${reqs.length} 件` : 'なし')),
+    h('div', { class: 'card-title' }, gicon('hand', 20, 'warm'), '人間の対応待ち', h('span', { class: 'card-sub' }, reqs.length ? `${reqs.length} 件` : 'なし')),
     reqs.length
       ? h(
           'ul',
@@ -276,7 +276,7 @@ export function feedCard(state: AppState, onOpen: () => void): HTMLElement {
   return h(
     'section',
     { class: 'card glass hud-feed', onclick: onOpen },
-    h('div', { class: 'card-title' }, gicon('chat', 26), 'やり取り', h('span', { class: 'card-sub live-dot' }, 'LIVE')),
+    h('div', { class: 'card-title' }, gicon('chat', 20), 'やり取り', h('span', { class: 'card-sub live-dot' }, 'LIVE')),
     msgs.length ? h('ul', { class: 'feed' }, ...msgs.map((m) => feedRow(state, m))) : h('p', { class: 'hr-empty' }, 'まだやり取りはありません'),
   )
 }
@@ -315,7 +315,7 @@ export function dock(state: AppState, open: SheetId | null, onOpen: (id: SheetId
   return h(
     'nav',
     { class: 'dock glass' },
-    ...items.map(([id, ic, label, badge]) => h('button', { class: `dock-item ${open === id ? 'on' : ''}`, onclick: () => onOpen(id) }, gicon(ic, 52), h('span', { class: 'dock-label' }, label), badge ? h('i', { class: 'dock-badge' }, String(badge)) : null)),
+    ...items.map(([id, ic, label, badge]) => h('button', { class: `dock-item ${open === id ? 'on' : ''}`, onclick: () => onOpen(id) }, gicon(ic, 66), h('span', { class: 'dock-label' }, label), badge ? h('i', { class: 'dock-badge' }, String(badge)) : null)),
   )
 }
 
