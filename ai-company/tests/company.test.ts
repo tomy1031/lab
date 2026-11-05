@@ -10,6 +10,7 @@ process.env.SIM_SPEED = '200'
 
 const { Store } = await import('../server/store')
 const { Company } = await import('../server/company')
+const { NodeWorkspace } = await import('../server/nodeWorkspace')
 const { SimEngine } = await import('../server/engine/sim')
 const { seed } = await import('../server/seed')
 const { contextOf, score } = await import('../server/memory')
@@ -33,7 +34,9 @@ describe('Company（シミュレーション）', () => {
 
   beforeAll(() => {
     seed(store, join(dir, 'cred.txt'))
-    company = new Company(store, () => new SimEngine(200), join(dir, 'ws'))
+    company = new Company(store, () => new SimEngine(200), new NodeWorkspace(join(dir, 'ws')))
+    // この流れのテストでは、ゴールを出す管理者を承認する人にしておく（承認の関所は別のテストで確かめる）
+    store.setGate({ approverId: store.state.members.find((m) => m.isAdmin)!.id })
   })
 
   it('ゴールを分解し、足りない職種を採用し、人間の仕事を人間に渡す', async () => {
@@ -163,8 +166,9 @@ describe('やることストック（音声）', () => {
     const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
     const store = new Store(join(dir, 's.json'))
     seed(store, join(dir, 'c.txt'))
-    const company = new Company(store, () => new SimEngine(200), join(dir, 'ws'))
+    const company = new Company(store, () => new SimEngine(200), new NodeWorkspace(join(dir, 'ws')))
     const me = store.state.members.find((m) => m.isAdmin)!
+    store.setGate({ approverId: me.id })
     const other = store.state.members.find((m) => m.kind === 'human' && m.id !== me.id)!
     company.addStock(me, 'えっと、カンボジアの大学向けの説明資料を作りたい。あと明日までに会場の担当者に電話する。それから名刺の渡し方は先に結論を言うと覚えておく')
     await until(() => store.stockOf(me.id).every((s) => s.status !== 'organizing'), 5000)
@@ -184,4 +188,72 @@ describe('やることストック（音声）', () => {
     // ほかの人のストックは触れない
     expect(() => company.actOnStock(goalItem.id, other, 'archive')).toThrow()
   }, 20000)
+})
+
+describe('承認の関所', () => {
+  const setup = (opts: { canAutoApprove?: () => boolean } = {}) => {
+    const dir = mkdtempSync(join(tmpdir(), 'nmai-'))
+    const store = new Store(join(dir, 's.json'))
+    seed(store, join(dir, 'c.txt'))
+    const company = new Company(store, () => new SimEngine(200), new NodeWorkspace(join(dir, 'ws')), opts)
+    const approver = company.approver()!
+    const other = store.state.members.find((m) => m.kind === 'human' && m.id !== approver.id && m.login && !m.isAdmin)!
+    const ai = store.state.members.find((m) => m.kind === 'nexmax')!
+    return { store, company, approver, other, ai }
+  }
+
+  it('既定は手動：社長が承認する人で、ほかの人のゴールは承認されるまで動かない', async () => {
+    const { store, company, approver, other } = setup()
+    expect(/社長/.test(approver.role)).toBe(true)
+    const g = company.createGoal(other, '展示会のチラシを作る', '')
+    expect(g.status).toBe('awaiting_approval')
+    expect(store.state.messages.some((m) => m.toId === approver.id && m.text.includes('承認をお願いします'))).toBe(true)
+    // 承認する人以外は承認できない
+    expect(() => company.approveGoal(g.id, other)).toThrow()
+    company.approveGoal(g.id, approver)
+    expect(store.goal(g.id)!.approval).toMatchObject({ state: 'approved', by: approver.id })
+    await until(() => store.goal(g.id)!.status === 'running' || store.goal(g.id)!.status === 'waiting_human', 8000)
+    // 承認する人が自分で出したゴールはすぐ始まる
+    expect(company.createGoal(approver, '社内報を書く', '').status).toBe('planning')
+  }, 20000)
+
+  it('見送ると中止になり、出した人に知らせる', () => {
+    const { store, company, approver, other } = setup()
+    const g = company.createGoal(other, '新しい事業の案を出す', '')
+    company.declineGoal(g.id, approver, '来月にしましょう')
+    expect(store.goal(g.id)!.status).toBe('cancelled')
+    expect(store.state.messages.some((m) => m.toId === other.id && m.text.includes('来月にしましょう'))).toBe(true)
+  })
+
+  it('AI への話しかけも、承認されてから答える', async () => {
+    const { store, company, approver, other, ai } = setup()
+    await company.talk(other, ai, '進み具合を教えて')
+    const q = store.state.messages.find((m) => m.fromId === other.id && m.toId === ai.id)!
+    expect(q.approval?.state).toBe('pending')
+    expect(store.state.messages.some((m) => m.replyTo === q.id)).toBe(false)
+    await company.approveTalk(q.id, approver)
+    expect(store.state.messages.some((m) => m.replyTo === q.id && m.kind === 'answer')).toBe(true)
+  })
+
+  it('自動承認：ルールに合えば通し、1 日の上限を超えたら手動に戻る。承認する人のページが閉じていれば通さない', () => {
+    let open = true
+    const { store, company, approver, other } = setup({ canAutoApprove: () => open })
+    company.setGate(approver, { mode: 'auto', dailyLimit: 1 })
+    const a = company.createGoal(other, '1 件目', '')
+    expect(store.goal(a.id)!.approval).toMatchObject({ state: 'approved', auto: true })
+    const b = company.createGoal(other, '2 件目', '')
+    expect(store.goal(b.id)!.status).toBe('awaiting_approval')
+    expect(company.gateInfo().autoToday).toBe(1)
+    company.setGate(approver, { dailyLimit: 5 })
+    expect(store.goal(b.id)!.status).not.toBe('awaiting_approval') // 上限を上げたら、待っていた分も通る
+    open = false
+    const c = company.createGoal(other, '3 件目', '')
+    expect(store.goal(c.id)!.status).toBe('awaiting_approval')
+    // 自動承認の対象を選んだ人だけにする
+    open = true
+    company.setGate(approver, { autoFrom: [approver.id] })
+    expect(company.createGoal(other, '4 件目', '').status).toBe('awaiting_approval')
+    // 承認の設定は承認する人か管理者だけ
+    expect(() => company.setGate(other, { mode: 'manual' })).toThrow()
+  })
 })

@@ -57,7 +57,7 @@ export function flag(country: 'jp' | 'kh', size = 16): SVGSVGElement {
  * 参考デザイン（docs/img/design_reference.jpg）のアイコン：白いガラスのタイルに、青いグラデーションの線画＋うすい塗り。
  * size が 34 以上ならタイル付き、それより小さいと線画だけ。cls に 'warm' でオレンジ、'white' で白
  */
-export type GlossyIcon = 'folder' | 'task' | 'chat' | 'doc' | 'people' | 'chart' | 'target' | 'robot' | 'globe' | 'hand' | 'bell' | 'calendar' | 'settings' | 'search' | 'spark' | 'check' | 'mic' | 'inbox'
+export type GlossyIcon = 'folder' | 'task' | 'chat' | 'doc' | 'people' | 'chart' | 'target' | 'robot' | 'globe' | 'hand' | 'bell' | 'calendar' | 'settings' | 'search' | 'spark' | 'check' | 'mic' | 'inbox' | 'lock'
 
 /** [塗り, 線]（24×24） */
 const DUO: Record<GlossyIcon, [string, string]> = {
@@ -79,6 +79,7 @@ const DUO: Record<GlossyIcon, [string, string]> = {
   check: ['<circle cx="12" cy="12" r="8.5"/>', '<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.8 2.8 5.2-5.6"/>'],
   mic: ['<rect x="9" y="3" width="6" height="11" rx="3"/>', '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>'],
   inbox: ['<path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2v5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>', '<path d="M3.5 13l2.6-7.2A2 2 0 0 1 8 4.5h8a2 2 0 0 1 1.9 1.3l2.6 7.2v5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 13h5l1.5 2.5h4l1.5-2.5h5"/>'],
+  lock: ['<rect x="5" y="10.5" width="14" height="10" rx="2.5"/>', '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 14.5v2.5"/>'],
 }
 
 let defsAdded = false

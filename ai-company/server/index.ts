@@ -12,6 +12,7 @@ import { ClaudeEngine } from './engine/claude'
 import { SimEngine } from './engine/sim'
 import type { Engine } from './engine/types'
 import { contextOf, remember } from './memory'
+import { NodeWorkspace } from './nodeWorkspace'
 import { ensureCore, seed } from './seed'
 import { Store } from './store'
 import { hashStr, id, lookForHuman, now } from './util'
@@ -51,7 +52,7 @@ function defaultEngine(): 'claude' | 'sim' {
 }
 const engines: Record<'claude' | 'sim', Engine> = { claude: new ClaudeEngine(), sim: new SimEngine() }
 let engineMode = defaultEngine()
-const company = new Company(store, () => engines[engineMode], WORKSPACE)
+const company = new Company(store, () => engines[engineMode], new NodeWorkspace(WORKSPACE))
 company.recover()
 
 // ------------------------------------------------------------------ WebSocket
@@ -78,6 +79,7 @@ function snapshot(me: Member | null): Snapshot {
     activities: s.activities.slice(-200),
     engine: engines[engineMode].info,
     stock: me ? store.stockOf(me.id).filter((x) => x.status !== 'archived' || Date.now() - Date.parse(x.updatedAt) < 3600_000).slice(-200) : [],
+    gate: company.gateInfo(),
   }
 }
 
@@ -180,8 +182,40 @@ route('POST', '/api/goals', true, (_req, _res, me, _p, b) => {
   return { goal: company.createGoal(me!, title, str(b.description, 4000)) }
 })
 
+// ---- 承認の関所：承認する人だけが「始める／見送る」を押せる
+const asBad = <T>(f: () => T): T => {
+  try {
+    return f()
+  } catch (e) {
+    throw new HttpError(400, (e as Error).message)
+  }
+}
+route('POST', '/api/goals/:id/approve', true, (_req, _res, me, [gid]) => ({ goal: asBad(() => company.approveGoal(gid, me!)) }))
+route('POST', '/api/goals/:id/decline', true, (_req, _res, me, [gid], b) => ({ goal: asBad(() => company.declineGoal(gid, me!, str(b.note, 400))) }))
+route('POST', '/api/messages/:id/approve', true, async (_req, _res, me, [mid]) => {
+  const q = store.state.messages.find((m) => m.id === mid)
+  need(q?.approval?.state === 'pending', 400, 'この話しかけはいま承認待ちではありません')
+  asBad(() => company.checkApprover(me!))
+  void company.approveTalk(mid, me!).catch((e) => console.error('[talk]', e))
+  return { ok: true }
+})
+route('POST', '/api/messages/:id/decline', true, (_req, _res, me, [mid], b) => {
+  asBad(() => company.declineTalk(mid, me!, str(b.note, 400)))
+  return { ok: true }
+})
+route('POST', '/api/gate', true, (_req, _res, me, _p, b) => ({
+  gate: asBad(() =>
+    company.setGate(me!, {
+      mode: b.mode === 'auto' || b.mode === 'manual' ? b.mode : undefined,
+      approverId: typeof b.approverId === 'string' ? b.approverId : undefined,
+      autoFrom: b.autoFrom === 'all' ? 'all' : Array.isArray(b.autoFrom) ? b.autoFrom.map(String) : undefined,
+      dailyLimit: b.dailyLimit === undefined ? undefined : Number(b.dailyLimit),
+    }),
+  ),
+}))
+
 route('POST', '/api/goals/:id/cancel', true, (_req, _res, me, [gid]) => {
-  company.cancelGoal(gid, me!)
+  asBad(() => company.cancelGoal(gid, me!))
   return { ok: true }
 })
 

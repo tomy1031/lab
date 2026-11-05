@@ -72,7 +72,21 @@ function baseOptions(extra: Partial<Options> = {}): Options {
   } as Options
 }
 
-async function collect(q: AsyncIterable<SDKMessage>, onText?: (t: string) => void): Promise<{ text: string; structured?: unknown; cost: number }> {
+/** 使った額（API の料金に換算した目安）。種類ごと（分解・作業・相談…）にも足していく */
+export const spend = { totalUsd: 0, byKind: {} as Record<string, number> }
+
+type ModelUsage = Record<string, { inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number }>
+
+function logCost(kind: string, cost: number, usage: ModelUsage | undefined): void {
+  spend.totalUsd += cost
+  spend.byKind[kind] = (spend.byKind[kind] ?? 0) + cost
+  const models = Object.entries(usage ?? {})
+    .map(([m, u]) => `${m} in=${u.inputTokens ?? 0} out=${u.outputTokens ?? 0} cacheR=${u.cacheReadInputTokens ?? 0} cacheW=${u.cacheCreationInputTokens ?? 0}`)
+    .join(' / ')
+  console.log(`[cost] ${kind} $${cost.toFixed(4)}（累計 $${spend.totalUsd.toFixed(4)}）${models ? ' ' + models : ''}`)
+}
+
+async function collect(q: AsyncIterable<SDKMessage>, onText?: (t: string) => void, kind = 'other'): Promise<{ text: string; structured?: unknown; cost: number }> {
   let text = ''
   let lastAssistant = ''
   let structured: unknown
@@ -86,6 +100,7 @@ async function collect(q: AsyncIterable<SDKMessage>, onText?: (t: string) => voi
       if (parts.length) lastAssistant = parts.join('\n')
     } else if (msg.type === 'result') {
       cost = msg.total_cost_usd ?? 0
+      logCost(kind, cost, (msg as { modelUsage?: ModelUsage }).modelUsage)
       if (msg.subtype === 'success') {
         text = msg.result
         structured = msg.structured_output
@@ -143,7 +158,7 @@ ${ceo ? describeContext(ceo, 8) : '    ・（まだ記録なし）'}
         outputFormat: { type: 'json_schema', schema: PLAN_SCHEMA as unknown as Record<string, unknown> },
       }),
     })
-    const { text, structured } = await collect(q)
+    const { text, structured } = await collect(q, undefined, 'plan')
     const raw = (structured ?? extractJson(text)) as Plan
     return normalizePlan(raw)
   }
@@ -214,7 +229,7 @@ ${prev}
         abortController: ac,
       }),
     })
-    const { text } = await collect(q, onText)
+    const { text } = await collect(q, onText, 'task')
     return splitMemory(text)
   }
 
@@ -228,7 +243,7 @@ ${prev}
         maxTurns: 1,
       }),
     })
-    return (await collect(q)).text.trim()
+    return (await collect(q, undefined, 'consult')).text.trim()
   }
 
   async organize({ member, items, existing }: OrganizeInput): Promise<OrganizedStock[]> {
@@ -281,7 +296,7 @@ ${existing.map((e) => `- ${e.id}: ${e.title}`).join('\n') || '（なし）'}
         outputFormat: { type: 'json_schema', schema },
       }),
     })
-    const { text, structured } = await collect(q)
+    const { text, structured } = await collect(q, undefined, 'organize')
     const raw = (structured ?? extractJson(text)) as { items?: OrganizedStock[] }
     return (raw.items ?? []).filter((x) => x && x.from && x.title)
   }
@@ -296,7 +311,7 @@ ${existing.map((e) => `- ${e.id}: ${e.title}`).join('\n') || '（なし）'}
         maxTurns: 1,
       }),
     })
-    return (await collect(q)).text.trim()
+    return (await collect(q, undefined, 'reflect')).text.trim()
   }
 
   async report({ goal, tasks }: ReportInput): Promise<string> {
@@ -312,7 +327,7 @@ ${existing.map((e) => `- ${e.id}: ${e.title}`).join('\n') || '（なし）'}
         maxTurns: 1,
       }),
     })
-    return (await collect(q)).text.trim()
+    return (await collect(q, undefined, 'report')).text.trim()
   }
 }
 

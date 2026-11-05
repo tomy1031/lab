@@ -8,7 +8,9 @@ export type Change =
   | { kind: 'hired'; member: Member; reason: string }
   | { kind: 'goal'; goal: Goal }
   | { kind: 'task'; task: Task; prev?: Task }
-  | { kind: 'message'; message: Message }
+  | { kind: 'message'; message: Message; updated?: boolean }
+  | { kind: 'gate' }
+  | { kind: 'engine' }
   | { kind: 'activity'; activity: Activity }
   | { kind: 'memory'; memberId: string }
   | { kind: 'stream'; memberId: string; taskId: string; text: string }
@@ -74,10 +76,26 @@ export class AppState {
         this.fire({ kind: 'task', task: ev.task, prev: copy })
         break
       }
-      case 'message':
+      case 'message': {
+        // 同じ id はあとから書き換わったもの（承認の状態など）：差し替える
+        const i = s.messages.findIndex((m) => m.id === ev.message.id)
+        if (i >= 0) {
+          s.messages[i] = ev.message
+          this.fire({ kind: 'message', message: ev.message, updated: true })
+          break
+        }
         s.messages.push(ev.message)
         if (s.messages.length > 400) s.messages.splice(0, s.messages.length - 400)
         this.fire({ kind: 'message', message: ev.message })
+        break
+      }
+      case 'gate':
+        s.gate = ev.gate
+        this.fire({ kind: 'gate' })
+        break
+      case 'engine':
+        s.engine = ev.engine
+        this.fire({ kind: 'engine' })
         break
       case 'activity':
         s.activities.push(ev.activity)

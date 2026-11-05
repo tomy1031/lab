@@ -1,7 +1,5 @@
 // オフラインのシミュレーション。Claude を呼ばずに、それらしい分解・やり取り・成果を作る（デモ・画面の確認用）。
 // 同じ流れ（分解 → 採用 → 分担 → 相談 → 記憶 → 報告）を通るので、3D 空間の見え方はほぼ本番と同じ。
-import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import type { EngineInfo, OfficeId } from '../../shared/types'
 import { countryOf, officeInfo } from '../../shared/types'
 import { clip, pick, sleep } from '../util'
@@ -101,7 +99,7 @@ const ANSWERS = ['その前提で大丈夫です。出典だけ添えてくだ�
 
 export class SimEngine implements Engine {
   readonly info: EngineInfo = { mode: 'sim', detail: 'シミュレーション（Claude を呼ばないデモ）' }
-  constructor(private readonly speed = Number(process.env.SIM_SPEED || 1)) {}
+  constructor(private readonly speed = Number((typeof process !== 'undefined' && process.env?.SIM_SPEED) || 1)) {}
 
   private wait(ms: number, signal?: AbortSignal): Promise<void> {
     if (signal?.aborted) return Promise.reject(new Error('中止'))
@@ -159,7 +157,7 @@ export class SimEngine implements Engine {
     }
   }
 
-  async runTask({ goal, task, me, colleagues, inputs, workdir, tools, onText, signal }: RunTaskInput): Promise<RunTaskResult> {
+  async runTask({ goal, task, me, colleagues, inputs, writeFile, tools, onText, signal }: RunTaskInput): Promise<RunTaskResult> {
     const steps = 3 + Math.floor(Math.random() * 3)
     for (let i = 0; i < steps; i++) {
       await this.wait(1800 + Math.random() * 2200, signal)
@@ -184,7 +182,7 @@ export class SimEngine implements Engine {
 （シミュレーションの成果物です。Claude Code モードでは実際の調査・作成結果が入ります）`
     const file = `${task.key}.md`
     try {
-      writeFileSync(join(workdir, file), `# ${task.title}\n\n${output}\n`)
+      writeFile(file, `# ${task.title}\n\n${output}\n`)
     } catch {
       /* 作業フォルダが無くても続ける */
     }

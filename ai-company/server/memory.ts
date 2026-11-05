@@ -2,7 +2,7 @@
 // 新しさ（時間で薄れる）と重要度（1..10）を足した点数で、プロンプトに入れる記憶を選ぶ。
 import type { Member, MemoryEntry, MemoryKind } from '../shared/types'
 import type { MemberContext } from './engine/types'
-import type { Store } from './store'
+import type { CoreStore as Store } from './coreStore'
 import { id, now } from './util'
 
 const HALF_LIFE_H = 72

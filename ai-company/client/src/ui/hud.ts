@@ -4,7 +4,8 @@ import type { Member, Message } from '../../../shared/types'
 import { OFFICES, STATUS_LABEL, countryOf, officeInfo } from '../../../shared/types'
 import type { AppState } from '../state'
 import { face, nexmaxBadge } from './avatar'
-import { activeProjects, humanRequests, minutesLabel, officeStats, project, unansweredQuestions, upcomingHuman } from './derive'
+import { activeProjects, approvals, approverOf, humanRequests, isApprover, minutesLabel, officeStats, project, unansweredQuestions, upcomingHuman } from './derive'
+import { approvalRow, type Actions } from './sheets'
 import { clock, esc, h } from './dom'
 import { flag, gicon, icon, type GlossyIcon } from './icons'
 import { MAP_DOTS } from './mapDots'
@@ -39,7 +40,8 @@ export interface TopbarHandlers {
 
 export function topbar(state: AppState, hd: TopbarHandlers): HTMLElement {
   const me = state.me
-  const bellCount = (state.snap?.tasks ?? []).filter((t) => t.assigneeId === me?.id && t.status === 'waiting_human').length + unansweredQuestions(state, me).length
+  const bellCount =
+    (state.snap?.tasks ?? []).filter((t) => t.assigneeId === me?.id && t.status === 'waiting_human').length + unansweredQuestions(state, me).length + (isApprover(state) ? approvals(state).length : 0)
   const views: [View, string][] = [
     ['all', '全体'],
     ['jp', '日本'],
@@ -223,14 +225,28 @@ export function worldCard(state: AppState, pulse: { from: string; to: string; at
 
 // ------------------------------------------------------------------ 人間の対応待ち（左下）
 
-export function humanCard(state: AppState, onOpenTask: (taskId: string) => void, onComplete: (taskId: string) => void): HTMLElement {
+export function humanCard(state: AppState, onOpenTask: (taskId: string) => void, onComplete: (taskId: string) => void, act: Actions): HTMLElement {
   const me = state.me
   const reqs = humanRequests(state)
   const upcoming = upcomingHuman(state)
+  // 承認待ち：承認する人にはボタン付きで先頭に。ほかの人には自分が出したものだけ
+  const aps = approvals(state)
+  const mineAp = isApprover(state)
+  const shownAp = mineAp ? aps : aps.filter((a) => a.by?.id === me?.id)
+  const approver = approverOf(state)
+  const total = reqs.length + (mineAp ? aps.length : 0)
   return h(
     'section',
-    { class: `card glass hud-human ${reqs.length ? 'has' : ''}` },
-    h('div', { class: 'card-title' }, gicon('hand', 20, 'warm'), '人間の対応待ち', h('span', { class: 'card-sub' }, reqs.length ? `${reqs.length} 件` : 'なし')),
+    { class: `card glass hud-human ${total ? 'has' : ''}` },
+    h('div', { class: 'card-title' }, gicon('hand', 20, 'warm'), '人間の対応待ち', h('span', { class: 'card-sub' }, total ? `${total} 件` : 'なし')),
+    shownAp.length
+      ? h(
+          'div',
+          { class: 'ap-box' },
+          h('div', { class: 'ap-box-title' }, gicon('lock', 16, 'warm'), mineAp ? `あなたの承認待ち ${aps.length} 件` : `${approver?.name ?? '承認する人'}さんの承認待ち ${shownAp.length} 件`),
+          ...shownAp.slice(0, mineAp ? 3 : 2).map((a) => approvalRow(state, a, act, mineAp)),
+        )
+      : null,
     reqs.length
       ? h(
           'ul',
@@ -264,7 +280,9 @@ export function humanCard(state: AppState, onOpenTask: (taskId: string) => void,
             )
           }),
         )
-      : h('p', { class: 'hr-empty' }, 'いま人間を待っている仕事はありません。AI社員が進めています'),
+      : shownAp.length
+        ? null
+        : h('p', { class: 'hr-empty' }, 'いま人間を待っている仕事はありません。AI社員が進めています'),
     upcoming.length ? h('div', { class: 'hr-next' }, icon('clock', 13), `このあと人間に回る仕事 ${upcoming.length} 件`) : null,
   )
 }

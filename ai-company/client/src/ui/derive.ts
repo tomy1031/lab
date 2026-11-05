@@ -6,7 +6,7 @@ import type { Goal, Member, Message, OfficeId, Task } from '../../../shared/type
 import { OFFICES, countryOf } from '../../../shared/types'
 import type { AppState } from '../state'
 
-export const ACTIVE_GOAL: Goal['status'][] = ['planning', 'running', 'waiting_human']
+export const ACTIVE_GOAL: Goal['status'][] = ['awaiting_approval', 'planning', 'running', 'waiting_human']
 const OPEN_TASK: Task['status'][] = ['todo', 'blocked', 'in_progress', 'waiting_human', 'review']
 
 export interface ProjectView {
@@ -21,8 +21,9 @@ export interface ProjectView {
   hires: Message[]
 }
 
-export type Phase = 'plan' | 'hire' | 'work' | 'human' | 'done' | 'stopped'
+export type Phase = 'approve' | 'plan' | 'hire' | 'work' | 'human' | 'done' | 'stopped'
 export const PHASES: { id: Phase; label: string }[] = [
+  { id: 'approve', label: '承認' },
   { id: 'plan', label: '分解' },
   { id: 'hire', label: '採用・割り振り' },
   { id: 'work', label: 'AI が作業' },
@@ -37,7 +38,8 @@ export function project(state: AppState, g: Goal): ProjectView {
   const aiWorking = tasks.filter((t) => !t.requiresHuman && t.status === 'in_progress').length
   const humanWaiting = tasks.filter((t) => t.status === 'waiting_human').length
   let phase: Phase = 'work'
-  if (g.status === 'planning') phase = 'plan'
+  if (g.status === 'awaiting_approval') phase = 'approve'
+  else if (g.status === 'planning') phase = 'plan'
   else if (g.status === 'done') phase = 'done'
   else if (g.status === 'failed' || g.status === 'cancelled') phase = 'stopped'
   else if (humanWaiting && !aiWorking) phase = 'human'
@@ -178,4 +180,39 @@ export function minutesLabel(min: number): string {
   if (min < 60) return `${min}分`
   if (min < 60 * 24) return `${Math.floor(min / 60)}時間${min % 60 ? `${min % 60}分` : ''}`
   return `${Math.floor(min / 1440)}日`
+}
+
+// ------------------------------------------------------------------ 承認の関所
+
+export interface ApprovalItem {
+  kind: 'goal' | 'talk'
+  id: string
+  by: Member | undefined
+  /** 話しかけの相手（AI） */
+  to?: Member
+  text: string
+  at: string
+  waitedMin: number
+}
+
+/** 承認待ち（古い順）：ほかの人が出したゴールと、AI への話しかけ */
+export function approvals(state: AppState): ApprovalItem[] {
+  const s = state.snap
+  if (!s) return []
+  const waited = (at: string) => Math.max(0, Math.round((Date.now() - Date.parse(at)) / 60000))
+  return [
+    ...s.goals.filter((g) => g.status === 'awaiting_approval').map((g) => ({ kind: 'goal' as const, id: g.id, by: state.member(g.createdBy), text: g.title, at: g.createdAt, waitedMin: waited(g.createdAt) })),
+    ...s.messages
+      .filter((m) => m.approval?.state === 'pending')
+      .map((m) => ({ kind: 'talk' as const, id: m.id, by: state.member(m.fromId), to: state.member(m.toId), text: m.text, at: m.at, waitedMin: waited(m.at) })),
+  ].sort((a, b) => a.at.localeCompare(b.at))
+}
+
+export function approverOf(state: AppState): Member | undefined {
+  return state.member(state.snap?.gate?.approverId)
+}
+
+export function isApprover(state: AppState): boolean {
+  const me = state.me
+  return !!me && state.snap?.gate?.approverId === me.id
 }

@@ -2,29 +2,47 @@
 // ゴール → ネクマックスが分解（plan）→ 足りない職種の AI社員を採用 → タスクを担当者へ（人間にしかできない仕事は人間へ）
 // → 前のタスクが終わったものから着手（AI は Claude Code のセッション、人間は画面の「マイタスク」）
 // → 終わるたびに担当者の記憶（コンテキスト）を足す → 全部終わったら完了報告。
-import { mkdirSync, readdirSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
-import type { Goal, Member, Message, MessageKind, OfficeId, StockItem, StockKind, StockStatus, Task } from '../shared/types'
+// Node（server/index.ts）でも、ブラウザ（アーティファクト版の、承認する人のページ）でも動く。
+import type { GateInfo, GateSettings, Goal, Member, Message, MessageKind, OfficeId, StockItem, StockKind, StockStatus, Task } from '../shared/types'
 import { OFFICES, countryOf, officeInfo } from '../shared/types'
+import type { CoreStore } from './coreStore'
 import type { Engine, HireSpec } from './engine/types'
 import { contextOf, remember } from './memory'
-import type { Store } from './store'
 import { agentName, clip, hashStr, id, lookForAgent, now, sleep } from './util'
+import type { Workspace } from './workspace'
 
-const MAX_PARALLEL = Number(process.env.MAX_PARALLEL_AGENTS || 3)
-/** 演出の間（採用の登場・ネクマックスが歩く時間）。テストでは 0 */
-const PACE = Number(process.env.PACE ?? 1)
-const beat = (ms: number) => sleep(ms * PACE)
+const env = (k: string): string | undefined => (typeof process !== 'undefined' ? process.env?.[k] : undefined)
+
+export interface CompanyOptions {
+  /** 同時に動かす AI社員の数 */
+  maxParallel?: number
+  /** 演出の間（採用の登場・ネクマックスが歩く時間）の倍率。テストでは 0 */
+  pace?: number
+  /** 自動承認してよい状況か（アーティファクト版：承認する人のページが開いていて見えているときだけ） */
+  canAutoApprove?: () => boolean
+  /** 承認の関所の状態に足す情報（アーティファクト版：承認する人のページが開いているか） */
+  gateExtra?: () => Partial<GateInfo>
+}
 
 export class Company {
   private running = new Map<string, AbortController>()
   private streamBuf = new Map<string, { text: string; at: number }>()
+  private readonly maxParallel: number
+  private readonly pace: number
 
   constructor(
-    readonly store: Store,
+    readonly store: CoreStore,
     private readonly getEngine: () => Engine,
-    readonly workspaceRoot: string,
-  ) {}
+    readonly workspace: Workspace,
+    private readonly opts: CompanyOptions = {},
+  ) {
+    this.maxParallel = opts.maxParallel ?? Number(env('MAX_PARALLEL_AGENTS') || 3)
+    this.pace = opts.pace ?? Number(env('PACE') ?? 1)
+  }
+
+  private beat(ms: number): Promise<void> {
+    return sleep(ms * this.pace)
+  }
 
   get engine(): Engine {
     return this.getEngine()
@@ -105,13 +123,26 @@ export class Company {
 
   // ------------------------------------------------------------------ 人間との会話
 
-  /** 人間が誰かに話しかける。AI社員・ネクマックスはその人の記憶を踏まえてすぐ答える */
+  /**
+   * 人間が誰かに話しかける。AI社員・ネクマックスはその人の記憶を踏まえてすぐ答える。
+   * 承認する人以外から AI への話しかけは、承認されてから答える（Claude を動かすため）
+   */
   async talk(from: Member, to: Member, text: string): Promise<void> {
+    if (to.kind !== 'human' && this.needsApproval(from)) {
+      const q = this.store.addMessage({ id: id('msg'), at: now(), fromId: from.id, toId: to.id, kind: 'chat', text: clip(text, 600), approval: { state: 'pending' } })
+      this.askApproval(from, `${to.name}への話しかけ「${clip(text, 40)}」`)
+      if (this.autoAllowed(from)) await this.approveTalk(q.id, null)
+      return
+    }
     const q = this.say(from, to, 'chat', text)
     if (to.kind === 'human') {
       remember(this.store, to.id, 'conversation', `${from.name}さんから：${clip(text, 160)}`, { importance: 4 })
       return
     }
+    await this.answerTalk(q, from, to, text)
+  }
+
+  private async answerTalk(q: Message, from: Member, to: Member, text: string): Promise<void> {
     const prev = { status: to.status, statusText: to.statusText }
     this.status(to, 'talking', `${from.name}さんと会話中`)
     try {
@@ -146,12 +177,169 @@ export class Company {
 
   // ------------------------------------------------------------------ ゴール
 
+  /** ゴールを受け取る。承認する人以外が出したゴールは、承認されるまで「承認待ち」 */
   createGoal(by: Member, title: string, description: string): Goal {
-    const g: Goal = { id: id('goal'), title, description, createdBy: by.id, createdAt: now(), status: 'planning', taskIds: [] }
+    const gated = this.needsApproval(by)
+    const g: Goal = {
+      id: id('goal'),
+      title,
+      description,
+      createdBy: by.id,
+      createdAt: now(),
+      status: gated ? 'awaiting_approval' : 'planning',
+      taskIds: [],
+      ...(gated ? { approval: { state: 'pending' as const } } : {}),
+    }
     this.store.putGoal(g)
-    this.activity('info', `${by.name} さんがゴール「${title}」を伝えました`, by.id, g.id)
-    void this.planGoal(g, by)
+    this.activity('info', `${by.name} さんがゴール「${title}」を伝えました${gated ? '（承認待ち）' : ''}`, by.id, g.id)
+    if (!gated) void this.planGoal(g, by)
+    else {
+      this.askApproval(by, `ゴール「${clip(title, 40)}」`, g.id)
+      if (this.autoAllowed(by)) this.approveGoal(g.id, null)
+    }
     return g
+  }
+
+  // ------------------------------------------------------------------ 承認の関所（Claude を動かすものは、承認する人が「始める」を押してから）
+
+  /** 承認する人：設定された人 → 管理者の社長 → 最初の管理者 */
+  approver(): Member | undefined {
+    const humans = this.store.state.members.filter((m) => m.kind === 'human')
+    const set = this.store.member(this.store.gate().approverId)
+    if (set?.kind === 'human') return set
+    const ceo = this.ceo()
+    if (ceo?.isAdmin) return ceo
+    return humans.find((m) => m.isAdmin)
+  }
+
+  needsApproval(by: Member): boolean {
+    const a = this.approver()
+    return !!a && a.id !== by.id
+  }
+
+  /** 今日、自動承認で通した件数（ゴール＋話しかけ） */
+  autoToday(): number {
+    const today = new Date().toDateString()
+    const isToday = (at?: string) => !!at && new Date(at).toDateString() === today
+    return (
+      this.store.state.goals.filter((g) => g.approval?.auto && isToday(g.approval.at)).length +
+      this.store.state.messages.filter((m) => m.approval?.auto && isToday(m.approval.at)).length
+    )
+  }
+
+  autoAllowed(by: Member): boolean {
+    const gate = this.store.gate()
+    if (gate.mode !== 'auto') return false
+    if (gate.autoFrom !== 'all' && !gate.autoFrom.includes(by.id)) return false
+    if (this.autoToday() >= gate.dailyLimit) return false
+    return this.opts.canAutoApprove ? this.opts.canAutoApprove() : true
+  }
+
+  gateInfo(): GateInfo {
+    return { ...this.store.gate(), approverId: this.approver()?.id ?? null, autoToday: this.autoToday(), ...this.opts.gateExtra?.() }
+  }
+
+  /** 承認の関所の状態を、全員の画面へ */
+  sendGate(): void {
+    this.store.emit('event', { t: 'gate', gate: this.gateInfo() })
+  }
+
+  setGate(by: Member, patch: Partial<GateSettings>): GateInfo {
+    const a = this.approver()
+    if (!by.isAdmin && by.id !== a?.id) throw new Error('承認の設定を変えられるのは、承認する人か管理者だけです')
+    const next: Partial<GateSettings> = {}
+    if (patch.mode === 'manual' || patch.mode === 'auto') next.mode = patch.mode
+    if (patch.approverId !== undefined) {
+      const m = this.store.member(patch.approverId)
+      if (!m || m.kind !== 'human') throw new Error('承認する人は、登録された人間から選んでください')
+      next.approverId = m.id
+    }
+    if (patch.autoFrom !== undefined) {
+      next.autoFrom = patch.autoFrom === 'all' ? 'all' : (Array.isArray(patch.autoFrom) ? patch.autoFrom : []).filter((x) => this.store.member(x)?.kind === 'human').slice(0, 50)
+    }
+    if (patch.dailyLimit !== undefined) next.dailyLimit = Math.max(0, Math.min(50, Math.round(Number(patch.dailyLimit) || 0)))
+    this.store.setGate(next)
+    this.activity('info', `${by.name} さんが承認の設定を変えました（${this.store.gate().mode === 'auto' ? `自動承認・1 日 ${this.store.gate().dailyLimit} 件まで` : '毎回手で承認'}）`, by.id)
+    this.sendGate()
+    this.sweepAuto()
+    return this.gateInfo()
+  }
+
+  /** 承認する人へ「お願いします」を届ける */
+  private askApproval(from: Member, what: string, goalId?: string): void {
+    const a = this.approver()
+    if (!a) return
+    this.say(from, a, 'chat', `承認をお願いします：${what}`, goalId)
+    this.activity('info', `🔒 ${from.name} さんの${what}が、${a.name} さんの承認待ちになりました`, from.id, goalId)
+  }
+
+  checkApprover(by: Member | null): void {
+    if (!by) return // 自動承認
+    const a = this.approver()
+    if (a && by.id !== a.id) throw new Error(`承認できるのは ${a.name} さんだけです`)
+  }
+
+  /** ゴールを承認して始める（by = null は自動承認） */
+  approveGoal(goalId: string, by: Member | null): Goal {
+    const g = this.store.goal(goalId)
+    if (!g || g.status !== 'awaiting_approval') throw new Error('このゴールはいま承認待ちではありません')
+    this.checkApprover(by)
+    const requester = this.store.member(g.createdBy)
+    this.store.patchGoal(g.id, { status: 'planning', approval: { state: 'approved', by: by?.id, at: now(), auto: !by } })
+    this.activity('success', by ? `✅ ${by.name} さんが「${g.title}」を承認しました` : `✅ 「${g.title}」を自動承認しました（今日 ${this.autoToday()} 件目）`, by?.id, g.id)
+    if (requester) void this.planGoal(this.store.goal(g.id)!, requester)
+    this.sendGate()
+    return g
+  }
+
+  declineGoal(goalId: string, by: Member, note = ''): Goal {
+    const g = this.store.goal(goalId)
+    if (!g || g.status !== 'awaiting_approval') throw new Error('このゴールはいま承認待ちではありません')
+    this.checkApprover(by)
+    this.store.patchGoal(g.id, { status: 'cancelled', finishedAt: now(), approval: { state: 'declined', by: by.id, at: now(), note: note || undefined } })
+    const requester = this.store.member(g.createdBy)
+    if (requester) this.say(by, requester, 'chat', `「${clip(g.title, 40)}」は今回は見送ります${note ? `：${clip(note, 120)}` : ''}`, g.id)
+    this.activity('warn', `${by.name} さんが「${g.title}」を見送りました`, by.id, g.id)
+    return g
+  }
+
+  /** AI への話しかけを承認して、答えさせる（by = null は自動承認） */
+  async approveTalk(messageId: string, by: Member | null): Promise<void> {
+    const q = this.store.state.messages.find((m) => m.id === messageId)
+    if (!q || q.approval?.state !== 'pending') throw new Error('この話しかけはいま承認待ちではありません')
+    this.checkApprover(by)
+    const from = this.store.member(q.fromId)
+    const to = this.store.member(q.toId)
+    this.store.patchMessage(q.id, { approval: { state: 'approved', by: by?.id, at: now(), auto: !by } })
+    this.sendGate()
+    if (from && to) await this.answerTalk(q, from, to, q.text)
+  }
+
+  declineTalk(messageId: string, by: Member, note = ''): void {
+    const q = this.store.state.messages.find((m) => m.id === messageId)
+    if (!q || q.approval?.state !== 'pending') throw new Error('この話しかけはいま承認待ちではありません')
+    this.checkApprover(by)
+    this.store.patchMessage(q.id, { approval: { state: 'declined', by: by.id, at: now(), note: note || undefined } })
+    const from = this.store.member(q.fromId)
+    if (from) this.say(by, from, 'chat', `${this.store.member(q.toId)?.name ?? 'AI'}への話しかけは今回は見送ります${note ? `：${clip(note, 120)}` : ''}`, undefined, undefined, q.id)
+  }
+
+  /** 承認待ちの一覧（古い順） */
+  pendingApprovals(): { kind: 'goal' | 'talk'; id: string; by: string; at: string; text: string }[] {
+    return [
+      ...this.store.state.goals.filter((g) => g.status === 'awaiting_approval').map((g) => ({ kind: 'goal' as const, id: g.id, by: g.createdBy, at: g.createdAt, text: g.title })),
+      ...this.store.state.messages.filter((m) => m.approval?.state === 'pending').map((m) => ({ kind: 'talk' as const, id: m.id, by: m.fromId, at: m.at, text: m.text })),
+    ].sort((a, b) => a.at.localeCompare(b.at))
+  }
+
+  /** 自動承認にした・承認する人がページを開いた：ルールに合う承認待ちを通す */
+  sweepAuto(): void {
+    for (const p of this.pendingApprovals()) {
+      const by = this.store.member(p.by)
+      if (!by || !this.autoAllowed(by)) continue
+      if (p.kind === 'goal') this.approveGoal(p.id, null)
+      else void this.approveTalk(p.id, null).catch((e) => console.error('[auto]', e))
+    }
   }
 
   private async planGoal(goal: Goal, by: Member): Promise<void> {
@@ -171,7 +359,7 @@ export class Company {
         if (m) {
           hiredByKey.set(h.key, m.id)
           this.say(nx, null, 'hire', `${m.name}さん（${m.role}）を採用しました！`, goal.id)
-          await beat(1400)
+          await this.beat(1400)
         }
       }
 
@@ -247,6 +435,7 @@ export class Company {
   cancelGoal(goalId: string, by: Member): void {
     const g = this.store.goal(goalId)
     if (!g || ['done', 'cancelled'].includes(g.status)) return
+    if (by.id !== g.createdBy && !by.isAdmin && by.id !== this.approver()?.id) throw new Error('中止できるのは、出した人・承認する人・管理者だけです')
     for (const t of this.store.tasksOf(goalId)) {
       this.running.get(t.id)?.abort()
       if (!['done', 'failed'].includes(t.status)) this.store.patchTask(t.id, { status: 'cancelled' })
@@ -300,7 +489,7 @@ export class Company {
   }
 
   private tryStartAgent(g: Goal, t: Task): void {
-    if (this.running.size >= MAX_PARALLEL) return
+    if (this.running.size >= this.maxParallel) return
     let agent = this.store.member(t.assigneeId)
     if (!agent || agent.kind !== 'agent') {
       agent = this.staff(false, t.skills, t.office, this.store.member(g.createdBy)!)
@@ -319,11 +508,10 @@ export class Company {
     const nx = this.nexmaxFor(agent.office)
     this.say(nx, agent, 'assign', `${agent.name}さん、「${t.title}」をお願いします`, g.id, t.id)
     this.status(agent, 'thinking', t.title, t.id)
-    await beat(1500)
+    await this.beat(1500)
 
-    const workdir = join(this.workspaceRoot, g.id)
-    mkdirSync(workdir, { recursive: true })
-    const before = listFiles(workdir)
+    const workdir = this.workspace.dir(g.id)
+    const before = this.workspace.list(g.id)
     const inputs = t.dependsOn
       .map((d) => this.store.task(d))
       .filter((x): x is Task => !!x && !!x.output)
@@ -339,6 +527,7 @@ export class Company {
         colleagues,
         inputs,
         workdir,
+        writeFile: (name, content) => this.workspace.write(g.id, name, content),
         signal: ac.signal,
         onText: (text) => this.stream(agent, t, text),
         tools: {
@@ -349,7 +538,7 @@ export class Company {
         },
       })
       if (ac.signal.aborted) return
-      const files = listFiles(workdir).filter((f) => !before.includes(f))
+      const files = this.workspace.list(g.id).filter((f) => !before.includes(f))
       this.store.patchTask(t.id, { status: 'done', output: res.output, files, finishedAt: now() })
       this.store.patchMember(agent.id, { status: 'idle', statusText: undefined, currentTaskId: null, stats: { ...agent.stats, tasksDone: agent.stats.tasksDone + 1 } })
       remember(this.store, agent.id, 'task', `「${t.title}」（ゴール：${g.title}）を完了。${res.memoryNote || clip(res.output, 160)}`, { importance: 6, goalId: g.id, taskId: t.id })
@@ -499,7 +688,7 @@ export class Company {
 
   // ------------------------------------------------------------------ やることストック（マイクで話したこと）
 
-  private organizeTimers = new Map<string, NodeJS.Timeout>()
+  private organizeTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private organizing = new Set<string>()
 
   /** 話した（書いた）ことを受け取る。少し待って、まとめてネクマックスが整理する */
@@ -514,7 +703,7 @@ export class Company {
     clearTimeout(this.organizeTimers.get(memberId))
     this.organizeTimers.set(
       memberId,
-      setTimeout(() => void this.organizeFor(memberId), ms * Math.max(PACE, 0.01)),
+      setTimeout(() => void this.organizeFor(memberId), ms * Math.max(this.pace, 0.01)),
     )
   }
 
@@ -596,27 +785,6 @@ export class Company {
       if (m.kind === 'human') this.store.patchMember(m.id, { online: false, status: 'offline' })
     }
     this.schedule()
+    this.sweepAuto()
   }
-}
-
-function listFiles(dir: string): string[] {
-  const out: string[] = []
-  const walk = (d: string, depth: number) => {
-    if (depth > 4) return
-    let names: string[] = []
-    try {
-      names = readdirSync(d)
-    } catch {
-      return
-    }
-    for (const n of names) {
-      if (n.startsWith('.') || n === 'node_modules') continue
-      const p = join(d, n)
-      const st = statSync(p)
-      if (st.isDirectory()) walk(p, depth + 1)
-      else out.push(relative(dir, p))
-    }
-  }
-  walk(dir, 0)
-  return out
 }

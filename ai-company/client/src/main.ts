@@ -8,7 +8,7 @@ import { Api, connect } from './api'
 import { VOICE_LANGS, Voice } from './voice'
 import { AppState } from './state'
 import { clock, h } from './ui/dom'
-import { activeProjects } from './ui/derive'
+import { activeProjects, approverOf, isApprover } from './ui/derive'
 import { assistantCard, dock, feedCard, humanCard, micButton, projectCard, topbar, voicePanel, worldCard, type Captured, type SheetId, type View } from './ui/hud'
 import { flag, icon } from './ui/icons'
 import { initialUi, mePop, notificationsPop, profilePanel, searchPop, settingsPop, sheet, timelinePop, type Actions, type UiState } from './ui/sheets'
@@ -246,7 +246,8 @@ function startApp(): void {
       try {
         const r = (await Api.createGoal(title, description)) as { goal: Goal }
         ui = { ...ui, goalId: r.goal.id, projFilter: 'active', composeFocus: false }
-        toast('ネクマックスがゴールを受け取りました。分解を始めます', 'info')
+        if (r.goal.status === 'awaiting_approval') toast(`${approverOf(state)?.name ?? '承認する人'}さんの承認待ちになりました。承認されると分解が始まります`, 'info')
+        else toast('ネクマックスがゴールを受け取りました。分解を始めます', 'info')
         render()
         return true
       } catch (e) {
@@ -270,7 +271,12 @@ function startApp(): void {
         .catch((e) => toast(e.message, 'warn'))
     },
     talk(memberId, text) {
-      Api.talk(memberId, text).catch((e) => toast(e.message, 'warn'))
+      const to = state.member(memberId)
+      Api.talk(memberId, text)
+        .then(() => {
+          if (to && to.kind !== 'human' && !isApprover(state) && state.snap?.gate.approverId) toast(`${approverOf(state)?.name ?? '承認する人'}さんの承認待ちです。承認されると ${to.name} が答えます`, 'info')
+        })
+        .catch((e) => toast(e.message, 'warn'))
     },
     async openFile(goalId, path) {
       openSheet = 'docs'
@@ -327,6 +333,22 @@ function startApp(): void {
     },
     addStock(text) {
       Api.addStock(text).catch((e) => toast(e.message, 'warn'))
+    },
+    approve(kind, id) {
+      Api.approve(kind, id)
+        .then(() => toast(kind === 'goal' ? '承認しました。ネクマックスが分解を始めます' : '承認しました。AI が答えます', 'success'))
+        .catch((e) => toast(e.message, 'warn'))
+    },
+    decline(kind, id) {
+      const note = prompt('見送る理由（出した人に伝わります。空でも可）') ?? null
+      if (note === null) return
+      Api.decline(kind, id, note.trim())
+        .then(() => toast('見送りました', 'info'))
+        .catch((e) => toast(e.message, 'warn'))
+    },
+    setGate(patch) {
+      if (patch.mode === 'auto' && !confirm('自動承認にすると、決めた上限まで、承認を待たずに Claude が動きます。よろしいですか？')) return
+      Api.setGate(patch).catch((e) => toast(e.message, 'warn'))
     },
     get voice() {
       return {
@@ -425,7 +447,7 @@ function startApp(): void {
         render()
       }),
     )
-    humanEl.replaceChildren(humanCard(state, (taskId) => act.open('tasks', { focusTaskId: taskId, taskFilter: 'all', taskOffice: 'all' }), (taskId) => act.complete(taskId)))
+    humanEl.replaceChildren(humanCard(state, (taskId) => act.open('tasks', { focusTaskId: taskId, taskFilter: 'all', taskOffice: 'all' }), (taskId) => act.complete(taskId), act))
     const feed = feedCard(state, () => act.open('chat', { chatWith: null }))
     const topMsg = state.snap.messages.at(-1)?.id ?? ''
     feed.querySelectorAll('.fr').forEach((el, i) => i === 0 && topMsg !== shown.feedTop ? null : el.classList.add('no-anim'))
@@ -706,11 +728,13 @@ function startApp(): void {
         break
       case 'message': {
         const m: Message = c.message
+        if (c.updated) break
         world?.message(m.fromId, m.toId, m.kind, m.text)
         const a = state.member(m.fromId)
         const b = state.member(m.toId)
         if (a && b && a.office !== b.office) pulse = { from: a.office, to: b.office, at: Date.now() }
         if (m.toId === me?.id && m.kind === 'question') toast(`❓ ${a?.name ?? ''}から質問が届きました`, 'hire')
+        if (m.toId === me?.id && m.text.startsWith('承認をお願いします')) toast(`🔒 ${a?.name ?? ''}さんから${m.text}`, 'hire')
         if (m.toId === me?.id && m.kind === 'answer' && openSheet !== 'chat') toast(`💬 ${a?.name ?? ''}：${m.text.slice(0, 60)}`, 'info')
         break
       }

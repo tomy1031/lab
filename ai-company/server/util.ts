@@ -1,9 +1,13 @@
-import { randomBytes } from 'node:crypto'
 import type { Look, OfficeId } from '../shared/types'
 import { countryOf } from '../shared/types'
 
 export const now = (): string => new Date().toISOString()
-export const id = (prefix: string): string => `${prefix}_${Date.now().toString(36)}${randomBytes(3).toString('hex')}`
+/** 例：goal_lq3x9k2a1b2c（時刻＋乱数 6 桁。Node でもブラウザでも動く） */
+export const id = (prefix: string): string => {
+  const b = new Uint8Array(3)
+  globalThis.crypto.getRandomValues(b)
+  return `${prefix}_${Date.now().toString(36)}${[...b].map((x) => x.toString(16).padStart(2, '0')).join('')}`
+}
 
 export function pick<T>(arr: readonly T[], seed?: number): T {
   const i = seed === undefined ? Math.floor(Math.random() * arr.length) : Math.abs(Math.floor(seed)) % arr.length

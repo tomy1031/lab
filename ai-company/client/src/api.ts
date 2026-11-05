@@ -1,5 +1,5 @@
 // REST と WebSocket（切れたら自動でつなぎ直す）
-import type { Member, MemoryEntry, ServerEvent } from '../../shared/types'
+import type { GateSettings, Member, MemoryEntry, ServerEvent } from '../../shared/types'
 
 export class ApiError extends Error {
   constructor(
@@ -42,6 +42,9 @@ export const Api = {
   talk: (to: string, text: string) => api('/api/talk', { to, text }),
   reply: (messageId: string, text: string) => api(`/api/messages/${messageId}/reply`, { text }),
   file: (goalId: string, path: string) => api<{ path: string; content: string }>(`/api/goals/${goalId}/files?path=${encodeURIComponent(path)}`),
+  approve: (kind: 'goal' | 'talk', id: string) => api(`/api/${kind === 'goal' ? 'goals' : 'messages'}/${id}/approve`, {}),
+  decline: (kind: 'goal' | 'talk', id: string, note = '') => api(`/api/${kind === 'goal' ? 'goals' : 'messages'}/${id}/decline`, { note }),
+  setGate: (patch: Partial<GateSettings>) => api('/api/gate', patch),
 }
 
 export function connect(onEvent: (ev: ServerEvent) => void, onState: (s: 'open' | 'closed' | 'unauthorized') => void): () => void {

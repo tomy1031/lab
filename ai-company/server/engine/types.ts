@@ -62,7 +62,10 @@ export interface RunTaskInput {
   colleagues: Member[]
   /** 先に終わったタスクの成果（タイトル → 成果） */
   inputs: { title: string; by: string; output: string }[]
+  /** Claude Code が作業するフォルダ（ファイルの道具を使える頭脳だけが使う） */
   workdir: string
+  /** 成果をファイルとして残す（道具を使えない頭脳・シミュレーション用） */
+  writeFile(name: string, content: string): void
   tools: AgentToolbox
   onText(text: string): void
   signal: AbortSignal

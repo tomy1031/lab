@@ -78,7 +78,34 @@ export interface MemoryEntry {
   importance: number
 }
 
-export type GoalStatus = 'planning' | 'running' | 'waiting_human' | 'done' | 'failed' | 'cancelled'
+/** awaiting_approval = 承認する人の「始める」を待っている（ほかの人が出したゴール） */
+export type GoalStatus = 'awaiting_approval' | 'planning' | 'running' | 'waiting_human' | 'done' | 'failed' | 'cancelled'
+
+/** 承認の記録（ゴール・AI への話しかけ） */
+export interface Approval {
+  state: 'pending' | 'approved' | 'declined'
+  by?: string
+  at?: string
+  /** 自動承認で通ったとき */
+  auto?: boolean
+  note?: string
+}
+
+/**
+ * 承認の関所：ゴールや AI への話しかけ（Claude を動かすもの）は、承認する人（1 人）が「始める」を押してから動く。
+ * manual = 毎回手で承認（基本）/ auto = 決めたルールに合えば自動で承認（アーティファクト版では、承認する人がページを開いている間だけ）
+ */
+export interface GateSettings {
+  mode: 'manual' | 'auto'
+  /** 承認する人（member id） */
+  approverId: string | null
+  /** 自動承認の対象：all = 全員 / それ以外は member id の一覧 */
+  autoFrom: 'all' | string[]
+  /** 自動承認は 1 日にこの件数まで（使いすぎを防ぐ） */
+  dailyLimit: number
+}
+
+export const DEFAULT_GATE: GateSettings = { mode: 'manual', approverId: null, autoFrom: 'all', dailyLimit: 5 }
 
 export interface Goal {
   id: string
@@ -87,6 +114,8 @@ export interface Goal {
   createdBy: string
   createdAt: string
   status: GoalStatus
+  /** ほかの人が出したゴールの承認（承認する人が自分で出したゴールには無い） */
+  approval?: Approval
   /** 分解の方針（ネクマックスの説明） */
   planSummary?: string
   /** 完了報告 */
@@ -140,6 +169,8 @@ export interface Message {
   taskId?: string
   /** 返事のとき、元のメッセージの id */
   replyTo?: string
+  /** ほかの人から AI への話しかけで、承認が要るもの（承認されると AI が答える） */
+  approval?: Approval
 }
 
 /**
@@ -192,9 +223,17 @@ export interface OfficeInfo {
 }
 
 export interface EngineInfo {
-  /** claude = Claude Code（Claude Agent SDK）で動く / sim = オフラインのシミュレーション */
-  mode: 'claude' | 'sim'
+  /** claude = Claude Code（Claude Agent SDK）で動く / sim = オフラインのシミュレーション / artifact = claude.ai のアーティファクトの中で、承認する人のアカウントで動く */
+  mode: 'claude' | 'sim' | 'artifact'
   detail: string
+}
+
+/** 画面に出す、承認の関所のいま */
+export interface GateInfo extends GateSettings {
+  /** 今日、自動承認で通した件数 */
+  autoToday: number
+  /** アーティファクト版：承認する人のページがいま開いていて、AI を動かせるか */
+  runnerOnline?: boolean
 }
 
 export interface Snapshot {
@@ -208,6 +247,8 @@ export interface Snapshot {
   engine: EngineInfo
   /** 自分のやることストック（新しい順に最大 200） */
   stock: StockItem[]
+  /** 承認の関所 */
+  gate: GateInfo
 }
 
 /** WebSocket：サーバー → クライアント */
@@ -225,6 +266,10 @@ export type ServerEvent =
   | { t: 'stock'; item: StockItem }
   /** Claude が作業中に書いている途中の文（ライブ表示用） */
   | { t: 'stream'; memberId: string; taskId: string; text: string }
+  /** 承認の関所の設定・状態が変わった */
+  | { t: 'gate'; gate: GateInfo }
+  /** 頭脳（エンジン）が変わった */
+  | { t: 'engine'; engine: EngineInfo }
 
 /**
  * 拠点の一覧。大阪本社の 0 番・1 番の席は「社長席」：松井社長とネクマックス（社長の分身として働く統括 AI）が並んで座る。
@@ -267,6 +312,7 @@ export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
 }
 
 export const GOAL_STATUS_LABEL: Record<GoalStatus, string> = {
+  awaiting_approval: '承認待ち',
   planning: '分解中',
   running: '進行中',
   waiting_human: '人間の対応待ち',

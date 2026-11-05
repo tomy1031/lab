@@ -4,9 +4,10 @@
 // アイコンは参考デザインと同じ「白いガラスのタイル＋青い線画」（ui/icons.ts の gicon）。
 import type { Goal, Member, MemoryEntry, Message, MessageKind, OfficeId, StockItem, StockKind, Task } from '../../../shared/types'
 import { GOAL_STATUS_LABEL, OFFICES, STATUS_LABEL, TASK_STATUS_LABEL, countryOf, officeInfo } from '../../../shared/types'
+import type { GateSettings } from '../../../shared/types'
 import type { AppState } from '../state'
 import { face, figure } from './avatar'
-import { PHASES, activeProjects, allProjects, humanRequests, kpis, minutesLabel, officeStats, project, stages, unansweredQuestions, type ProjectView } from './derive'
+import { PHASES, activeProjects, allProjects, approvals, approverOf, humanRequests, isApprover, kpis, minutesLabel, officeStats, project, stages, unansweredQuestions, type ApprovalItem, type ProjectView } from './derive'
 import { esc, h, md, timeAgo } from './dom'
 import { KIND_LABEL, type SheetId } from './hud'
 import { flag, gicon, icon, type GlossyIcon } from './icons'
@@ -67,6 +68,10 @@ export interface Actions {
   /** やることストック */
   stockAct(item: StockItem, action: 'send' | 'done' | 'later' | 'archive' | 'restore', patch?: { title?: string; kind?: StockKind }): void
   addStock(text: string): void
+  /** 承認の関所：承認する人が「始める／見送る」 */
+  approve(kind: 'goal' | 'talk', id: string): void
+  decline(kind: 'goal' | 'talk', id: string): void
+  setGate(patch: Partial<GateSettings>): void
   voice: { listening: boolean; supported: boolean; lang: string; langs: [string, string][]; toggle(): void; setLang(l: string): void }
   logout(): void
 }
@@ -302,7 +307,8 @@ function projectDetail(state: AppState, p: ProjectView, act: Actions): HTMLEleme
       return (state.snap?.members ?? []).find((x) => x.kind === 'agent' && x.name === name)
     })
     .filter((x): x is Member => !!x)
-  const active = ['planning', 'running', 'waiting_human'].includes(g.status)
+  const active = ['awaiting_approval', 'planning', 'running', 'waiting_human'].includes(g.status)
+  const waitingApproval = g.status === 'awaiting_approval'
   return h(
     'div',
     { class: 'pdetail' },
@@ -313,6 +319,8 @@ function projectDetail(state: AppState, p: ProjectView, act: Actions): HTMLEleme
       h('div', { class: 'pd-pct' }, ringSvg(p.pct, 68), h('div', {}, h('b', {}, `${p.done}/${p.total}`), h('small', {}, '完了'))),
     ),
     phaseStepper(p),
+    waitingApproval ? approvalPanel(state, { kind: 'goal', id: g.id, by: state.member(g.createdBy), text: g.title, at: g.createdAt, waitedMin: Math.round((Date.now() - Date.parse(g.createdAt)) / 60000) }, act) : null,
+    g.approval?.state === 'declined' ? h('div', { class: 'reason' }, `見送り：${state.member(g.approval.by)?.name ?? ''}${g.approval.note ? `「${g.approval.note}」` : ''}`) : null,
     g.planSummary || g.status === 'planning'
       ? h(
           'div',
@@ -355,14 +363,14 @@ function projectDetail(state: AppState, p: ProjectView, act: Actions): HTMLEleme
       h('button', { class: 'pf-files', onclick: () => (files[0] ? act.openFile(g.id, files[0].f) : act.open('docs')) }, gicon('doc', 30), h('b', {}, `成果物 ${files.length} 件`)),
       h('div', { class: 'tb-spacer' }),
       g.report ? h('button', { class: 'btn primary', onclick: () => act.open('reports') }, icon('chart', 16), '完了レポートを見る') : null,
-      active ? h('button', { class: 'btn ghost', onclick: () => act.cancelGoal(g) }, icon('close', 14), '中止する') : null,
+      active ? h('button', { class: 'btn ghost', onclick: () => act.cancelGoal(g) }, icon('close', 14), waitingApproval ? '取り下げる' : '中止する') : null,
     ),
   )
 }
 
 function projectsSheet(state: AppState, ui: UiState, act: Actions): HTMLElement {
   const all = allProjects(state)
-  const isActive = (p: ProjectView) => ['planning', 'running', 'waiting_human'].includes(p.goal.status)
+  const isActive = (p: ProjectView) => ['awaiting_approval', 'planning', 'running', 'waiting_human'].includes(p.goal.status)
   const list = all.filter((p) => (ui.projFilter === 'all' ? true : ui.projFilter === 'active' ? isActive(p) : p.goal.status === 'done'))
   const sel = all.find((p) => p.goal.id === ui.goalId) ?? list[0] ?? null
   return h(
@@ -555,6 +563,11 @@ function bubble(state: AppState, m: Message, me: Member | null): HTMLElement {
       { class: 'bub-body' },
       h('div', { class: 'bub-meta' }, h('b', {}, from?.name ?? '?'), to ? h('span', { class: 'bub-to' }, '→', to.name) : null, h('span', { class: `kchip k-${m.kind}` }, KIND_LABEL[m.kind] ?? m.kind), h('small', {}, time)),
       h('div', { class: 'bub-text', html: esc(m.text).replace(/\n/g, '<br>') }),
+      m.approval?.state === 'pending'
+        ? h('div', { class: 'bub-approval' }, icon('lock', 12), `${approverOf(state)?.name ?? '承認する人'}さんの承認待ち（承認されると答えます）`)
+        : m.approval?.state === 'declined'
+          ? h('div', { class: 'bub-approval off' }, '見送りになりました')
+          : null,
     ),
   )
 }
@@ -1002,6 +1015,9 @@ export function notificationsPop(state: AppState, act: Actions): HTMLElement {
   return h(
     'div',
     { class: 'pop glass' },
+    ...(isApprover(state) && approvals(state).length
+      ? [h('h4', {}, `承認待ち（${approvals(state).length}）`), h('div', { class: 'ap-list' }, ...approvals(state).slice(0, 4).map((a) => approvalRow(state, a, act, true)))]
+      : []),
     h('h4', {}, 'あなたへのお願い'),
     mine.length ? h('ul', { class: 'pop-list' }, ...mine.map((r) => h('li', { class: 'human', onclick: () => act.complete(r.task.id) }, icon('hand', 16), h('span', {}, r.task.title), h('small', {}, `${minutesLabel(r.waitedMin)}待ち`)))) : h('p', { class: 'empty' }, 'いまはありません'),
     qs.length ? h('h4', {}, 'あなたへの質問') : null,
@@ -1064,8 +1080,83 @@ export function settingsPop(state: AppState, act: Actions): HTMLElement {
           h('button', { class: eng?.mode === 'sim' ? 'on' : '', onclick: () => act.setEngine('sim') }, 'シミュレーション'),
         )
       : h('p', { class: 'empty' }, '切り替えは管理者だけができます'),
-    me?.isAdmin ? h('h4', {}, 'メンバー') : null,
-    me?.isAdmin ? h('button', { class: 'btn small', onclick: act.register }, icon('plus', 14), '人間を登録する') : null,
+    gateSettings(state, act),
+    me?.isAdmin && eng?.mode !== 'artifact' ? h('h4', {}, 'メンバー') : null,
+    me?.isAdmin && eng?.mode !== 'artifact' ? h('button', { class: 'btn small', onclick: act.register }, icon('plus', 14), '人間を登録する') : null,
+  )
+}
+
+// ------------------------------------------------------------------ 承認の関所
+
+/** 承認待ちの 1 行（承認する人には「始める／見送る」） */
+export function approvalRow(state: AppState, a: ApprovalItem, act: Actions, canAct: boolean): HTMLElement {
+  return h(
+    'div',
+    { class: 'ap-row' },
+    face(a.by, 28, { dot: false }),
+    h(
+      'div',
+      { class: 'ap-main' },
+      h('div', { class: 'ap-who' }, h('b', {}, a.by?.name ?? '?'), h('span', { class: `chip ${a.kind === 'goal' ? 'ap-goal' : 'ap-talk'}` }, a.kind === 'goal' ? 'ゴール' : `${a.to?.name ?? 'AI'}へ`), h('small', {}, `${minutesLabel(a.waitedMin)}待ち`)),
+      h('div', { class: 'ap-text' }, a.text),
+    ),
+    canAct
+      ? h(
+          'div',
+          { class: 'ap-btns' },
+          h('button', { class: 'btn tiny primary', title: '承認して、Claude で動かし始める', onclick: (e: Event) => (e.stopPropagation(), act.approve(a.kind, a.id)) }, '始める'),
+          h('button', { class: 'btn tiny ghost', title: '今回は見送る', onclick: (e: Event) => (e.stopPropagation(), act.decline(a.kind, a.id)) }, '見送る'),
+        )
+      : null,
+  )
+}
+
+function approvalPanel(state: AppState, a: ApprovalItem, act: Actions): HTMLElement {
+  const approver = approverOf(state)
+  const mine = isApprover(state)
+  const artifact = state.snap?.engine.mode === 'artifact'
+  return h(
+    'div',
+    { class: 'ap-panel card-in' },
+    h('div', { class: 'ap-panel-head' }, gicon('lock', 26, 'warm'), h('div', {}, h('b', {}, mine ? 'あなたの承認待ちです' : `${approver?.name ?? '承認する人'}さんの承認待ちです`), h('small', {}, mine ? (artifact ? '「始める」を押すと、あなたの Claude でネクマックスが分解を始めます' : '「始める」を押すと、ネクマックスが分解を始めます（Claude を使います）') : '承認されると、ネクマックスが分解を始めます'))),
+    mine ? approvalRow(state, a, act, true) : null,
+  )
+}
+
+function gateSettings(state: AppState, act: Actions): HTMLElement | null {
+  const gate = state.snap?.gate
+  const me = state.me
+  if (!gate) return null
+  const approver = approverOf(state)
+  const canEdit = !!me && (me.isAdmin || me.id === gate.approverId)
+  const artifact = state.snap?.engine.mode === 'artifact'
+  const humans = (state.snap?.members ?? []).filter((m) => m.kind === 'human')
+  const limit = h('input', { type: 'number', min: 0, max: 50, value: String(gate.dailyLimit), class: 'gate-limit', disabled: !canEdit }) as HTMLInputElement
+  limit.addEventListener('change', () => act.setGate({ dailyLimit: Number(limit.value) }))
+  const who = h('select', { class: 'gate-who', disabled: !canEdit || artifact }, ...humans.map((m) => h('option', { value: m.id, selected: m.id === gate.approverId }, m.name))) as HTMLSelectElement
+  who.addEventListener('change', () => act.setGate({ approverId: who.value }))
+  return h(
+    'div',
+    { class: 'gate-set' },
+    h('h4', {}, '承認（Claude を動かす前の確認）'),
+    h('p', { class: 'pop-note' }, `ほかの人が出したゴールや AI への話しかけは、${approver?.name ?? '承認する人'}さんが「始める」を押してから動きます。`),
+    h('label', { class: 'gate-row' }, h('span', {}, '承認する人'), artifact ? h('b', {}, approver?.name ?? '-') : who),
+    canEdit
+      ? h(
+          'div',
+          { class: 'seg' },
+          h('button', { class: gate.mode === 'manual' ? 'on' : '', onclick: () => act.setGate({ mode: 'manual' }) }, '毎回手で承認'),
+          h('button', { class: gate.mode === 'auto' ? 'on' : '', onclick: () => act.setGate({ mode: 'auto' }) }, '自動承認'),
+        )
+      : h('p', { class: 'pop-note' }, gate.mode === 'auto' ? `自動承認（1 日 ${gate.dailyLimit} 件まで）` : '毎回手で承認'),
+    gate.mode === 'auto'
+      ? h(
+          'div',
+          { class: 'gate-auto' },
+          h('label', { class: 'gate-row' }, h('span', {}, '1 日の上限'), limit, h('small', {}, `今日 ${gate.autoToday} 件`)),
+          artifact ? h('p', { class: 'pop-note warn' }, '自動承認は、あなたがこのページを開いている間だけ動きます。Claude はあなたのアカウントの利用枠を使うので、上限は小さめに。') : null,
+        )
+      : null,
   )
 }
 
