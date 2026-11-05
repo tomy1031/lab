@@ -172,7 +172,7 @@ export function assistantCard(state: AppState, hd: AssistantHandlers): HTMLEleme
 
 // ------------------------------------------------------------------ 世界のチーム（ドット地図）
 
-const MAP = { lon0: 92, lon1: 146, lat0: 0, lat1: 46, w: 260, h: 150 }
+const MAP = { lon0: 96, lon1: 146, lat0: 7, lat1: 40, w: 270, h: 96 }
 const px = (lon: number) => ((lon - MAP.lon0) / (MAP.lon1 - MAP.lon0)) * MAP.w
 const py = (lat: number) => MAP.h - ((lat - MAP.lat0) / (MAP.lat1 - MAP.lat0)) * MAP.h
 const PLACES: Record<string, { lon: number; lat: number; label: string }> = {
@@ -209,7 +209,7 @@ export function worldCard(state: AppState, pulse: { from: string; to: string; at
         'li',
         { onclick: () => onOffice(s.id) },
         flag(countryOf(s.id), 12),
-        h('b', {}, officeInfo(s.id).name.replace('オフィス', '')),
+        h('b', {}, flag(countryOf(s.id), 12), officeInfo(s.id).name.replace('オフィス', '')),
         h('span', { title: '人間（オンライン）' }, icon('user', 12), `${s.humans}${s.online ? `(${s.online})` : ''}`),
         h('span', { title: 'AI社員' }, icon('robot', 12), String(s.agents)),
         s.waitingHuman ? h('em', { title: '人間の対応待ち' }, `待${s.waitingHuman}`) : null,

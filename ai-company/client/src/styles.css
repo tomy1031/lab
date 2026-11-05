@@ -856,3 +856,9 @@ h4 { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(-
   .dock-item { width: auto; flex: 1; }
   .dock { gap: 2px; padding: 6px; }
 }
+.hud-human .hr-list li:nth-child(n + 4) { display: none; }
+.wc-map { height: 96px; width: 100%; }
+.wc-legend { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.wc-legend li { flex-wrap: wrap; gap: 2px 4px; padding: 4px 6px; background: rgba(255, 255, 255, 0.6); border-radius: 10px; font-size: 11px; }
+.wc-legend b { flex-basis: 100%; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+.wc-legend li > .flag { display: none; }

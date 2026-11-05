@@ -1371,7 +1371,8 @@ export class OfficeWorld implements OfficeWorldApi {
     if (target === 'all' || target === 'jp' || target === 'osaka' || target === 'tokyo' || target === 'phnompenh') {
       const ids: OfficeId[] = target === 'all' ? ALL_OFFICES : target === 'jp' ? ['osaka', 'tokyo'] : [target]
       if (target === 'tokyo') elev = THREE.MathUtils.degToRad(42)
-      const f = this.fitPoints(this.officePoints(ids), elev, target === 'all' ? 1.03 : 1.06)
+      // 全体は参考デザインと同じく、両端の拠点が少し画面の外へはみ出すくらいに寄せる（人が大きく見える）
+      const f = this.fitPoints(this.officePoints(ids), elev, target === 'all' ? 0.86 : 1.06)
       tgt = f.target
       dist = f.dist
     } else if (typeof target === 'object') {

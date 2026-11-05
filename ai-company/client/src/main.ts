@@ -127,9 +127,10 @@ function startApp(): void {
     const tops = [...cardsEl.children].map(visible).filter((r): r is DOMRect => !!r)
     const dockR = visible(dockEl.firstElementChild)
     const corners = [humanEl.firstElementChild, feedEl.firstElementChild].map(visible).filter((r): r is DOMRect => !!r)
-    const top = tops.length ? Math.max(...tops.map((r) => r.bottom)) + 8 : 72
-    // 角のカードは中身で高さが変わるので、画面の 27% までに抑えて構図が揺れないようにする
-    const cornerInset = corners.length ? Math.min(innerHeight * 0.27, innerHeight - Math.min(...corners.map((r) => r.top))) : 0
+    // 上のカードは参考デザインと同じく空・背景の街に重なってよいので、いちばん短いカードの下端から写す
+    const top = tops.length ? Math.min(...tops.map((r) => r.bottom)) + 8 : 72
+    // 角のカードは参考デザインと同じく床の手前の角に重なってよい（ドックの上端までを写す）。スマホでは角のカードも避ける
+    const cornerInset = innerWidth <= 860 && corners.length ? innerHeight - Math.min(...corners.map((r) => r.top)) : 0
     const bottom = Math.max(dockR ? innerHeight - dockR.top + 8 : 100, cornerInset)
     const key = `${Math.round(top / 8)}:${Math.round(bottom / 8)}:${innerWidth}:${innerHeight}`
     if (key === lastInsets) return
