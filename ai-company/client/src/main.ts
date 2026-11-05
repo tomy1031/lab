@@ -95,6 +95,8 @@ function startApp(): void {
     .then(() => (no3d ? Promise.reject(new Error('?no3d')) : loadWorld ? loadWorld() : Promise.reject(new Error('OfficeWorld.ts がありません'))))
     .then(({ OfficeWorld }) => {
       world = new OfficeWorld(worldEl)
+      // ?debug：テスト用に window.__world を出す（遅い GPU では __world.debugAdvance(秒) で動きを進める）
+      if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __world: OfficeWorldApi }).__world = world
       world.onSelect = (id) => {
         if (id) act.openProfile(id)
       }
