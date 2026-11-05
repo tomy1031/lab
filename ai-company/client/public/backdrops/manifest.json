@@ -1,0 +1,9 @@
+{
+  "note": "画像で街の背景を差し替えるときは、このフォルダに osaka.webp / tokyo.webp / phnompenh.webp（横長・上は透明か空色）を置き、images にファイル名を足す",
+  "images": [
+    "tokyo.webp",
+    "osaka.webp",
+    "phnompenh.webp"
+  ],
+  "credits": "codex（OpenAI の画像生成）で、docs/img/design_reference.jpg の画風に合わせて生成"
+}

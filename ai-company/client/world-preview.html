@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>バーチャルオフィス プレビュー</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #dff1ff; font-family: "Noto Sans JP", system-ui, sans-serif; }
+      #world { position: fixed; inset: 0; }
+      .bar { position: fixed; left: 12px; top: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 10; }
+      .bar button { border: 0; border-radius: 999px; padding: 6px 12px; background: #fff; color: #2b3550; font-weight: 700; font-size: 12px; box-shadow: 0 2px 8px rgba(40,60,110,.18); cursor: pointer; }
+      .bar button:hover { background: #fff6d6; }
+      #log { position: fixed; right: 12px; bottom: 12px; width: 300px; max-height: 40vh; overflow: hidden; font-size: 11px; color: #2b3550; background: rgba(255,255,255,.75); border-radius: 12px; padding: 8px 10px; z-index: 10; }
+      #log div { padding: 1px 0; border-bottom: 1px dashed rgba(0,0,0,.06); }
+    </style>
+  </head>
+  <body>
+    <div id="world"></div>
+    <div class="bar">
+      <button data-f="all">全体</button>
+      <button data-f="jp">日本</button>
+      <button data-f="osaka">大阪</button>
+      <button data-f="tokyo">東京</button>
+      <button data-f="phnompenh">プノンペン</button>
+      <button id="hire">採用する</button>
+      <button id="pause">デモ停止</button>
+    </div>
+    <div id="log"></div>
+    <script type="module" src="/src/world/preview.ts"></script>
+  </body>
+</html>
