@@ -168,6 +168,8 @@ function gridLayout(o: {
 }
 
 export const OFFICE_GAP_X = 10.3
+/** 大阪と東京のあいだ（ガラスの橋）の長さ */
+const TOKYO_LINK = 2.6
 
 export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
   osaka: gridLayout({
@@ -205,27 +207,31 @@ export const LAYOUTS: Record<OfficeId, OfficeLayout> = {
     ],
     board: { u: -0.4, w: 6.4 },
   }),
+  // 東京：大阪の外側（左）に並ぶ小さめの島。少し高く・少し奥。大阪の通り道（z = -0.7）と東京の通り道の高さをそろえ、短いガラスの橋でつなぐ
   tokyo: gridLayout({
     id: 'tokyo',
-    center: new THREE.Vector3(-15.4, 2.6, -15.2),
+    center: new THREE.Vector3(-OFFICE_GAP_X - 7.2 - TOKYO_LINK - 4.7, 0.6, 0.65),
     s: -1,
     halfW: 4.7,
     halfD: 4.0,
     cols: [-2.3, 0, 2.3],
     rows: [-2.15, 0.25],
     corridor: 1.2,
-    meeting: { center: { u: -2.75, z: 2.7 }, radius: 1.25, table: 0.45, seatsN: 3 },
+    meeting: { center: { u: 1.2, z: 2.7 }, radius: 1.25, table: 0.45, seatsN: 3 },
     lounge: [
-      { u: 2.9, z: 2.9 },
-      { u: 3.6, z: 2.4 },
+      { u: 3.95, z: 2.35 },
+      { u: 3.95, z: 3.15 },
     ],
     board: { u: -0.3, w: 4.2 },
   }),
 }
 
-// 拠点のあいだの出入口
-LAYOUTS.osaka.gates.tokyo = { pos: { u: 3.3, z: -LAYOUTS.osaka.halfD + 0.5 }, approach: [{ u: 3.3, z: LAYOUTS.osaka.lanes[0] }], face: Math.PI }
-LAYOUTS.tokyo.gates.osaka = { pos: { u: -3.3 + 0.2, z: LAYOUTS.tokyo.halfD - 0.5 }, approach: [{ u: -3.1, z: LAYOUTS.tokyo.corridor }], face: 0 }
+/** 大阪と東京のあいだのすき間（ガラスの橋の長さ） */
+export const TOKYO_LINK_Z = -0.7
+
+// 拠点のあいだの出入口（大阪の外側の壁の切れ目 ⇄ 東京の内側の手すりの切れ目）
+LAYOUTS.osaka.gates.tokyo = { pos: { u: LAYOUTS.osaka.halfW - 0.45, z: TOKYO_LINK_Z }, approach: [], face: -Math.PI / 2 }
+LAYOUTS.tokyo.gates.osaka = { pos: { u: -LAYOUTS.tokyo.halfW + 0.45, z: TOKYO_LINK_Z - LAYOUTS.tokyo.center.z }, approach: [], face: Math.PI / 2 }
 LAYOUTS.osaka.gates.phnompenh = { pos: { u: -LAYOUTS.osaka.halfW + 0.5, z: 0.4 }, approach: [{ u: -LAYOUTS.osaka.halfW + 1.3, z: LAYOUTS.osaka.lanes[2] }, { u: -LAYOUTS.osaka.halfW + 0.5, z: 0.4 }], face: -Math.PI / 2 }
 LAYOUTS.phnompenh.gates.osaka = { pos: { u: -LAYOUTS.phnompenh.halfW + 0.5, z: 0.4 }, approach: [{ u: -LAYOUTS.phnompenh.halfW + 1.3, z: LAYOUTS.phnompenh.lanes[2] }, { u: -LAYOUTS.phnompenh.halfW + 0.5, z: 0.4 }], face: -Math.PI / 2 }
 
@@ -320,11 +326,11 @@ export function bridgeCurve(): THREE.CubicBezierCurve3 {
   )
 }
 
-/** 大阪 → 東京の光の道（坂道の上） */
+/** 大阪 → 東京の光の道（ガラスの橋の上の弧） */
 export function tokyoCurve(): THREE.CubicBezierCurve3 {
-  const a = toWorld('osaka', 3.3, -LAYOUTS.osaka.halfD + 0.2, 1.2)
-  const b = toWorld('tokyo', -3.1, LAYOUTS.tokyo.halfD - 0.2, 1.2)
-  const m1 = a.clone().lerp(b, 0.33).add(new THREE.Vector3(0, 1.6, 0))
-  const m2 = a.clone().lerp(b, 0.66).add(new THREE.Vector3(0, 1.6, 0))
+  const a = toWorld('osaka', LAYOUTS.osaka.halfW - 0.4, TOKYO_LINK_Z, 1.2)
+  const b = toWorld('tokyo', -LAYOUTS.tokyo.halfW + 0.4, TOKYO_LINK_Z - LAYOUTS.tokyo.center.z, 1.2)
+  const m1 = a.clone().lerp(b, 0.25).add(new THREE.Vector3(0, 2.6, 0))
+  const m2 = a.clone().lerp(b, 0.75).add(new THREE.Vector3(0, 2.6, 0))
   return new THREE.CubicBezierCurve3(a, m1, m2, b)
 }

@@ -781,12 +781,13 @@ export function buildBridge(markUrl: string): BridgeBuild {
   // アーチ（紫〜青のガラス）
   const archMat = new THREE.MeshLambertMaterial({ color: '#8e8cf0', transparent: true, opacity: 0.85 })
   disposables.push(archMat)
-  // 橋の真ん中に 1 つの門（ラベルはこの上）
-  const archR = (z1 - z0) / 2 + 0.35
-  const archGeo = new THREE.TorusGeometry(archR, 0.14, 10, 40, Math.PI)
+  // 橋をまたぐ虹のようなアーチ（ラベルはこの上）
+  const archR = inner - 0.25
+  const archH = 0.62
+  const archGeo = new THREE.TorusGeometry(archR, 0.13, 10, 48, Math.PI)
   disposables.push(archGeo)
-  b.add(archGeo, archMat, 0, 0, zc, { ry: Math.PI / 2, sy: 1.25 })
-  b.add(archGeo, glowMat('#c8f6ff', 0.9), 0, 0, zc, { ry: Math.PI / 2, sx: 1.06, sy: 1.31, sz: 0.25 })
+  b.add(archGeo, archMat, 0, 0, z0 + 0.2, { sy: archH })
+  b.add(archGeo, glowMat('#c8f6ff', 0.9), 0, 0.02, z0 + 0.2, { sx: 1.0, sy: archH, sz: 1.6 })
   const baked = bake(b.statics, true)
   group.add(baked)
 
@@ -867,7 +868,7 @@ export function buildBridge(markUrl: string): BridgeBuild {
     group.add(sp)
     dots.push({ s: sp, u: i / 8, dir: i % 2 ? 1 : -1, v: 0.12 + (i % 3) * 0.04 })
   }
-  const top = new THREE.Vector3(0, archR * 1.25 + 0.35, zc)
+  const top = new THREE.Vector3(0, archR * archH + 0.3, z0 + 0.2)
   let glow = 0
   const tmp = new THREE.Vector3()
   return {
