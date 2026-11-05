@@ -820,3 +820,5 @@ h4 { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(-
 }
 .split-l > *, .doc-group, .doc-item, .doc-proj { min-width: 0; max-width: 100%; }
 .ctx-add { position: sticky; bottom: -14px; background: rgba(255, 255, 255, 0.97); margin: 0 -14px -14px; padding: 8px 14px 14px; border-radius: 0 0 24px 24px; }
+.hud-project { width: 350px; }
+.pc-row { grid-template-columns: minmax(0, 1fr) 52px 34px; }
