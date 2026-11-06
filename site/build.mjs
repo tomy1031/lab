@@ -7,6 +7,7 @@
 //   YOKOHAMA_REF  ハマころ！ (yokohama-roll/)                 default: HEAD
 //   FILMS_REF     NEXTMAKE Films (nextmake-mv/output)          default: origin/claude/nextmake-investment-video-jaigyl
 //   AIC_REF       NEXTMAKE AI COMPANY (ai-company/)            default: origin/claude/ai-employee-3d-visualization-bgkso0
+//   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -22,7 +23,11 @@ const refs = {
   yokohama: process.env.YOKOHAMA_REF || 'HEAD',
   films: process.env.FILMS_REF || 'origin/claude/nextmake-investment-video-jaigyl',
   aic: process.env.AIC_REF || 'origin/claude/ai-employee-3d-visualization-bgkso0',
+  undokai: process.env.UNDOKAI_REF || 'origin/claude/ecstatic-thompson-v7ve2u',
 };
+// once the reel's branch is merged and deleted, take it from the films branch it was merged into
+const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
+if (!process.env.UNDOKAI_REF && !hasRef(refs.undokai)) refs.undokai = refs.films;
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -90,6 +95,24 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 04 運動会 絆 — the Instagram reel (720p to play, 1080p to download for posting) and its cover frames
+{
+  const dest = path.join(out, 'undokai-reel');
+  fs.mkdirSync(path.join(dest, 'media'), { recursive: true });
+  try {
+    const src = exportDir(refs.undokai, 'undokai-reel/output');
+    copy(path.join(siteSrc, 'undokai.html'), path.join(dest, 'index.html'));
+    for (const f of ['undokai_2026_reel.mp4', 'undokai_2026_reel_720p.mp4', 'cover_hook.jpg', 'cover_info.jpg']) {
+      copy(path.join(src, f), path.join(dest, 'media', f));
+    }
+  } catch (e) {
+    console.warn(`undokai reel not found at ${refs.undokai}; publishing a link page instead:`, e.message);
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>運動会 絆 リール</title>' +
+      '<p style="font-family:sans-serif;padding:24px">映像は準備中です。<a href="https://github.com/tomy1031/lab/pull/3">プルリクエスト #3</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai}`);
