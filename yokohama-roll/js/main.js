@@ -249,9 +249,9 @@ function goalDisplay(d) {
 }
 
 // ---------------------------------------------------------------- game modes
-// story: Yokohama → Kanto → Japan → world. timeattack: 4 minutes in Yokohama. otsukai: NexMax's shopping list.
+// story: Yokohama → Kanto → Japan → world. timeattack: 5 minutes in Yokohama. otsukai: NexMax's shopping list.
 // kanto / world: start the story from a later stage.
-const TA_SECONDS = 240;
+const TA_SECONDS = 300;
 const ERRAND = [
   { id: 'shumai_box', hint: '広場や 大さん橋' },
   { id: 'red_shoes', hint: '山下公園・運河パーク' },
@@ -883,7 +883,7 @@ function showResult(kind = 'story') {
     const D = ball.r * 2;
     const rec = saveRecord('timeattack', D, (a, b) => a > b);
     title = kind === 'clear' ? 'ヨコハマを まるめた！' : 'タイムアップ！';
-    desc = kind === 'clear' ? `${fmtTime(t)} で ヨコハマを まるごと まきこみました。` : '4分間で ここまで 大きくなりました。';
+    desc = kind === 'clear' ? `${fmtTime(t)} で ヨコハマを まるごと まきこみました。` : '5分間で ここまで 大きくなりました。';
     cells = [['さいごの大きさ', fmtMeters(D)], ['まきこんだ数', `${stats.count.toLocaleString()} こ`], [rec.isBest ? 'ベスト更新！' : 'ベスト記録', fmtMeters(rec.best)], ['いちばんの大物', bigName]];
   } else if (kind === 'errand') {
     const rec = saveRecord('otsukai', t, (a, b) => a < b);
@@ -935,7 +935,7 @@ async function startGame(m = 'story') {
   camState.init = false;
   if (m === 'kanto') { setR(150); enterKanto(); banner('関東から スタート！', '夜明けの関東を まきこめ', 2.6); message(KANTO_GOALS[0].text, 6); return; }
   if (m === 'world') { setR(10000); enterWorld(); banner('日本から スタート！', '日本、そして 世界へ', 2.6); message(WORLD_GOALS[0].text, 6); return; }
-  if (m === 'timeattack') { banner('タイムアタック！', '4分で どこまで 大きくなれる？', 2.6); message('時間内に できるだけ 大きくなろう！ 300m まで いけば クリア', 6); return; }
+  if (m === 'timeattack') { banner('タイムアタック！', '5分で どこまで 大きくなれる？', 2.6); message('時間内に できるだけ 大きくなろう！ 300m まで いけば クリア', 6); return; }
   if (m === 'otsukai') { setupErrand(); banner('おつかい スタート！', 'リストの 6つを まきこめ', 2.6); message('リストの品物を さがして まきこもう！ 大きい物は 玉が育ってから', 7); return; }
   message(CITY_GOALS[0].text, 6);
   banner('ハマころ！', 'ちいさな玉で ヨコハマを まきこめ！', 2.6);
