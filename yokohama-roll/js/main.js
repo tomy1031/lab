@@ -7,6 +7,7 @@ import { buildGlobe, EARTH_R, latLonToVec, vecToLatLon } from './engine/globe.js
 import { buildKanto } from './engine/kanto.js';
 import * as K from './kanto_map.js';
 import { Minimap } from './engine/minimap.js';
+import { ItemViewer } from './engine/itemViewer.js';
 import * as M from './map.js';
 
 const qs = new URLSearchParams(location.search);
@@ -54,6 +55,12 @@ $('app').appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 5000);
 const material = makeToyMaterial();
+const itemViewer = new ItemViewer($('item-canvas'), material);
+
+// NexMax pushes the ball (optional module: the game still runs if it fails to load)
+let pusher = null;
+import('./pusher.js').then((m) => { pusher = m.createPusher(); scene.add(pusher.root); }).catch((e) => console.warn('pusher unavailable', e));
+let bumpedNow = false, cheerNow = false;
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 1.4);
 scene.add(hemi);
@@ -234,6 +241,62 @@ function goalDisplay(d) {
   return d < 1 ? `${d * 100}cm` : d < 1000 ? `${d}m` : `${d / 1000}km`;
 }
 
+// ---------------------------------------------------------------- game modes
+// story: Yokohama → Kanto → Japan → world. timeattack: 4 minutes in Yokohama. otsukai: NexMax's shopping list.
+// kanto / world: start the story from a later stage.
+const TA_SECONDS = 240;
+const ERRAND = [
+  { id: 'shumai_box', hint: '広場や 大さん橋' },
+  { id: 'red_shoes', hint: '山下公園・運河パーク' },
+  { id: 'panda_plush', hint: '中華街や 広場' },
+  { id: 'lion_dancer', hint: '中華街（玉 3m〜）' },
+  { id: 'rickshaw', hint: '通り・中華街（玉 4m〜）' },
+  { id: 'chinatown_gate', hint: '中華街の入口（玉 22m〜）' },
+];
+let mode = 'story';
+const errandDone = new Set();
+const RECORD_KEY = 'hamakoro.records.v1';
+function loadRecords() { try { return JSON.parse(localStorage.getItem(RECORD_KEY) || '{}') || {}; } catch (e) { return {}; } }
+function saveRecord(key, value, better) {
+  const r = loadRecords();
+  const isBest = r[key] == null || better(value, r[key]);
+  if (isBest) { r[key] = value; try { localStorage.setItem(RECORD_KEY, JSON.stringify(r)); } catch (e) { /* private mode */ } }
+  return { isBest, best: isBest ? value : r[key] };
+}
+const fmtTime = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+const fmtMeters = (d) => (d < 1 ? `${Math.round(d * 100)}cm` : d < 1000 ? `${d.toFixed(d < 10 ? 2 : 1)}m` : `${(d / 1000).toFixed(d < 10000 ? 2 : 1)}km`);
+function fmtItemSize(o) {
+  if (stageName === 'world') { const km = o.size * WORLD_UNIT_KM; return km < 10 ? `${km.toFixed(1)}km` : `${Math.round(km).toLocaleString()}km`; }
+  return fmtMeters(o.size);
+}
+function showRecords() {
+  const r = loadRecords();
+  const set = (k, t) => { const el = document.querySelector(`[data-rec="${k}"]`); if (el) el.textContent = t; };
+  set('story', r.story != null ? `ベスト ${fmtTime(r.story)}` : '');
+  set('timeattack', r.timeattack != null ? `ベスト 直径 ${fmtMeters(r.timeattack)}` : '');
+  set('otsukai', r.otsukai != null ? `ベスト ${fmtTime(r.otsukai)}` : '');
+}
+function setupErrand() {
+  errandDone.clear();
+  $('errand').classList.remove('hidden');
+  $('errand-list').innerHTML = ERRAND.map((e) => {
+    const p = reg.get(e.id);
+    return `<li data-id="${e.id}"><div><span>${p ? p.name : e.id}</span><small>${e.hint}</small></div></li>`;
+  }).join('');
+}
+function errandPicked(o) {
+  if (mode !== 'otsukai' || errandDone.has(o.proto.id) || !ERRAND.some((e) => e.id === o.proto.id)) return false;
+  errandDone.add(o.proto.id);
+  const li = document.querySelector(`#errand-list li[data-id="${o.proto.id}"]`);
+  if (li) li.classList.add('done');
+  const left = ERRAND.length - errandDone.size;
+  banner(`${o.name} ゲット！`, left ? `あと ${left} こ` : 'おつかい かんりょう！', 2);
+  sfx('sfxLevelUp');
+  cheerNow = true;
+  if (!left) setTimeout(() => showResult('errand'), 1200);
+  return true;
+}
+
 // ---------------------------------------------------------------- toast / banners
 let toastTimer = 0;
 function toast(name, big = false) {
@@ -324,13 +387,26 @@ function pick(o) {
   stats.byName.set(o.name, (stats.byName.get(o.name) || 0) + 1);
   if (!stats.biggest || o.size > stats.biggest.size) stats.biggest = { name: o.name, size: o.size };
   const ratio = o.size / (2 * oldR);
+  const special = errandPicked(o);
   if (o.landmark) { stats.landmarks.push(o.name); toast(o.name, true); sfx('sfxLevelUp'); }
-  else if (ratio > 0.12 || toastTimer < 1.1) toast(o.name);
   if (!pickSfx || ratio > pickSfx.ratio) pickSfx = { ratio, kind: o.proto.kind };
+  const weight = ratio + (o.landmark || special ? 10 : 0);
+  if (!cardCand || weight > cardCand.weight) cardCand = { o, weight, ratio, n: stats.count };
 }
-let pickSfx = null;
+let pickSfx = null, cardCand = null, cardShown = null, cardT = 0;
 function flushPickSfx() {
   if (pickSfx) { sfx('sfxPickup', pickSfx.ratio, pickSfx.kind); pickSfx = null; }
+  // the corner card shows the latest notable catch in 3D (bigger or special catches jump the queue)
+  if (cardCand && (cardT <= 0 || cardCand.weight > (cardShown ? cardShown.weight * 1.3 : 0))) {
+    const { o, n } = cardCand;
+    itemViewer.show(o.proto);
+    $('item-name').textContent = o.name;
+    $('item-meta').textContent = `大きさ ${fmtItemSize(o)} ・ ${n.toLocaleString()}こ目`;
+    const card = $('item-card');
+    card.classList.remove('hidden', 'pop'); void card.offsetWidth; card.classList.add('pop');
+    cardShown = cardCand; cardT = 0.45;
+    cardCand = null;
+  }
 }
 
 function buryItems() {
@@ -478,6 +554,7 @@ function collide() {
         bumpCool = 0.35;
         shake = Math.max(shake, strength * 0.6);
         sfx('sfxBump', strength);
+        bumpedNow = true;
         lastBump = o.name;
         if (strength > 0.8 && inpDash && ball.items.length > 6) dropItems(strength > 0.95 ? 2 : 1, n);
       }
@@ -632,11 +709,18 @@ function updateHUD() {
   const prev = goalIdx > 0 ? G[goalIdx - 1].d : stageStartD;
   const D = ball.r * 2;
   const p = THREE.MathUtils.clamp((Math.log(D) - Math.log(prev)) / (Math.log(g.d) - Math.log(prev)), 0, 1);
-  $('goal-bar').style.width = (p * 100).toFixed(1) + '%';
-  $('goal-label').textContent = `目標 ${goalDisplay(g.d)}`;
+  if (mode === 'otsukai') {
+    $('goal-bar').style.width = (errandDone.size / ERRAND.length * 100).toFixed(1) + '%';
+    $('goal-label').textContent = `おつかい ${errandDone.size} / ${ERRAND.length}`;
+  } else {
+    $('goal-bar').style.width = (p * 100).toFixed(1) + '%';
+    $('goal-label').textContent = `目標 ${goalDisplay(g.d)}`;
+  }
   $('count').textContent = `${stats.count.toLocaleString()} こ`;
   const t = stats.elapsed;
-  $('timer').textContent = `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  const left = TA_SECONDS - t;
+  $('timer').textContent = mode === 'timeattack' ? `のこり ${fmtTime(Math.max(0, left))}` : fmtTime(t);
+  $('timer').classList.toggle('hurry', mode === 'timeattack' && left < 30);
   // size ring
   const ring = $('size-ring');
   const ringScale = THREE.MathUtils.clamp(D / g.d, 0.05, 1);
@@ -644,14 +728,17 @@ function updateHUD() {
 }
 
 function checkGoals() {
+  if (mode === 'otsukai') return;
   const G = goals();
   if (goalIdx >= G.length) return;
   if (ball.r * 2 >= G[goalIdx].d) {
     const g = G[goalIdx];
     goalIdx++;
     sfx('sfxLevelUp');
+    cheerNow = true;
     if (goalIdx >= G.length) {
-      if (stageName === 'town') startTransition('kanto');
+      if (mode === 'timeattack') showResult('clear');
+      else if (stageName === 'town') startTransition('kanto');
       else if (stageName === 'kanto') startTransition('world');
       else startEnding();
     } else {
@@ -778,17 +865,38 @@ function startEnding() {
   sfx('setMusic', 'ending');
 }
 
-function showResult() {
+function showResult(kind = 'story') {
+  if (state === 'result') return;
   state = 'result';
   const t = stats.elapsed;
   const top = [...stats.byName.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
-  $('result-time').textContent = `${Math.floor(t / 60)}分${String(Math.floor(t % 60)).padStart(2, '0')}秒`;
-  $('result-count').textContent = `${stats.count.toLocaleString()} こ`;
-  $('result-size').textContent = diameterDisplay(ball.r);
-  $('result-big').textContent = stats.landmarks.length ? stats.landmarks.slice(-6).join('、') : (stats.biggest ? stats.biggest.name : '-');
+  const bigName = stats.landmarks.length ? stats.landmarks.slice(-4).join('、') : (stats.biggest ? stats.biggest.name : '-');
+  let title, desc, cells;
+  if (kind === 'timeup' || kind === 'clear') {
+    const D = ball.r * 2;
+    const rec = saveRecord('timeattack', D, (a, b) => a > b);
+    title = kind === 'clear' ? 'ヨコハマを まるめた！' : 'タイムアップ！';
+    desc = kind === 'clear' ? `${fmtTime(t)} で ヨコハマを まるごと まきこみました。` : '4分間で ここまで 大きくなりました。';
+    cells = [['さいごの大きさ', fmtMeters(D)], ['まきこんだ数', `${stats.count.toLocaleString()} こ`], [rec.isBest ? 'ベスト更新！' : 'ベスト記録', fmtMeters(rec.best)], ['いちばんの大物', bigName]];
+  } else if (kind === 'errand') {
+    const rec = saveRecord('otsukai', t, (a, b) => a < b);
+    title = 'おつかい かんりょう！';
+    desc = 'たのまれた 6つの品物を ぜんぶ まきこみました。ネクマックスも 大よろこび！';
+    cells = [['かかった時間', fmtTime(t)], [rec.isBest ? 'ベスト更新！' : 'ベスト記録', fmtTime(rec.best)], ['まきこんだ数', `${stats.count.toLocaleString()} こ`], ['玉の大きさ', diameterDisplay(ball.r)]];
+  } else {
+    const rec = mode === 'story' ? saveRecord('story', t, (a, b) => a < b) : null;
+    title = 'せかいが まるくなった！';
+    desc = mode === 'story' ? 'ヨコハマから はじまった ちいさな玉は、関東、日本をこえて ついに 地球まで まきこみました。' : 'ちいさな玉は ついに 地球まで まきこみました。';
+    cells = [['かかった時間', fmtTime(t)], ['まきこんだ数', `${stats.count.toLocaleString()} こ`], ['さいごの大きさ', diameterDisplay(ball.r)],
+      rec ? [rec.isBest ? 'ベスト更新！' : 'ベスト記録', fmtTime(rec.best)] : ['大物', bigName]];
+  }
+  $('result-title').textContent = title;
+  $('result-desc').textContent = desc;
+  $('result-stats').innerHTML = cells.map(([k, v], i) => `<div>${k}<br><b${String(v).length > 10 ? ' style="font-size:14px"' : ''}>${v}</b></div>`).join('');
   $('result-list').innerHTML = top.map(([n, c]) => `<li><span>${n}</span><b>${c}</b></li>`).join('');
   $('result').classList.add('show');
   $('hud').classList.add('hidden');
+  sfx('setMusic', 'ending');
 }
 
 // ---------------------------------------------------------------- pause / mute
@@ -810,20 +918,33 @@ $('btn-again').addEventListener('click', () => location.reload());
 // ---------------------------------------------------------------- start
 $('loading').classList.add('hidden');
 $('title').classList.add('show');
-async function startGame() {
+async function startGame(m = 'story') {
+  mode = m;
   $('title').classList.remove('show');
   $('hud').classList.remove('hidden');
-  if (audio) { try { await audio.start(); audio.setMusic('town'); } catch (e) { console.warn(e); } }
+  if (audio) { try { await audio.start(); audio.setMusic(m === 'world' ? 'world' : 'town'); } catch (e) { console.warn(e); } }
   state = 'play';
   stats.elapsed = 0;
   camState.init = false;
+  if (m === 'kanto') { setR(150); enterKanto(); banner('関東から スタート！', '夜明けの関東を まきこめ', 2.6); message(KANTO_GOALS[0].text, 6); return; }
+  if (m === 'world') { setR(10000); enterWorld(); banner('日本から スタート！', '日本、そして 世界へ', 2.6); message(WORLD_GOALS[0].text, 6); return; }
+  if (m === 'timeattack') { banner('タイムアタック！', '4分で どこまで 大きくなれる？', 2.6); message('時間内に できるだけ 大きくなろう！ 300m まで いけば クリア', 6); return; }
+  if (m === 'otsukai') { setupErrand(); banner('おつかい スタート！', 'リストの 6つを まきこめ', 2.6); message('リストの品物を さがして まきこもう！ 大きい物は 玉が育ってから', 7); return; }
   message(CITY_GOALS[0].text, 6);
   banner('ハマころ！', 'ちいさな玉で ヨコハマを まきこめ！', 2.6);
 }
-$('btn-start').addEventListener('click', startGame);
-if (qs.has('autostart')) startGame();
-if (qs.get('stage') === 'kanto') { startGame().then(() => { setR(150); enterKanto(); sfx('setMusic', 'town'); message(KANTO_GOALS[0].text, 6); }); }
-if (qs.get('stage') === 'world') { startGame().then(() => { setR(10000); enterWorld(); sfx('setMusic', 'world'); message(WORLD_GOALS[0].text, 6); }); }
+for (const b of document.querySelectorAll('.mode')) {
+  b.addEventListener('click', () => {
+    const m = b.dataset.mode;
+    if (m === 'select') { $('modes').classList.add('hidden'); $('stage-select').classList.remove('hidden'); return; }
+    startGame(m);
+  });
+}
+$('btn-back').addEventListener('click', () => { $('stage-select').classList.add('hidden'); $('modes').classList.remove('hidden'); });
+showRecords();
+if (qs.has('autostart')) startGame(qs.get('mode') || 'story');
+if (qs.get('stage') === 'kanto') startGame('kanto');
+if (qs.get('stage') === 'world') startGame('world');
 
 // ---------------------------------------------------------------- main loop
 const clock = new THREE.Clock();
@@ -856,6 +977,7 @@ function frame() {
 
   if (state === 'play') {
     stats.elapsed += dt;
+    if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) showResult('timeup');
     const inp = readInput();
     step(dt, inp);
     for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
@@ -918,6 +1040,13 @@ function frame() {
   }
 
   stage.updateMovers(dt, ball, PICK_K);
+  if (pusher) {
+    pusher.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, speed: ball.vel.length(), dash: inpDash, bumped: bumpedNow, cheer: cheerNow });
+    pusher.setVisible(state !== 'ending');
+  }
+  bumpedNow = false; cheerNow = false;
+  cardT -= dt;
+  itemViewer.update(dt);
   stage.objs.updateVisibility(camera.position, ball.r, stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1);
   core.scale.setScalar(ball.r * 0.86);
   updateEnvironment(dt);
@@ -960,6 +1089,7 @@ window.__game = {
       }
       if (state !== 'play') break;
       stats.elapsed += dt;
+      if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) { showResult('timeup'); break; }
       step(dt, readInput());
       for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
       bumpCool -= dt;

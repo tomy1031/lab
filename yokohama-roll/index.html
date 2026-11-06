@@ -37,10 +37,18 @@
     text-shadow: 0 6px 0 var(--red), 0 10px 0 rgba(0,0,0,.25), 0 0 40px rgba(255,180,90,.6); transform: rotate(-4deg); }
   .logo span { color: var(--yellow); }
   .tagline { color: #fff; font-weight: 800; font-size: clamp(16px, 3.6vw, 24px); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
-  #btn-start { margin-top: 10px; background: var(--yellow); color: var(--ink); border: 0; border-radius: 999px; padding: 16px 46px; font-size: 24px; font-weight: 800;
-    box-shadow: 0 6px 0 #c99a12, 0 10px 24px rgba(0,0,0,.3); transition: transform .1s; }
-  #btn-start:hover { transform: translateY(-2px) scale(1.03); }
-  #btn-start:active { transform: translateY(3px); box-shadow: 0 2px 0 #c99a12; }
+  #modes, #stage-select { display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); gap: 10px; margin-top: 6px; max-width: 100%; }
+  #stage-select { grid-template-columns: repeat(2, minmax(0, 260px)); }
+  .mode { text-align: left; border: 0; border-radius: 16px; padding: 12px 16px; background: var(--paper); color: var(--ink); box-shadow: 0 5px 0 rgba(0,0,0,.22);
+    display: flex; flex-direction: column; gap: 2px; transition: transform .1s; min-width: 0; }
+  .mode b { font-size: 20px; }
+  .mode span { font-size: 13px; line-height: 1.4; }
+  .mode em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--red); min-height: 1em; }
+  .mode.primary { background: var(--yellow); box-shadow: 0 5px 0 #c99a12; }
+  .mode:hover { transform: translateY(-2px); }
+  .mode:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
+  .mode:focus-visible, .btn:focus-visible, .link:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .link { grid-column: 1 / -1; background: none; border: 0; color: #fff; font-weight: 800; text-decoration: underline; padding: 6px; }
   .howto { background: rgba(255,250,240,.92); border-radius: 16px; padding: 12px 18px; font-size: 14px; line-height: 1.7; max-width: 520px; box-shadow: var(--shadow); }
   .howto kbd { display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 6px; background: #fff; border: 1px solid #ccc; border-bottom-width: 3px; font-family: inherit; font-size: 12px; }
 
@@ -69,7 +77,26 @@
   #count-box { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); text-align: right; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.45); font-weight: 800; }
   #count { font-size: 26px; }
   #count-box small { display: block; font-size: 12px; }
-  #help { position: absolute; right: 16px; bottom: 74px; font-size: 12px; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.5); text-align: right; line-height: 1.5; opacity: .9; }
+  #item-card { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(78px + env(safe-area-inset-bottom, 0px)); width: 190px;
+    background: radial-gradient(circle at 50% 38%, #fffdf6 0%, #f3e6c8 70%, #e7d3a6 100%); border-radius: 18px; box-shadow: var(--shadow), inset 0 0 0 3px rgba(255,255,255,.7);
+    padding: 6px 8px 8px; text-align: center; }
+  #item-card.pop { animation: cardPop .35s ease; }
+  @keyframes cardPop { 0% { transform: scale(.9); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  #item-card small { display: block; font-size: 11px; font-weight: 800; color: var(--blue); letter-spacing: .08em; }
+  #item-canvas { width: 174px; height: 132px; display: block; margin: 0 auto; }
+  #item-name { font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--ink); overflow-wrap: anywhere; }
+  #item-meta { font-size: 12px; color: #6b5a3a; font-variant-numeric: tabular-nums; }
+  #errand { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(62px + env(safe-area-inset-top, 0px)); width: 210px;
+    background: rgba(255,250,240,.94); border-radius: 14px; padding: 8px 12px; box-shadow: var(--shadow); }
+  #errand .errand-title { font-weight: 800; font-size: 13px; color: var(--blue); margin-bottom: 4px; }
+  #errand ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  #errand li { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: baseline; font-size: 14px; font-weight: 800; line-height: 1.3; }
+  #errand li::before { content: '□'; color: #9a8a6a; }
+  #errand li.done { color: #9a8a6a; text-decoration: line-through; }
+  #errand li.done::before { content: '✔'; color: var(--green); text-decoration: none; }
+  #errand li small { display: block; font-weight: 500; font-size: 11px; color: #7a6a4a; text-decoration: none; }
+  #timer.hurry { background: var(--red); color: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
 
   #toast { position: absolute; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translate(-50%, -10px); background: var(--paper); border-radius: 14px; padding: 6px 16px; font-size: 16px;
     box-shadow: var(--shadow); opacity: 0; transition: opacity .2s, transform .2s; white-space: nowrap; }
@@ -105,8 +132,13 @@
 
   @media (max-width: 720px) {
     #minimap { width: 120px; height: 120px; }
-    #help { display: none; }
     #goal { width: 140px; }
+    #item-card { width: 132px; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); padding: 4px 6px 6px; }
+    #item-canvas { width: 120px; height: 86px; }
+    #item-name { font-size: 14px; }
+    #errand { width: 180px; top: auto; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); left: calc(14px + env(safe-area-inset-left, 0px)); right: auto; }
+    #modes, #stage-select { grid-template-columns: minmax(0, 1fr); width: 100%; max-width: 360px; }
+    .howto { display: none; }
     #size-ring { width: 56px; height: 56px; }
     #size-ring::after { width: calc(42px * var(--fill)); height: calc(42px * var(--fill)); }
     #district { top: 98px; left: 16px; transform: none; }
@@ -123,7 +155,17 @@
 <div id="title">
   <div class="logo">ハマ<span>ころ</span>！</div>
   <div class="tagline">ころがせ、ヨコハマ。まきこめ、せかい。</div>
-  <button id="btn-start">あそぶ</button>
+  <div id="modes">
+    <button class="mode primary" data-mode="story" id="mode-story"><b>ストーリー</b><span>横浜 → 関東 → 日本 → 世界。ぜんぶ まきこめ！</span><em data-rec="story"></em></button>
+    <button class="mode" data-mode="timeattack" id="mode-ta"><b>タイムアタック</b><span>横浜で 4分。どこまで 大きくなれる？</span><em data-rec="timeattack"></em></button>
+    <button class="mode" data-mode="otsukai" id="mode-otsukai"><b>おつかい</b><span>ネクマックスに たのまれた 6つの品物を さがせ</span><em data-rec="otsukai"></em></button>
+    <button class="mode" data-mode="select" id="mode-select"><b>ステージをえらぶ</b><span>関東から / 日本から はじめる</span><em></em></button>
+  </div>
+  <div id="stage-select" class="hidden">
+    <button class="mode" data-mode="kanto" id="mode-kanto"><b>関東から</b><span>直径 300m で 夜明けの関東へ</span><em></em></button>
+    <button class="mode" data-mode="world" id="mode-world"><b>日本から</b><span>直径 20km で 地球へ</span><em></em></button>
+    <button class="link" id="btn-back">もどる</button>
+  </div>
   <div class="howto">
     <kbd>W</kbd><kbd>↑</kbd> 前へ　<kbd>S</kbd><kbd>↓</kbd> うしろ　<kbd>A</kbd><kbd>D</kbd> 向きをかえる　<kbd>Space</kbd> ダッシュ<br>
     マウスをドラッグでカメラ回転　<kbd>M</kbd> 音　<kbd>P</kbd> ポーズ<br>
@@ -148,7 +190,8 @@
     <button id="btn-pause" class="icon-btn" title="ポーズ (P)">⏸</button>
   </div>
   <canvas id="minimap" width="340" height="340"></canvas>
-  <div id="help">W/↑ 前へ・A/D 向き・Space ダッシュ<br>ドラッグでカメラ</div>
+  <div id="item-card" class="hidden"><small>まきこんだ！</small><canvas id="item-canvas"></canvas><div id="item-name"></div><div id="item-meta"></div></div>
+  <div id="errand" class="hidden"><div class="errand-title">ネクマックスの おつかい</div><ul id="errand-list"></ul></div>
   <div id="count-box"><small>まきこんだ数</small><div id="count">0 こ</div></div>
   <div id="toast"></div>
   <div id="banner"><div id="banner-main"></div><div id="banner-sub"></div></div>
@@ -162,17 +205,12 @@
 
 <div id="result" class="panel">
   <div class="card">
-    <h2>せかいが まるくなった！</h2>
-    <div>ヨコハマから はじまった ちいさな玉は、ついに 地球まで まきこみました。</div>
-    <div class="stats">
-      <div>かかった時間<br><b id="result-time"></b></div>
-      <div>まきこんだ数<br><b id="result-count"></b></div>
-      <div>さいごの大きさ<br><b id="result-size"></b></div>
-      <div>大物<br><b id="result-big" style="font-size:14px"></b></div>
-    </div>
+    <h2 id="result-title">せかいが まるくなった！</h2>
+    <div id="result-desc">ヨコハマから はじまった ちいさな玉は、ついに 地球まで まきこみました。</div>
+    <div class="stats" id="result-stats"></div>
     <div style="font-weight:800">よく まきこんだもの</div>
     <ul id="result-list"></ul>
-    <button id="btn-again" class="btn">もういちど</button>
+    <button id="btn-again" class="btn">タイトルへ</button>
   </div>
 </div>
 
