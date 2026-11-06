@@ -22,4 +22,8 @@ for f in sorted(glob.glob(os.path.join(SRC, '[0-9]*.heic')) + glob.glob(os.path.
     im = ImageOps.exif_transpose(Image.open(edited if os.path.exists(edited) else f)).convert('RGB')
     im.thumbnail((2400, 2400), Image.LANCZOS)
     im.save(os.path.join(OUT, f'{num}_{stem}.jpg'), quality=93)
+# Osaka Sangyo University students (provided by the organisers; media_src/japan/, not in git)
+for f in sorted(glob.glob(os.path.join(ROOT, 'media_src', 'japan', '*.jpg'))):
+    im = ImageOps.exif_transpose(Image.open(f)).convert('RGB')
+    im.save(os.path.join(OUT, os.path.basename(f)), quality=95)
 print('photos ->', OUT)

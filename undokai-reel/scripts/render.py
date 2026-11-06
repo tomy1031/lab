@@ -3,12 +3,14 @@
 
 Every cut and pop lands on the beat of the BGM (165 BPM; beat k at 0.204 + k*60/165 s, see music.py).
 
-  0.0– 3.1 s  hook        cavalry charging at the camera, battle clash; 運動会 / 絆 title slams in
-  3.1– 6.7 s  who         opening ceremony flags (JAPAN × CAMBODIA), then RED / BLUE / WHITE team cards
-  6.7–14.7 s  協力        building the human horse, the lift, the charge, the battle
- 14.7–20.6 s  仲間        tug-of-war, flags, friends posing, the flag bearer
- 20.6–23.5 s  思い出      polaroids of last year drop onto a pile of medals
- 23.5–30.0 s  join us     vertical re-layout of the banner + date, place, how to join; final hit on 絆
+  0.0– 2.4 s  hook        flag runner; 運動会 / 絆 title slams in
+  2.4– 7.5 s  JAPAN       STUDENTS FROM JAPAN ARE COMING! (OSAKA -> PHNOM PENH flight), then the Osaka Sangyo
+                          students: SEE YOU AT AUPP! / LET'S PLAY TOGETHER!
+  7.5–11.1 s  who         opening ceremony flags (JAPAN × CAMBODIA), RED / BLUE / WHITE team cards
+ 11.1–15.5 s  協力        one cavalry lift (atmosphere only: no cavalry battle this year), tug-of-war, flag bearer
+ 15.5–19.8 s  仲間 思い出  friends' photos; polaroids on a pile of medals
+ 19.8–23.5 s  絆          split screen JAPAN / CAMBODIA, the × becomes the 絆 sun
+ 23.5–30.0 s  join us     vertical re-layout of the banner + PLAY WITH STUDENTS FROM JAPAN!, date, place, how to join
 
 Usage: python3 render.py [out.mp4] [--from S --to S] [--stills t1,t2,...]
 """
@@ -348,32 +350,207 @@ def video_shot(t0, t1, name, start, speed=1.0, crop=None, push=.04, amt=.085):
 
 def build():
     T_END = N / FPS
-    # ---- 1. hook
-    video_shot(0, b(4), '20_IMG_7189.mov', 3.15, speed=1.15, amt=0)
-    video_shot(b(4), b(8), '23_IMG_7193.mov', 0.2, crop=(.40, .5, 1.0))
-    # ---- 2. who: flags, then the three teams
-    video_shot(b(8), b(12), '05_IMG_7175.mov', 9.7, crop=(.33, .56, .9))
+    # ---- 1. hook: flag runner, 運動会 絆 title slam
+    video_shot(0, b(6), '22_IMG_7192.mov', 0.1, crop=(.66, .5, 1.0), amt=0)
+    # ---- 2. the selling point: students from Japan are coming
+    japan_shot(b(6), b(12))
+    feature_shot(b(12), b(16), 'jp_group.jpg', NAVY, [
+        (pill_spr('OSAKA SANGYO UNIV.', font('Poppins-BlackItalic.ttf', 66), NAVY, WHITE, padx=36, pady=8, outline=6,
+                  outline_fill=RED, shadow=10), W / 2, 470, -4, .5),
+        (bubble_spr('SEE YOU AT AUPP!', font('LuckiestGuy-Regular.ttf', 92), INK, YELLOW), 600, 1460, 4, 1.6)], rot=-2.5,
+        crop=(.07, 0, .93, 1))
+    feature_shot(b(16), b(20), 'jp_flags.jpg', RED, [
+        (text_spr("LET'S PLAY", font('LuckiestGuy-Regular.ttf', 150), fill=WHITE, stroke=14, stroke_fill=INK, shadow=14), W / 2, 470, -5, .4),
+        (text_spr('TOGETHER!', font('LuckiestGuy-Regular.ttf', 150), fill=YELLOW, stroke=14, stroke_fill=INK, shadow=14), W / 2, 1470, 4, 1.4)],
+        rot=3, crop=(.1, 0, .93, 1))
+    # ---- 3. JAPAN × CAMBODIA, then the three teams
+    video_shot(b(20), b(24), '05_IMG_7175.mov', 9.7, crop=(.33, .56, .9))
     teams = [('00_IMG_4692.mov', 'RED TEAM', RED, WHITE, -4), ('01_IMG_4691.mov', 'BLUE TEAM', BLUE, WHITE, 3),
              ('02_IMG_4693.mov', 'WHITE TEAM', (.9, .94, 1.0), NAVY, -2.5)]
     for i, (name, label, col, fg, rot) in enumerate(teams):
-        t0, t1 = b(12 + 2 * i), b(14 + 2 * i)
-        team_shot(t0, t1, name, label, col, fg, rot, i)
-    # ---- 3. 協力 teamwork: build the horse, lift, charge, battle
-    video_shot(b(18), b(22), '16_IMG_7185.mov', 12.4)
-    video_shot(b(22), b(26), '19_IMG_7188.mov', 1.9, speed=2.0)
-    video_shot(b(26), b(30), '19_IMG_7188.mov', 6.0)
-    video_shot(b(30), b(33), '23_IMG_7193.mov', 19.2, crop=(.27, .5, 1.0))
-    video_shot(b(33), b(36), '21_IMG_7191.mov', 58.45, crop=(.70, .5, 1.0))
-    video_shot(b(36), b(40), '23_IMG_7193.mov', 35.3, crop=(.72, .5, 1.0))
-    # ---- 4. 仲間 friends
-    tug_shot(b(40), b(44))
-    video_shot(b(44), b(48), '22_IMG_7192.mov', 0.1, crop=(.66, .5, 1.0))
-    trio_shot(b(48), b(52))
-    video_shot(b(52), b(56), '21_IMG_7191.mov', 0.1, crop=(.50, .5, 1.0))
-    # ---- 5. 思い出 memories
-    memories_shot(b(56), b(64))
-    # ---- 6. end card
+        team_shot(b(24 + 2 * i), b(26 + 2 * i), name, label, col, fg, rot, i)
+    # ---- 4. 協力 (one cavalry lift for the atmosphere — no cavalry battle this year), tug-of-war, flags
+    video_shot(b(30), b(34), '19_IMG_7188.mov', 1.9, speed=2.0)
+    tug_shot(b(34), b(38))
+    video_shot(b(38), b(42), '21_IMG_7191.mov', 0.1, crop=(.50, .5, 1.0))
+    # ---- 5. 仲間 friends, 思い出 memories
+    trio_shot(b(42), b(48))
+    memories_shot(b(48), b(54))
+    # ---- 6. JAPAN × CAMBODIA = 絆
+    split_shot(b(54), b(64))
+    # ---- 7. end card
     endcard_shot(b(64), T_END)
+
+
+def stripes_bg(col, k=.9, size=90):
+    c = np.array(col, np.float32)
+    yy, xx = np.mgrid[0:H + 400, 0:W + 400]
+    band = ((xx + yy) // size) % 2
+    return np.where(band[..., None] == 0, c, c * k).astype(np.float32)
+
+
+def bubble_spr(text, fnt, fg, bg):
+    """Comic speech bubble: a pill with a tail at the lower left."""
+    t = text_spr(text, fnt, fill=fg)
+    th, tw = t.shape[:2]
+    padx, pady, tail, sh = 44, 18, 46, 10
+    w, h = tw + 2 * padx, th + 2 * pady
+    im = Image.new('RGBA', (w + 2 * sh + 12, h + tail + 2 * sh + 12), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    o = 6
+    for dx, dy, col in [(sh * .5, sh, hexrgb(INK) + (150,)), (0, 0, hexrgb(INK) + (255,))]:
+        grow = 0 if dy else o
+        d.rounded_rectangle([o + dx - grow, o + dy - grow, o + dx + w + grow, o + dy + h + grow], h // 2 + grow, fill=col)
+        d.polygon([(o + dx + w * .2, o + dy + h - 4), (o + dx + w * .14, o + dy + h + tail + grow),
+                   (o + dx + w * .34, o + dy + h - 4)], fill=col)
+    d.rounded_rectangle([o, o, o + w, o + h], h // 2, fill=hexrgb(bg) + (255,))
+    d.polygon([(o + w * .2 + 4, o + h - 6), (o + w * .145, o + h + tail - 8), (o + w * .32, o + h - 6)], fill=hexrgb(bg) + (255,))
+    s = to_spr(im)
+    y0, x0 = o + pady, o + padx
+    a = t[..., 3:4]
+    s[y0:y0 + th, x0:x0 + tw] = s[y0:y0 + th, x0:x0 + tw] * (1 - a) + t
+    return s
+
+
+def plane_spr(size=120, col=NAVY):
+    """A small airliner seen from above, nose pointing right."""
+    k = 4
+    im = Image.new('RGBA', (size * k, size * k), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    s = size * k
+    c = hexrgb(col) + (255,)
+    d.rounded_rectangle([s * .08, s * .45, s * .95, s * .55], s * .05, fill=c)                       # fuselage
+    d.polygon([(s * .42, s * .47), (s * .60, s * .47), (s * .40, s * .08), (s * .32, s * .08)], fill=c)  # wings
+    d.polygon([(s * .42, s * .53), (s * .60, s * .53), (s * .40, s * .92), (s * .32, s * .92)], fill=c)
+    d.polygon([(s * .10, s * .47), (s * .20, s * .47), (s * .12, s * .26), (s * .06, s * .26)], fill=c)  # tail
+    d.polygon([(s * .10, s * .53), (s * .20, s * .53), (s * .12, s * .74), (s * .06, s * .74)], fill=c)
+    return to_spr(im.resize((size, size), Image.LANCZOS))
+
+
+def japan_shot(t0, t1):
+    """STUDENTS FROM / JAPAN (on the red sun) / ARE COMING! + the OSAKA -> PHNOM PENH flight."""
+    cream = np.array((.985, .972, .945), np.float32)
+    yy, xx = np.mgrid[0:H, 0:W]
+    dots = ((xx % 44 - 22) ** 2 + (yy % 44 - 22) ** 2) < 16
+    bg = np.where(dots[..., None], cream * .955, cream).astype(np.float32)
+    r = 330
+    im = Image.new('RGBA', (4 * (2 * r + 8),) * 2, (0, 0, 0, 0))
+    ImageDraw.Draw(im).ellipse([16, 16, im.width - 16, im.height - 16], fill=(214, 32, 48, 255))
+    sun = to_spr(im.resize((2 * r + 8, 2 * r + 8), Image.LANCZOS))
+    l1 = text_spr('STUDENTS FROM', font('Poppins-BlackItalic.ttf', 104), fill=NAVY, stroke=10, stroke_fill=WHITE, shadow=0)
+    l2 = text_spr('JAPAN', font('LuckiestGuy-Regular.ttf', 250), fill=WHITE, stroke=16, stroke_fill=INK, shadow=18)
+    l3 = text_spr('ARE COMING!', font('Poppins-BlackItalic.ttf', 118), fill=RED, stroke=11, stroke_fill=WHITE, shadow=12)
+    lab_a = text_spr('OSAKA', font('Poppins-Black.ttf', 46), fill=NAVY)
+    lab_b = text_spr('PHNOM PENH', font('Poppins-Black.ttf', 46), fill=NAVY)
+    plane = plane_spr(130)
+    ax, bx, ry = 170, 910, 1470
+
+    def draw(fr, t, lt):
+        fr[:] = bg
+        p = out_back(lt / .32, 1.8)
+        paste(fr, sun, W / 2, 860, s=p)
+        q = out_cubic((t - t0 - .5 * BEAT) / .25)
+        if q > 0:
+            paste(fr, l1, W / 2 - (1 - q) * 900, 470, rot=-3)
+        z = out_back((t - t0 - BEAT) / .26, 2.4)
+        if t >= t0 + BEAT:
+            paste(fr, l2, W / 2, 870, s=1.9 - .9 * z, rot=-4 + 8 * (1 - z), op=clamp((t - t0 - BEAT) * 12))
+        c = out_back((t - t0 - 2 * BEAT) / .26)
+        if t >= t0 + 2 * BEAT:
+            paste(fr, l3, W / 2, 1255, s=c, rot=3)
+        # the flight: dotted route draws itself, the plane rides it
+        f = out_cubic((t - t0 - 2.8 * BEAT) / (2.6 * BEAT))
+        if t >= t0 + 2.6 * BEAT:
+            img = (fr * 255).astype(np.uint8)
+            n = 26
+            for i in range(int(n * f)):
+                u = i / (n - 1)
+                x, y = ax + (bx - ax) * u, ry - 120 * math.sin(math.pi * u)
+                cv2.circle(img, (int(x), int(y)), 7, hexrgb(NAVY), -1, lineType=cv2.LINE_AA)
+            for x in (ax, bx):
+                cv2.circle(img, (x, ry), 20, hexrgb(RED), -1, lineType=cv2.LINE_AA)
+                cv2.circle(img, (x, ry), 8, (255, 255, 255), -1, lineType=cv2.LINE_AA)
+            fr[:] = img.astype(np.float32) / 255
+            paste(fr, lab_a, ax + 20, ry + 70)
+            paste(fr, lab_b, bx - 70, ry + 70)
+            u = f
+            x, y = ax + (bx - ax) * u, ry - 120 * math.sin(math.pi * u)
+            ang = math.degrees(math.atan2(120 * math.pi * math.cos(math.pi * u), bx - ax))
+            paste(fr, plane, x, y - 46 * math.sin(math.pi * min(u, .92) / .92 * .5 + .5 * math.pi) - 10, rot=ang)
+    SHOTS.append((t0, t1, draw))
+
+
+def feature_shot(t0, t1, photo, col, stickers, rot=0, crop=None):
+    """A big polaroid of the Japanese students on moving stripes, with stickers that pop on the beat."""
+    stripes = stripes_bg(col, .86)
+    card = polaroid_spr(os.path.join(BUILD, 'photos', photo), 1030, crop=crop, border=20, bottom=70)
+
+    def draw(fr, t, lt):
+        off = int(lt * 240) % 180
+        fr[:] = stripes[off:off + H, off:off + W]
+        p = out_back(lt / .3)
+        paste(fr, card, W / 2, 960, s=(.6 + .4 * p) * (1 + .035 * lt / (t1 - t0)), rot=rot + (1 - p) * 9)
+        for spr, x, y, r, k in stickers:
+            tk = t0 + k * BEAT
+            if t >= tk:
+                q = out_back((t - tk) / .24, 2.2)
+                paste(fr, spr, x, y, s=q, rot=r)
+    SHOTS.append((t0, t1, draw))
+
+
+def split_shot(t0, t1):
+    """JAPAN on top, CAMBODIA below; the × between them turns into the 絆 sun."""
+    def panel(name, x0, x1):
+        im = load_photo(name)
+        h, w = im.shape[:2]
+        crop = im[:, int(x0 * w):int(x1 * w)]
+        return grade(cover(crop, W, H // 2))
+    top = panel('jp_group.jpg', .12, .89)
+    bot = panel('33_IMG_1240.jpg', .2, .97)
+    jp = pill_spr('JAPAN', font('Poppins-BlackItalic.ttf', 76), RED, WHITE, padx=34, pady=4, shadow=10)
+    kh = pill_spr('CAMBODIA', font('Poppins-BlackItalic.ttf', 76), WHITE, BLUE, padx=34, pady=4, outline=6, outline_fill=RED, shadow=10)
+    times = text_spr('×', font('Poppins-Black.ttf', 190), fill=YELLOW, stroke=12, stroke_fill=INK, shadow=12)
+    kizuna = load_spr('kizuna.png', 400)
+    tag = text_spr('KIZUNA = BOND', font('PermanentMarker-Regular.ttf', 50), fill=WHITE, stroke=8, stroke_fill=RED)
+
+    def draw(fr, t, lt):
+        a = out_cubic(lt / .3)
+        c = out_cubic((t - t0 - BEAT) / .3)
+        fr[:] = .1
+        push = 1 + .05 * lt / (t1 - t0)
+        th = fr[:H // 2]
+        place_into(th, top, push, dy=-(1 - a) * H / 2)
+        if t >= t0 + BEAT:
+            place_into(fr[H // 2:], bot, push, dy=(1 - c) * H / 2)
+        fr[H // 2 - 7:H // 2 + 7] = 1.0
+        for spr, x, y, k in [(jp, 270, 760, .5), (kh, 790, 1175, 1.5)]:
+            if t >= t0 + k * BEAT:
+                q = out_back((t - t0 - k * BEAT) / .24)
+                paste(fr, spr, x, y, s=q, rot=-4)
+        tx = t0 + 2.5 * BEAT
+        tk = t0 + 4 * BEAT
+        if tx <= t < tk + .12:
+            q = out_back((t - tx) / .24)
+            gone = in_cubic((t - tk) / .12)
+            paste(fr, times, W / 2, H / 2, s=q * (1 - gone), rot=(1 - q) * 120)
+        if t >= tk:
+            z = out_back((t - tk) / .34, 2.6)
+            pulse = .03 * math.exp(-((t - .204) / BEAT % 1) * 6)
+            paste(fr, kizuna, W / 2, H / 2, s=(.3 + .7 * z) * (1 + pulse), rot=(1 - z) * -25)
+            g = out_back((t - tk - BEAT) / .26)
+            if t >= tk + BEAT:
+                paste(fr, tag, W / 2 - 40, 1300, s=g, rot=-5)
+    SHOTS.append((t0, t1, draw))
+
+
+def place_into(dst, img, s=1.0, dx=0.0, dy=0.0):
+    """Like place(), but into any sub-region (the panels of the split screen)."""
+    h, w = dst.shape[:2]
+    ih, iw = img.shape[:2]
+    M = cv2.getRotationMatrix2D((iw / 2, ih / 2), 0, s)
+    M[0, 2] += w / 2 - iw / 2 + dx
+    M[1, 2] += h / 2 - ih / 2 + dy
+    dst[:] = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(.1, .1, .1))
 
 
 def team_shot(t0, t1, name, label, col, fg, rot, i):
@@ -444,8 +621,7 @@ def memories_shot(t0, t1):
     medals = load_photo('11_IMG_7177.jpg')
     bg = grade(cover(medals)) * .82
     cards = [(polaroid_spr(os.path.join(BUILD, 'photos', n), 780), x, y, r) for n, x, y, r in
-             [('26_IMG_1233.jpg', 520, 760, -7), ('24_IMG_1231.jpg', 590, 1080, 6), ('31_IMG_1238.jpg', 470, 1370, -4),
-              ('33_IMG_1240.jpg', 560, 1000, 3)]]
+             [('24_IMG_1231.jpg', 520, 780, -7), ('08_IMG_7173.jpg', 580, 1110, 6), ('26_IMG_1233.jpg', 500, 1000, -3)]]
 
     def draw(fr, t, lt):
         place(fr, bg, s=1.04 + .06 * lt / (t1 - t0), rot=-.6 * lt)
@@ -472,7 +648,8 @@ def endcard_shot(t0, t1):
     ImageDraw.Draw(plate).rounded_rectangle([0, 0, plate.width - 1, plate.height - 1], 30, fill=(255, 255, 255, 240))
     plate.alpha_composite(logos, (40, 22))
     SPR['logos'] = to_spr(plate)
-    SPR['co'] = text_spr('AUPP  ×  OSAKA SANGYO UNIV.', font('Poppins-Bold.ttf', 38), fill=NAVY, tracking=3)
+    SPR['co'] = pill_spr('PLAY WITH STUDENTS FROM JAPAN!', font('Poppins-BlackItalic.ttf', 44), NAVY, WHITE, padx=30, pady=6,
+                         outline=5, outline_fill=RED, shadow=6)
     SPR['date'] = pill_spr('SAT  28 NOV 2026', font('Poppins-Black.ttf', 76), WHITE, NAVY, padx=46, pady=14, outline=6)
     SPR['time'] = text_spr('3:00 – 6:30 PM   |   AUPP SPORTS FIELD', font('Poppins-Bold.ttf', 44), fill=NAVY)
     SPR['supply'] = pill_spr('JOIN WITH 1 SCHOOL SUPPLY', font('Poppins-BlackItalic.ttf', 52), WHITE, RED, padx=40, pady=12, outline=6)
@@ -496,7 +673,7 @@ def endcard_shot(t0, t1):
         if t >= hit - .02:
             z = out_back((t - hit) / .35, 3)
             paste(fr, kizuna, 851, 445, s=.977 * (1 + .25 * (1 - z) + .12 * math.exp(-(t - hit) * 6)))
-        items = [('kz', 860, 690, 66, -7), ('co', W / 2, 760, 65, 0), ('date', W / 2, 870, 66, 0), ('time', W / 2, 975, 67, 0),
+        items = [('kz', 870, 668, 66, -7), ('co', W / 2, 758, 65, -1.5), ('date', W / 2, 870, 66, 0), ('time', W / 2, 975, 67, 0),
                  ('supply', W / 2, 1090, 68, -2), ('supply2', W / 2, 1172, 68.5, 0), ('join', W / 2 - 40, 1330, 70, -4),
                  ('open', 860, 1425, 71, 8), ('logos', W / 2, 1545, 72, 0)]
         for key, x, y, k, rot in items:
@@ -520,25 +697,23 @@ def overlays():
                          outline_fill=RED, shadow=12)
     big['x'] = text_spr('×', font('Poppins-Black.ttf', 150), fill=YELLOW, stroke=10, stroke_fill=INK, shadow=10)
     stamps = []
-    for chars, word, k0, k1 in [('協力', 'TEAMWORK', 18, 25.5), ('仲間', 'FRIENDS', 48, 55.5), ('思い出', 'MEMORIES', 56, 63.5)]:
+    for chars, word, k0, k1 in [('協力', 'TEAMWORK', 30, 37.5), ('仲間', 'FRIENDS', 42, 47.6), ('思い出', 'MEMORIES', 48, 53.6)]:
         stamps.append((seal_spr(chars, 118), text_spr(word, font('Poppins-BlackItalic.ttf', 118), fill=WHITE, stroke=12,
                                                        stroke_fill=INK, shadow=14), b(k0), b(k1)))
     ov = []
 
     def hook(fr, t):
-        if b(0) <= t < b(8):
+        if b(0) <= t < b(6):
             q = out_back((t - b(0)) / .32, 2.6)
-            m = out_back((t - b(4)) / .3, 1.4)                  # shrink to a badge at the cut
-            exit_ = in_cubic((t - (b(8) - .22)) / .22)
+            exit_ = in_cubic((t - (b(6) - .22)) / .22)
             pulse = .02 * math.exp(-((t - .204) / BEAT % 1) * 6)
-            s_ = (1.9 - .9 * q) * (1 - .36 * m) * (1 + pulse)
-            paste(fr, title, W / 2 + 0 * m, 410 - 120 * m - exit_ * 700, s=s_, rot=-3 * q + 6 * (1 - q),
-                  op=clamp((t - b(0)) * 20))
+            s_ = (1.9 - .9 * q) * (1 + pulse)
+            paste(fr, title, W / 2, 420 - exit_ * 800, s=s_, rot=-3 * q + 6 * (1 - q), op=clamp((t - b(0)) * 20))
     ov.append(hook)
 
     def who(fr, t):
-        if b(8) <= t < b(12):
-            for key, k, x0, x1, y in [('jp', 8, -400, 360, 1170), ('x', 9, W / 2, W / 2, 1300), ('kh', 10, W + 500, 640, 1440)]:
+        if b(20) <= t < b(24):
+            for key, k, x0, x1, y in [('jp', 20, -400, 360, 1170), ('x', 21, W / 2, W / 2, 1300), ('kh', 22, W + 500, 640, 1440)]:
                 tk = b(k)
                 if t < tk:
                     continue
@@ -565,13 +740,15 @@ def overlays():
 
 
 BURSTS = [Burst(b(0), W / 2, 700, n=110, speed=1700, seed=1),
-          Burst(b(18), 200, 420, n=60, speed=1300, seed=2),
-          Burst(b(48), 200, 420, n=60, speed=1300, seed=3),
+          Burst(b(7), W / 2, 860, n=90, speed=1600, seed=7),
+          Burst(b(30), 200, 420, n=60, speed=1300, seed=2),
+          Burst(b(42), 200, 420, n=60, speed=1300, seed=3),
+          Burst(b(58), W / 2, H / 2, n=110, speed=1800, seed=8),
           Burst(b(64) + .3, W / 2, 500, n=90, speed=1500, seed=4),
           Burst(b(79), -20, 1300, n=110, speed=2300, spread=.9, angle=-1.05, seed=5),
           Burst(b(79), W + 20, 1300, n=110, speed=2300, spread=.9, angle=-2.09, seed=6)]
-FLASH = [b(0), b(8), b(18), b(40), b(56), b(64)]
-SHAKE = [b(0), b(18), b(48), b(56), b(79)]
+FLASH = [b(0), b(6), b(12), b(20), b(30), b(48), b(54), b(64)]
+SHAKE = [b(0), b(7), b(30), b(42), b(58), b(79)]
 
 
 def render(out, t_from=0.0, t_to=None, stills=None):

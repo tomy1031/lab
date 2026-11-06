@@ -6,29 +6,34 @@ This is a 30-second Instagram Reel to recruit AUPP students for the Charity UNDO
 |---|---|
 | Finished video | [output/undokai_2026_reel.mp4](output/undokai_2026_reel.mp4) (1080×1920, 30 fps, 29.97 s, H.264 + AAC) |
 | 720p share copy | [output/undokai_2026_reel_720p.mp4](output/undokai_2026_reel_720p.mp4) |
-| Cover candidates | [cover_hook.jpg](output/cover_hook.jpg) (title over the cavalry) ・ [cover_info.jpg](output/cover_info.jpg) (date and place) |
+| Cover candidates | [cover_hook.jpg](output/cover_hook.jpg) (title) ・ [cover_japan.jpg](output/cover_japan.jpg) (STUDENTS FROM JAPAN) ・ [cover_info.jpg](output/cover_info.jpg) (date and place) |
 
 ## Storyboard
 
-Every cut and pop lands on the beat of the BGM (165 BPM).
+Every cut and pop lands on the beat of the BGM (165 BPM). The main selling point is that **university students from Japan are coming**. There is no cavalry battle this year, so the cavalry appears only once, as a short shot for atmosphere.
 
-| Time | Footage (Undokai 2025) | On screen |
+| Time | Footage | On screen |
 |---|---|---|
-| 0.0–3.1 s | A cavalry team (騎馬) charging at the camera, then the battle clash | The banner's 運動会・絆 title slams in with confetti, then shrinks to a badge |
-| 3.1–4.6 s | Opening ceremony: team flags, the Japanese and Cambodian flags | **JAPAN × CAMBODIA** |
-| 4.6–6.7 s | Team intro clips | RED / BLUE / WHITE TEAM cards on striped team colours |
-| 6.7–14.7 s | Building the human horse → the lift (2× speed) → riding → battle | Hanko stamp **協力 TEAMWORK** |
-| 14.7–16.2 s | Tug-of-war photo; the card jerks on every beat | PULL! |
-| 16.2–20.6 s | Flag runner → three photos of friends drop in → flag bearer | **仲間 FRIENDS** |
-| 20.6–23.5 s | Polaroids of last year drop onto a pile of medals | **思い出 MEMORIES** |
-| 23.5–30.0 s | End card: the banner re-laid out vertically (sky, cherry blossoms and Japanese flag, daisies and Cambodian flag) | Date, time, place, how to join (1 school supply), **JOIN US!**, logos. The 絆 sun pulses on the song's final hit |
+| 0.0–2.4 s | Flag runner (2025) | The banner's 運動会・絆 title slams in with confetti |
+| 2.4–4.6 s | Animation: the Japanese flag's red circle, then a plane flying OSAKA → PHNOM PENH | **STUDENTS FROM JAPAN ARE COMING!** |
+| 4.6–6.0 s | Group photo of the Osaka Sangyo students (peace signs, face paint) | OSAKA SANGYO UNIV. / SEE YOU AT AUPP! |
+| 6.0–7.5 s | Two Osaka Sangyo students waving the team flags | LET'S PLAY TOGETHER! |
+| 7.5–8.9 s | Opening ceremony: the Japanese and Cambodian flags (2025) | **JAPAN × CAMBODIA** |
+| 8.9–11.1 s | Team intro clips (2025) | RED / BLUE / WHITE TEAM cards |
+| 11.1–12.6 s | One cavalry lift at 2× speed (atmosphere only) | Hanko stamp **協力 TEAMWORK** |
+| 12.6–15.5 s | Tug-of-war (the card jerks on every beat) → flag bearer | PULL! |
+| 15.5–17.7 s | Three photos of friends drop in | **仲間 FRIENDS** |
+| 17.7–19.8 s | Polaroids of last year drop onto a pile of medals | **思い出 MEMORIES** |
+| 19.8–23.5 s | Split screen: the Japanese students on top, AUPP students below | JAPAN / CAMBODIA. The × in the middle becomes the **絆** sun (KIZUNA = BOND) |
+| 23.5–30.0 s | End card: the banner re-laid out vertically | **PLAY WITH STUDENTS FROM JAPAN!**, date, time, place, how to join (1 school supply), **JOIN US!**, logos. The 絆 sun pulses on the song's final hit |
 
 The speech concept (the five students' messages) is told through the footage, not through text:
 
-- Exchange between the two countries: JAPAN × CAMBODIA
-- Helping each other: 協力 (the human horse can't stand without everyone)
+- Exchange between the two countries: STUDENTS FROM JAPAN, JAPAN × CAMBODIA
+- Helping each other: 協力 (the lift, the tug-of-war)
 - Laughing and cheering together: 仲間
 - Memories for life: 思い出
+- A new bond: the split screen that turns into 絆
 - Glad I joined: JOIN US!
 
 The end card keeps important text within the area Instagram's UI doesn't cover: below the top ~220 px and above the caption area.
@@ -58,6 +63,7 @@ python3 scripts/render.py /tmp/stills --stills 1.0,8.0,26.5   # check single fra
 ## Materials and rights
 
 - **Photos and videos**: the Undokai 2025 shared album (iCloud). They show the participants' faces, so the originals are not in git. Get them with `fetch_media.py`.
+- **Osaka Sangyo students' photos**: provided by the organisers. Put them in `media_src/japan/` as `jp_group.jpg` and `jp_flags.jpg` (not in git). The photo of three people in front of the "INDOKAI di Yogyakarta" banner isn't used, because that banner is from a different event.
 - **Banner, poster and logos**: the event's own materials (`assets/banner.png`, `assets/poster.png`).
 - **BGM**: the provided mp3. It is not in git because its license is unconfirmed. Kusikos Post itself (Necke, early 1900s) is in the public domain, but this arrangement and recording belong to their creator. Before posting, check that the creator allows its use, or use a version of the song from Instagram's music library.
 - **Fonts**: Poppins, Yuji Syuku (subset to the 8 kanji used) and Permanent Marker are under the SIL Open Font License. Luckiest Guy is under the Apache License 2.0.
