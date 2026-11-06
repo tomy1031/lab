@@ -102,8 +102,8 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   try {
     const src = exportDir(refs.undokai, 'undokai-reel/output');
     copy(path.join(siteSrc, 'undokai.html'), path.join(dest, 'index.html'));
-    for (const f of ['undokai_2026_reel.mp4', 'undokai_2026_reel_720p.mp4', 'cover_hook.jpg', 'cover_info.jpg']) {
-      copy(path.join(src, f), path.join(dest, 'media', f));
+    for (const f of ['undokai_2026_reel.mp4', 'undokai_2026_reel_720p.mp4', 'cover_hook.jpg', 'cover_japan.jpg', 'cover_info.jpg']) {
+      if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, 'media', f));
     }
   } catch (e) {
     console.warn(`undokai reel not found at ${refs.undokai}; publishing a link page instead:`, e.message);
