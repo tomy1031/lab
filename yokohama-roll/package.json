@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "serve": "python3 -m http.server 8765"
+    "serve": "python3 -m http.server 8765",
+    "build:nexmax": "node tools/build-nexmax.mjs"
   },
   "devDependencies": {
+    "esbuild": "0.24.2",
     "three": "0.170.0"
   }
 }

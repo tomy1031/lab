@@ -59,7 +59,14 @@ const itemViewer = new ItemViewer($('item-canvas'), material);
 
 // NexMax pushes the ball (optional module: the game still runs if it fails to load)
 let pusher = null;
-import('./pusher.js').then((m) => { pusher = m.createPusher(); scene.add(pusher.root); }).catch((e) => console.warn('pusher unavailable', e));
+let pusherMod = null;
+import('./pusher.js').then((m) => {
+  pusherMod = m;
+  pusher = m.createPusher();
+  pusher.setVisible(false); // shown once play starts
+  scene.add(pusher.root);
+  m.setOutlineViewport(renderer.getDrawingBufferSize(new THREE.Vector2()).y);
+}).catch((e) => console.warn('pusher unavailable', e));
 let bumpedNow = false, cheerNow = false;
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 1.4);
@@ -657,7 +664,7 @@ function updateEnvironment(dt) {
 // ---------------------------------------------------------------- camera
 function updateCamera(dt, mode = 'play') {
   const r = ball.r;
-  let wantDist = 1.0 + r * 5.6, wantH = 0.45 + r * 2.4;
+  let wantDist = 1.0 + r * 5.6, wantH = 0.5 + r * 2.8; // high enough to see the ball over NexMax's helmet
   if (mode === 'pull') { wantDist *= 3.2; wantH *= 4.5; }
   const k = camState.init ? 1 - Math.exp(-dt * 2.5) : 1;
   camState.dist += (wantDist - camState.dist) * k;
@@ -1041,7 +1048,7 @@ function frame() {
 
   stage.updateMovers(dt, ball, PICK_K);
   if (pusher) {
-    pusher.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, speed: ball.vel.length(), dash: inpDash, bumped: bumpedNow, cheer: cheerNow });
+    pusher.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, speed: ball.vel.length(), dash: inpDash, bumped: bumpedNow, cheer: cheerNow, planetR: stageName === 'world' ? EARTH_R : 0 });
     pusher.setVisible(state !== 'ending');
   }
   bumpedNow = false; cheerNow = false;
@@ -1066,6 +1073,7 @@ frame();
 document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused) togglePause(); });
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
+  if (pusherMod) pusherMod.setOutlineViewport(renderer.getDrawingBufferSize(new THREE.Vector2()).y);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
 });
