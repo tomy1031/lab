@@ -6,3 +6,6 @@ nextmake-mv/scripts/.glyphs.txt
 nextmake-mv/music_src/
 nextmake-mv/src/assets/ceo_score.mp3
 nextmake-mv/src/assets/nmclaw_score.mp3
+# undokai-reel: participants' photos/videos and the unlicensed BGM stay out of git (scripts/fetch_media.py)
+undokai-reel/media_src/
+undokai-reel/build/
