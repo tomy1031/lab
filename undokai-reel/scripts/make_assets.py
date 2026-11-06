@@ -78,12 +78,32 @@ rgb = np.where((ink > sun_a)[..., None] & ~red[..., None], np.minimum(rgb, 25), 
 rgb = np.clip(rgb, 0, 255)
 t_rgb, t_a = sticker(rgb, a, 20, 14)
 save('title.png', t_rgb, t_a)
+# the same lettering without the sticker edge, for print and other layouts
+ys, xs = np.nonzero(a > .02)
+pad = 12
+cy0, cy1, cx0, cx1 = max(0, ys.min() - pad), ys.max() + pad, max(0, xs.min() - pad), xs.max() + pad
+save('title_clean.png', rgb[cy0:cy1, cx0:cx1], a[cy0:cy1, cx0:cx1])
 
 # the 絆 sun alone
 sx0, sy0 = 3300 - x0, 380 - y0
 s_a = np.where(d < 520, sun_a, 0) * np.where(d < r_sun + 10, 1, 1 - ink)        # drop the tail of 会 that crosses the swirl
 s_rgb, s_a = rgb[sy0:sy0 + 980, sx0:sx0 + 900], s_a[sy0:sy0 + 980, sx0:sx0 + 900]
 save('kizuna.png', s_rgb, s_a)
+# a clean stand-alone 絆 sun for other uses: paint the peach over the tail of 会 that crosses the disc
+crop_d = d[sy0:sy0 + 980, sx0:sx0 + 900]
+crop_ink = ink[sy0:sy0 + 980, sx0:sx0 + 900]
+hole = cv2.dilate((crop_ink > .06).astype(np.uint8), np.ones((17, 17), np.uint8)) > 0
+# fill the hole with the same disc rotated by 60°, so the watercolour texture continues (no dark sources)
+ccx, ccy = cx - 3300, cy - 380
+M = cv2.getRotationMatrix2D((ccx, ccy), 60, 1.0)
+rot_rgb = cv2.warpAffine(np.clip(s_rgb, 0, 255).astype(np.float32), M, (s_rgb.shape[1], s_rgb.shape[0]), flags=cv2.INTER_LINEAR)
+in_disc = crop_d < r_sun + 10
+k_rgb = np.where((hole & in_disc)[..., None], rot_rgb, s_rgb)
+feather = cv2.GaussianBlur((hole & in_disc).astype(np.float32), (0, 0), 4)[..., None]
+k_rgb = s_rgb * (1 - feather) + rot_rgb * feather
+k_rgb = np.where((hole & in_disc)[..., None], rot_rgb, k_rgb)
+k_a = np.where(in_disc, np.maximum(s_a, disc[sy0:sy0 + 980, sx0:sx0 + 900]), np.where(hole, 0, s_a))
+save('kizuna_clean.png', k_rgb, k_a)
 
 # ---------------------------------------------------------------- corners
 H, W = banner.shape[:2]
