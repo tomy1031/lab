@@ -17,7 +17,7 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.resolve(process.argv[2] || process.env.OUT || os.tmpdir());
 fs.mkdirSync(outDir, { recursive: true });
-const query = process.env.QUERY || 'noshadow&lowres';
+const query = process.env.QUERY || 'noshadow&lowres&density=0.4';
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.css': 'text/css' };
 const server = http.createServer((req, res) => {
   const p = path.join(root, decodeURIComponent(req.url.split('?')[0]));
@@ -28,7 +28,7 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, r));
 const port = server.address().port;
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
-const [VW, VH] = (process.env.VIEW || '960x540').split('x').map(Number);
+const [VW, VH] = (process.env.VIEW || '640x360').split('x').map(Number);
 const page = await browser.newPage({ viewport: { width: VW, height: VH } });
 const logs = [], errors = [];
 const benign = (t) => /GPU stall|Automatic fallback|favicon|ERR_FILE_NOT_FOUND|404 \(Not Found\)/.test(t);
@@ -49,7 +49,7 @@ await page.addInitScript(() => {
 
 const results = [];
 const check = (name, ok, info = '') => { results.push({ name, ok: !!ok, info }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${info ? '  — ' + info : ''}`); };
-const shot = async (name) => { const p = path.join(outDir, `vr_${name}.png`); await page.screenshot({ path: p }); console.log('  screenshot', p); };
+const shot = async (name) => { const p = path.join(outDir, `vr_${name}.png`); await page.screenshot({ path: p, timeout: 180000 }); console.log('  screenshot', p); };
 const frames = () => page.evaluate(() => window.__game.renderer.info.render.frame);
 async function waitFrames(n, timeout = 120000) {
   const f0 = await frames();
@@ -79,7 +79,7 @@ try {
     const e = rig.matrixWorld.elements, sc = Math.hypot(e[4], e[5], e[6]);
     const ball = g.ball.pos;
     const ndc = cams.map((c) => ball.clone().project(c));
-    const eyeW = cams[0].getWorldPosition(ball.clone());
+    const eyeW = ball.clone().setFromMatrixPosition(cams[0].matrixWorld);
     return {
       cams: cams.length, eyes: cams.map((c) => c.viewport && [c.viewport.x, c.viewport.width]),
       rigUp: [e[4] / sc, e[5] / sc, e[6] / sc], scale: rig.scale.x, r: g.ball.r,
@@ -88,6 +88,7 @@ try {
       hud: rig.getObjectByName('vr-hud').userData.hud, hudVisible: rig.getObjectByName('vr-hud-root').visible,
       size: document.getElementById('size').textContent, goal: document.getElementById('goal-label').textContent,
       fb: [g.renderer.domElement.width, g.renderer.domElement.height],
+      info: { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles, programs: g.renderer.info.programs.length },
     };
   });
   console.log('  state', JSON.stringify(st), `~${fps.toFixed(1)} fps (swiftshader)`);
