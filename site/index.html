@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tomy1031 lab</title>
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「ほしあかりの湖」">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a workbench index — one wide row per project, picture left, notes right; stacks on phones. */
+  :root {
+    --bg: #f3f1ea; --card: #fffdf8; --ink: #17191f; --muted: #5c5f68; --line: #dcd7ca;
+    --accent: #2350c8; --tag: #e9e4d6;
+    --display: "Dela Gothic One", "Hiragino Kaku Gothic StdN", sans-serif;
+    --body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #14161b; --card: #1d2027; --ink: #eceae3; --muted: #a4a7b0; --line: #2e323b; --accent: #8fb0ff; --tag: #2a2e37; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #14161b; --card: #1d2027; --ink: #eceae3; --muted: #a4a7b0; --line: #2e323b; --accent: #8fb0ff; --tag: #2a2e37; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.75;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 56px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 8vw, 72px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+  h1 small { font-family: var(--body); font-size: .28em; font-weight: 700; color: var(--muted); letter-spacing: .12em; margin-left: .6em; vertical-align: middle; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; max-width: 34em; }
+  .works { display: grid; gap: 28px; margin-top: 30px; }
+  .work { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shot { position: relative; display: block; min-height: 220px; background: #000; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 16 / 9; }
+  .shot .no { position: absolute; left: 14px; top: 10px; font-family: var(--display); font-size: 40px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.45); line-height: 1; }
+  .notes { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags span { font-size: 12px; font-weight: 700; letter-spacing: .06em; background: var(--tag); border-radius: 999px; padding: 1px 10px; }
+  h2 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  .lead { margin: 0; font-size: 15px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 10px; padding: 8px 16px; border: 2px solid var(--ink); color: var(--ink); }
+  .btn.primary { background: var(--ink); color: var(--card); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  details { border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
+  summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  details ul { margin: 6px 0 0; padding-left: 1.1em; }
+  details li { margin: 2px 0; }
+  details code { font-size: 12.5px; background: var(--tag); border-radius: 4px; padding: 0 4px; }
+  .note { font-size: 13px; color: var(--muted); margin: 0; }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  @media (max-width: 760px) {
+    .work { grid-template-columns: minmax(0, 1fr); }
+    .shot { min-height: 0; }
+    .wrap { padding-block: 24px 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>lab<small>tomy1031</small></h1>
+    <p>つくったものの置き場です。遊べるものはこのページから開けます。中身（コード・調査メモ・絵コンテ）は GitHub のリポジトリにあります。</p>
+  </header>
+
+  <main class="works">
+    <article class="work" id="hamakoro">
+      <a class="shot" href="yokohama-roll/"><img src="img/hamakoro.jpg" alt="ネクマックスが玉を押して運河パークを転がる「ハマころ！」のプレイ画面" width="1200" height="675"><span class="no">01</span></a>
+      <div class="notes">
+        <div class="tags"><span>3D ゲーム</span><span>three.js</span><span>PC・スマホ</span></div>
+        <h2>ハマころ！</h2>
+        <p class="lead">ネクマックスが玉を押して、みなとみらいから中華街までを転がし、ぶつかったものを巻き込んで大きくなります。横浜を丸めたら関東、日本、最後は地球ごと。</p>
+        <p class="note">モード：ストーリー／タイムアタック（5分）／おつかい／ステージをえらぶ。最初は直径 30cm です。</p>
+        <div class="actions">
+          <a class="btn primary" href="yokohama-roll/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/yokohama-roll/README.md">README</a>：遊び方、ステージ、モード、ファイル構成</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/models"><code>js/models</code></a>：横浜・関東・世界のローポリモデル（すべてコードで生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/engine"><code>js/engine</code></a>：ステージ生成、描画、当たり判定、3D カード</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/yokohama-roll/js/pusher.js"><code>js/pusher.js</code></a>：玉を押すネクマックス</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/2">プルリクエスト #2</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="films">
+      <a class="shot" href="nextmake-mv/"><img src="img/films.jpg" alt="NEXTMAKE Films 01「Invest in the Next」のポスター" width="1920" height="1080"><span class="no">02</span></a>
+      <div class="notes">
+        <div class="tags"><span>映像</span><span>モーショングラフィックス</span><span>4 本</span></div>
+        <h2>NEXTMAKE Films</h2>
+        <p class="lead">株式会社ネクストメイクの公開情報からつくったショートフィルム 4 本。投資家向け MV、代表のポートレート、NMClaw と IDO のプロモーション。映像はすべてコードで描いています。</p>
+        <div class="actions">
+          <a class="btn primary" href="nextmake-mv/">映像を見る</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/README.md">README</a>：4 本の概要、音楽、デザインの決まりごと</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/storyboard.md">絵コンテ（01）</a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/ceo_film.md">02 の構成</a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/promos.md">03・04 の構成</a></li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/research.md">調査メモ</a>：会社と事業</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv/src"><code>src</code></a>・<a href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv/scripts"><code>scripts</code></a>：場面、共通デザイン、音楽、レンダリング</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="ai-company">
+      <a class="shot" href="ai-company/"><img src="img/ai-company.jpg" alt="大阪・東京・プノンペンのオフィスが並ぶ 3D バーチャルオフィス" width="2880" height="1296"><span class="no">03</span></a>
+      <div class="notes">
+        <div class="tags"><span>Web アプリ</span><span>3D</span><span>Claude Code</span></div>
+        <h2>NEXTMAKE AI COMPANY</h2>
+        <p class="lead">AI社員と人間が一緒に働く 3D バーチャルオフィス（大阪・東京・プノンペン）。統括 AI のネクマックスが仕事を分けて、AI社員を採用し、人間の仕事は人間へ渡します。</p>
+        <p class="note">ここで動くのは 3D オフィスのデモだけです。本体はサーバーと Claude が必要なので、README の手順で手元で動かします。</p>
+        <div class="actions">
+          <a class="btn primary" href="ai-company/">3D オフィスのデモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/README.md">README</a>：しくみ、動かし方、設定</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/space.md">3D 空間の説明</a>・<a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/design">画面デザイン</a></li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/deploy.md">動かし方とセキュリティ</a></li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/server"><code>server</code></a>・<a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/client"><code>client</code></a>：サーバーと画面</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="undokai">
+      <a class="shot" href="undokai-reel/"><img src="img/undokai.jpg" alt="運動会リールの3場面：騎馬と筆文字タイトル、RED TEAM のカード、日時入りのエンドカード" width="1200" height="675"><span class="no">04</span></a>
+      <div class="notes">
+        <div class="tags"><span>映像</span><span>Instagram リール</span><span>30 秒・縦型</span></div>
+        <h2>運動会 絆</h2>
+        <p class="lead">Charity UNDOKAI 2026（AUPP × 大阪産業大学）の参加者募集リール。「日本の大学生がやって来る！」を軸に、大阪産業大学の学生の写真と去年の運動会の映像を BGM の拍に合わせてつなぎ、日本とカンボジアが「絆」で結ばれる流れで締めます。</p>
+        <p class="note">文字は英語、漢字は演出だけ。投稿用の 1080p はページからダウンロードできます。</p>
+        <div class="actions">
+          <a class="btn primary" href="undokai-reel/">映像を見る</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/ecstatic-thompson-v7ve2u/undokai-reel">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/README.md">README</a>：絵コンテ、音楽の編集、素材と権利</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/scripts/render.py"><code>scripts/render.py</code></a>：合成とレンダリング（OpenCV・Pillow・ffmpeg）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/scripts/make_assets.py"><code>scripts/make_assets.py</code></a>：バナーから筆文字・絆・飾りを切り出す</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/3">プルリクエスト #3</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="starlight">
+      <a class="shot" href="starlight-lake/"><img src="img/starlight-lake.jpg" alt="オーロラの夜の湖に灯籠と蓮が浮かぶ「ほしあかりの湖」のプレイ画面" width="1280" height="720"><span class="no">05</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>ほしあかりの湖</h2>
+        <p class="lead">夕暮れから夜明けまで、ひと晩の湖の旅で見る力を鍛える視覚トレーニング。灯籠をはじき返して遠近のピント運動、淡い縞の「光の精」でコントラスト感度、星の門・星珠・流れ星で瞬間視と立体視と周辺視。どの章も論文の訓練法がもとになっています。</p>
+        <p class="note">Quest のブラウザで開いて「VRで旅する」。コントローラーでもハンドトラッキング（つまむ）でも遊べます。PC・TV を裸眼で見る遠見スクリーンモードと視力チェック付き。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="starlight-lake/">あそぶ</a>
+          <a class="btn" href="starlight-lake/docs/research.html">研究ノート</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/jolly-faraday-yhmee4/starlight-lake/README.md">README</a>：章の構成、操作、Quest での開き方</li>
+            <li><a href="starlight-lake/docs/research.html">研究ノート</a>：論文ごとの結果と限界、40代・軽い近視向けの使い方</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake/src/games"><code>src/games</code></a>：各章（灯籠・光の精・星の門・星珠・流れ星・休憩）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake/src/world"><code>src/world</code></a>：空・オーロラ・山・湖・蓮・星座</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    リポジトリ：<a href="https://github.com/tomy1031/lab">github.com/tomy1031/lab</a>。このサイトは <a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/site/build.mjs"><code>site/build.mjs</code></a> で各ブランチから組み立て、<code>gh-pages</code> ブランチから配信しています。
+  </footer>
+</div>
+</body>
+</html>
