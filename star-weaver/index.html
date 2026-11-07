@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STAR WEAVER</title>
+<meta name="description" content="Meta Quest 2/3 向けのVRリズムフィットネス。星にタッチし、彗星を腕でなぞって肩をほぐす。横ステップとミニスクワットで全身を動かし、前後の移動はなし。ホログラムのコーチがお手本を見せます。">
+<meta name="theme-color" content="#0b0a24">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07061a; --ink: #f6f4ff; --muted: #b0add8; --dim: #7a77a8; --line: rgba(170, 180, 255, 0.18);
+    --glass: linear-gradient(180deg, rgba(28, 25, 72, 0.78), rgba(10, 9, 30, 0.78));
+    --L: #4cc9ff; --R: #ff5fb7; --A: #ffd166; --G: #7affc8; --V: #8f6bff; --O: #ff8a5c;
+    --en: "Outfit", "Zen Kaku Gothic New", system-ui, sans-serif;
+    --jp: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--jp); -webkit-font-smoothing: antialiased; }
+  #app { position: fixed; inset: 0; }
+  #app canvas { display: block; }
+  #overlay { position: fixed; inset: 0; overflow-y: auto; padding: max(18px, env(safe-area-inset-top)) 16px 48px;
+    background: radial-gradient(900px 520px at 50% -8%, rgba(143, 107, 255, 0.28), transparent 62%), linear-gradient(180deg, rgba(7,6,26,0.15), rgba(7,6,26,0.82) 58%, rgba(7,6,26,0.95)); }
+  .wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 18px; }
+  .en { font-family: var(--en); letter-spacing: 0.14em; text-transform: uppercase; }
+  .eyebrow { font-family: var(--en); font-weight: 600; font-size: 13px; letter-spacing: 0.28em; color: var(--muted); text-transform: uppercase; }
+  header.hero { text-align: center; padding: 36px 0 10px; }
+  h1 { margin: 14px 0 0; font-family: var(--en); font-weight: 800; font-size: clamp(48px, 10vw, 112px); letter-spacing: 0.06em; line-height: 0.95;
+    background: linear-gradient(180deg, #ffffff 30%, #a9b8ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 32px rgba(143, 107, 255, 0.55)); }
+  .rule { width: min(520px, 70%); height: 2px; margin: 18px auto 0; background: linear-gradient(90deg, transparent, var(--L), var(--R), transparent); }
+  .tag { margin: 16px 0 0; font-family: var(--en); font-weight: 600; font-size: clamp(15px, 2.4vw, 19px); letter-spacing: 0.22em; color: #d9ddff; text-transform: uppercase; }
+  .lead { margin: 14px auto 0; max-width: 38em; font-size: clamp(14px, 2.2vw, 16px); line-height: 1.9; color: var(--muted); }
+  .card { background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 22px 24px; backdrop-filter: blur(10px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+  .cta { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 28px 24px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  button { font: inherit; cursor: pointer; border: 0; color: #fff; }
+  .primary { display: inline-flex; align-items: center; gap: 12px; font-family: var(--en); font-weight: 800; font-size: 22px; letter-spacing: 0.16em; padding: 18px 44px; border-radius: 16px;
+    background: linear-gradient(110deg, #ff4fa3, #ff6f87 55%, #ff9a5c); box-shadow: 0 10px 40px rgba(255, 95, 183, 0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
+  .primary svg { width: 22px; height: 22px; }
+  .ghost { display: inline-flex; align-items: center; gap: 8px; font-family: var(--en); font-weight: 700; font-size: 14px; letter-spacing: 0.14em; padding: 12px 20px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); }
+  .ghost svg { width: 16px; height: 16px; }
+  button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+  button:focus-visible { outline: 3px solid var(--A); outline-offset: 3px; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: grayscale(0.4); }
+  .note { margin: 0; font-size: 13px; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .stat { padding: 16px 12px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line); text-align: center; }
+  .stat b { display: block; font-family: var(--en); font-weight: 800; font-size: clamp(26px, 5vw, 38px); background: linear-gradient(180deg, #fff6d6, var(--A)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat .en { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); }
+  .stat small { font-size: 11px; color: var(--dim); }
+  h2 { margin: 0 0 14px; font-family: var(--en); font-weight: 700; font-size: 15px; letter-spacing: 0.24em; text-transform: uppercase; color: #d9ddff; }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 12px; }
+  .how div { padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08); font-size: 13.5px; line-height: 1.75; color: var(--muted); }
+  .how .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 10px; background: linear-gradient(135deg, #3fb6ff, #7a5cff); }
+  .how .ic svg { width: 24px; height: 24px; }
+  .how b { display: block; font-family: var(--en); letter-spacing: 0.14em; color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  ul.plain { margin: 0; padding-left: 1.1em; line-height: 1.85; font-size: 14px; color: var(--muted); }
+  ul.plain b { color: var(--ink); font-weight: 700; }
+  .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .mode { padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.08); }
+  .mode b { font-family: var(--en); font-weight: 800; font-size: 20px; letter-spacing: 0.12em; }
+  .mode .chip { float: right; font-family: var(--en); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.1); }
+  .mode p { margin: 8px 0 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
+  #history { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #history li { display: grid; grid-template-columns: 52px 104px 40px 1fr auto; gap: 8px; align-items: baseline; padding: 9px 14px; border-radius: 12px; background: rgba(255,255,255,0.045); font-size: 14px; }
+  .h-rank { font-family: var(--en); font-weight: 800; color: var(--A); font-size: 18px; } .h-score { font-family: var(--en); font-weight: 700; } .h-meta, .h-date { color: var(--dim); } .h-mode { font-family: var(--en); letter-spacing: 0.1em; font-size: 12px; color: var(--muted); }
+  #last { display: grid; grid-template-columns: auto 1fr; gap: 4px 22px; align-items: center; }
+  #last-rank { grid-row: span 2; font-family: var(--en); font-size: 72px; font-weight: 800; line-height: 1; background: linear-gradient(180deg, #fff6d6, var(--A)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #last-score { font-family: var(--en); font-size: 34px; font-weight: 800; }
+  #last-meta { color: var(--muted); font-size: 13.5px; }
+  label.w { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+  input[type=number] { width: 84px; font: inherit; font-size: 16px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: rgba(0,0,0,0.3); color: var(--ink); }
+  footer { text-align: center; font-size: 12.5px; color: var(--dim); line-height: 1.9; }
+  #deskbar { position: fixed; left: 12px; top: 12px; display: flex; gap: 10px; align-items: center; z-index: 5; max-width: calc(100% - 24px); }
+  #deskbar button { padding: 8px 14px; font-size: 13px; }
+  #desk-hint { font-size: 12.5px; color: var(--muted); background: rgba(7,6,26,0.72); padding: 6px 10px; border-radius: 8px; }
+  @media (max-width: 760px) {
+    .two, .modes { grid-template-columns: minmax(0, 1fr); }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #history li { grid-template-columns: 44px 1fr 32px auto; }
+    .h-meta { display: none; }
+    .primary { width: 100%; justify-content: center; }
+  }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="deskbar" hidden><button id="desk-back" class="ghost" type="button">← BACK</button><span id="desk-hint"></span></div>
+<main id="overlay">
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">VR Rhythm Fitness · Meta Quest 2 / 3</div>
+      <h1>STAR WEAVER</h1>
+      <div class="rule"></div>
+      <p class="tag">Reach the stars. Release your shoulders.</p>
+      <p class="lead">流れてくる星にタッチして、光の彗星を腕でなぞる。肩甲骨から大きく動かすリズムフィットネスです。ホログラムのコーチがお手本を見せるので、次に何をすればいいか迷いません。前後の移動はゼロ。左右に1歩動ければ遊べます。</p>
+    </header>
+
+    <section class="card cta">
+      <button id="enter-vr" class="primary" type="button" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-4l-2-3h-2l-2 3H5a2 2 0 0 1-2-2z"/><circle cx="8" cy="11" r="1.6"/><circle cx="16" cy="11" r="1.6"/></svg>
+        ENTER VR
+      </button>
+      <p id="vr-note" class="note">WebXR を確認しています…</p>
+      <div class="btns">
+        <button id="preview" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>PREVIEW ON PC</button>
+        <button id="demo" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>WATCH AUTOPLAY</button>
+      </div>
+    </section>
+
+    <section id="last" class="card" hidden>
+      <div id="last-rank">S</div>
+      <div id="last-score">0</div>
+      <div id="last-meta"></div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><b id="streak">0</b><span class="en">Day Streak</span><small>連続プレイ日数</small></div>
+      <div class="stat"><b id="sessions">0</b><span class="en">Sessions</span><small>プレイ回数</small></div>
+      <div class="stat"><b id="minutes">0</b><span class="en">Minutes</span><small>合計時間</small></div>
+      <div class="stat"><b id="kcal">0</b><span class="en">kcal</span><small>推定消費カロリー</small></div>
+    </section>
+
+    <section class="card">
+      <h2>How to play</h2>
+      <div class="how">
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.2 1.3-6.6L2.5 9l6.6-.8z"/></svg></span><b>Touch</b>青は左手、ピンクは右手、金色はどちらでも。手元のリングに重なった瞬間がPERFECT。</div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></svg></span><b>Trace</b>点線の上を進む彗星に手を重ね続けて、大きな円や虹をえがく。肩まわしそのものです。</div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v7M3 10h18M12 15l-3 6M12 15l3 6"/></svg></span><b>Pose</b>WING（両腕を横に）やY-RAISE（Yの字）をキープ。コーチと同じポーズで胸をひらきます。</div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg></span><b>Side step</b>光のカーテンが来たら、矢印の方へ横に1歩。前後に歩く場面はありません。</div>
+        <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M2 5h20"/><circle cx="12" cy="10" r="2.2"/><path d="M12 12.5l-1 4 4 2-2 3.5M11 16.5l-4 2 2 3"/></svg></span><b>Duck</b>光のバーは軽くひざを曲げてくぐるミニスクワット。深さは選べます（なしも可）。</div>
+      </div>
+    </section>
+
+    <section class="two">
+      <div class="card">
+        <h2>Built for desk workers</h2>
+        <ul class="plain">
+          <li><b>肩：</b>腕回し、Yレイズ、胸ひらき、クロスボディストレッチなど、肩甲骨を動かす動きが中心です。</li>
+          <li><b>腰：</b>前かがみで床に手を伸ばす動きはありません。的はすべて腰より上・体の前に出ます。</li>
+          <li><b>BACK CARE：</b>ひねりを小さくし、体側を伸ばすストレッチを省きます。</li>
+          <li>ミスが続くと自動で「EASY」になり、テンポが落ちて当たり判定が広がります。</li>
+          <li>痛みやしびれが出たらすぐ中止してください。強い症状がある方は医師に相談を。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Your space</h2>
+        <ul class="plain">
+          <li><b>横に約1.5m・前後に約0.8m</b>あれば遊べます（横ステップ「S」なら横1.2m）。</li>
+          <li>ベッドの上では遊ばないでください。足場が不安定で腰をひねりやすくなります。</li>
+          <li>Quest のバウンダリーは横長に描くのがおすすめです。座って遊ぶ「SIT」モードもあります。</li>
+          <li>コントローラーとハンドトラッキングの両方で遊べます（素早い動きはコントローラーが安定）。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Modes</h2>
+      <div class="modes">
+        <div class="mode"><span class="chip">14 MIN</span><b>JOURNEY</b><p>WARM-UP → 4ステージ（90→126 BPM）→ COOL-DOWN のフルコース。</p></div>
+        <div class="mode"><span class="chip">6 MIN</span><b>QUICK</b><p>仕事の合間に。ウォームアップとクールダウン付き。</p></div>
+        <div class="mode"><span class="chip">∞</span><b>ENDLESS</b><p>周回ごとにテンポアップ。一時停止 → COOL DOWN で終了。</p></div>
+      </div>
+      <p class="note" style="margin-top:16px"><label class="w">体重 <input id="weight" type="number" min="25" max="200" step="1"> kg（消費カロリーの推定に使用）</label></p>
+    </section>
+
+    <section id="history-wrap" class="card" hidden>
+      <h2>Recent sessions</h2>
+      <ul id="history"></ul>
+    </section>
+
+    <footer>
+      Meta Quest 2 / 3 のブラウザでこのページを開き「ENTER VR」。初回はチュートリアル（約1分半）から始まります。<br>
+      記録と設定はこの端末のブラウザにだけ保存されます。消費カロリーは動きから推定した目安です。
+    </footer>
+  </div>
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

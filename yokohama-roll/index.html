@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ハマころ！</title>
+<meta name="description" content="ちいさな玉で横浜の街をまきこみ、最後は世界までまるめる 3D ゲーム">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+</script>
+<style>
+  :root {
+    --ink: #1d2433; --paper: #fffaf0; --red: #e2483d; --blue: #2f6db3; --yellow: #ffd23f; --green: #3fa66b;
+    --shadow: 0 3px 0 rgba(0,0,0,.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1530; color: var(--ink);
+    font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+    -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+  #app, #app canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; cursor: pointer; }
+
+  /* loading */
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b1530; color: #fff; z-index: 50; font-weight: 800; font-size: 20px; }
+  #loading .dot { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--yellow); margin-right: 10px; animation: roll 0.9s linear infinite; vertical-align: -2px; }
+  @keyframes roll { from { transform: translateX(-20px) rotate(0); } to { transform: translateX(20px) rotate(360deg); } }
+
+  /* title */
+  #title { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 40;
+    background: radial-gradient(ellipse at center, rgba(255,250,240,.0) 0%, rgba(10,20,50,.35) 75%); padding: 16px; text-align: center; }
+  #title.show { display: flex; }
+  .logo { font-weight: 800; font-size: clamp(54px, 12vw, 128px); line-height: 1; color: #fff; letter-spacing: .02em;
+    text-shadow: 0 6px 0 var(--red), 0 10px 0 rgba(0,0,0,.25), 0 0 40px rgba(255,180,90,.6); transform: rotate(-4deg); }
+  .logo span { color: var(--yellow); }
+  .tagline { color: #fff; font-weight: 800; font-size: clamp(16px, 3.6vw, 24px); text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+  #modes, #stage-select { display: grid; grid-template-columns: repeat(2, minmax(0, 260px)); gap: 10px; margin-top: 6px; max-width: 100%; }
+  #stage-select { grid-template-columns: repeat(2, minmax(0, 260px)); }
+  .mode { text-align: left; border: 0; border-radius: 16px; padding: 12px 16px; background: var(--paper); color: var(--ink); box-shadow: 0 5px 0 rgba(0,0,0,.22);
+    display: flex; flex-direction: column; gap: 2px; transition: transform .1s; min-width: 0; }
+  .mode b { font-size: 20px; }
+  .mode span { font-size: 13px; line-height: 1.4; }
+  .mode em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--red); min-height: 1em; }
+  .mode.primary { background: var(--yellow); box-shadow: 0 5px 0 #c99a12; }
+  .mode:hover { transform: translateY(-2px); }
+  .mode:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
+  .mode:focus-visible, .btn:focus-visible, .link:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .link { grid-column: 1 / -1; background: none; border: 0; color: #fff; font-weight: 800; text-decoration: underline; padding: 6px; }
+  .howto { background: rgba(255,250,240,.92); border-radius: 16px; padding: 12px 18px; font-size: 14px; line-height: 1.7; max-width: 520px; box-shadow: var(--shadow); }
+  .howto kbd { display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 6px; background: #fff; border: 1px solid #ccc; border-bottom-width: 3px; font-family: inherit; font-size: 12px; }
+
+  /* HUD */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #size-box { position: absolute; left: calc(16px + env(safe-area-inset-left, 0px)); top: calc(14px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; gap: 12px; }
+  #size-ring { --fill: .1; width: 74px; height: 74px; border-radius: 50%; background: rgba(255,250,240,.9); box-shadow: var(--shadow); position: relative; }
+  #size-ring::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; border: 3px dashed var(--red); }
+  #size-ring::after { content: ''; position: absolute; left: 50%; top: 50%; width: calc(58px * var(--fill)); height: calc(58px * var(--fill)); min-width: 6px; min-height: 6px;
+    transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff6d0, var(--yellow) 45%, #e0a21a); transition: width .3s, height .3s; }
+  #size-text { color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.45), 0 0 8px rgba(0,0,0,.35); }
+  #size-text small { display: block; font-size: 13px; font-weight: 800; opacity: .95; }
+  #size { font-size: clamp(26px, 5vw, 40px); font-weight: 800; line-height: 1.05; }
+  #goal { margin-top: 4px; width: 190px; }
+  #goal-label { font-size: 12px; font-weight: 800; }
+  #goal-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,.35); overflow: hidden; margin-top: 2px; }
+  #goal-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--yellow), #ff8a3d); transition: width .3s; }
+
+  #top-right { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(14px + env(safe-area-inset-top, 0px)); display: flex; gap: 8px; align-items: flex-start; pointer-events: auto; }
+  .pill { background: rgba(255,250,240,.92); border-radius: 999px; padding: 6px 14px; font-weight: 800; box-shadow: var(--shadow); font-size: 15px; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(255,250,240,.92); box-shadow: var(--shadow); font-size: 17px; }
+  #district { position: absolute; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); }
+  #district::before { content: '📍 '; }
+
+  #minimap { position: absolute; left: calc(14px + env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: 170px; height: 170px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(255,250,240,.9), var(--shadow); }
+  #count-box { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); text-align: right; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.45); font-weight: 800; }
+  #count { font-size: 26px; }
+  #count-box small { display: block; font-size: 12px; }
+  #item-card { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(78px + env(safe-area-inset-bottom, 0px)); width: 190px;
+    background: radial-gradient(circle at 50% 38%, #fffdf6 0%, #f3e6c8 70%, #e7d3a6 100%); border-radius: 18px; box-shadow: var(--shadow), inset 0 0 0 3px rgba(255,255,255,.7);
+    padding: 6px 8px 8px; text-align: center; }
+  #item-card.pop { animation: cardPop .35s ease; }
+  @keyframes cardPop { 0% { transform: scale(.9); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  #item-card small { display: block; font-size: 11px; font-weight: 800; color: var(--blue); letter-spacing: .08em; }
+  #item-canvas { width: 174px; height: 132px; display: block; margin: 0 auto; }
+  #item-name { font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--ink); overflow-wrap: anywhere; }
+  #item-meta { font-size: 12px; color: #6b5a3a; font-variant-numeric: tabular-nums; }
+  #errand { position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); top: calc(62px + env(safe-area-inset-top, 0px)); width: 210px;
+    background: rgba(255,250,240,.94); border-radius: 14px; padding: 8px 12px; box-shadow: var(--shadow); }
+  #errand .errand-title { font-weight: 800; font-size: 13px; color: var(--blue); margin-bottom: 4px; }
+  #errand ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  #errand li { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: baseline; font-size: 14px; font-weight: 800; line-height: 1.3; }
+  #errand li::before { content: '□'; color: #9a8a6a; }
+  #errand li.done { color: #9a8a6a; text-decoration: line-through; }
+  #errand li.done::before { content: '✔'; color: var(--green); text-decoration: none; }
+  #errand li small { display: block; font-weight: 500; font-size: 11px; color: #7a6a4a; text-decoration: none; }
+  #timer.hurry { background: var(--red); color: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
+
+  #toast { position: absolute; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translate(-50%, -10px); background: var(--paper); border-radius: 14px; padding: 6px 16px; font-size: 16px;
+    box-shadow: var(--shadow); opacity: 0; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  #toast b { color: var(--red); }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast.big { font-size: 22px; background: var(--yellow); }
+
+  #banner { position: absolute; left: 0; right: 0; top: 34%; text-align: center; opacity: 0; pointer-events: none; }
+  #banner.show { animation: bannerIn 2.6s ease forwards; }
+  @keyframes bannerIn { 0% { opacity: 0; transform: scale(.6); } 12% { opacity: 1; transform: scale(1.08); } 20% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; } }
+  #banner-main { font-size: clamp(30px, 7vw, 64px); font-weight: 800; color: #fff; text-shadow: 0 4px 0 var(--red), 0 8px 18px rgba(0,0,0,.35); padding: 0 16px; }
+  #banner-sub { font-size: clamp(14px, 3vw, 20px); font-weight: 800; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+
+  #message { position: absolute; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); max-width: min(560px, calc(100% - 400px)); background: rgba(29,36,51,.86); color: #fff;
+    border-radius: 14px; padding: 10px 18px; font-size: 16px; font-weight: 800; opacity: 0; transition: .3s; text-align: center; }
+  #message.show { opacity: 1; transform: translate(-50%, 0); }
+
+  #joy { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgba(255,255,255,.18); border: 3px solid rgba(255,255,255,.5); display: none; z-index: 20; pointer-events: none; }
+  #joy-knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: rgba(255,210,63,.85); }
+
+  #fade { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .7s; z-index: 30; }
+  #fade.show { opacity: 1; }
+
+  .panel { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 45; background: rgba(8,14,35,.55); padding: 16px; }
+  .panel.show { display: flex; }
+  .card { background: var(--paper); border-radius: 22px; padding: 22px 26px; max-width: 520px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.4); text-align: center; max-height: calc(100% - 32px); overflow: auto; }
+  .card h2 { margin: 0 0 6px; font-size: 30px; color: var(--red); }
+  .card .btn { margin-top: 14px; background: var(--yellow); border: 0; border-radius: 999px; padding: 12px 30px; font-size: 18px; font-weight: 800; box-shadow: 0 4px 0 #c99a12; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; text-align: left; margin: 12px 0; font-size: 15px; }
+  .stats b { font-size: 18px; }
+  #result-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; text-align: left; font-size: 14px; }
+  #result-list li { display: flex; justify-content: space-between; border-bottom: 1px dotted #ccc; }
+
+  @media (max-width: 720px) {
+    #minimap { width: 120px; height: 120px; }
+    #goal { width: 140px; }
+    #item-card { width: 132px; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); padding: 4px 6px 6px; }
+    #item-canvas { width: 120px; height: 86px; }
+    #item-name { font-size: 14px; }
+    #errand { width: 180px; top: auto; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); left: calc(14px + env(safe-area-inset-left, 0px)); right: auto; }
+    #modes, #stage-select { grid-template-columns: minmax(0, 1fr); width: 100%; max-width: 360px; }
+    .howto { display: none; }
+    #size-ring { width: 56px; height: 56px; }
+    #size-ring::after { width: calc(42px * var(--fill)); height: calc(42px * var(--fill)); }
+    #district { top: 98px; left: 16px; transform: none; }
+    #message { max-width: calc(100% - 32px); bottom: 150px; font-size: 14px; }
+    #toast { top: 140px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="loading"><div><span class="dot"></span><span id="loading-text">よみこみ中…</span></div></div>
+
+<div id="title">
+  <div class="logo">ハマ<span>ころ</span>！</div>
+  <div class="tagline">ころがせ、ヨコハマ。まきこめ、せかい。</div>
+  <div id="modes">
+    <button class="mode primary" data-mode="story" id="mode-story"><b>ストーリー</b><span>横浜 → 関東 → 日本 → 世界。ぜんぶ まきこめ！</span><em data-rec="story"></em></button>
+    <button class="mode" data-mode="timeattack" id="mode-ta"><b>タイムアタック</b><span>横浜で 5分。どこまで 大きくなれる？</span><em data-rec="timeattack"></em></button>
+    <button class="mode" data-mode="otsukai" id="mode-otsukai"><b>おつかい</b><span>ネクマックスに たのまれた 6つの品物を さがせ</span><em data-rec="otsukai"></em></button>
+    <button class="mode" data-mode="select" id="mode-select"><b>ステージをえらぶ</b><span>関東から / 日本から はじめる</span><em></em></button>
+  </div>
+  <div id="stage-select" class="hidden">
+    <button class="mode" data-mode="kanto" id="mode-kanto"><b>関東から</b><span>直径 300m で 夜明けの関東へ</span><em></em></button>
+    <button class="mode" data-mode="world" id="mode-world"><b>日本から</b><span>直径 20km で 地球へ</span><em></em></button>
+    <button class="link" id="btn-back">もどる</button>
+  </div>
+  <div class="howto">
+    <kbd>W</kbd><kbd>↑</kbd> 前へ　<kbd>S</kbd><kbd>↓</kbd> うしろ　<kbd>A</kbd><kbd>D</kbd> 向きをかえる　<kbd>Space</kbd> ダッシュ<br>
+    マウスをドラッグでカメラ回転　<kbd>M</kbd> 音　<kbd>P</kbd> ポーズ<br>
+    スマホは 画面の左がわを スティック、右がわを ドラッグでカメラ<br>
+    玉より ちいさい物を まきこんで 大きくなろう！ 横浜 → 関東 → 日本 → そして世界へ。
+  </div>
+</div>
+
+<div id="hud" class="hidden">
+  <div id="size-box">
+    <div id="size-ring"></div>
+    <div id="size-text">
+      <small>いまの大きさ</small>
+      <div id="size">30cm 0mm</div>
+      <div id="goal"><div id="goal-label">目標</div><div id="goal-track"><div id="goal-bar"></div></div></div>
+    </div>
+  </div>
+  <div id="district" class="pill">運河パーク</div>
+  <div id="top-right">
+    <div id="timer" class="pill">0:00</div>
+    <button id="btn-mute" class="icon-btn" title="音 (M)">🔊</button>
+    <button id="btn-pause" class="icon-btn" title="ポーズ (P)">⏸</button>
+  </div>
+  <canvas id="minimap" width="340" height="340"></canvas>
+  <div id="item-card" class="hidden"><small>まきこんだ！</small><canvas id="item-canvas"></canvas><div id="item-name"></div><div id="item-meta"></div></div>
+  <div id="errand" class="hidden"><div class="errand-title">ネクマックスの おつかい</div><ul id="errand-list"></ul></div>
+  <div id="count-box"><small>まきこんだ数</small><div id="count">0 こ</div></div>
+  <div id="toast"></div>
+  <div id="banner"><div id="banner-main"></div><div id="banner-sub"></div></div>
+  <div id="message"></div>
+</div>
+
+<div id="joy"><div id="joy-knob"></div></div>
+<div id="fade"></div>
+
+<div id="pause" class="panel"><div class="card"><h2>ひとやすみ</h2><p>玉は ちゃんと 待っています。</p><button id="btn-resume" class="btn">つづける</button></div></div>
+
+<div id="result" class="panel">
+  <div class="card">
+    <h2 id="result-title">せかいが まるくなった！</h2>
+    <div id="result-desc">ヨコハマから はじまった ちいさな玉は、ついに 地球まで まきこみました。</div>
+    <div class="stats" id="result-stats"></div>
+    <div style="font-weight:800">よく まきこんだもの</div>
+    <ul id="result-list"></ul>
+    <button id="btn-again" class="btn">タイトルへ</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
