@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STAR WEAVER ほしつむぎ</title>
+<meta name="description" content="Meta Quest 2/3 向けのVRリズムエクササイズ。星にタッチ、彗星をなぞって肩をほぐし、横ステップとミニスクワットで全身を動かす。前後の移動は不要で、狭い部屋でも遊べます。">
+<meta name="theme-color" content="#0b0a24">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0a24; --card: rgba(18, 16, 52, 0.84); --ink: #f4f1ff; --muted: #b3aedb; --line: rgba(170, 160, 255, 0.28);
+    --L: #4cc9ff; --R: #ff5fb7; --A: #ffd166; --G: #7affc8;
+    --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); }
+  #app { position: fixed; inset: 0; }
+  #app canvas { display: block; }
+  #overlay { position: fixed; inset: 0; overflow-y: auto; padding: max(20px, env(safe-area-inset-top)) 16px 40px;
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(255, 95, 183, 0.18), transparent 60%), linear-gradient(180deg, rgba(11,10,36,0.35), rgba(11,10,36,0.78) 70%); }
+  .wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 18px; }
+  header { text-align: center; padding: 24px 0 4px; }
+  h1 { margin: 0; font-size: clamp(44px, 9vw, 92px); letter-spacing: 0.04em; line-height: 1; font-weight: 800;
+    background: linear-gradient(90deg, var(--L), #fff 45%, var(--R)); -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 40px rgba(255, 95, 183, 0.25); }
+  .kana { display: block; margin-top: 8px; font-size: clamp(18px, 3.4vw, 26px); color: var(--A); letter-spacing: 0.3em; font-weight: 700; }
+  .lead { margin: 14px auto 0; max-width: 40em; font-size: clamp(15px, 2.4vw, 18px); line-height: 1.8; color: var(--ink); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px 22px; backdrop-filter: blur(6px); }
+  .cta { display: grid; gap: 12px; text-align: center; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  button { font: inherit; cursor: pointer; border: 0; border-radius: 14px; padding: 14px 22px; font-weight: 800; font-size: 17px; color: #fff; background: rgba(90, 80, 200, 0.85); }
+  button:hover:not(:disabled) { filter: brightness(1.15); }
+  button:focus-visible { outline: 3px solid var(--A); outline-offset: 3px; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .primary { background: linear-gradient(90deg, #ff5fb7, #ff8a6a); font-size: 22px; padding: 16px 40px; box-shadow: 0 6px 30px rgba(255, 95, 183, 0.35); }
+  .note { margin: 0; font-size: 14px; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .stat { text-align: center; padding: 12px 6px; border-radius: 14px; background: rgba(255,255,255,0.05); }
+  .stat b { display: block; font-size: clamp(24px, 5vw, 34px); color: var(--A); }
+  .stat span { font-size: 13px; color: var(--muted); }
+  h2 { margin: 0 0 12px; font-size: 21px; }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .how div { padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.05); font-size: 14px; line-height: 1.65; color: var(--muted); }
+  .how b { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; box-shadow: 0 0 12px currentColor; flex: none; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  ul.plain { margin: 0; padding-left: 1.2em; line-height: 1.8; font-size: 15px; color: var(--muted); }
+  ul.plain b { color: var(--ink); }
+  #history { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #history li { display: grid; grid-template-columns: 52px 96px 40px 1fr auto; gap: 8px; align-items: baseline; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,0.05); font-size: 14px; }
+  .h-rank { color: var(--A); font-size: 18px; } .h-score { font-weight: 700; } .h-meta, .h-date { color: var(--muted); }
+  #last { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; }
+  #last-rank { grid-row: span 2; font-size: 64px; font-weight: 800; color: var(--A); line-height: 1; }
+  #last-score { font-size: 30px; font-weight: 800; }
+  #last-meta { color: var(--muted); font-size: 14px; }
+  label.w { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+  input[type=number] { width: 84px; font: inherit; font-size: 16px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: rgba(0,0,0,0.3); color: var(--ink); }
+  footer { text-align: center; font-size: 13px; color: var(--muted); line-height: 1.8; }
+  #deskbar { position: fixed; left: 12px; top: 12px; display: flex; gap: 10px; align-items: center; z-index: 5; max-width: calc(100% - 24px); }
+  #deskbar button { padding: 8px 14px; font-size: 14px; }
+  #desk-hint { font-size: 13px; color: var(--muted); background: rgba(11,10,36,0.7); padding: 6px 10px; border-radius: 8px; }
+  @media (max-width: 720px) {
+    .two { grid-template-columns: minmax(0, 1fr); }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #history li { grid-template-columns: 44px 1fr 32px auto; }
+    .h-meta { display: none; }
+    .primary { width: 100%; }
+  }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="deskbar" hidden><button id="desk-back" type="button">← もどる</button><span id="desk-hint"></span></div>
+<main id="overlay">
+  <div class="wrap">
+    <header>
+      <h1>STAR WEAVER<span class="kana">ほしつむぎ</span></h1>
+      <p class="lead">流れてくる星にタッチして、光の彗星を腕でなぞる。<br>肩甲骨から大きく動かすVRリズムエクササイズ。前後の移動はゼロ、左右に1歩動ければ遊べます。</p>
+    </header>
+
+    <section class="card cta">
+      <div class="btns">
+        <button id="enter-vr" class="primary" type="button" disabled>VRで遊ぶ</button>
+      </div>
+      <p id="vr-note" class="note">WebXR を確認しています…</p>
+      <div class="btns">
+        <button id="preview" type="button">PCでプレビュー</button>
+        <button id="demo" type="button">オートプレイを見る</button>
+      </div>
+    </section>
+
+    <section id="last" class="card" hidden>
+      <div id="last-rank">S</div>
+      <div id="last-score">0</div>
+      <div id="last-meta"></div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><b id="streak">0</b><span>連続プレイ日数</span></div>
+      <div class="stat"><b id="sessions">0</b><span>プレイ回数</span></div>
+      <div class="stat"><b id="minutes">0</b><span>合計（分）</span></div>
+      <div class="stat"><b id="kcal">0</b><span>合計 kcal（推定）</span></div>
+    </section>
+
+    <section class="card">
+      <h2>遊び方</h2>
+      <div class="how">
+        <div><b><i class="dot" style="color:var(--L);background:var(--L)"></i><i class="dot" style="color:var(--R);background:var(--R)"></i>星にタッチ</b>青は左手、ピンクは右手、金色はどちらでも。手元のリングに来た瞬間がPERFECT。</div>
+        <div><b><i class="dot" style="color:var(--L);background:var(--L)"></i>彗星をなぞる</b>点線の上を進む彗星に手を重ね続けて、大きな円や虹をえがく。肩まわしそのものです。</div>
+        <div><b><i class="dot" style="color:var(--A);background:var(--A)"></i>ポーズ</b>両腕を横に広げる「つばさ」、Yの字に上げる「スカイ」をキープ。胸がひらきます。</div>
+        <div><b><i class="dot" style="color:var(--R);background:var(--R)"></i>光のカーテン</b>足元の光るマークへ横に1歩。左右だけの移動で心拍数を上げます。</div>
+        <div><b><i class="dot" style="color:var(--G);background:var(--G)"></i>光のバー</b>軽くひざを曲げてくぐるミニスクワット。深さは浅め／ふつう／なしから選べます。</div>
+      </div>
+    </section>
+
+    <section class="two">
+      <div class="card">
+        <h2>肩こり・腰痛への配慮</h2>
+        <ul class="plain">
+          <li><b>肩：</b>腕回し、Yレイズ、胸ひらき、クロスボディストレッチなど、肩甲骨を動かす動きが中心。</li>
+          <li><b>腰：</b>前かがみで床に手を伸ばす動きはなし。的はすべて腰より上・体の前に出ます。</li>
+          <li><b>腰いたわりモード：</b>ひねりを小さくし、体側を伸ばすストレッチを省きます。</li>
+          <li>うまく当たらない時は自動で「ゆったりモード」になり、テンポが落ちます。</li>
+          <li>痛みやしびれが出たらすぐ中止してください。強い症状がある方は医師に相談を。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>スペースの準備</h2>
+        <ul class="plain">
+          <li><b>横に約1.5m・前後に約0.8m</b>あれば足ります（横ステップ「小」なら横1.2m）。前後に歩く場面はありません。</li>
+          <li>ベッドの上ではプレイしないでください。足場が不安定で腰をひねりやすくなります。</li>
+          <li>Quest のバウンダリーは横長に描くのがおすすめ。座ってプレイする「座って」モードもあります。</li>
+          <li>コントローラーでもハンドトラッキングでも遊べます（素早い動きはコントローラーが安定）。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>モード</h2>
+      <ul class="plain">
+        <li><b>ジャーニー（約14分）：</b>ウォームアップ → 4ステージ → クールダウンストレッチのフルコース。</li>
+        <li><b>クイック（約6分）：</b>仕事の合間に。ウォームアップとクールダウン付き。</li>
+        <li><b>エンドレス：</b>ステージが続き、周回ごとにテンポアップ。一時停止メニューからクールダウンして終了。</li>
+      </ul>
+      <p class="note" style="margin-top:12px"><label class="w">体重 <input id="weight" type="number" min="25" max="200" step="1"> kg（消費カロリーの推定に使用）</label></p>
+    </section>
+
+    <section id="history-wrap" class="card" hidden>
+      <h2>最近の記録</h2>
+      <ul id="history"></ul>
+    </section>
+
+    <footer>
+      Meta Quest 2 / 3 のブラウザでこのページを開いて「VRで遊ぶ」。<br>
+      記録と設定はこの端末のブラウザにだけ保存されます。消費カロリーは動きから推定した目安です。
+    </footer>
+  </div>
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
