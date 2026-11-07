@@ -5,6 +5,10 @@ export const STIM_DIST = 2.0;          // stimuli sit 2 m away: close to the hea
 export const DEG = Math.PI / 180;
 
 export const FONT = '"Zen Maru Gothic","Hiragino Maru Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic",sans-serif';
+// English display names (titles, chapter names) are set in a quiet serif
+export const TITLE_FONT = '"Cormorant Garamond","Iowan Old Style","Palatino Linotype",Georgia,serif';
+
+export const APP_NAME = 'Starlight Lake';
 
 // Session plans. Durations in seconds for a 15-minute night; scaled by the chosen length.
 // Order follows the evidence: warm-up, accommodation/vergence work (KGU 2025), contrast perceptual
@@ -32,18 +36,24 @@ export const PLAN_SCREEN = [
 ];
 
 export const MODULE_INFO = {
-  rest: { title: '静かな水面', sub: '呼吸と遠くを眺める時間',
+  rest: { title: 'Still Water', sub: '呼吸と遠くを眺める時間',
     how: '光の玉を目で追い、呼吸を合わせます。最後に遠くの山を眺めて、まばたきを。' },
-  lantern: { title: '灯籠ながし', sub: '遠近のピント運動',
+  lantern: { title: 'Lantern Drift', sub: '遠近のピント運動',
     how: '近づく灯籠の輪の「切れ目」の方向へ、つまんで(トリガーで)はじき返す。遠くで見抜くほど高得点。' },
-  spirits: { title: '光の精', sub: 'コントラスト感度トレーニング',
+  spirits: { title: 'Wisps', sub: 'コントラスト感度トレーニング',
     how: '縞模様が見える精にだけ触れよう。無地の精は見送る。縞はだんだん淡くなります。' },
-  gates: { title: '星の門', sub: '側方マスキングと瞬間視',
+  gates: { title: 'Star Gates', sub: '側方マスキングと瞬間視',
     how: '中央の星を見つめる。一瞬光る左右の門のうち、真ん中にも縞が宿ったのはどちら？' },
-  depth: { title: '浮かぶ星珠', sub: '立体視トレーニング',
-    how: '三つの星珠のうち、いちばん手前に浮いたものを選ぼう。' },
-  comets: { title: '流れ星', sub: '周辺視野と反応速度',
+  depth: { title: 'Floating Orbs', sub: '立体視トレーニング',
+    how: '三つの珠のうち、いちばん手前に浮いたものを選ぼう。' },
+  comets: { title: 'Shooting Stars', sub: '周辺視野と反応速度',
     how: '視界の端を流れる星を、消える前につかまえよう。' },
+};
+
+// Chapters a player can pick in the Custom course, in the order a night visits them.
+export const CHAPTERS = ['lantern', 'spirits', 'gates', 'depth', 'comets'];
+export const CHAPTER_HINT = {
+  lantern: '遠近のピント', spirits: 'コントラスト', gates: '瞬間視', depth: '立体視', comets: '周辺視',
 };
 
 // Recommended dose, from the protocols in docs/research.md.

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Panel, wrapText, roundRect } from './ui.js';
-import { FONT, MODULE_INFO, PLAN_VR, PLAN_SCREEN } from './config.js';
+import { FONT, TITLE_FONT, MODULE_INFO, PLAN_VR, PLAN_SCREEN, CHAPTERS } from './config.js';
 import { noteOf } from './audio.js';
 import { LanternModule } from './games/lantern.js';
 import { SpiritsModule } from './games/spirits.js';
@@ -31,7 +31,7 @@ export class Score {
     if (this.combo % 10 === 0) {
       app.audio.fanfare(pos);
       const u = app.uiPlacement(1.8, 9, 0.5, 0.13, 0.3);
-      app.fx.text(`${this.combo} コンボ!`, app.stagePoint(0, u.el, u.dist), { color: '#c8f0ff', size: 0.13 * u.dist / 1.8, life: 1.6 });
+      app.fx.text(`${this.combo} COMBO`, app.stagePoint(0, u.el, u.dist), { color: '#c8f0ff', size: 0.13 * u.dist / 1.8, life: 1.6 });
     }
     this.dirty = true;
     return pts;
@@ -56,6 +56,7 @@ export class Hud {
         roundRect(g, 4, 4, W - 8, H - 8, (H - 8) / 2); g.fill();
         g.font = `500 44px ${FONT}`; g.textBaseline = 'middle';
         g.fillStyle = '#bcd8ff'; g.textAlign = 'left';
+        g.font = `600 48px ${TITLE_FONT}`;
         g.fillText(d.title || '', 38, H / 2 + 2);
         g.textAlign = 'center'; g.fillStyle = '#f2f8ff'; g.font = `700 50px ${FONT}`;
         g.fillText(`✦ ${d.points.toLocaleString()}`, W * 0.52, H / 2 + 2);
@@ -125,12 +126,38 @@ export class Director {
     this.panel = null;
   }
 
+  /** Chapters this view can run: a flat screen has no stereo, and Far Screen only fits the fine-grating ones. */
+  available() {
+    const v = this.app.view;
+    if (v.kind === 'screen') return ['spirits', 'gates'];
+    return CHAPTERS.filter((c) => v.stereo || c !== 'depth');
+  }
+
   plan() {
-    const kind = this.app.view.kind;
+    const app = this.app, kind = app.view.kind, set = app.settings;
+    const restVariant = kind === 'screen' ? 'screen' : 'far';
+    if (set.course === 'custom') {
+      // Custom: the chosen chapters in turn, ~2.5 min each, a short rest after every two
+      const avail = this.available();
+      let chosen = CHAPTERS.filter((c) => (set.chapters || []).includes(c) && avail.includes(c));
+      if (!chosen.length) chosen = avail;
+      const total = set.minutes * 60;
+      const seg = chosen.length === 1 ? 180 : 150;
+      const steps = [{ id: 'rest', dur: kind === 'screen' ? 25 : 40, variant: kind === 'screen' ? 'screen' : 'intro' }];
+      let t = steps[0].dur, k = 0, sinceRest = 0;
+      while (t < total - 45) {
+        const dur = Math.min(seg, total - t);
+        if (dur < 45 && k >= chosen.length) break;
+        steps.push({ id: chosen[k % chosen.length], dur: Math.max(45, dur) });
+        t += Math.max(45, dur) + 5; k++; sinceRest++;
+        if (sinceRest >= 2 && t < total - 90) { steps.push({ id: 'rest', dur: 30, variant: restVariant }); t += 30; sinceRest = 0; }
+      }
+      return steps;
+    }
     const base = kind === 'screen' ? PLAN_SCREEN : PLAN_VR;
-    const k = this.app.settings.minutes / 15;
+    const k = set.minutes / 15;
     return base.map((s) => ({ ...s, dur: s.id === 'rest' ? s.dur : Math.round(s.dur * k) }))
-      .filter((s) => this.app.view.stereo || s.id !== 'depth');
+      .filter((s) => app.view.stereo || s.id !== 'depth');
   }
 
   begin() {
@@ -172,10 +199,10 @@ export class Director {
       w: 1.0, h: 0.56, px: 1100,
       draw: (g, W, H, panel) => {
         g.textAlign = 'center'; g.textBaseline = 'alphabetic';
-        g.fillStyle = '#8fb4e8'; g.font = `500 34px ${FONT}`;
-        g.fillText(`第${n}章 / ${N}`, W / 2, 80);
-        g.fillStyle = '#f4f9ff'; g.font = `700 84px ${FONT}`;
-        g.fillText(info.title, W / 2, 180);
+        g.fillStyle = '#8fb4e8'; g.font = `600 30px ${TITLE_FONT}`;
+        g.fillText(`CHAPTER ${n}  /  ${N}`.split('').join(String.fromCharCode(8202)), W / 2, 80);
+        g.fillStyle = '#f4f9ff'; g.font = `600 96px ${TITLE_FONT}`;
+        g.fillText(info.title, W / 2, 182);
         g.fillStyle = '#a9c8f0'; g.font = `500 36px ${FONT}`;
         g.fillText(info.sub, W / 2, 236);
         g.fillStyle = '#e2ecff'; g.font = `400 36px ${FONT}`;
@@ -262,6 +289,7 @@ export class Director {
     return {
       date: new Date().toISOString(),
       mode: this.app.view.kind,
+      course: this.app.settings.course,
       minutes: +(this.elapsed / 60).toFixed(1),
       score: this.app.score.points,
       bestCombo: this.app.score.best,
@@ -290,15 +318,16 @@ export class Director {
         g.fillStyle = '#cfe0ff'; g.font = `500 32px ${FONT}`;
         g.fillText(`${fmtTime(s.minutes * 60)} の旅  ・  ✦ ${s.score.toLocaleString()}  ・  最大コンボ ${s.bestCombo}`, W / 2, 146);
         const rows = [];
-        if (s.lanternDist != null) rows.push(['灯籠ながし', `${s.lanterns} 個を返した ・ 平均 ${s.lanternDist} m で見抜いた`, prev?.lanternDist != null ? delta(s.lanternDist, prev.lanternDist, 'm', true) : '']);
-        if (s.cs) rows.push(['光の精', `${s.spirits} 体 ・ コントラスト感度 ${s.cs.map((x) => `${x.sf}cpd:${x.cs}`).join('  ')}`, prev?.cs ? delta(avgCs(s.cs), avgCs(prev.cs), '', true) : '']);
-        if (s.gatesAcc != null) rows.push(['星の門', `正答 ${s.gatesAcc}% ・ 提示 ${s.gatesMs} ms`, prev?.gatesMs ? delta(s.gatesMs, prev.gatesMs, 'ms', false) : '']);
-        if (s.stereo != null) rows.push(['浮かぶ星珠', `立体視 ${s.stereo} 秒角`, prev?.stereo ? delta(s.stereo, prev.stereo, '″', false) : '']);
-        if (s.comet != null) rows.push(['流れ星', `${s.comet} °/秒 の星をキャッチ`, prev?.comet ? delta(s.comet, prev.comet, '°/s', true) : '']);
+        const T = (id) => MODULE_INFO[id].title;
+        if (s.lanternDist != null) rows.push([T('lantern'), `${s.lanterns} 個を返した ・ 平均 ${s.lanternDist} m で見抜いた`, prev?.lanternDist != null ? delta(s.lanternDist, prev.lanternDist, 'm', true) : '']);
+        if (s.cs) rows.push([T('spirits'), `${s.spirits} 体 ・ コントラスト感度 ${s.cs.map((x) => `${x.sf}cpd:${x.cs}`).join('  ')}`, prev?.cs ? delta(avgCs(s.cs), avgCs(prev.cs), '', true) : '']);
+        if (s.gatesAcc != null) rows.push([T('gates'), `正答 ${s.gatesAcc}% ・ 提示 ${s.gatesMs} ms`, prev?.gatesMs ? delta(s.gatesMs, prev.gatesMs, 'ms', false) : '']);
+        if (s.stereo != null) rows.push([T('depth'), `立体視 ${s.stereo} 秒角`, prev?.stereo ? delta(s.stereo, prev.stereo, '″', false) : '']);
+        if (s.comet != null) rows.push([T('comets'), `${s.comet} °/秒 の星をキャッチ`, prev?.comet ? delta(s.comet, prev.comet, '°/s', true) : '']);
         let y = 230;
         g.textAlign = 'left';
         for (const [a, b, c] of rows) {
-          g.fillStyle = '#9fc2f0'; g.font = `700 34px ${FONT}`; g.fillText(a, 80, y);
+          g.fillStyle = '#9fc2f0'; g.font = `600 38px ${TITLE_FONT}`; g.fillText(a, 80, y);
           g.fillStyle = '#eef4ff'; g.font = `400 31px ${FONT}`; g.fillText(b, 300, y);
           if (c) { g.textAlign = 'right'; g.fillStyle = c.startsWith('▲') ? '#9ff0c0' : '#c0c8d8'; g.fillText(c, W - 80, y); g.textAlign = 'left'; }
           y += 58;

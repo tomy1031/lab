@@ -6,7 +6,7 @@ import { AudioEngine } from './audio.js';
 import { UIManager, Panel, wrapText } from './ui.js';
 import { Input } from './input.js';
 import { Score, Hud, Caption, Director } from './session.js';
-import { FONT, DEG } from './config.js';
+import { FONT, TITLE_FONT, APP_NAME, DEG, CHAPTERS, CHAPTER_HINT, MODULE_INFO } from './config.js';
 import { sph } from './util.js';
 
 const _q = new THREE.Quaternion();
@@ -79,6 +79,9 @@ export class App {
     this.screenYaw = Math.atan2(-this.env.sky.moonDir.x, -this.env.sky.moonDir.z) * 0.6;
 
     window.addEventListener('resize', () => this.onResize());
+    // canvas text drawn before the web fonts load uses a fallback face: repaint once they arrive
+    document.fonts?.addEventListener?.('loadingdone', () => this.ui.redrawAll());
+    document.fonts?.load?.(`600 64px ${TITLE_FONT}`).then(() => this.ui.redrawAll()).catch(() => {});
     r.xr.addEventListener('sessionstart', () => this.onXRStart());
     r.xr.addEventListener('sessionend', () => this.onXREnd());
     r.setAnimationLoop(() => this.tick());
@@ -225,29 +228,60 @@ export class App {
     this.recenter();
     const s = this.settings, d = this.store.data;
     const last = d.history[d.history.length - 1];
+    const avail = this.director.available();
+    const save = (panel) => { this.store.save(); panel.redraw(); this.onSettingsChanged?.(); };
     this.openMenu(new Panel({
-      w: 1.15, h: 0.78, px: 1200,
+      w: 1.2, h: 1.0, px: 1200,
       draw: (g, W, H, panel) => {
         g.textAlign = 'center';
-        g.fillStyle = '#f4f8ff'; g.font = `700 72px ${FONT}`; g.fillText('ほしあかりの湖', W / 2, 108);
-        g.fillStyle = '#9fbde8'; g.font = `500 30px ${FONT}`; g.fillText('STARLIGHT LAKE ・ 視覚トレーニング', W / 2, 156);
-        g.fillStyle = '#d9e6ff'; g.font = `400 32px ${FONT}`;
+        g.fillStyle = '#f4f8ff'; g.font = `600 104px ${TITLE_FONT}`; g.fillText(APP_NAME, W / 2, 118);
+        g.fillStyle = '#9fbde8'; g.font = `600 28px ${TITLE_FONT}`;
+        g.fillText('V I S I O N   T R A I N I N G', W / 2, 166);
+        g.fillStyle = '#d9e6ff'; g.font = `400 30px ${FONT}`;
         const info = d.totals.nights
           ? `これまで ${d.totals.nights} 夜 ・ 星座 ${d.totals.constellations.length} ・ 前回 ${last ? new Date(last.date).toLocaleDateString('ja-JP') : '-'}`
           : '夕暮れから夜明けまで、ひと晩の旅。夜が明けたら今日のおしまい。';
-        wrapText(g, info, W / 2, 230, W - 160, 44, { align: 'center' });
-        g.fillStyle = '#a9c4e8'; g.font = `500 30px ${FONT}`; g.fillText('今夜の長さ', W / 2, 330);
-        const opts = [10, 15, 20, 30];
-        opts.forEach((m, i) => panel.button('m' + m, W / 2 - 400 + i * 205, 356, 185, 74, `${m} 分`, {
-          selected: s.minutes === m, onClick: () => { s.minutes = m; this.store.save(); panel.redraw(); },
+        wrapText(g, info, W / 2, 226, W - 160, 42, { align: 'center' });
+
+        g.fillStyle = '#a9c4e8'; g.font = `500 28px ${FONT}`; g.fillText('今夜の長さ', W / 2, 300);
+        [10, 15, 20, 30].forEach((m, i) => panel.button('m' + m, W / 2 - 400 + i * 205, 318, 185, 68, `${m} 分`, {
+          selected: s.minutes === m, onClick: () => { s.minutes = m; save(panel); },
         }));
-        if (s.dichoptic !== 'off') {
-          g.fillStyle = '#ffd9b0'; g.font = `400 26px ${FONT}`;
-          g.fillText(`両眼バランスモード：${s.dichoptic === 'left' ? '左' : '右'}目を主に使用（反対の目のコントラスト ${Math.round(s.fellow * 100)}%）`, W / 2, 478);
+
+        g.fillStyle = '#a9c4e8'; g.font = `500 28px ${FONT}`; g.fillText('コース', W / 2, 438);
+        panel.button('full', W / 2 - 400, 456, 390, 72, 'Full Night', { selected: s.course !== 'custom', serif: true, onClick: () => { s.course = 'full'; save(panel); } });
+        panel.button('custom', W / 2 + 10, 456, 390, 72, 'Custom', { selected: s.course === 'custom', serif: true, onClick: () => { s.course = 'custom'; save(panel); } });
+
+        g.font = `400 26px ${FONT}`; g.fillStyle = '#c4d4f0';
+        if (s.course !== 'custom') {
+          wrapText(g, 'おすすめ。研究にもとづく順番で、すべての章をめぐります。', W / 2, 584, W - 200, 38, { align: 'center' });
+        } else {
+          g.fillText('遊ぶ章をえらぶ（えらんだ章を順番にくり返します）', W / 2, 578);
+          const list = CHAPTERS.filter((c) => avail.includes(c));
+          const cols = 3, bw = 330, bh = 92, gap = 20;
+          list.forEach((c, i) => {
+            const row = Math.floor(i / cols), col = i % cols;
+            const inRow = Math.min(cols, list.length - row * cols);
+            const x0 = W / 2 - (inRow * bw + (inRow - 1) * gap) / 2;
+            const on = (s.chapters || []).includes(c);
+            panel.button('ch-' + c, x0 + col * (bw + gap), 600 + row * (bh + 16), bw, bh, MODULE_INFO[c].title, {
+              selected: on, serif: true, sub: CHAPTER_HINT[c], check: on,
+              onClick: () => {
+                const cur = new Set(s.chapters || []);
+                if (cur.has(c)) { if ([...cur].filter((x) => avail.includes(x)).length > 1) cur.delete(c); } else cur.add(c);
+                s.chapters = CHAPTERS.filter((x) => cur.has(x));
+                save(panel);
+              },
+            });
+          });
         }
-        panel.button('start', W / 2 - 230, H - 150, 460, 96, '旅をはじめる', { primary: true, onClick: () => { this.closeMenu(); this.audio.init(); this.director.begin(); } });
+        if (s.dichoptic !== 'off') {
+          g.fillStyle = '#ffd9b0'; g.font = `400 24px ${FONT}`;
+          g.fillText(`両眼バランスモード：${s.dichoptic === 'left' ? '左' : '右'}目を主に使用（反対の目のコントラスト ${Math.round(s.fellow * 100)}%）`, W / 2, H - 150);
+        }
+        panel.button('start', W / 2 - 230, H - 126, 460, 92, '旅をはじめる', { primary: true, onClick: () => { this.closeMenu(); this.audio.init(); this.director.begin(); } });
       },
-    }), 1.8, 2);
+    }), 1.85, 1);
   }
 
   showPauseMenu() {

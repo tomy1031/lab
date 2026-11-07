@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { FONT } from './config.js';
+import { FONT, TITLE_FONT } from './config.js';
 
 // In-world UI: canvas-textured glass panels with buttons, hit-tested by pointer rays.
 
@@ -92,9 +92,28 @@ function drawButton(g, b, hover) {
   g.strokeStyle = hover ? 'rgba(220,245,255,0.95)' : 'rgba(180,220,255,0.45)';
   g.stroke();
   g.fillStyle = primary ? '#08142e' : '#eaf4ff';
-  g.font = `${primary ? 700 : 500} ${Math.round(b.h * 0.42)}px ${FONT}`;
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(b.label, b.x + b.w / 2, b.y + b.h / 2 + 2);
+  const lamp = b.check !== undefined ? b.h * 0.5 : 0;            // room for the lamp on the left
+  const cx = b.x + b.w / 2 + lamp / 2;
+  let size = Math.round(b.h * (b.serif ? (b.sub ? 0.4 : 0.48) : 0.42));
+  const face = (px) => (b.serif ? `600 ${px}px ${TITLE_FONT}` : `${primary ? 700 : 500} ${px}px ${FONT}`);
+  g.font = face(size);
+  while (size > 12 && g.measureText(b.label).width > b.w - lamp - b.h * 0.7) g.font = face(--size);
+  if (b.sub) {
+    g.fillText(b.label, cx, b.y + b.h * 0.4);
+    g.font = `400 ${Math.round(b.h * 0.24)}px ${FONT}`;
+    g.fillStyle = b.selected ? '#dcecff' : '#9fb4d8';
+    g.fillText(b.sub, cx, b.y + b.h * 0.76);
+  } else {
+    g.fillText(b.label, cx, b.y + b.h / 2 + 2);
+  }
+  if (b.check !== undefined) {
+    // a small lamp on the left: lit when the chapter is part of the night
+    const r = b.h * 0.12, x = b.x + b.h * 0.42, y = b.y + b.h / 2;
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2);
+    if (b.check) { g.fillStyle = '#bff0ff'; g.shadowColor = 'rgba(150,230,255,0.9)'; g.shadowBlur = 12; g.fill(); }
+    else { g.lineWidth = 2; g.strokeStyle = 'rgba(190,215,255,0.6)'; g.stroke(); }
+  }
   g.restore();
 }
 
@@ -123,6 +142,8 @@ export class UIManager {
     this.raycaster.layers.enableAll();
   }
   add(panel, parent) { this.panels.add(panel); (parent || this.app.scene).add(panel.mesh); return panel; }
+  /** Repaint every panel, e.g. once the web fonts have arrived. */
+  redrawAll() { for (const p of this.panels) p.redraw(); }
   remove(panel) { this.panels.delete(panel); panel.mesh.removeFromParent(); panel.tex.dispose(); panel.mesh.geometry.dispose(); panel.mesh.material.dispose(); }
 
   /** Returns {panel, button, point, distance} for the closest visible panel hit by the ray, or null. */

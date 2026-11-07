@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ほしあかりの湖 — VR視覚トレーニング</title>
+<title>Starlight Lake — VR Vision Training</title>
 <meta name="description" content="Meta Quest 2/3 で遊べる、論文にもとづく視覚トレーニングゲーム。夜の湖で、コントラスト感度・遠近のピント運動・立体視・周辺視を鍛えます。">
 <meta name="theme-color" content="#0a1230">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <script type="importmap">
 {
   "imports": {
@@ -42,8 +42,18 @@
   .wrap { max-width: 760px; margin: 0 auto; }
   header.hero { text-align: center; padding: 8vh 0 3vh; }
   .eyebrow { letter-spacing: 0.32em; font-size: 12px; color: var(--ink-3); }
-  h1 { font-size: clamp(36px, 8vw, 64px); margin: 10px 0 6px; font-weight: 700; letter-spacing: 0.06em;
+  h1 { font-family: "Cormorant Garamond", "Iowan Old Style", Georgia, serif; font-size: clamp(48px, 11vw, 92px); margin: 6px 0 10px; font-weight: 600; letter-spacing: 0.02em; line-height: 1.05;
     text-shadow: 0 0 30px rgba(140, 200, 255, 0.45); }
+  .serif { font-family: "Cormorant Garamond", "Iowan Old Style", Georgia, serif; font-weight: 600; letter-spacing: 0.01em; }
+  .mode b.serif { font-size: 21px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chips[hidden] { display: none; }
+  .chip { display: inline-flex; align-items: baseline; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--glass-2); cursor: pointer; user-select: none; }
+  .chip input { accent-color: var(--accent); margin: 0; align-self: center; }
+  .chip .serif { font-size: 18px; color: var(--ink); }
+  .chip small { font-size: 12px; color: var(--ink-3); }
+  .chip.off { opacity: .45; cursor: not-allowed; }
+  .chip:has(input:checked) { border-color: rgba(170,220,255,0.7); background: rgba(120,190,255,0.16); }
   .lead { color: var(--ink-2); font-size: 16px; line-height: 1.9; margin: 0 auto; max-width: 560px; }
 
   .card { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 22px; margin: 16px 0;
@@ -116,16 +126,16 @@
 <main id="landing">
   <div class="wrap">
     <header class="hero">
-      <div class="eyebrow">STARLIGHT LAKE ・ VISION TRAINING</div>
-      <h1>ほしあかりの湖</h1>
-      <p class="lead">夕暮れから夜明けまで、ひと晩の湖の旅。<br>灯籠をはじき、光の精をつかまえ、星座を結ぶうちに、<br>見る力を鍛える研究の手法が、そのままゲームになっています。</p>
+      <div class="eyebrow">VISION TRAINING ・ META QUEST 2 / 3</div>
+      <h1>Starlight Lake</h1>
+      <p class="lead">夕暮れから夜明けまで、ひと晩の湖の旅。<br>灯籠をはじき返し、淡い光をつかまえ、星座を結ぶうちに、<br>見る力を鍛える研究の手法が、そのままゲームになっています。</p>
     </header>
 
     <section class="card">
       <h2>はじめる</h2>
       <div class="modes">
         <button class="mode primary" id="btn-vr"><b>VRで旅する</b><span>Meta Quest 2 / 3。コントローラーでもハンドトラッキング（つまむ）でも。</span></button>
-        <button class="mode" id="btn-screen"><b>遠見スクリーン</b><span>PCやTVから2.5〜4m離れて、裸眼で。細かい縞と視力チェック。</span></button>
+        <button class="mode" id="btn-screen"><b class="serif">Far Screen</b><span>PCやTVから2.5〜4m離れて、裸眼で。細かい縞と視力チェック。</span></button>
         <button class="mode" id="btn-desktop"><b>この画面で試す</b><span>マウスで操作する体験版。記録は残りますが、効果目的ならVRかスクリーンで。</span></button>
       </div>
       <p class="note" id="xr-note"></p>
@@ -146,7 +156,12 @@
         <label class="f">音量
           <input type="range" id="set-volume" min="0" max="1" step="0.05">
         </label>
+        <label class="f">コース
+          <select id="set-course"><option value="full">Full Night — おすすめ・研究にもとづく順番で全章</option><option value="custom">Custom — 遊ぶ章をえらぶ</option></select>
+        </label>
       </div>
+      <div class="chips" id="chapter-picks" hidden></div>
+      <p class="note" id="course-note"></p>
       <details>
         <summary>両眼バランスモード（弱視のかた向け・眼科医と相談のうえで）</summary>
         <p>よく見える目のコントラストを下げ、課題の光を弱いほうの目だけに映します（Luminopia、Li 2013 などの両眼分離方式）。成績が良い夜ごとに、反対の目のコントラストが5%ずつ上がります。</p>
@@ -170,18 +185,18 @@
         <div class="stat"><div class="v" id="st-acuity">–</div><div class="k">視力チェック（最新）</div></div>
       </div>
       <canvas class="chart" id="chart"></canvas>
-      <p class="note">グラフ：青＝コントラスト感度（高いほど淡い縞が見えている）、橙＝遠見スクリーンでの視力チェック。同じ条件・同じ時間帯で比べるのがコツです。</p>
+      <p class="note">グラフ：青＝コントラスト感度（高いほど淡い縞が見えている）、橙＝Far Screen での視力チェック。同じ条件・同じ時間帯で比べるのがコツです。</p>
     </section>
 
     <section class="card">
       <h2>研究にもとづく設計</h2>
       <p>このゲームの各章は、査読論文や学会発表で効果が報告された訓練法を下敷きにしています。くわしくは <a href="docs/research.html" style="color:var(--accent)">研究ノート</a>。</p>
       <ul class="refs">
-        <li><b>灯籠ながし</b>（遠近のピント運動・遠方凝視）— 関西学院大学 河盛・井村, インタラクション2025：Quest 2 のVRゲーム（ランドルト環の的を押し返す）で6週間、矯正視力が logMAR 0.057 → −0.186 に改善。度数（SE）は変化なし。</li>
-        <li><b>光の精</b>（ガボール縞の検出）— Tan & Fong 2008：軽度近視の19〜53歳で裸眼視力が平均2.1段改善。Yan 2015、Deveau 2014（ULTIMEyes）、Polat 2004。</li>
-        <li><b>星の門</b>（側方マスキング＋瞬間提示）— Polat 2012：平均51歳の老視の人で近見視力と処理速度が改善。</li>
-        <li><b>浮かぶ星珠</b>（立体視）— Vedamurthy 2016、Žiak 2017（Oculus Rift で立体視と視力が改善）。</li>
-        <li><b>流れ星</b>（周辺視・速度）— Li 2009（アクションゲームでコントラスト感度が向上）。</li>
+        <li><b class="serif">Lantern Drift</b>（遠近のピント運動・遠方凝視）— 関西学院大学 河盛・井村, インタラクション2025：Quest 2 のVRゲーム（ランドルト環の的を押し返す）で6週間、矯正視力が logMAR 0.057 → −0.186 に改善。度数（SE）は変化なし。</li>
+        <li><b class="serif">Wisps</b>（ガボール縞の検出）— Tan & Fong 2008：軽度近視の19〜53歳で裸眼視力が平均2.1段改善。Yan 2015、Deveau 2014（ULTIMEyes）、Polat 2004。</li>
+        <li><b class="serif">Star Gates</b>（側方マスキング＋瞬間提示）— Polat 2012：平均51歳の老視の人で近見視力と処理速度が改善。</li>
+        <li><b class="serif">Floating Orbs</b>（立体視）— Vedamurthy 2016、Žiak 2017（Oculus Rift で立体視と視力が改善）。</li>
+        <li><b class="serif">Shooting Stars</b>（周辺視・速度）— Li 2009（アクションゲームでコントラスト感度が向上）。</li>
         <li><b>音の合図</b>— Seitz 2006（音と組み合わせると視覚学習が速まる）。</li>
       </ul>
     </section>
@@ -201,7 +216,7 @@
 <div class="overlay" id="calib" hidden>
   <div class="wrap">
     <section class="card">
-      <h2>遠見スクリーンの準備</h2>
+      <h2><span class="serif" style="font-size:22px">Far Screen</span> の準備</h2>
       <p>1. 画面にクレジットカード（またはキャッシュカード）を当て、下の青い四角が<b>同じ大きさ</b>になるようにスライダーを動かします。</p>
       <div id="card-wrap"><div id="card"></div></div>
       <input type="range" id="card-size" min="150" max="700" step="1">
@@ -261,12 +276,39 @@
   bind('set-volume', 'volume', parseFloat);
   bind('set-dichoptic', 'dichoptic');
   bind('set-fellow', 'fellow', parseFloat);
+  bind('set-course', 'course');
+
+  // chapter picks for the Custom course
+  const { CHAPTERS, CHAPTER_HINT, MODULE_INFO } = await import('./src/config.js');
+  const picks = $('chapter-picks');
+  for (const c of CHAPTERS) {
+    const l = document.createElement('label');
+    l.className = 'chip';
+    l.innerHTML = `<input type="checkbox" value="${c}"><span class="serif">${MODULE_INFO[c].title}</span><small>${CHAPTER_HINT[c]}</small>`;
+    picks.appendChild(l);
+  }
+  picks.addEventListener('change', (e) => {
+    const on = [...picks.querySelectorAll('input:checked')].map((i) => i.value);
+    if (!on.length) { e.target.checked = true; return; }          // keep at least one chapter
+    s.chapters = CHAPTERS.filter((c) => on.includes(c));
+    store.save(); onSettings();
+  });
+  function syncForm() {
+    for (const [id, key] of [['set-age', 'age'], ['set-minutes', 'minutes'], ['set-quality', 'quality'], ['set-volume', 'volume'], ['set-course', 'course'], ['set-dichoptic', 'dichoptic'], ['set-fellow', 'fellow']]) $(id).value = s[key];
+    for (const i of picks.querySelectorAll('input')) i.checked = (s.chapters || []).includes(i.value);
+    onSettings();
+  }
+  app.onSettingsChanged = syncForm;
   function onSettings() {
+    picks.hidden = s.course !== 'custom';
+    $('course-note').textContent = s.course === 'custom'
+      ? 'えらんだ章を、約2分半ずつ順番にくり返します（2章ごとに短い休憩）。Floating Orbs はVRだけ、Far Screen では Wisps と Star Gates だけが遊べます。'
+      : '研究にもとづく順番で、ひと晩にすべての章をめぐります。迷ったらこちら。';
     $('fellow-val').textContent = `${Math.round(s.fellow * 100)}%`;
     app.audio.setVolume(s.volume);
     app.setupDichoptic();
   }
-  onSettings();
+  syncForm();
 
   // VR availability
   const vrBtn = $('btn-vr');

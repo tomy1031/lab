@@ -5,7 +5,7 @@ import { CellGrid } from '../staircase.js';
 import { rand, clamp } from '../util.js';
 import { STIM_DIST } from '../config.js';
 
-// 光の精 — contrast-detection perceptual learning.
+// Wisps — contrast-detection perceptual learning.
 // Gabor "spirits" appear across the visual field, each announced by a sound from its position.
 // Touch the ones that carry stripes and let the blank ones go. Every stripe target belongs to a
 // (spatial frequency x orientation) cell with its own 3-down-1-up staircase, and weaker cells

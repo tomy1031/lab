@@ -5,7 +5,7 @@ import { Staircase } from '../staircase.js';
 import { rand } from '../util.js';
 import { STIM_DIST } from '../config.js';
 
-// 流れ星 — fast targets in the periphery. Action video games, with their fast peripheral events
+// Shooting Stars — fast targets in the periphery. Action video games, with their fast peripheral events
 // and divided attention, improved contrast sensitivity in Li et al. 2009 (Nature Neuroscience)
 // and acuity in amblyopia in Li et al. 2011. Speed follows a staircase: catch three and the
 // next comets fly faster.

@@ -5,7 +5,7 @@ import { Staircase } from '../staircase.js';
 import { rand } from '../util.js';
 import { STIM_DIST } from '../config.js';
 
-// 浮かぶ星珠 — stereoacuity training. Three random-dot orbs, one slightly nearer. Each orb is
+// Floating Orbs — stereoacuity training. Three random-dot orbs, one slightly nearer. Each orb is
 // scaled to the same visual angle, flat-shaded and equally bright, so binocular disparity is
 // the only cue. The disparity staircase is in arc seconds. Vedamurthy et al. 2016 trained
 // stereo vision with a VR game and Žiak et al. 2017 measured stereoacuity gains in a headset.

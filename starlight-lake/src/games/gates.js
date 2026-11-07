@@ -6,7 +6,7 @@ import { pick, clamp } from '../util.js';
 import { STIM_DIST } from '../config.js';
 import { noteOf } from '../audio.js';
 
-// 星の門 — lateral masking with brief presentations, a spatial two-alternative forced choice.
+// Star Gates — lateral masking with brief presentations, a spatial two-alternative forced choice.
 // Two flanker triplets flash on either side of a fixation star; only one has the faint central
 // target. Polat et al. trained this collinear configuration in adult amblyopia (PNAS 2004) and,
 // with short and shrinking exposure times, in presbyopes aged ~51 (Sci Rep 2012). The target's

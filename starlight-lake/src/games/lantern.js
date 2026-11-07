@@ -4,7 +4,7 @@ import { LandoltLantern, Glow } from '../stimuli.js';
 import { easeOutCubic, rand, clamp } from '../util.js';
 import { noteOf } from '../audio.js';
 
-// 灯籠ながし — near/far focus work modelled on the Kwansei Gakuin VR game (Kawamori & Imura,
+// Lantern Drift — near/far focus work modelled on the Kwansei Gakuin VR game (Kawamori & Imura,
 // Interaction 2025): targets approach from ~30 m and the player pushes them back by reading a
 // Landolt C. Every lantern sent back makes the eyes jump from near to far again (the
 // "遠近体操法" near-far exercise), and the far beacons ask for sustained far fixation
