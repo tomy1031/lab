@@ -4,32 +4,32 @@
 // chords: [bass root midi, chord tones midi]; scale: pentatonic used for melodies and hit chimes
 export const STAGES = {
   warm: {
-    name: 'めざめの空', sub: 'ウォームアップ', bpm: 90, level: 0, cap: 1, approach: 2.7, palette: 'dawn',
+    name: 'FIRST LIGHT', sub: 'WARM-UP', bpm: 90, level: 0, cap: 1, approach: 2.7, palette: 'dawn',
     chords: [[41, [53, 57, 60, 64]], [43, [55, 59, 62, 64]], [40, [52, 55, 59, 62]], [45, [57, 60, 64, 67]]],
     scale: [72, 74, 76, 79, 81, 84, 86, 88, 91, 93],
   },
   lake: {
-    name: '星のみずうみ', sub: 'STAGE 1', bpm: 100, level: 1, cap: 4, approach: 2.35, palette: 'lake',
+    name: 'STARLIT LAKE', sub: 'STAGE 1', bpm: 100, level: 1, cap: 4, approach: 2.35, palette: 'lake',
     chords: [[45, [57, 60, 64, 69]], [41, [57, 60, 65, 69]], [48, [55, 60, 64, 67]], [43, [55, 59, 62, 67]]],
     scale: [69, 72, 74, 76, 79, 81, 84, 86, 88, 91],
   },
   river: {
-    name: '流れ星の川', sub: 'STAGE 2', bpm: 110, level: 1, cap: 4, approach: 2.1, palette: 'river',
+    name: 'METEOR STREAM', sub: 'STAGE 2', bpm: 110, level: 1, cap: 4, approach: 2.1, palette: 'river',
     chords: [[38, [57, 62, 65, 69]], [46, [58, 62, 65, 70]], [41, [57, 60, 65, 69]], [48, [55, 60, 64, 67]]],
     scale: [74, 77, 79, 81, 84, 86, 89, 91, 93, 96],
   },
   meteor: {
-    name: '流星群', sub: 'STAGE 3', bpm: 118, level: 2, cap: 4, approach: 1.9, palette: 'meteor',
+    name: 'STARFALL', sub: 'STAGE 3', bpm: 118, level: 2, cap: 4, approach: 1.9, palette: 'meteor',
     chords: [[40, [55, 59, 64, 67]], [48, [55, 60, 64, 67]], [43, [55, 59, 62, 67]], [38, [57, 62, 66, 69]]],
     scale: [76, 79, 81, 83, 86, 88, 91, 93, 95, 98],
   },
   aurora: {
-    name: 'オーロラ・フィナーレ', sub: 'STAGE 4', bpm: 126, level: 2, cap: 4, approach: 1.75, palette: 'aurora',
+    name: 'AURORA RUSH', sub: 'FINAL STAGE', bpm: 126, level: 2, cap: 4, approach: 1.75, palette: 'aurora',
     chords: [[42, [57, 61, 66, 69]], [38, [57, 62, 66, 69]], [45, [57, 61, 64, 69]], [40, [56, 59, 64, 68]]],
     scale: [78, 81, 83, 85, 88, 90, 93, 95, 97, 100],
   },
   cool: {
-    name: '星空のストレッチ', sub: 'クールダウン', bpm: 76, level: -1, cap: 0, approach: 3.2, palette: 'cool',
+    name: 'STARGAZE', sub: 'COOL-DOWN', bpm: 76, level: -1, cap: 0, approach: 3.2, palette: 'cool',
     chords: [[36, [55, 59, 60, 64]], [45, [55, 57, 60, 64]], [41, [53, 57, 60, 64]], [43, [55, 59, 62, 64]]],
     scale: [72, 74, 76, 79, 81, 84, 86, 88, 91, 93],
   },
@@ -42,9 +42,9 @@ export const STAGES = {
 
 // [stage, seconds] — cool-down length comes from its fixed routine (see chart.js)
 export const MODES = {
-  journey: { label: 'ジャーニー', note: '約14分・フルコース', plan: [['warm', 100], ['lake', 150], ['river', 165], ['meteor', 165], ['aurora', 120], ['cool', 0]] },
-  quick: { label: 'クイック', note: '約6分・すきま時間に', plan: [['warm', 50], ['lake', 70], ['river', 75], ['meteor', 70], ['cool', 0]] },
-  endless: { label: 'エンドレス', note: '好きなだけ・だんだん加速', plan: [['warm', 60]] },
+  journey: { label: 'JOURNEY', chip: '14 MIN', note: 'ウォームアップから整理運動までのフルコース', icon: 'route', plan: [['warm', 100], ['lake', 150], ['river', 165], ['meteor', 165], ['aurora', 120], ['cool', 0]] },
+  quick: { label: 'QUICK', chip: '6 MIN', note: '仕事の合間にサクッと全身リフレッシュ', icon: 'bolt', plan: [['warm', 50], ['lake', 70], ['river', 75], ['meteor', 70], ['cool', 0]] },
+  endless: { label: 'ENDLESS', chip: '∞', note: '周回ごとにテンポアップ。好きなだけ', icon: 'infinity', plan: [['warm', 60]] },
 };
 const ENDLESS_LOOP = ['lake', 'river', 'meteor', 'aurora'];
 

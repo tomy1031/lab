@@ -6,7 +6,7 @@ import { clamp } from './util.js';
 const JUDGE_STYLE = {
   perfect: ['PERFECT', '#ffe27a'], great: ['GREAT', '#7af0ff'], good: ['GOOD', '#c7b8ff'], miss: ['MISS', '#8a86a8'],
   step: ['NICE STEP', '#7affc8'], squat: ['NICE SQUAT', '#7affc8'], keep: ['KEEP!', '#ffd166'], clear: ['CLEAR', '#ffe27a'],
-  weave: ['WOVEN!', '#ffe27a'], fever: ['FEVER!!', '#ff7ad9'], bump: ['よけて！', '#ff9a7a'],
+  weave: ['WOVEN!', '#ffe27a'], fever: ['FEVER!', '#ff7ad9'], bump: ['WATCH OUT', '#ff9a7a'], nice: ['NICE!', '#7affc8'],
 };
 
 export class FX {
@@ -14,8 +14,10 @@ export class FX {
     this.group = new THREE.Group();
     parent.add(this.group);
     this._particles();
+    this.glow = glowTexture(128);
     this._popups();
     this._rings();
+    this._flashes();
   }
 
   _particles() {
@@ -39,7 +41,9 @@ export class FX {
       vertexShader: `attribute vec3 aColor; attribute float aSize; attribute float aAlpha; uniform float px; varying vec3 vC; varying float vA;
         void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; vC = aColor; vA = aAlpha;
           gl_PointSize = clamp(aSize * px / max(-mv.z, 0.05), 0.0, 96.0); }`,
-      fragmentShader: `varying vec3 vC; varying float vA; void main(){ vec2 p = gl_PointCoord * 2.0 - 1.0; float d = dot(p, p); float a = (exp(-d * 6.0) + 0.35 * exp(-d * 1.5)) * vA; gl_FragColor = vec4(vC * a, a);
+      fragmentShader: `varying vec3 vC; varying float vA; void main(){ vec2 p = gl_PointCoord * 2.0 - 1.0; float d = dot(p, p);
+        float star = exp(-abs(p.x) * 14.0) * exp(-abs(p.y) * 2.6) + exp(-abs(p.y) * 14.0) * exp(-abs(p.x) * 2.6);
+        float a = (exp(-d * 7.0) + 0.55 * star) * vA; gl_FragColor = vec4(vC * a, a);
 #include <colorspace_fragment>
 }`,
     });
@@ -75,7 +79,7 @@ export class FX {
 
   _popups() {
     this.tex = {};
-    for (const k in JUDGE_STYLE) this.tex[k] = textTexture(JUDGE_STYLE[k][0], JUDGE_STYLE[k][1], { px: k === 'bump' ? 84 : 96 });
+    for (const k in JUDGE_STYLE) this.tex[k] = textTexture(JUDGE_STYLE[k][0], JUDGE_STYLE[k][1], { px: 92 });
     this.pops = [];
     for (let i = 0; i < 24; i++) {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.perfect, transparent: true, depthWrite: false, depthTest: false }));
@@ -97,15 +101,32 @@ export class FX {
     o.s.material.map = this.tex[kind] || this.tex.good;
     o.s.material.needsUpdate = true;
     o.s.position.copy(p);
-    o.base = 0.32 * scale;
-    o.s.scale.set(o.base, o.base * 0.3125, 1);
+    o.base = 0.34 * scale;
+    o.s.scale.set(o.base, o.base * 0.28125, 1);
     o.s.visible = true;
     o.life = 0.75; o.vy = 0.35;
   }
 
+  _flashes() {
+    this.flashPool = [];
+    for (let i = 0; i < 10; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.glow, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+      s.visible = false; s.renderOrder = 6;
+      this.group.add(s);
+      this.flashPool.push({ s, life: 0, size: 0.3 });
+    }
+    this.flashCursor = 0;
+  }
+  // a quick bright bloom where something was hit
+  flash(p, color, size = 0.35) {
+    const f = this.flashPool[this.flashCursor]; this.flashCursor = (this.flashCursor + 1) % this.flashPool.length;
+    f.s.position.copy(p); f.s.material.color.copy(color).lerp(new THREE.Color(1, 1, 1), 0.4);
+    f.life = 0.22; f.size = size; f.s.visible = true;
+  }
+
   _rings() {
     this.ringPool = [];
-    const g = new THREE.RingGeometry(0.9, 1, 48);
+    const g = new THREE.RingGeometry(0.93, 1, 64);
     for (let i = 0; i < 14; i++) {
       const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
       m.visible = false;
@@ -142,9 +163,17 @@ export class FX {
       o.life -= dt;
       o.s.position.y += o.vy * dt; o.vy *= Math.exp(-dt * 4);
       const k = 1 + (0.75 - o.life) * 0.5;
-      o.s.scale.set(o.base * k, o.base * k * 0.3125, 1);
+      o.s.scale.set(o.base * k, o.base * k * 0.28125, 1);
       o.s.material.opacity = clamp(o.life / 0.35, 0, 1);
       if (o.life <= 0) o.s.visible = false;
+    }
+    for (const f of this.flashPool) {
+      if (f.life <= 0) continue;
+      f.life -= dt;
+      const k = 1 - f.life / 0.22;
+      f.s.scale.setScalar(f.size * (0.6 + k * 0.8));
+      f.s.material.opacity = Math.max(0, 1 - k) * 0.9;
+      if (f.life <= 0) f.s.visible = false;
     }
     for (const r of this.ringPool) {
       if (r.life <= 0) continue;

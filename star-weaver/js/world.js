@@ -221,16 +221,19 @@ export class World {
         float gridLine(float v, float w){ float d = abs(fract(v - 0.5) - 0.5); float fw = fwidth(v) * 1.2; return 1.0 - smoothstep(w, w + fw, d); }
         void main(){
           float r = length(vP);
+          if (r > 60.0) discard;
           float fade = exp(-r * 0.09);
           float g = max(gridLine(vP.x * 0.5, 0.006), gridLine(vP.y * 0.5, 0.006)) * fade * smoothstep(0.8, 3.0, r);
           float ripR = beat * 14.0;
-          float rip = exp(-pow((r - ripR) * 1.4, 2.0)) * (1.0 - beat) * smoothstep(1.2, 2.5, r);
+          float rip = exp(-pow((r - ripR) * 3.0, 2.0)) * (1.0 - beat) * smoothstep(1.2, 2.5, r) * 0.6;
           vec3 base = mix(mid * 0.025, hor * 0.02, smoothstep(10.0, 40.0, r));
           float horizonGlow = smoothstep(25.0, 60.0, r);
-          vec3 c = base + acc * (g * 0.16 + rip * (0.14 + 0.2 * pulse)) + hor * horizonGlow * 0.035;
+          vec3 c = base + acc * (g * 0.1 + rip * (0.12 + 0.18 * pulse)) + hor * horizonGlow * 0.035;
           gl_FragColor = vec4(c, 1.0); ${COLORSPACE} }`,
     });
-    const f = new THREE.Mesh(new THREE.CircleGeometry(60, 96), m);
+    // a grid of small triangles (not one big fan): a fan's centre vertex sits right under the
+    // player's eyes, and near-plane clipping of such long triangles can corrupt depth on some GPUs
+    const f = new THREE.Mesh(new THREE.PlaneGeometry(120, 120, 60, 60), m);
     f.rotation.x = -Math.PI / 2;
     f.position.y = -0.002;
     this.group.add(f);
@@ -250,7 +253,7 @@ export class World {
           float a = edge * (0.6 + 0.4 * pulse) + rings + inner;
           gl_FragColor = vec4(acc * a, a * 0.9); ${COLORSPACE} }`,
     });
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(1, 96), m);
+    const disc = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.4, 18, 12), m);
     disc.rotation.x = -Math.PI / 2;
     disc.position.y = 0.004;
     this.platform = disc;

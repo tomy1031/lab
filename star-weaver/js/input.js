@@ -54,6 +54,7 @@ export class Hands {
         st.isHand = !!src.hand;
         if (st.isHand) {
           const j = s.hand.joints || {};
+          st.joints = j;
           const palm = j['middle-finger-phalanx-proximal'] || j['middle-finger-metacarpal'];
           const tip = j['index-finger-tip'];
           if (palm && palm.visible) { st.world.copy(palm.position); st.tracked = true; }

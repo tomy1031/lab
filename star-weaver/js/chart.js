@@ -3,29 +3,30 @@
 import * as THREE from 'three';
 import { TAU, DEG } from './util.js';
 
+// [EN title, Japanese line, Japanese detail, icon]
 const HEALTH_TIPS = [
-  ['肩の力をぬいて、深呼吸', '肩が上がっていたら、ストンと落とそう'],
-  ['おへそを軽く引きしめて', 'お腹に少し力を入れると腰が安定します'],
-  ['呼吸を止めないで', '吐きながら腕を伸ばすと楽になります'],
-  ['ひじは軽くゆるめてOK', '腕は伸ばしきらなくても届きます'],
-  ['痛みが出たら無理せずスキップ', 'ミスしても大丈夫。気持ちよく動ける範囲で'],
-  ['胸を張って、目線は前へ', 'デスクワークの猫背をリセット'],
+  ['RELAX', '肩の力をぬいて、深呼吸', '肩が上がっていたら、ストンと落とそう', 'heart'],
+  ['BRACE', 'おへそを軽く引きしめて', 'お腹に少し力を入れると腰が安定します', 'shield'],
+  ['BREATHE', '呼吸を止めないで', '吐きながら腕を伸ばすと楽になります', 'heart'],
+  ['EASY', 'ひじは軽くゆるめてOK', '腕は伸ばしきらなくても届きます', 'hand'],
+  ['LISTEN TO YOUR BODY', '痛みが出たら無理せずスキップ', 'ミスしても大丈夫。気持ちよく動ける範囲で', 'heart'],
+  ['POSTURE', '胸を張って、目線は前へ', 'デスクワークの猫背をリセット', 'stand'],
 ];
 
 const CAPTIONS = {
-  orb: ['青い星は左手、ピンクの星は右手でタッチ', '星が手元に来た瞬間にふれるとPERFECT'],
-  both: ['ふたつ同時に来たら両手で！', '大きく腕をひらくほど肩甲骨が動きます'],
-  high: ['高い星は、腕をまっすぐ上へ', '肩まわりをぐーっと伸ばそう'],
-  gold: ['金色の星はどちらの手でもOK', ''],
-  thread: ['光の彗星を手で追いかけて', '大きな円をえがいて肩をほぐそう'],
-  butterfly: ['両手で大きな円をえがこう', '肩甲骨から回すイメージで'],
-  rainbow: ['両腕を横から上へ、ゆっくり', '下ろすときも彗星について行こう'],
-  infinity: ['両手をそろえて∞をえがこう', '腰ではなく胸から、やさしくひねる'],
-  wing: ['両腕を横に大きく広げてキープ', '胸をひらいて肩甲骨をよせる'],
-  sky: ['両手を上げてYの字でキープ', '背すじを伸ばして、肩は下げたまま'],
-  step: ['光のカーテンをよけて横にステップ', '足元の光るマークに移動しよう'],
-  duck: ['光のバーは軽くひざを曲げてくぐる', '背中はまっすぐ、お尻を少し後ろへ'],
-  twist: ['うずまきの星は反対の手で', '体をやさしくひねって届けよう'],
+  orb: ['TOUCH', '青い星は左手、ピンクの星は右手でタッチ', 'リングに重なった瞬間がPERFECT', 'hand'],
+  both: ['BOTH HANDS', 'ふたつ同時に来たら両手で！', '大きく腕をひらくほど肩甲骨が動きます', 'both'],
+  high: ['REACH HIGH', '高い星は、腕をまっすぐ上へ', '肩まわりをぐーっと伸ばそう', 'up'],
+  gold: ['GOLD STAR', '金色の星はどちらの手でもOK', '', 'star'],
+  thread: ['TRACE', '光の彗星に手を重ねて、一緒に動かす', 'コーチのお手本と同じ大きな円をえがこう', 'orbit'],
+  butterfly: ['DOUBLE CIRCLE', '両手で大きな円をえがこう', '肩甲骨から回すイメージで', 'orbit'],
+  rainbow: ['RAINBOW', '両腕を横から上へ、ゆっくり', '下ろすときも彗星について行こう', 'yraise'],
+  infinity: ['INFINITY', '両手をそろえて∞をえがこう', '腰ではなく胸から、やさしくひねる', 'infinity'],
+  wing: ['WING', '両腕を横に大きく広げてキープ', '胸をひらいて肩甲骨をよせる', 'wing'],
+  sky: ['Y-RAISE', '両手を上げてYの字でキープ', '背すじを伸ばして、肩は下げたまま', 'yraise'],
+  step: ['SIDE STEP', '光のカーテンをよけて横にステップ', '矢印の方向へ。足元の光るマークに移動', 'steps'],
+  duck: ['DUCK', '光のバーは軽くひざを曲げてくぐる', '背中はまっすぐ、お尻を少し後ろへ', 'squat'],
+  twist: ['TWIST', 'うずまきの星は反対の手で', '体をやさしくひねって届けよう', 'spiral'],
 };
 
 // ---------- patterns ----------
@@ -90,18 +91,18 @@ const REST = { warm: 0.3, lake: 0.14, river: 0.1, meteor: 0.07, aurora: 0.05 };
 // cool-down: a fixed routine of slow holds (in beats)
 function coolRoutine(quick, backCare) {
   const r = [
-    ['crown', 8, 'のび〜っと両手を上に', 'ゆっくり吸って、吐いて'],
+    ['crown', 8, 'OVERHEAD STRETCH', 'のび〜っと両手を上に', 'ゆっくり吸って、吐いて', 'stretch'],
     ['rest', 4],
-    ['crossR', 8, '右腕を胸の前へ', '左手でひじを軽く引きよせて'],
-    ['crossL', 8, '左腕を胸の前へ', '右手でひじを軽く引きよせて'],
-    ['wing', 8, '胸をひらいて肩甲骨をよせる', 'あごを軽く引いて、肩は下げたまま'],
+    ['crossR', 8, 'CROSS-BODY · RIGHT', '右腕を胸の前へ', '左手でひじを軽く引きよせて', 'hand'],
+    ['crossL', 8, 'CROSS-BODY · LEFT', '左腕を胸の前へ', '右手でひじを軽く引きよせて', 'hand'],
+    ['wing', 8, 'CHEST OPENER', '胸をひらいて肩甲骨をよせる', 'あごを軽く引いて、肩は下げたまま', 'wing'],
   ];
   if (!quick) {
-    r.push(['gaze', 16, '首をゆっくり、ホタルを目で追って', '体は正面のまま。気持ちいい範囲で']);
-    if (!backCare) { r.push(['bendL', 6, '両手を上げて左へ、体の横を伸ばす', '']); r.push(['bendR', 6, '右へ、体の横を伸ばす', '']); }
-    r.push(['slowCircle', 8, 'ゆっくり大きく肩まわし', '']);
+    r.push(['gaze', 16, 'NECK FLOW', '首をゆっくり、光を目で追って', '体は正面のまま。気持ちいい範囲で', 'eye']);
+    if (!backCare) { r.push(['bendL', 6, 'SIDE STRETCH · LEFT', '両手を上げて左へ、体の横を伸ばす', '', 'stretch']); r.push(['bendR', 6, 'SIDE STRETCH · RIGHT', '右へ、体の横を伸ばす', '', 'stretch']); }
+    r.push(['slowCircle', 8, 'SLOW CIRCLES', 'ゆっくり大きく肩まわし', '', 'orbit']);
   }
-  r.push(['crown', 8, '最後にもう一度、大きくのび', 'おつかれさまでした！']);
+  r.push(['crown', 8, 'FINAL STRETCH', '最後にもう一度、大きくのび', 'おつかれさまでした！', 'stretch']);
   return r;
 }
 export function coolBars(quick, backCare) {
@@ -110,7 +111,7 @@ export function coolBars(quick, backCare) {
 }
 
 // ---------- generator ----------
-class Gen {
+export class Gen {
   constructor(seg, ctx) {
     this.seg = seg; this.ctx = ctx; this.rng = ctx.rng; this.body = ctx.body; this.events = [];
   }
@@ -120,8 +121,8 @@ class Gen {
   introduce(key, t) {
     if (this.ctx.seen.has(key) || !CAPTIONS[key]) return;
     this.ctx.seen.add(key);
-    const [text, sub] = CAPTIONS[key];
-    this.events.push({ type: 'caption', t: t - this.seg.barSec * 1.4, dur: 3.6, text, sub, key });
+    const [en, text, sub, icon] = CAPTIONS[key];
+    this.events.push({ type: 'caption', t: t - this.seg.barSec * 1.4, dur: 3.8, en, text, sub, icon, key });
   }
 
   orb(beat, hand, name, extra = {}) {
@@ -211,7 +212,7 @@ class Gen {
     };
     this.events.push({ type: 'gaze', t: this.T(beat), t1: this.T(beat + beats), path });
   }
-  caption(beat, text, sub, dur = 3.6) { this.events.push({ type: 'caption', t: this.T(beat), dur, text, sub }); }
+  caption(beat, en, text, sub, icon, dur = 3.8) { this.events.push({ type: 'caption', t: this.T(beat), dur, en, text, sub, icon }); }
 }
 
 // ctx: { rng, body, lane, laneW, squatDepth, seated, backCare, quick, seen:Set, moves, tipIndex, last }
@@ -248,8 +249,8 @@ export function generateStage(seg, ctx) {
     bar += p.bars;
     sinceTip += p.bars;
     if (sinceTip >= 12 && seg.key !== 'warm' && bar < lastBar - 2) {
-      const [text, sub] = HEALTH_TIPS[ctx.tipIndex++ % HEALTH_TIPS.length];
-      g.caption(bar * 4, text, sub);
+      const [en, text, sub, icon] = HEALTH_TIPS[ctx.tipIndex++ % HEALTH_TIPS.length];
+      g.caption(bar * 4, en, text, sub, icon);
       sinceTip = 0;
     }
     if (g.rng.chance(rest) && bar < lastBar - 1) bar += 1;
@@ -267,9 +268,9 @@ export function generateStage(seg, ctx) {
 
 function genCool(g, seg, ctx) {
   let beat = 4;
-  for (const [kind, beats, text, sub] of coolRoutine(ctx.quick, ctx.backCare)) {
+  for (const [kind, beats, en, text, sub, icon] of coolRoutine(ctx.quick, ctx.backCare)) {
     if (kind === 'rest') { beat += beats; continue; }
-    g.caption(beat, text, sub || '', Math.min(beats * seg.beatSec + 1.2, 9));
+    g.caption(beat, en, text, sub || '', icon, Math.min(beats * seg.beatSec + 1.2, 9));
     const b0 = beat + 2;
     if (kind === 'crown') g.gate(b0, beats, 'crown', { long: true });
     else if (kind === 'crossR') g.gate(b0, beats, 'cross', { long: true, hands: 'R' });

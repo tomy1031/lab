@@ -11,6 +11,17 @@ export class UI {
     this.state = { L: { z: 1, cool: 0, panel: null }, R: { z: 1, cool: 0, panel: null } };
     this.ray = new THREE.Raycaster();
     this.holdTargets = []; // { mesh, radius, time, needed, onHold }
+    // fingertip cursor: a ring that shrinks onto the panel as you push toward it
+    this.cursors = {};
+    for (const k of ['L', 'R']) {
+      const g = new THREE.Group();
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false }));
+      const dot = new THREE.Mesh(new THREE.CircleGeometry(0.0035, 16), new THREE.MeshBasicMaterial({ color: k === 'L' ? 0x4cc9ff : 0xff5fb7, transparent: true, depthWrite: false, depthTest: false }));
+      ring.renderOrder = dot.renderOrder = 60;
+      g.add(ring, dot);
+      g.visible = false;
+      this.cursors[k] = { g, ring };
+    }
   }
   add(panel) { if (!this.panels.includes(panel)) this.panels.push(panel); return panel; }
 
@@ -19,7 +30,7 @@ export class UI {
     for (const side of ['L', 'R']) {
       const h = g.hands[side], st = this.state[side];
       st.cool -= dt;
-      if (!h.tracked) { st.z = 1; continue; }
+      if (!h.tracked) { st.z = 1; this.cursors[side].g.visible = false; continue; }
       let best = null;
       for (const p of this.panels) {
         if (!p.interactive || !p.visible || !p.mesh.parent) continue;
@@ -28,8 +39,15 @@ export class UI {
         best = { p, x: tmp.x, y: tmp.y, z: tmp.z };
         break;
       }
-      if (!best) { if (st.panel) st.panel.setHover(null); st.panel = null; st.z = 1; continue; }
+      const cur = this.cursors[side];
+      if (!best) { if (st.panel) st.panel.setHover(null); st.panel = null; st.z = 1; cur.g.visible = false; continue; }
       const { p } = best;
+      if (cur.g.parent !== p.mesh) p.mesh.add(cur.g);
+      cur.g.visible = best.z > -0.02;
+      cur.g.position.set(best.x, best.y, 0.002);
+      const r = 0.006 + Math.max(0, best.z) * 0.12;
+      cur.ring.scale.set(r, r, 1);
+      cur.ring.material.opacity = best.z < 0.015 ? 1 : 0.65;
       if (st.panel && st.panel !== p) st.panel.setHover(null);
       st.panel = p;
       const b = p.buttonAtPx(p.toPx(best));

@@ -1,6 +1,6 @@
 // tests/xr.cjs — drives the real WebXR code path with Meta's emulator (IWER, Quest 3 profile):
-// enter VR → poke "はじめる" → T-pose calibration → poke PLAY → hit orbs with emulated controllers →
-// pause with the B button → resume → switch to hand tracking.
+// enter VR → poke START → T-pose calibration → first tutorial lesson → SKIP → poke QUICK and PLAY →
+// hit orbs with emulated controllers → pause with the B button → RESUME → switch to hand tracking.
 //   npm i iwer && node tests/xr.cjs [outDir]
 const { chromium } = require('playwright');
 const serve = require('./serve.cjs');
@@ -61,9 +61,9 @@ const log = (...a) => console.log('[xr]', ...a);
     };
   });
 
-  await page.evaluate(() => window.__poke(window.__game.welcome, 'はじめる'));
+  await page.evaluate(() => window.__poke(window.__game.welcome, 'START'));
   await page.waitForFunction(() => window.__game.state === 'tpose', null, { timeout: 5000 });
-  log('poked はじめる → tpose; eyeY', await page.evaluate(() => window.__game.body.eyeY.toFixed(2)));
+  log('poked START → tpose; eyeY', await page.evaluate(() => window.__game.body.eyeY.toFixed(2)));
   await page.screenshot({ path: path.join(out, 'xr-tpose.png') });
   // T pose: both hits points out to the sides at shoulder height
   await page.evaluate(async () => {
@@ -73,11 +73,26 @@ const log = (...a) => console.log('[xr]', ...a);
     await window.__moveTo('L', L, 'hit');
     await window.__moveTo('R', R, 'hit');
   });
+  // first run: the tutorial starts by itself — check the first lesson, then skip it
+  await page.waitForFunction(() => window.__game.state === 'tutorial', null, { timeout: 6000 });
+  log('T-pose measured → tutorial:', await page.evaluate(() => window.__game.tutorialInfo && window.__game.tutorialInfo.en));
+  await page.evaluate(async () => { const d = window.__xrd; d.controllers.left.position.set(-0.25, 1.0, -0.2); d.controllers.right.position.set(0.25, 1.0, -0.2); await new Promise((r) => setTimeout(r, 300)); });
+  await page.waitForFunction(() => window.__game.entities.some((e) => e.ev.type === 'orb'), null, { timeout: 6000 });
+  // touch the first (waiting) orb with the left controller
+  await page.evaluate(async () => {
+    const g = window.__game, o = g.entities.find((e) => e.ev.type === 'orb');
+    await new Promise((r) => setTimeout(r, 2800));
+    await window.__moveTo('L', g.stageRoot.localToWorld(o.ev.pos.clone()), 'hit');
+  });
+  await page.waitForFunction(() => window.__game.stats.hit >= 1, null, { timeout: 5000 });
+  log('tutorial: first star touched; coach visible:', await page.evaluate(() => window.__game.coach.root.visible));
+  await page.screenshot({ path: path.join(out, 'xr-tutorial.png') });
+  await page.evaluate(() => window.__poke(window.__game.tutCtl, 'SKIP'));
   await page.waitForFunction(() => window.__game.state === 'menu', null, { timeout: 6000 });
-  log('T-pose measured → menu; reach', await page.evaluate(() => window.__game.body.reach.toFixed(3)), 'calib', await page.evaluate(() => JSON.stringify(window.__game.store.data.calib)));
+  log('skipped tutorial → menu; reach', await page.evaluate(() => window.__game.body.reach.toFixed(3)), 'calib', await page.evaluate(() => JSON.stringify(window.__game.store.data.calib)));
   await page.evaluate(async () => { const d = window.__xrd; d.controllers.left.position.set(-0.25, 1.0, -0.2); d.controllers.right.position.set(0.25, 1.0, -0.2); await new Promise((r) => setTimeout(r, 200)); });
   await page.screenshot({ path: path.join(out, 'xr-menu.png') });
-  await page.evaluate(() => window.__poke(window.__game.menu, 'クイック'));
+  await page.evaluate(() => window.__poke(window.__game.menu, 'QUICK'));
   await page.evaluate(() => window.__poke(window.__game.menu, 'PLAY'));
   await page.waitForFunction(() => window.__game.state === 'play', null, { timeout: 5000 });
   log('PLAY pressed, mode', await page.evaluate(() => window.__game.mode));
@@ -127,7 +142,7 @@ const log = (...a) => console.log('[xr]', ...a);
   const tStill = await page.evaluate(() => window.__game.t);
   log('paused with B; clock frozen:', Math.abs(tStill - tPaused) < 0.05);
   await page.evaluate(() => { window.__stopBot = true; });
-  await page.evaluate(() => window.__poke(window.__game.pausePanel, '再開'));
+  await page.evaluate(() => window.__poke(window.__game.pausePanel, 'RESUME'));
   await page.waitForFunction(() => window.__game.state === 'play', null, { timeout: 6000 });
   log('resumed after countdown');
 

@@ -19,7 +19,7 @@ export class Desktop {
     this.camBack = 0;
     game.headObj = this.headObj;
     // a faint visor so you can see where "you" are in the spectator view
-    const visor = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.012, 8, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
+    const visor = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.008, 8, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.14, depthWrite: false }));
     visor.rotation.x = Math.PI / 2;
     visor.visible = false;
     game.stageRoot.add(visor);
@@ -58,16 +58,14 @@ export class Desktop {
       return;
     }
     const b = g.body;
-    if (g.state !== 'play' && g.state !== 'resuming') {
-      g.ui.pointer(this.ndc, cam, this.click);
-    }
+    if (g.state !== 'play' && g.state !== 'resuming' && !this.bot) g.ui.pointer(this.ndc, cam, this.click);
     this.click = false;
     if (this.bot) this.bot.update(dt);
     else this.manual(dt);
     // virtual head; while playing, the camera sits behind and above it so the hands are in view
     g.stageRoot.localToWorld(this.headObj.position.copy(this.head));
     this.headObj.quaternion.setFromEuler(this.look).premultiply(g.stageRoot.quaternion);
-    const playing = g.state === 'play' || g.state === 'resuming';
+    const playing = g.state === 'play' || g.state === 'resuming' || (g.state === 'tutorial' && !g.tutDone.visible);
     this.camBack = lerp(this.camBack, playing ? 1 : 0, Math.min(1, dt * 3));
     const k = this.camBack;
     tmp.set(this.head.x * (1 - 0.5 * k), this.head.y + 0.28 * k, this.head.z + 1.15 * k);
@@ -119,9 +117,9 @@ class Bot {
   update(realDt) {
     const g = this.game, d = this.desk, t = g.t, b = g.body;
     // move on the song clock, so the bot keeps up when tests run the game faster than real time
-    const dt = g.state === 'play' ? Math.max(0, Math.min(0.25, t - (this.lastT ?? t))) || realDt : realDt;
+    const dt = g.state === 'play' || g.state === 'tutorial' ? Math.max(0, Math.min(0.25, t - (this.lastT ?? t))) || realDt : realDt;
     this.lastT = t;
-    if (g.state === 'play' && dt > 0) this.step = dt;
+    if ((g.state === 'play' || g.state === 'tutorial') && dt > 0) this.step = dt;
     if (g.state === 'results' && g.params.autoplay && !this.restartAt) this.restartAt = performance.now() + 6000;
     if (this.restartAt && performance.now() > this.restartAt && g.params.loopDemo) { this.restartAt = 0; g.startGame(); }
     for (const side of ['L', 'R']) {
@@ -132,12 +130,15 @@ class Bot {
         const ev = e.ev;
         const mine = ev.hand === side || (ev.hand === 'A' && side === 'R');
         if (ev.type === 'orb' && mine && e.state === 'fly' && ev.t < when && ev.t > t - 0.25) { when = ev.t; target = ev.pos; follow = false; }
-        else if (ev.type === 'thread' && mine && t > ev.t - 0.8 && t < ev.t1 && ev.t - 0.4 < when) {
+        else if (ev.type === 'thread' && mine && t > ev.t - 0.8 && (t < ev.t1 || ev.wait) && e.phase !== 'done' && ev.t - 0.4 < when) {
           when = ev.t - 0.4; follow = t >= ev.t - 0.1;
-          const u = Math.min(1, Math.max(0, (t + (this.step || 0.016) - ev.t) / (ev.t1 - ev.t)));
-          target = ev.path(u, new THREE.Vector3());
+          if (ev.wait) target = e.cpos.clone();
+          else {
+            const u = Math.min(1, Math.max(0, (t + (this.step || 0.016) - ev.t) / (ev.t1 - ev.t)));
+            target = ev.path(u, new THREE.Vector3());
+          }
         }
-        else if (ev.type === 'gate' && ev.hands.includes(side) && t > ev.t - 1.0 && t < ev.t1 && ev.t - 0.5 < when) { when = ev.t - 0.5; target = ev.targets[side]; follow = true; }
+        else if (ev.type === 'gate' && ev.hands.includes(side) && t > ev.t - 1.0 && (t < ev.t1 || ev.wait) && !e.done && ev.t - 0.5 < when) { when = ev.t - 0.5; target = ev.targets[side]; follow = true; }
       }
       const h = d.hand[side];
       if (!target) { h.lerp(this.rest(s), Math.min(1, dt * 3)); continue; }
@@ -154,8 +155,8 @@ class Bot {
     for (const e of g.entities) {
       if (e.dead) continue;
       const ev = e.ev;
-      if (ev.type === 'wall' && ev.t - t < 0.9 && ev.t - t > -0.2) laneX = ev.free * ev.laneW;
-      if (ev.type === 'bar' && ev.t - t < 0.45 && ev.t - t > -0.2) eye = b.standEyeY - ev.depth - 0.02;
+      if (ev.type === 'wall' && (e.waiting || (ev.t - t < 0.9 && ev.t - t > -0.2))) laneX = ev.free * ev.laneW;
+      if (ev.type === 'bar' && (e.waiting || (ev.t - t < 0.45 && ev.t - t > -0.2))) eye = b.standEyeY - ev.depth - 0.02;
     }
     d.head.x = lerp(d.head.x, laneX, Math.min(1, dt * 6));
     d.head.y = lerp(d.head.y, eye, Math.min(1, dt * 7));

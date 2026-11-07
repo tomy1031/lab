@@ -7,11 +7,12 @@ import { Desktop } from './desktop.js';
 import { MODES } from './timeline.js';
 import { fmtTime } from './util.js';
 import { GLYPHS } from './glyphs.js';
-import { FONT } from './text.js';
+import { FONT } from './theme.js';
 
 const q = new URLSearchParams(location.search);
 const params = {
   autoplay: q.has('autoplay'),
+  tutorial: q.has('tutorial'),
   loopDemo: q.has('loop'),
   speed: Number(q.get('speed')) || 1,
   seed: Number(q.get('seed')) || 0,
@@ -86,7 +87,7 @@ function renderStats() {
   if (r) {
     $('#last-rank').textContent = r.rank;
     $('#last-score').textContent = r.score.toLocaleString();
-    $('#last-meta').textContent = `${MODES[r.mode].label} · ${fmtTime(r.sec)} · 約${r.kcal}kcal · 肩まわし${r.counts.circles}回 · 腕上げ${r.counts.reach}回 · 胸ひらき${r.counts.open}回`;
+    $('#last-meta').textContent = `${MODES[r.mode].label} · ${fmtTime(r.sec)} · ${r.kcal} kcal · 肩まわし ${r.counts.circles} · 腕上げ ${r.counts.reach} · 胸ひらき ${r.counts.open}`;
   }
 }
 $('#weight').addEventListener('change', (e) => {
@@ -100,7 +101,7 @@ async function checkXR() {
   try {
     const ok = await navigator.xr.isSessionSupported('immersive-vr');
     vrBtn.disabled = !ok;
-    vrNote.textContent = ok ? 'ヘッドセットをかぶったら、正面を向いて立ってください。' : 'VRヘッドセットが見つかりません。Meta Quest のブラウザで開いてください。';
+    vrNote.textContent = ok ? 'ヘッドセットをかぶったら、正面を向いて立ってください。' : 'VRヘッドセットが見つかりません。Meta Quest のブラウザで開くと ENTER VR が押せます。';
   } catch { vrBtn.disabled = true; vrNote.textContent = 'WebXR を確認できませんでした（HTTPS で開いていますか？）'; }
 }
 checkXR();
@@ -139,7 +140,7 @@ function startDesktop(autoplay) {
   game.params.autoplay = autoplay;
   desk.start(autoplay);
   game.enter(false);
-  $('#desk-hint').textContent = autoplay ? 'オートプレイ中 · Space で一時停止' : 'マウス＝手（左手は鏡写し） · A/D＝横ステップ · S＝スクワット · Space＝一時停止 · メニューはクリック';
+  $('#desk-hint').textContent = autoplay ? 'AUTOPLAY · Space で一時停止' : 'マウス＝手（左手は鏡写し） · A/D＝横ステップ · S＝スクワット · Space＝一時停止 · メニューはクリック';
 }
 $('#preview').addEventListener('click', () => startDesktop(false));
 $('#demo').addEventListener('click', () => startDesktop(true));
@@ -149,10 +150,10 @@ game.on('results', () => renderStats());
 // canvas text only uses the web font once its glyphs are loaded: fetch the subsets the VR panels need,
 // then redraw whatever panel is already showing (system fonts are used until then)
 if (document.fonts && document.fonts.load) {
-  Promise.all(['500', '700', '800'].map((w) => document.fonts.load(`${w} 40px ${FONT}`, GLYPHS)))
+  Promise.all(['500', '600', '700', '800'].map((w) => document.fonts.load(`${w} 40px ${FONT}`, GLYPHS)))
     .then(() => game.refreshPanels())
     .catch(() => {});
 }
 
 showOverlay(true);
-if (params.autoplay) startDesktop(true);
+if (params.autoplay || params.tutorial) startDesktop(params.autoplay);

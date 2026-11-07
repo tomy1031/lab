@@ -12,10 +12,11 @@ export const DEFAULT_SETTINGS = {
   backCare: false,      // 腰いたわりモード: gentler twists, no side bends
   weight: 65,           // kg, for the calorie estimate
   volume: 'mid',        // low | mid | high
+  coach: true,          // hologram coach demonstrates moves
 };
 
 function blank() {
-  return { settings: { ...DEFAULT_SETTINGS }, calib: null, best: {}, history: [], days: [] };
+  return { settings: { ...DEFAULT_SETTINGS }, calib: null, best: {}, history: [], days: [], tutorialDone: false };
 }
 
 export const store = {
@@ -36,6 +37,7 @@ export const store = {
   get settings() { return this.data.settings; },
   setSetting(k, v) { this.data.settings[k] = v; this.save(); },
   setCalib(c) { this.data.calib = c; this.save(); },
+  setTutorialDone() { this.data.tutorialDone = true; this.save(); },
   // returns { newBest } after storing one finished session
   record(result) {
     const d = this.data;
