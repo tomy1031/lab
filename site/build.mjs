@@ -8,6 +8,7 @@
 //   FILMS_REF     NEXTMAKE Films (nextmake-mv/output)          default: origin/claude/nextmake-investment-video-jaigyl
 //   AIC_REF       NEXTMAKE AI COMPANY (ai-company/)            default: origin/claude/ai-employee-3d-visualization-bgkso0
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
+//   STARLIGHT_REF ほしあかりの湖 (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -24,10 +25,12 @@ const refs = {
   films: process.env.FILMS_REF || 'origin/claude/nextmake-investment-video-jaigyl',
   aic: process.env.AIC_REF || 'origin/claude/ai-employee-3d-visualization-bgkso0',
   undokai: process.env.UNDOKAI_REF || 'origin/claude/ecstatic-thompson-v7ve2u',
+  starlight: process.env.STARLIGHT_REF || 'origin/claude/jolly-faraday-yhmee4',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
 if (!process.env.UNDOKAI_REF && !hasRef(refs.undokai)) refs.undokai = refs.films;
+if (!process.env.STARLIGHT_REF && !hasRef(refs.starlight)) refs.starlight = refs.films;
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -113,6 +116,23 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 05 ほしあかりの湖 — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
+{
+  const dest = path.join(out, 'starlight-lake');
+  try {
+    const src = exportDir(refs.starlight, 'starlight-lake');
+    copy(src, dest);
+    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'starlight-lake.jpg'));
+  } catch (e) {
+    console.warn(`starlight-lake not found at ${refs.starlight}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ほしあかりの湖</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight}`);
