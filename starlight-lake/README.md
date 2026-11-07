@@ -21,7 +21,7 @@ Meta Quest 2 / 3 で遊べる、論文にもとづく視覚トレーニングゲ
 | 浮かぶ星珠 | 立体視（両眼視差だけを手がかりに） | Vedamurthy 2016、Žiak 2017 |
 | 流れ星 | 周辺視・反応速度 | Li 2009（アクションゲーム） |
 
-論文ごとの結果・限界・推奨の使い方は **[docs/research.md](docs/research.md)** にまとめています。度数（近視・乱視そのもの）はトレーニングでは変わらないこと、伸びるのは脳の処理とピントの緊張の分であることも含めて書いています。
+論文ごとの結果・限界・推奨の使い方は **[docs/research.md](docs/research.md)**（[サイト上で読む](https://tomy1031.github.io/lab/starlight-lake/docs/research.html)）にまとめています。度数（近視・乱視そのもの）はトレーニングでは変わらないこと、伸びるのは脳の処理とピントの緊張の分であることも含めて書いています。
 
 ## 3つのモード
 
@@ -35,14 +35,11 @@ VRの画素の細かさ（1度あたり約20〜25画素）では、視力1.0の�
 
 ## Quest で開く
 
-WebXR は **https** か **localhost** のページでしか動きません。どれか一つの方法で開いてください。
+**Quest のブラウザで https://tomy1031.github.io/lab/starlight-lake/ を開き、「VRで旅する」を押します。**
 
-**A. GitHub Pages（いちばん簡単）**
-リポジトリの Settings → Pages で、このブランチの `/`（root）を公開します。公開後、Quest のブラウザで次のURLを開きます。
-`https://<ユーザー名>.github.io/lab/starlight-lake/`
-（非公開リポジトリで Pages を使うには、GitHub の有料プランが必要です。）
+このページは lab サイト（[`site/build.mjs`](https://github.com/tomy1031/lab/blob/claude/yokohama-roll/site/build.mjs) が各ブランチから組み立て、`gh-pages` ブランチから配信）の一部です。ほかの場所で動かす場合、WebXR は **https** か **localhost** のページでしか動かないので、次のどちらかで開いてください。
 
-**B. 手元のPCから USB で**
+**手元のPCから USB で**
 PCでこのフォルダを配信し、Quest を USB でつないでポートを転送します（Quest は開発者モードが必要）。
 
 ```bash
@@ -59,7 +56,7 @@ adb reverse tcp:8080 tcp:8080
 
 Quest のブラウザで `http://localhost:8080/` を開きます。
 
-**C. 任意の静的ホスティング**
+**任意の静的ホスティング**
 Netlify・Cloudflare Pages などに `starlight-lake/` フォルダをそのまま置きます。ビルドの手順はありません。
 
 ## 操作
@@ -85,7 +82,7 @@ Netlify・Cloudflare Pages などに `starlight-lake/` フォルダをそのま�
 ```
 starlight-lake/
 ├─ index.html            タイトル画面・設定・記録・遠見スクリーンの準備・起動
-├─ docs/research.md      研究ノート（論文、限界、推奨プラン）
+├─ docs/research.md      研究ノート（論文、限界、推奨プラン）。research.html はその表示用ページ
 └─ src/
    ├─ main.js            アプリ本体（WebXR、視野と画素密度、両眼分離、メニュー）
    ├─ session.js         ひと晩の進行、スコア、HUD、字幕、結果画面
