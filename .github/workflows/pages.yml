@@ -5,12 +5,12 @@ name: Publish lab site
 on:
   push:
     branches:
-      - claude/yokohama-roll
-      - claude/nextmake-investment-video-jaigyl
+      - claude/nextmake-investment-video-jaigyl # the default branch: what is merged goes live
     paths:
       - 'site/**'
       - 'yokohama-roll/index.html'
       - 'yokohama-roll/js/**'
+      - 'yokohama-roll/img/**'
       - 'nextmake-mv/output/**'
       - '.github/workflows/pages.yml'
   schedule:

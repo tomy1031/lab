@@ -59,6 +59,7 @@ export class ObjectSet {
     this.movers = [];
     this.byProto = new Map(); // key → { proto, objs[], mesh }
     this.frame = 0;
+    this.time = 0; // advanced by the game every step; movers get a velocity from it
   }
 
   add(proto, pos, quat, scale = 1, extra = {}) {
@@ -86,12 +87,30 @@ export class ObjectSet {
   }
 
   setTransform(o, pos, quat) {
+    // velocity of moving things (cars, boats, trains…), so a collision knows who hit whom
+    if (o.tPrev !== undefined && this.time > o.tPrev) {
+      const k = 1 / (this.time - o.tPrev);
+      if (!o.vel) o.vel = new THREE.Vector3();
+      o.vel.set((pos.x - o.pPrev.x) * k, (pos.y - o.pPrev.y) * k, (pos.z - o.pPrev.z) * k);
+    }
+    if (!o.pPrev) o.pPrev = new THREE.Vector3();
+    o.pPrev.copy(pos); o.tPrev = this.time;
     o.pos.copy(pos);
     if (quat) { o.quat.copy(quat); o.invQuat.copy(quat).invert(); }
     this.updateCenter(o);
   }
 
   addMover(o, mover) { o.mover = mover; this.movers.push(o); }
+
+  // a still object that was moved by hand (e.g. dropped off the ball): no velocity
+  teleport(o, pos, quat) {
+    this.setTransform(o, pos, quat);
+    if (o.vel) o.vel.set(0, 0, 0);
+    o.tPrev = undefined;
+  }
+
+  // height of the object's top above its base, along its up axis (world units)
+  topHeight(o) { return o.proto.bbMax.y * o.scale; }
 
   // Build InstancedMeshes once all objects are placed.
   finalize({ castShadow = true, receiveShadow = true } = {}) {

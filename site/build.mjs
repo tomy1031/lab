@@ -8,7 +8,7 @@
 //   FILMS_REF     NEXTMAKE Films (nextmake-mv/output)          default: origin/claude/nextmake-investment-video-jaigyl
 //   AIC_REF       NEXTMAKE AI COMPANY (ai-company/)            default: origin/claude/ai-employee-3d-visualization-bgkso0
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
-//   STARLIGHT_REF ほしあかりの湖 (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
+//   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
@@ -59,6 +59,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   fs.mkdirSync(dest, { recursive: true });
   copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
   copy(path.join(src, 'js'), path.join(dest, 'js'));
+  if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
 }
 
 // 02 NEXTMAKE Films — the 720p share versions and posters
@@ -119,7 +120,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 05 ほしあかりの湖 — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
+// 05 Starlight Lake — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
 {
   const dest = path.join(out, 'starlight-lake');
   try {
@@ -131,7 +132,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
     fs.rmSync(dest, { recursive: true, force: true });
     fs.mkdirSync(dest, { recursive: true });
     fs.writeFileSync(path.join(dest, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ほしあかりの湖</title>' +
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Starlight Lake</title>' +
       '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>・<a href="../">lab にもどる</a></p>');
   }
 }
