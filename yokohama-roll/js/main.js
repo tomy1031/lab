@@ -283,14 +283,15 @@ function readInput() {
   if (keys.has('KeyD') || keys.has('ArrowRight')) t += 1;
   if (joy.active) { f += joy.y; t += joy.x * 0.9; }
   const dash = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight') || (joy.active && Math.hypot(joy.x, joy.y) > 0.97);
+  let sx = 0; // sideways roll (VR comfort mode moves the ball sideways instead of turning the view)
   if (vrActive()) {
     const v = vr.readInput();
-    f += v.f; t += v.t;
+    f += v.f; t += v.t; sx += v.s || 0;
     if (v.snap) dragYaw += v.snap;
-    if (v.dash) return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), dash: true };
+    if (v.dash) return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), s: Math.max(-1, Math.min(1, sx)), dash: true };
   }
   if (autopilot.on) return autopilot.input();
-  return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), dash };
+  return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), s: Math.max(-1, Math.min(1, sx)), dash };
 }
 
 // ---------------------------------------------------------------- game state
@@ -560,7 +561,8 @@ function maxSpeed(dash) {
   if (stageName === 'kanto') base = 2.6 * r;
   else if (stageName === 'world') base = r <= 60 ? 2.6 * r : 156 * Math.pow(r / 60, 0.8);
   else base = r <= 8 ? 1.7 + 5.4 * r : (1.7 + 5.4 * 8) * Math.pow(r / 8, 0.78);
-  return base * (dash ? 1.65 : 1);
+  // VR comfort mode slows things a little (vr.speedScale), and the VR module eases the dash in
+  return base * (dash ? 1.65 : 1) * (vrActive() && vr.speedScale ? vr.speedScale : 1);
 }
 
 let inpDash = false;
@@ -576,7 +578,8 @@ function step(dt, inp) {
   const acc = ms * 2.4;
   ball.vel.addScaledVector(ball.heading, inp.f * acc * dt);
   ball.vel.addScaledVector(right, inp.t * acc * 0.35 * dt * (inp.f === 0 ? 1 : 0.4));
-  const fr = inp.f !== 0 ? 0.6 : 1.8;
+  if (inp.s) ball.vel.addScaledVector(right, inp.s * acc * 0.8 * dt);
+  const fr = inp.f !== 0 || inp.s ? 0.6 : 1.8;
   ball.vel.multiplyScalar(Math.exp(-fr * dt));
   const sp = ball.vel.length();
   if (sp > ms) ball.vel.multiplyScalar(ms / sp);
