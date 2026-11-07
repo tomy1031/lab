@@ -16,8 +16,8 @@ import * as THREE from 'three';
 
 // ---------------------------------------------------------------- view
 const BALL_R_M = 0.4;           // ball radius as seen in the headset (m) → 0.8 m across
-const BACK_M = 3.4;             // eye distance behind the ball centre along the heading (m)
-const UP_M = 1.5;               // eye height above the ball centre (m): ~24° down, sees the ball over NexMax's helmet
+const BACK_M = 3.35;            // eye distance behind the ball centre along the heading (m)
+const UP_M = 1.65;              // eye height above the ball centre (m): ~26° down like the screen camera, ball over NexMax's helmet
 const PULL_BACK = 3.2, PULL_UP = 4.5; // stage transition pull-back (same factors as main.js 'pull')
 const END_PULL = 0.2;           // ending: pull back a little more every second (like main.js)
 // smoothing rates (1/s): yaw and up follow quickly, scale eases, position follows with velocity feed-forward
@@ -37,8 +37,8 @@ const FRAME_RATE = 72;
 // ---------------------------------------------------------------- HUD
 const HUD_PERIOD = 0.2;         // redraw the panel at 5 Hz (only when something changed)
 const HUD_W = 1024, HUD_H = 576;
-const PANEL_W = 0.58, PANEL_H = (PANEL_W * HUD_H) / HUD_W; // ~33° × 19° at PANEL_DIST
-const PANEL_DIST = 0.95, PANEL_PITCH = THREE.MathUtils.degToRad(38); // below the ball and NexMax: a glance down
+const PANEL_W = 0.54, PANEL_H = (PANEL_W * HUD_H) / HUD_W; // ~33° × 19° at PANEL_DIST
+const PANEL_DIST = 0.9, PANEL_PITCH = THREE.MathUtils.degToRad(40); // just below the ball and NexMax: a glance down
 const RESULT_DIST = 1.25, RESULT_PITCH = THREE.MathUtils.degToRad(6), RESULT_SCALE = 1.3; // result: at eye level
 const CARD = { x: 660, y: 24, w: 332 };
 const FONT = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif';
@@ -544,10 +544,10 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     if (h.state === 'result' && h.result) { drawResult(h); return; }
     const L = 36, LW = 596;
     // size + goal
-    g.fillStyle = BROWN; g.font = F(26); g.fillText('いまの大きさ', L, 58);
-    g.fillStyle = INK; fit(h.size || '', LW, 84); g.fillText(h.size || '', L, 138);
-    g.fillStyle = BLUE; fit(h.goal || '', LW, 28); g.fillText(h.goal || '', L, 182);
-    const bx = L, by = 196, bw = LW, bh = 22, p = clamp(h.goalProgress || 0, 0, 1);
+    g.fillStyle = BROWN; g.font = F(24); g.fillText('いまの大きさ', L, 52);
+    g.fillStyle = INK; fit(h.size || '', LW, 76); g.fillText(h.size || '', L, 124);
+    g.fillStyle = BLUE; fit(h.goal || '', LW, 28); g.fillText(h.goal || '', L, 164);
+    const bx = L, by = 176, bw = LW, bh = 20, p = clamp(h.goalProgress || 0, 0, 1);
     rr(bx, by, bw, bh, bh / 2); g.fillStyle = 'rgba(29,36,51,0.13)'; g.fill();
     if (p > 0) {
       const gr = g.createLinearGradient(bx, 0, bx + bw, 0);
@@ -556,7 +556,7 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     }
     // district / timer / count
     let x = L;
-    const py = 236, chip = 'rgba(29,36,51,0.08)';
+    const py = 210, chip = 'rgba(29,36,51,0.08)';
     if (h.district) x = pill(x, py, h.district, 26, INK, chip, RED) + 12;
     if (h.timer) {
       const m = /(\d+):(\d+)/.exec(h.timer);
@@ -566,27 +566,27 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     if (h.count) pill(x, py, h.count, 26, INK, chip);
     // banner (or toast), then the current message
     if (h.banner && h.banner.main) {
-      g.fillStyle = RED; const bs = fit(h.banner.main, LW, 46); g.fillText(h.banner.main, L, 342);
+      g.fillStyle = RED; const bs = fit(h.banner.main, LW, 44); g.fillText(h.banner.main, L, 306);
       const used = g.measureText(h.banner.main).width;
-      if (h.banner.sub && used + 40 < LW) { g.fillStyle = INK; fit(h.banner.sub, LW - used - 24, Math.min(28, bs)); g.fillText(h.banner.sub, L + used + 24, 342); }
+      if (h.banner.sub && used + 40 < LW) { g.fillStyle = INK; fit(h.banner.sub, LW - used - 24, Math.min(28, bs)); g.fillText(h.banner.sub, L + used + 24, 306); }
     } else if (h.toast) {
-      g.fillStyle = RED; fit(h.toast, LW, 34); g.fillText(h.toast, L, 340);
+      g.fillStyle = RED; fit(h.toast, LW, 32); g.fillText(h.toast, L, 304);
     }
     if (h.message) {
-      g.font = F(26);
+      g.font = F(25);
       const lines = wrap(h.message, LW - 36, 2);
-      rr(L - 6, 362, LW + 12, 24 + lines.length * 34, 18); g.fillStyle = 'rgba(29,36,51,0.88)'; g.fill();
+      rr(L - 6, 322, LW + 12, 20 + lines.length * 32, 18); g.fillStyle = 'rgba(29,36,51,0.88)'; g.fill();
       g.fillStyle = '#fff';
-      lines.forEach((ln, i) => g.fillText(ln, L + 12, 396 + i * 34));
+      lines.forEach((ln, i) => g.fillText(ln, L + 12, 352 + i * 32));
     }
-    if (h.ceo && h.ceo.text) drawCeo(L, 444, LW, h.ceo);
+    if (h.ceo && h.ceo.text) drawCeo(L, 418, LW, h.ceo);
     drawCard(h);
     if (h.errand && h.errand.length) drawErrand(h.errand);
   }
 
   function drawCeo(x, y, w, c) {
-    const R = 48, cx = x + R, cy = y + R + 6;
-    rr(x - 10, y - 4, w + 20, 116, 24); g.fillStyle = 'rgba(47,74,138,0.10)'; g.fill();
+    const R = 50, cx = x + R, cy = y + 66;
+    rr(x - 10, y - 4, w + 20, 144, 24); g.fillStyle = 'rgba(47,74,138,0.10)'; g.fill();
     g.save();
     g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.closePath();
     g.fillStyle = '#dfe7f5'; g.fill(); g.clip();
@@ -604,8 +604,8 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
     const tx = x + 2 * R + 20, tw = w - 2 * R - 24;
     g.fillStyle = '#2f4a8a'; fit(c.name || '', tw, 22); g.fillText(c.name || '', tx, y + 26);
-    g.fillStyle = INK; g.font = F(26);
-    wrap(c.text, tw, 2).forEach((ln, i) => g.fillText(ln, tx, y + 64 + i * 36));
+    g.fillStyle = INK; g.font = F(25);
+    wrap(c.text, tw, 3).forEach((ln, i) => g.fillText(ln, tx, y + 60 + i * 33));
   }
 
   function drawCard(h) {
@@ -657,22 +657,20 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     g.textAlign = 'center';
     g.fillStyle = RED; fit(res.title || '', HUD_W - 100, 64); g.fillText(res.title || '', cx, 118);
     g.fillStyle = INK; g.font = F(30, 800);
-    const lines = wrap(res.desc || '', HUD_W - 140, 4);
-    lines.forEach((ln, i) => g.fillText(ln, cx, 186 + i * 44));
+    const lines = wrap(res.desc || '', HUD_W - 140, 3);
+    lines.forEach((ln, i) => g.fillText(ln, cx, 176 + i * 42));
     g.textAlign = 'left';
     // size and count, centred
     g.font = F(30);
     const a = `いまの大きさ ${h.size || ''}`, b = `まきこんだ数 ${h.count || ''}`;
     const wa = g.measureText(a).width + 36, wb = g.measureText(b).width + 36;
     let x = cx - (wa + wb + 16) / 2;
-    x = pill(x, 384, a, 30, INK, 'rgba(255,210,63,0.55)') + 16;
-    pill(x, 384, b, 30, INK, 'rgba(29,36,51,0.08)');
-    if (h.ceo && h.ceo.text) drawCeo(90, 444, HUD_W - 180 - 10, h.ceo);
-    else {
-      g.textAlign = 'center'; g.fillStyle = BROWN; g.font = F(24, 500);
-      g.fillText('A / X ボタンで VR を おわる', cx, 512);
-      g.textAlign = 'left';
-    }
+    x = pill(x, 330, a, 30, INK, 'rgba(255,210,63,0.55)') + 16;
+    pill(x, 330, b, 30, INK, 'rgba(29,36,51,0.08)');
+    if (h.ceo && h.ceo.text) drawCeo(90, 404, HUD_W - 180 - 10, h.ceo);
+    g.textAlign = 'right'; g.fillStyle = BROWN; g.font = F(20, 500);
+    g.fillText('A / X ボタンで VR を おわる', HUD_W - 30, 40);
+    g.textAlign = 'left';
   }
 
   return {
@@ -681,5 +679,7 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     get viewScale() { return active ? VIEW_SCALE : 1; },
     onSupported(cb) { supportCbs.push(cb); if (supported !== null) { try { cb(supported); } catch (e) { console.warn(e); } } },
     enter, exit, readInput, update, recenter,
+    /** debug / tests: draw a HUD snapshot into the panel canvas now and return the canvas */
+    _drawHud(h) { drawHud(h); tex.needsUpdate = true; return cv; },
   };
 }

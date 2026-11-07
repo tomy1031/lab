@@ -44,12 +44,17 @@ await page.addInitScript({ path: path.join(root, 'node_modules/iwer/build/iwer.m
 await page.addInitScript(() => {
   const dev = new window.IWER.XRDevice(window.IWER.metaQuest3, { stereoEnabled: true });
   dev.installRuntime({ forceInstall: true });
+  // hands resting low in front of the body (IWER's default puts them in front of the face)
+  dev.controllers.left.position.set(-0.2, 1.05, -0.3);
+  dev.controllers.right.position.set(0.2, 1.05, -0.3);
   window.__xrDevice = dev;
 });
 
 const results = [];
 const check = (name, ok, info = '') => { results.push({ name, ok: !!ok, info }); console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${info ? '  — ' + info : ''}`); };
 const shot = async (name) => { const p = path.join(outDir, `vr_${name}.png`); await page.screenshot({ path: p, timeout: 180000 }); console.log('  screenshot', p); };
+// a real click when the element fits in the (small) window, else a DOM click (IWER needs no user activation)
+const click = (sel) => page.click(sel, { timeout: 5000 }).catch(() => page.$eval(sel, (el) => el.click()));
 const frames = () => page.evaluate(() => window.__game.renderer.info.render.frame);
 async function waitFrames(n, timeout = 120000) {
   const f0 = await frames();
@@ -66,8 +71,8 @@ try {
   const before = await page.evaluate(() => ({ shadows: window.__game.renderer.shadowMap.enabled, fov: window.__game.camera.fov }));
 
   // title: VR toggle, then ストーリー (vr.enter() runs inside that click)
-  await page.click('#vr-toggle');
-  await page.click('#mode-story');
+  await click('#vr-toggle');
+  await click('#mode-story');
   await page.waitForFunction(() => window.__game.renderer.xr.isPresenting && window.__game.state === 'play', null, { timeout: 60000 });
   check('session started from the mode click', await page.evaluate(() => !!window.__xrDevice.activeSession));
   await waitFrames(20);
@@ -146,8 +151,38 @@ try {
   await page.evaluate(() => { const c = window.__xrDevice.controllers; c.right.updateButtonValue('trigger', 0); c.left.updateAxes('thumbstick', 0, 0); });
   check('trigger dashes', dashV > 2.6, `speed ${dashV.toFixed(2)} m/s (walk max ≈ 2.5)`);
 
-  // the headset pose moves the camera inside the rig (look up a bit, lean): just make sure it's tracked
-  await page.evaluate(() => { window.__xrDevice.position.y += 0.25; });
+  // roll onto something small: the HUD card shows it and the 3D model turns next to the panel
+  const picked = await page.evaluate(() => {
+    const g = window.__game, b = g.ball;
+    let best = null, bd = Infinity;
+    for (const o of g.town.objs.objs) {
+      if (o.picked || o.size > b.r * 1.2 || o.size < b.r * 0.3 || o.pos.y > b.r) continue;
+      const d = o.center.distanceTo(b.pos);
+      if (d < bd) { bd = d; best = o; }
+    }
+    if (!best) return null;
+    g.teleport(best.center.x - b.heading.x * b.r * 1.5, best.center.z - b.heading.z * b.r * 1.5);
+    return best.name;
+  });
+  if (picked) {
+    await page.evaluate(() => window.__xrDevice.controllers.left.updateAxes('thumbstick', 0, -0.6));
+    await page.waitForFunction(() => window.__game.stats.count > 0, null, { timeout: 120000, polling: 200 }).catch(() => {});
+    await page.evaluate(() => window.__xrDevice.controllers.left.updateAxes('thumbstick', 0, 0));
+    await waitFrames(12);
+  }
+  const card = await page.evaluate(() => {
+    const rig = window.__game.camera.parent, m = rig.getObjectByName('vr-item');
+    return { count: window.__game.stats.count, visible: m.visible, geom: m.geometry.attributes.position ? m.geometry.attributes.position.count : 0, hudItem: rig.getObjectByName('vr-hud').userData.hud.item };
+  });
+  check('rolled-up item shows on the HUD card with its 3D model', card.count > 0 && card.visible && card.geom > 0 && !!card.hudItem, `${picked} → ${JSON.stringify(card)}`);
+  // look down at the HUD (head pitched 36° down)
+  await page.evaluate(() => { const a = -36 * Math.PI / 360; window.__xrDevice.quaternion.set(Math.sin(a), 0, 0, Math.cos(a)); });
+  await waitFrames(4);
+  await shot('hud_look');
+  const hudPng2 = await page.evaluate(() => window.__game.camera.parent.getObjectByName('vr-hud').userData.canvas.toDataURL('image/png'));
+  fs.writeFileSync(path.join(outDir, 'vr_hud_item.png'), Buffer.from(hudPng2.split(',')[1], 'base64'));
+  // the headset pose moves the camera inside the rig: look straight again and stand up a bit
+  await page.evaluate(() => { window.__xrDevice.quaternion.set(0, 0, 0, 1); window.__xrDevice.position.y += 0.2; });
   await waitFrames(4);
   await shot('play');
 
@@ -160,17 +195,17 @@ try {
     return {
       rigId: rig.position.length() === 0 && rig.scale.x === 1 && rig.quaternion.w === 1,
       fov: cam.fov, shadows: g.renderer.shadowMap.enabled, hud: rig.getObjectByName('vr-hud-root').visible,
-      camToBall: cam.position.distanceTo(g.ball.pos) / g.ball.r, state: g.state,
+      camToBall: cam.position.distanceTo(g.ball.pos), camWant: 1.5 + g.ball.r * 7, state: g.state,
       canvas: [g.renderer.domElement.width, g.renderer.domElement.height, g.renderer.domElement.parentElement.id],
     };
   });
   console.log('  after exit', JSON.stringify(after));
-  check('exit restores the screen view', after.rigId && after.fov === before.fov && after.shadows === before.shadows && !after.hud && after.camToBall < 12 && after.canvas[2] === 'app',
+  check('exit restores the screen view', after.rigId && after.fov === before.fov && after.shadows === before.shadows && !after.hud && after.camToBall < after.camWant && after.canvas[2] === 'app',
     JSON.stringify(after));
   await shot('exit');
 
   // and back in from the HUD button (a real click), then out again
-  await page.click('#btn-vr');
+  await click('#btn-vr');
   await page.waitForFunction(() => window.__game.renderer.xr.isPresenting, null, { timeout: 30000 });
   await waitFrames(10);
   check('re-enter from the HUD 🥽 button', await page.evaluate(() => window.__game.camera.parent.scale.x > 0.2));
