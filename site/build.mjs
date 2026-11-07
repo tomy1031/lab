@@ -8,7 +8,8 @@
 //   FILMS_REF     NEXTMAKE Films (nextmake-mv/output)          default: origin/claude/nextmake-investment-video-jaigyl
 //   AIC_REF       NEXTMAKE AI COMPANY (ai-company/)            default: origin/claude/ai-employee-3d-visualization-bgkso0
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
-//   STARLIGHT_REF ほしあかりの湖 (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
+//   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
+//   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -26,11 +27,13 @@ const refs = {
   aic: process.env.AIC_REF || 'origin/claude/ai-employee-3d-visualization-bgkso0',
   undokai: process.env.UNDOKAI_REF || 'origin/claude/ecstatic-thompson-v7ve2u',
   starlight: process.env.STARLIGHT_REF || 'origin/claude/jolly-faraday-yhmee4',
+  starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
 if (!process.env.UNDOKAI_REF && !hasRef(refs.undokai)) refs.undokai = refs.films;
 if (!process.env.STARLIGHT_REF && !hasRef(refs.starlight)) refs.starlight = refs.films;
+if (!process.env.STARWEAVER_REF && !hasRef(refs.starweaver)) refs.starweaver = refs.films;
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -117,7 +120,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 05 ほしあかりの湖 — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
+// 05 Starlight Lake — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
 {
   const dest = path.join(out, 'starlight-lake');
   try {
@@ -129,11 +132,30 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
     fs.rmSync(dest, { recursive: true, force: true });
     fs.mkdirSync(dest, { recursive: true });
     fs.writeFileSync(path.join(dest, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ほしあかりの湖</title>' +
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Starlight Lake</title>' +
       '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 06 STAR WEAVER — WebXR rhythm fitness; static files (page + ES modules, three.js from the CDN)
+{
+  const dest = path.join(out, 'star-weaver');
+  try {
+    const src = exportDir(refs.starweaver, 'star-weaver');
+    fs.mkdirSync(dest, { recursive: true });
+    copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
+    copy(path.join(src, 'js'), path.join(dest, 'js'));
+    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'star-weaver.jpg'));
+  } catch (e) {
+    console.warn(`star-weaver not found at ${refs.starweaver}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>STAR WEAVER</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/4">プルリクエスト #4</a>・<a href="../">lab にもどる</a></p>');
   }
 }
 
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver}`);
