@@ -12,6 +12,16 @@
 // shrinks around you instead. The headset pose moves the camera inside the rig, so you can lean and look
 // around freely; the rig itself never rolls or pitches (its up is the ground normal under the ball).
 // A HUD panel and a turntable of the last rolled-up item sit low in front of you, parented to the rig.
+//
+// Comfort (VR酔い対策). Comfort mode 「快適（おすすめ）」 is on by default, B / Y toggles 「ふつう」 (remembered):
+//  - comfort: the view never rotates smoothly — left stick X rolls the ball sideways (input.s), turning is by
+//    30° snap (right stick) as a cut. ふつう: left stick X is a gentle smooth turn.
+//  - a head-locked tunnel vignette closes in with the rig's speed, acceleration and smooth yaw (centre ~68°
+//    always clear), eased in/out over ~0.15 s, stronger in comfort mode.
+//  - the rig follows the ball's height through a dead band (0.15 r) and a slow critically damped spring, so
+//    rolling over low things doesn't bob your head; horizontal follow is tight, with velocity feed-forward.
+//  - speedScale: 0.8 in comfort mode, and the dash's extra speed ramps in (and out) over ~0.4 s.
+//  - camera shake never reaches the headset (the XR pose replaces camera.position); scale changes ease.
 import * as THREE from 'three';
 
 // ---------------------------------------------------------------- view
@@ -24,12 +34,25 @@ const END_PULL = 0.2;           // ending: pull back a little more every second 
 const YAW_RATE = 7, UP_RATE = 5, SCALE_RATE = 3, VEL_RATE = 12, POS_RATE = 5, PULL_RATE = 2.5;
 const MAX_LAG = 0.8;            // the follow point never trails the ball by more than this × r
 const CUT_ANGLE = 0.3;          // a heading change bigger than this in one frame (snap turn) cuts instead of turning
+const V_DEAD = 0.15;            // vertical follow: dead band (× r) …
+const V_OMEGA = 2.2;            // … then a critically damped spring (1/s), much slower than the horizontal follow
 const NEAR_M = 0.05;            // near plane (rig metres)
 // ---------------------------------------------------------------- input
 const DEAD = 0.15;              // thumbstick dead zone
 const TURN_GAIN = 0.6;          // smooth turning is gentler than on screen (comfort)
 const SNAP = Math.PI / 6;       // snap turn: 30°
 const SNAP_ON = 0.7, SNAP_REARM = 0.3;
+// ---------------------------------------------------------------- comfort
+const COMFORT_KEY = 'hamakoro.vr.comfort';
+const COMFORT_SPEED = 0.8;      // speedScale in comfort mode
+const DASH_K = 1.65;            // main.js's dash factor (eased in here over DASH_RAMP)
+const DASH_RAMP = 0.4;
+const VIG_EASE = 0.15;          // vignette ease in / out (s)
+const VIG_MAX = { comfort: 1, normal: 0.6 };
+const VIG_V0 = 0.8, VIG_V1 = 6;   // perceived speed (m/s in the headset) where the vignette starts / is full
+const VIG_A1 = 10;              // perceived acceleration (m/s²) for a full vignette
+const VIG_YAW1 = 1.2;           // smooth yaw rate (rad/s) for a full vignette
+const NOTICE_TIME = 3;
 // ---------------------------------------------------------------- performance
 const VIEW_SCALE = 0.6;         // draw distance multiplier while in VR
 const FB_SCALE = 0.8;           // framebuffer scale (Quest 3: ~1344×1408 per eye)
@@ -89,6 +112,12 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
   const calib = new THREE.Vector3(0, 1.6, 0); // where the head was when we last recentred
   let calibYaw = 0, calibCount = 0, calibNext = 0;
   let sky = null; // main.js's sky dome: re-centred on the eye
+  let comfort = true;
+  try { comfort = localStorage.getItem(COMFORT_KEY) !== '0'; } catch (e) { /* private mode: default */ }
+  let dashHeld = false, dashRamp = 0;
+  let notice = null, noticeT = 0; // HUD notice (comfort-mode changes)
+  const vig = { v: 0, lastEye: new THREE.Vector3(), vel: new THREE.Vector3(), lastVel: new THREE.Vector3(), valid: false };
+  let vy = 0; // vertical follow spring velocity
   let saved = null; // screen state to restore when the session ends
 
   // ---------------------------------------------------------------- frustum fix for a scaled rig
@@ -191,6 +220,22 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
   fadeMesh.visible = false;
   camera.add(fadeMesh);
 
+  // tunnel vignette, head-locked: darkens the periphery while the view moves (the centre stays clear)
+  const vigMat = new THREE.ShaderMaterial({
+    uniforms: { uStrength: { value: 0 }, uInner: { value: 1 }, uOuter: { value: 1.4 } },
+    vertexShader: 'varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform float uStrength; uniform float uInner; uniform float uOuter; varying vec3 vDir;
+      void main(){ float ang = acos(clamp(-normalize(vDir).z, -1.0, 1.0));
+        gl_FragColor = vec4(0.0, 0.0, 0.0, smoothstep(uInner, uOuter, ang) * uStrength); }`,
+    side: THREE.BackSide, transparent: true, depthTest: false, depthWrite: false,
+  });
+  const vigMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 16), vigMat);
+  vigMesh.name = 'vr-vignette';
+  vigMesh.renderOrder = 99;
+  vigMesh.frustumCulled = false;
+  vigMesh.visible = false;
+  camera.add(vigMesh);
+
   // simple controller models (grip space), so you can see your hands
   const ctrlMat = new THREE.MeshLambertMaterial({ color: 0xf1ece2, emissive: 0x2b2722 });
   const tipMat = new THREE.MeshLambertMaterial({ color: 0xffd23f, emissive: 0x4a3a08 });
@@ -255,6 +300,8 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     st.init = false; st.fade = 0; st.pull = 0; st.endT = 0; st.transT = 0; st.farSet = NaN; st.fogNearSet = NaN;
     calibCount = 2; calibNext = 0; // calibrate on the first pose, then once more when tracking has settled
     hudRoot.visible = true; hudKey = ''; hudT = 0;
+    vig.v = 0; vig.valid = false; vy = 0; dashRamp = 0; dashHeld = false;
+    showNotice();
     starting = false;
     active = true;
     console.info(`[vr] session started (${space})`);
@@ -270,6 +317,7 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     active = false;
     hudRoot.visible = false;
     fadeMesh.visible = false;
+    vigMesh.visible = false;
     rig.position.set(0, 0, 0); rig.quaternion.identity(); rig.scale.set(1, 1, 1);
     rig.updateMatrixWorld(true);
     camera.scale.set(1, 1, 1);
@@ -290,6 +338,17 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
   }
 
   function recenter() { calibCount = Math.max(calibCount, 1); calibNext = 0; }
+  function setComfort(on) {
+    comfort = !!on;
+    try { localStorage.setItem(COMFORT_KEY, comfort ? '1' : '0'); } catch (e) { /* private mode */ }
+    showNotice();
+  }
+  function showNotice() {
+    notice = comfort
+      ? { main: '視点：快適（おすすめ）', sub: '左スティック 左右で 横にころがる ・ 右スティックで 30° 回転' }
+      : { main: '視点：ふつう', sub: '左スティック 左右で なめらかに 回転 ・ B / Y で 快適に もどす' };
+    noticeT = NOTICE_TIME; hudT = 0; hudDirty = true;
+  }
   function calibrate() {
     calib.copy(head);
     calibYaw = headYaw;
@@ -307,7 +366,7 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
   }
 
   // ---------------------------------------------------------------- input
-  const inp = { f: 0, t: 0, dash: false, snap: 0 };
+  const inp = { f: 0, t: 0, s: 0, dash: false, snap: 0 };
   const pads = { left: null, right: null };
   const prevBtn = { left: 0, right: 0 };
   let snapArmed = true;
@@ -322,35 +381,38 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
       else if (src.handedness === 'right' || !pads.right) pads.right = gp;
     }
   }
-  // left stick: Y forward/back, X gentle smooth turn; right stick X: snap turn; trigger or grip: dash.
-  // With only one controller, its stick drives (no snap).
+  // left stick: Y forward/back; X = sideways roll (comfort) or a gentle smooth turn (ふつう).
+  // Right stick X: 30° snap turn. Trigger or grip: dash. With only one controller, its stick drives (no snap).
   function readInput() {
-    inp.f = 0; inp.t = 0; inp.dash = false; inp.snap = 0;
-    if (!active) return inp;
+    inp.f = 0; inp.t = 0; inp.s = 0; inp.dash = false; inp.snap = 0;
+    if (!active) { dashHeld = false; return inp; }
     findPads();
     const L = pads.left, R = pads.right, move = L || R;
     if (move) {
       inp.f = -dz(stickY(move)); // pushing the stick away reads negative
-      inp.t = dz(stickX(move)) * TURN_GAIN;
+      const x = dz(stickX(move));
+      if (comfort) inp.s = x; else inp.t = x * TURN_GAIN;
     }
     if (L && R) {
       const x = stickX(R), ax = Math.abs(x);
       if (snapArmed && ax > SNAP_ON) { inp.snap = Math.sign(x) * SNAP; snapArmed = false; st.snapReq = true; }
       else if (ax < SNAP_REARM) snapArmed = true;
     }
-    inp.dash = pressed(L, 0) || pressed(L, 1) || pressed(R, 0) || pressed(R, 1);
+    inp.dash = dashHeld = pressed(L, 0) || pressed(L, 1) || pressed(R, 0) || pressed(R, 1);
     return inp;
   }
-  // buttons that work in every state: thumbstick click = recentre; A / X on the result screen = leave VR
+  // buttons that work in every state: thumbstick click = recentre; B / Y = comfort mode;
+  // A / X on the result screen = leave VR
   function pollButtons(state) {
     findPads();
     for (let h = 0; h < 2; h++) {
       const key = h ? 'right' : 'left', gp = pads[key];
-      const mask = gp ? (pressed(gp, 3) ? 1 : 0) | (pressed(gp, 4) ? 2 : 0) : 0;
+      const mask = gp ? (pressed(gp, 3) ? 1 : 0) | (pressed(gp, 4) ? 2 : 0) | (pressed(gp, 5) ? 4 : 0) : 0;
       const down = mask & ~prevBtn[key];
       prevBtn[key] = mask;
       if (down & 1) recenter();
       if (down & 2 && state === 'result') exit();
+      if (down & 4) setComfort(!comfort);
     }
   }
 
@@ -361,6 +423,9 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     dt = clamp(dt || 0, 0, 0.1);
     if (readHead() && calibCount > 0 && (calibNext -= dt) <= 0) { calibrate(); calibCount--; calibNext = 0.6; }
     pollButtons(s.state);
+    if (s.state !== 'play') dashHeld = false; // readInput only runs while playing
+    dashRamp = clamp(dashRamp + (dashHeld ? dt : -dt) / DASH_RAMP, 0, 1);
+    if (noticeT > 0 && (noticeT -= dt) <= 0) { notice = null; hudDirty = true; hudT = 0; }
     if (!sky) sky = scene.children.find((o) => o.isMesh && o.material && o.material.isShaderMaterial && o.material.side === THREE.BackSide) || null;
 
     const r = Math.max(s.r, 1e-4), sT = r / BALL_R_M;
@@ -372,8 +437,9 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     const pullT = s.state === 'trans' && !st.transJumped ? 1 : 0;
 
     fwdTarget(s.heading, jump ? s.up : st.up);
+    let cut = jump, yawRate = 0;
     if (jump) {
-      st.fp.copy(s.pos); st.fv.set(0, 0, 0);
+      st.fp.copy(s.pos); st.fv.set(0, 0, 0); vy = 0;
       st.up.copy(s.up).normalize();
       fwdTarget(s.heading, st.up);
       st.fwd.copy(_f);
@@ -383,18 +449,31 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
       st.up.lerp(s.up, 1 - Math.exp(-dt * UP_RATE)).normalize();
       fwdTarget(s.heading, st.up);
       st.s *= Math.exp(Math.log(sT / st.s) * (1 - Math.exp(-dt * SCALE_RATE)));
-      // follow point: carried along with the (smoothed) ball velocity, pulled onto the ball
-      if (dt > 1e-5) { _v.subVectors(s.pos, st.lastPos).divideScalar(dt); st.fv.lerp(_v, 1 - Math.exp(-dt * VEL_RATE)); }
+      // follow point, horizontal: carried along with the smoothed ball velocity and pulled onto the ball (tight)
+      if (dt > 1e-5) {
+        _v.subVectors(s.pos, st.lastPos).divideScalar(dt);
+        _v.addScaledVector(st.up, -_v.dot(st.up));
+        st.fv.lerp(_v, 1 - Math.exp(-dt * VEL_RATE));
+      }
       st.fp.addScaledVector(st.fv, dt);
-      st.fp.lerp(s.pos, 1 - Math.exp(-dt * POS_RATE));
-      const err = st.fp.distanceTo(s.pos), maxErr = r * MAX_LAG;
-      if (err > maxErr) st.fp.lerp(s.pos, 1 - maxErr / err);
-      // yaw: a snap turn cuts, smooth turning follows closely
-      const cut = st.snapReq || st.lastFwdT.dot(_f) < Math.cos(CUT_ANGLE);
+      _v.subVectors(s.pos, st.fp);
+      const ev = _v.dot(st.up);
+      _v.addScaledVector(st.up, -ev); // horizontal error
+      const eh = _v.length(), left = Math.exp(-dt * POS_RATE);
+      st.fp.addScaledVector(_v, eh * left > r * MAX_LAG ? 1 - (r * MAX_LAG) / eh : 1 - left);
+      // vertical: dead band, then a slow critically damped spring — rolling over low things doesn't bob the view
+      const evd = ev > V_DEAD * r ? ev - V_DEAD * r : ev < -V_DEAD * r ? ev + V_DEAD * r : 0;
+      vy += (V_OMEGA * V_OMEGA * evd - 2 * V_OMEGA * vy) * dt;
+      st.fp.addScaledVector(st.up, vy * dt);
+      const ev2 = ev - vy * dt; // never lose the ball vertically
+      if (Math.abs(ev2) > r * 1.5) st.fp.addScaledVector(st.up, ev2 - Math.sign(ev2) * r * 1.5);
+      // yaw: a snap turn cuts, smooth turning (ふつう mode) follows closely
+      cut = st.snapReq || st.lastFwdT.dot(_f) < Math.cos(CUT_ANGLE);
       if (cut) st.fwd.copy(_f);
       else {
-        const ang = Math.atan2(_c.crossVectors(st.fwd, _f).dot(st.up), st.fwd.dot(_f));
-        st.fwd.applyAxisAngle(st.up, ang * (1 - Math.exp(-dt * YAW_RATE)));
+        const ang = Math.atan2(_c.crossVectors(st.fwd, _f).dot(st.up), st.fwd.dot(_f)) * (1 - Math.exp(-dt * YAW_RATE));
+        st.fwd.applyAxisAngle(st.up, ang);
+        if (dt > 1e-5) yawRate = ang / dt;
       }
       st.pull += (pullT - st.pull) * (1 - Math.exp(-dt * PULL_RATE));
     }
@@ -416,6 +495,23 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     rig.quaternion.copy(_q).multiply(_qy);
     rig.scale.setScalar(S);
     rig.position.copy(_eye).sub(_v.copy(calib).multiplyScalar(S).applyQuaternion(rig.quaternion));
+
+    // tunnel vignette from the perceived motion (eye motion in headset metres), eased in and out
+    if (cut || !vig.valid) { vig.lastEye.copy(_eye); vig.vel.set(0, 0, 0); vig.lastVel.set(0, 0, 0); vig.valid = true; }
+    else if (dt > 1e-5) {
+      vig.lastVel.copy(vig.vel);
+      vig.vel.lerp(_c.subVectors(_eye, vig.lastEye).divideScalar(dt * S), 1 - Math.exp(-dt * 10));
+      vig.lastEye.copy(_eye);
+    }
+    const accel = dt > 1e-5 ? vig.lastVel.distanceTo(vig.vel) / dt : 0;
+    const kv = clamp((vig.vel.length() - VIG_V0) / (VIG_V1 - VIG_V0), 0, 1), ka = clamp(accel / VIG_A1, 0, 1);
+    const ky = clamp(Math.abs(yawRate) / VIG_YAW1, 0, 1);
+    const want = (1 - (1 - kv) * (1 - ka) * (1 - ky)) * (comfort ? VIG_MAX.comfort : VIG_MAX.normal);
+    vig.v += (want - vig.v) * (1 - Math.exp(-dt / VIG_EASE));
+    vigMat.uniforms.uStrength.value = vig.v;
+    vigMat.uniforms.uInner.value = THREE.MathUtils.degToRad(70 - 36 * vig.v); // ≥ 34° half-angle stays clear
+    vigMat.uniforms.uOuter.value = vigMat.uniforms.uInner.value + THREE.MathUtils.degToRad(22);
+    vigMesh.visible = vig.v > 0.01;
 
     // main.js sets near/far and fog in world units; the XR view space is in rig metres
     if (camera.far !== st.farSet) st.farW = camera.far;
@@ -482,11 +578,13 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     const c = h.ceo, b = h.banner, res = h.result;
     const key = [h.state, h.mode, h.size, h.goal, Math.round((h.goalProgress || 0) * 300), h.count, h.timer, h.district, h.message,
       b ? b.main + '/' + b.sub : '', h.toast, c ? `${c.name}/${c.text}/${c.face}` : '', iKey,
-      h.errand ? h.errand.map((e) => (e.done ? '1' : '0') + e.name).join(',') : '', res ? res.title + '/' + res.desc : ''].join('|');
+      h.errand ? h.errand.map((e) => (e.done ? '1' : '0') + e.name).join(',') : '', res ? res.title + '/' + res.desc : '',
+      comfort ? 'C' : 'N', notice ? notice.main : ''].join('|');
     if (key === hudKey && !hudDirty) return;
     hudKey = key; hudDirty = false;
     drawHud(h);
-    hudMesh.userData.hud = { state: h.state, size: h.size, goal: h.goal, district: h.district, timer: h.timer, count: h.count, item: it ? it.name : null };
+    hudMesh.userData.hud = { state: h.state, size: h.size, goal: h.goal, district: h.district, timer: h.timer, count: h.count, item: it ? it.name : null,
+      comfort, notice: notice ? notice.main : null };
     tex.needsUpdate = true;
   }
 
@@ -545,6 +643,9 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     const L = 36, LW = 596;
     // size + goal
     g.fillStyle = BROWN; g.font = F(24); g.fillText('いまの大きさ', L, 52);
+    g.textAlign = 'right'; g.fillStyle = GREY; g.font = F(19, 500);
+    g.fillText(`視点：${comfort ? '快適' : 'ふつう'}（B / Y）`, L + LW, 50);
+    g.textAlign = 'left';
     g.fillStyle = INK; fit(h.size || '', LW, 76); g.fillText(h.size || '', L, 124);
     g.fillStyle = BLUE; fit(h.goal || '', LW, 28); g.fillText(h.goal || '', L, 164);
     const bx = L, by = 176, bw = LW, bh = 20, p = clamp(h.goalProgress || 0, 0, 1);
@@ -564,15 +665,19 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
       x = pill(x, py, h.timer, 26, hurry ? '#fff' : INK, hurry ? RED : chip) + 12;
     }
     if (h.count) pill(x, py, h.count, 26, INK, chip);
-    // banner (or toast), then the current message
-    if (h.banner && h.banner.main) {
+    // comfort-mode notice (for a few seconds), else banner (or toast), then the current message
+    if (notice) {
+      rr(L - 6, 270, LW + 12, 104, 20); g.fillStyle = '#ffd23f'; g.fill();
+      g.fillStyle = INK; fit(notice.main, LW - 24, 34); g.fillText(notice.main, L + 10, 312);
+      fit(notice.sub, LW - 24, 22, 800); g.fillText(notice.sub, L + 10, 352);
+    } else if (h.banner && h.banner.main) {
       g.fillStyle = RED; const bs = fit(h.banner.main, LW, 44); g.fillText(h.banner.main, L, 306);
       const used = g.measureText(h.banner.main).width;
       if (h.banner.sub && used + 40 < LW) { g.fillStyle = INK; fit(h.banner.sub, LW - used - 24, Math.min(28, bs)); g.fillText(h.banner.sub, L + used + 24, 306); }
     } else if (h.toast) {
       g.fillStyle = RED; fit(h.toast, LW, 32); g.fillText(h.toast, L, 304);
     }
-    if (h.message) {
+    if (h.message && !notice) {
       g.font = F(25);
       const lines = wrap(h.message, LW - 36, 2);
       rr(L - 6, 322, LW + 12, 20 + lines.length * 32, 18); g.fillStyle = 'rgba(29,36,51,0.88)'; g.fill();
@@ -673,13 +778,23 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
     g.textAlign = 'left';
   }
 
-  return {
+  const api = {
     get active() { return active; },
     get supported() { return supported; },
     get viewScale() { return active ? VIEW_SCALE : 1; },
+    /** main.js multiplies the ball's max speed by this: comfort mode is a bit slower, and the dash eases in */
+    get speedScale() {
+      if (!active) return 1;
+      return ((comfort ? COMFORT_SPEED : 1) * (1 + (DASH_K - 1) * dashRamp)) / (dashHeld ? DASH_K : 1);
+    },
+    get comfort() { return comfort; },
+    setComfort,
+    get vignette() { return vigMesh.visible ? vig.v : 0; },
     onSupported(cb) { supportCbs.push(cb); if (supported !== null) { try { cb(supported); } catch (e) { console.warn(e); } } },
     enter, exit, readInput, update, recenter,
     /** debug / tests: draw a HUD snapshot into the panel canvas now and return the canvas */
     _drawHud(h) { drawHud(h); tex.needsUpdate = true; return cv; },
   };
+  hudRoot.userData.vr = api; // debug / tests: camera.parent.getObjectByName('vr-hud-root').userData.vr
+  return api;
 }

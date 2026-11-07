@@ -48,6 +48,7 @@ await page.addInitScript(() => {
   dev.controllers.left.position.set(-0.2, 1.05, -0.3);
   dev.controllers.right.position.set(0.2, 1.05, -0.3);
   window.__xrDevice = dev;
+  window.vrApi = () => window.__game.camera.parent.getObjectByName('vr-hud-root').userData.vr;
 });
 
 const results = [];
@@ -91,6 +92,8 @@ try {
       ndc: ndc.map((v) => [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)]),
       eyeToBall: eyeW.distanceTo(ball) / rig.scale.x, shadows: g.renderer.shadowMap.enabled,
       hud: rig.getObjectByName('vr-hud').userData.hud, hudVisible: rig.getObjectByName('vr-hud-root').visible,
+      comfort: rig.getObjectByName('vr-hud-root').userData.vr.comfort,
+      camVsHead: g.camera.position.distanceTo(cams[0].position.clone().add(cams[1].position).multiplyScalar(0.5)),
       size: document.getElementById('size').textContent, goal: document.getElementById('goal-label').textContent,
       fb: [g.renderer.domElement.width, g.renderer.domElement.height],
       info: { calls: g.renderer.info.render.calls, tris: g.renderer.info.render.triangles, programs: g.renderer.info.programs.length },
@@ -103,6 +106,8 @@ try {
   check('ball in view of both eyes', st.ndc.every(([x, y, z]) => Math.abs(x) < 0.9 && Math.abs(y) < 0.9 && z < 1), JSON.stringify(st.ndc));
   check('ball ~3.7 m in front of the eye (headset metres)', st.eyeToBall > 3 && st.eyeToBall < 4.5, st.eyeToBall.toFixed(2) + ' m');
   check('shadows off in VR', !st.shadows);
+  check('comfort mode on by default, announced on the HUD', st.comfort && st.hud && /快適/.test(st.hud.notice || ''), st.hud && st.hud.notice);
+  check('headset pose drives the camera (no screen shake/position reaches it)', st.camVsHead < 0.06, st.camVsHead.toFixed(3) + ' m');
   check('HUD panel shows size + goal', st.hudVisible && st.hud && st.hud.size === st.size && st.hud.goal === st.goal, JSON.stringify(st.hud));
   await shot('start');
   const hudPng = await page.evaluate(() => window.__game.camera.parent.getObjectByName('vr-hud').userData.canvas.toDataURL('image/png'));
@@ -113,12 +118,45 @@ try {
   const p0 = await page.evaluate(() => { const b = window.__game.ball; return { x: b.pos.x, z: b.pos.z, hx: b.heading.x, hz: b.heading.z }; });
   await page.evaluate(() => window.__xrDevice.controllers.left.updateAxes('thumbstick', 0, -1));
   await waitFrames(45);
+  const vigMoving = await page.evaluate(() => vrApi().vignette);
   await page.evaluate(() => window.__xrDevice.controllers.left.updateAxes('thumbstick', 0, 0));
   const p1 = await page.evaluate(() => { const b = window.__game.ball; return { x: b.pos.x, z: b.pos.z }; });
   const dx = p1.x - p0.x, dz = p1.z - p0.z, moved = Math.hypot(dx, dz), along = (dx * p0.hx + dz * p0.hz) / (moved || 1);
   check('left stick forward moves the ball forward', moved > 0.3 && along > 0.7, `moved ${moved.toFixed(2)} m, along heading ${along.toFixed(2)}`);
-  await waitFrames(15);
   await shot('moved');
+  await waitFrames(40);
+  const vigStill = await page.evaluate(() => vrApi().vignette);
+  check('tunnel vignette while moving, gone when still', vigMoving > 0.2 && vigStill < 0.03, `moving ${vigMoving.toFixed(2)}, still ${vigStill.toFixed(3)}`);
+
+  // comfort mode: left stick X rolls the ball sideways, the heading (and view) does not turn
+  const side = async (x, n) => {
+    const a = await page.evaluate(() => { const b = window.__game.ball; return { x: b.pos.x, z: b.pos.z, hx: b.heading.x, hz: b.heading.z }; });
+    await page.evaluate((x) => window.__xrDevice.controllers.left.updateAxes('thumbstick', x, 0), x);
+    await waitFrames(n);
+    const vigNow = await page.evaluate(() => vrApi().vignette);
+    await page.evaluate(() => window.__xrDevice.controllers.left.updateAxes('thumbstick', 0, 0));
+    await waitFrames(3);
+    const b = await page.evaluate(() => { const b = window.__game.ball; return { x: b.pos.x, z: b.pos.z, hx: b.heading.x, hz: b.heading.z }; });
+    const dx = b.x - a.x, dz = b.z - a.z;
+    return { lateral: dx * -a.hz + dz * a.hx, turn: (Math.atan2(a.hx * b.hz - a.hz * b.hx, a.hx * b.hx + a.hz * b.hz) * 180) / Math.PI, vig: vigNow };
+  };
+  const c1 = await side(1, 30);
+  check('comfort: stick X rolls sideways to the right, heading unchanged', c1.lateral > 0.2 && Math.abs(c1.turn) < 0.5, JSON.stringify(c1));
+  // B (right) toggles to ふつう: stick X turns smoothly; the choice is remembered
+  await page.evaluate(() => window.__xrDevice.controllers.right.updateButtonValue('b-button', 1));
+  await waitFrames(3);
+  await page.evaluate(() => window.__xrDevice.controllers.right.updateButtonValue('b-button', 0));
+  await waitFrames(3);
+  const tog = await page.evaluate(() => ({ comfort: vrApi().comfort, stored: localStorage.getItem('hamakoro.vr.comfort'), hud: window.__game.camera.parent.getObjectByName('vr-hud').userData.hud }));
+  check('B toggles to ふつう (HUD notice, stored)', !tog.comfort && tog.stored === '0' && /ふつう/.test(tog.hud.notice || ''), JSON.stringify({ comfort: tog.comfort, stored: tog.stored, notice: tog.hud.notice }));
+  await shot('notice');
+  const n1 = await side(1, 20);
+  check('ふつう: stick X turns smoothly right (vignette on yaw)', n1.turn < -5 && n1.vig > 0.05, JSON.stringify(n1));
+  await page.evaluate(() => window.__xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await waitFrames(3);
+  await page.evaluate(() => window.__xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  await waitFrames(3);
+  check('Y toggles back to comfort', await page.evaluate(() => vrApi().comfort && localStorage.getItem('hamakoro.vr.comfort') === '1'));
 
   // right-stick flick → one 30° snap turn to the right (and the view cuts with it)
   const yaw = () => page.evaluate(() => {
@@ -146,10 +184,14 @@ try {
 
   // trigger → dash (faster top speed)
   await page.evaluate(() => { const c = window.__xrDevice.controllers; c.right.updateButtonValue('trigger', 1); c.left.updateAxes('thumbstick', 0, -1); });
-  await waitFrames(40);
+  await waitFrames(3);
+  const ss0 = await page.evaluate(() => vrApi().speedScale);
+  await waitFrames(37);
+  const ss1 = await page.evaluate(() => vrApi().speedScale);
+  check('comfort speedScale 0.8, dash eased in', ss0 < 0.7 && Math.abs(ss1 - 0.8) < 0.01, `just pressed ${ss0.toFixed(2)}, later ${ss1.toFixed(2)} (× main.js dash 1.65)`);
   const dashV = await page.evaluate(() => window.__game.ball.vel.length());
   await page.evaluate(() => { const c = window.__xrDevice.controllers; c.right.updateButtonValue('trigger', 0); c.left.updateAxes('thumbstick', 0, 0); });
-  check('trigger dashes', dashV > 2.6, `speed ${dashV.toFixed(2)} m/s (walk max ≈ 2.5)`);
+  check('trigger dashes', dashV > 2.6, `speed ${dashV.toFixed(2)} m/s (comfort walk max ≈ 2.0)`);
 
   // roll onto something small: the HUD card shows it and the 3D model turns next to the panel
   const picked = await page.evaluate(() => {
