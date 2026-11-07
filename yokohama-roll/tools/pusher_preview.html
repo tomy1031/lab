@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pusher preview</title>
+<style>
+  html, body { margin: 0; background: #cfe6f5; overflow: hidden; }
+  canvas { display: block; }
+  .lbl { position: absolute; font: 13px/1.25 sans-serif; color: #123; background: #fffd; padding: 2px 6px; border-radius: 3px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "../node_modules/three/build/three.module.js" } }
+</script>
+</head>
+<body>
+<script type="module">
+// NexMax pushing the ball, in a grid of tiles. Each tile simulates its own ball for `t` seconds and
+// renders it with the game's camera (dist = 1 + 5.6r, height = 0.45 + 2.4r, aim at centre + 0.55r up)
+// or from the side / front. Used by tools/pusher_shots.mjs.
+//   pusher_preview.html?tiles=[{"r":0.15,"speed":0,"view":"game"},...]&cols=3
+import * as THREE from 'three';
+import { createPusher } from '../js/pusher.js';
+
+const qs = new URLSearchParams(location.search);
+const DEFAULT = [
+  { r: 0.15, speed: 0, view: 'close', label: '30 cm ball, still (side close-up)' },
+  { r: 0.15, speed: 2.5, view: 'close', label: '30 cm, city speed 2.5 m/s (side)' },
+  { r: 0.15, speed: 2.5, view: 'game', label: '30 cm, 2.5 m/s, game camera' },
+  { r: 40, speed: 72, view: 'back34', label: '80 m, Kanto 1.8r/s' },
+  { r: 40, speed: 119, dash: true, view: 'game', label: '80 m, dash, game camera' },
+  { r: 1500, speed: 0, view: 'back34', tilt: [0.9, 0.4, -1.2], cheerAt: 0.2, label: '3000 km, tilted up, cheer hop' },
+];
+const tiles = qs.get('tiles') ? JSON.parse(qs.get('tiles')) : DEFAULT;
+const cols = +(qs.get('cols') || Math.min(3, tiles.length));
+const rows = Math.ceil(tiles.length / cols);
+const W = innerWidth, H = innerHeight;
+const tw = Math.floor(W / cols), th = Math.floor(H / rows);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+renderer.setScissorTest(true);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const errors = [];
+addEventListener('error', (e) => errors.push(String(e.message)));
+
+function stripes() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fbe9c6'; g.fillRect(0, 0, 256, 128);
+  for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#e2483d' : '#2f6db3'; g.fillRect(i * 32, 0, 14, 128); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const ballTex = stripes();
+
+function makeTile(cfg) {
+  const r = cfg.r;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xcfe6f5);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 1.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.bias = -0.0005;
+  sun.shadow.normalBias = 0.02;
+  scene.add(sun, sun.target);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ color: 0x9fbf7a }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.scale.setScalar(r * 400);
+  ground.receiveShadow = true;
+  scene.add(ground);
+  const grid = new THREE.GridHelper(r * 400, 200, 0x557744, 0x7a9a5a);
+  grid.position.y = r * 0.002;
+  scene.add(grid);
+  const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 4), new THREE.MeshLambertMaterial({ map: ballTex }));
+  ball.castShadow = true; ball.receiveShadow = true;
+  ball.scale.setScalar(r);
+  scene.add(ball);
+  const pusher = createPusher();
+  scene.add(pusher.root);
+  const yaw = cfg.yaw ?? 0.6;
+  const st = {
+    pos: new THREE.Vector3(0, r, 0), r, heading: new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)),
+    up: new THREE.Vector3(0, 1, 0), speed: 0, dash: !!cfg.dash, bumped: false, cheer: false,
+  };
+  if (cfg.tilt) {
+    // arbitrary surface normal (as on the planet stage): tilt the whole stage
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(...cfg.tilt));
+    st.up.applyQuaternion(q); st.heading.applyQuaternion(q);
+    st.pos.copy(st.up).multiplyScalar(r);
+    ground.quaternion.premultiply(q); grid.quaternion.premultiply(q); grid.position.applyQuaternion(q);
+  }
+  const speed = cfg.speed * (cfg.speedMul || 1);
+  const T = cfg.t ?? 2.0;
+  const dt = 1 / 60;
+  const axis = new THREE.Vector3();
+  for (let t = 0; t < T; t += dt) {
+    st.speed = speed;
+    st.pos.addScaledVector(st.heading, speed * dt);
+    axis.crossVectors(st.up, st.heading).normalize();
+    ball.rotateOnWorldAxis(axis, (speed * dt) / r);
+    st.bumped = cfg.bumpAt != null && Math.abs(t - (T - cfg.bumpAt)) < dt / 2;
+    st.cheer = cfg.cheerAt != null && Math.abs(t - (T - cfg.cheerAt)) < dt / 2;
+    pusher.update(dt, st);
+  }
+  ball.position.copy(st.pos);
+  const sd = new THREE.Vector3(0.3, 0.75, -0.55).normalize();
+  sun.position.copy(st.pos).addScaledVector(sd, 60 + r * 30);
+  sun.target.position.copy(st.pos);
+  const ext = Math.max(6, r * 16);
+  Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 1, far: (60 + r * 30) * 2 + ext });
+  sun.shadow.camera.updateProjectionMatrix();
+
+  const cam = new THREE.PerspectiveCamera(60, tw / th, Math.max(0.03, r * 0.12), 3000 + r * 300);
+  const right = new THREE.Vector3().crossVectors(st.heading, st.up);
+  if (cfg.view === 'side') {
+    const mid = st.pos.clone().addScaledVector(st.heading, -r * 1.2).addScaledVector(st.up, 0.1 * r);
+    cam.position.copy(mid).addScaledVector(right, r * 5.5).addScaledVector(st.up, r * 0.6);
+    cam.lookAt(mid);
+  } else if (cfg.view === 'close') {
+    const mid = st.pos.clone().addScaledVector(st.heading, -r * 0.95).addScaledVector(st.up, -0.05 * r);
+    cam.position.copy(mid).addScaledVector(right, r * 2.6).addScaledVector(st.up, r * 0.15).addScaledVector(st.heading, -r * 0.3);
+    cam.lookAt(mid);
+  } else if (cfg.view === 'back34') {
+    const mid = st.pos.clone().addScaledVector(st.heading, -r * 0.8);
+    cam.position.copy(mid).addScaledVector(st.heading, -r * 2.6).addScaledVector(right, -r * 2.2).addScaledVector(st.up, r * 1.4);
+    cam.up.copy(st.up);
+    cam.lookAt(mid);
+  } else if (cfg.view === 'front') {
+    const mid = st.pos.clone().addScaledVector(st.heading, -r * 1.2);
+    cam.position.copy(mid).addScaledVector(st.heading, r * 6).addScaledVector(right, r * 2.5).addScaledVector(st.up, r * 1.5);
+    cam.lookAt(mid);
+  } else if (cfg.view === 'top') {
+    const mid = st.pos.clone().addScaledVector(st.heading, -r * 1.2);
+    cam.position.copy(mid).addScaledVector(st.up, r * 7).addScaledVector(right, r * 0.01);
+    cam.up.copy(st.heading);
+    cam.lookAt(mid);
+  } else {
+    const dist = 1.0 + r * 5.6, height = 0.45 + r * 2.4;
+    cam.position.copy(st.pos).addScaledVector(st.heading, -dist).addScaledVector(st.up, height);
+    cam.up.copy(st.up);
+    cam.lookAt(st.pos.clone().addScaledVector(st.up, r * 0.55));
+  }
+  return { scene, cam, pusher, cfg };
+}
+
+const built = [];
+for (let i = 0; i < tiles.length; i++) {
+  try { built.push(makeTile(tiles[i])); } catch (e) { errors.push(String(e.stack || e)); built.push(null); }
+}
+for (let i = 0; i < built.length; i++) {
+  const b = built[i];
+  if (!b) continue;
+  const x = (i % cols) * tw, y = H - (Math.floor(i / cols) + 1) * th;
+  renderer.setViewport(x, y, tw, th);
+  renderer.setScissor(x, y, tw, th);
+  renderer.render(b.scene, b.cam);
+  const l = document.createElement('div');
+  l.className = 'lbl';
+  l.style.left = (x + 6) + 'px';
+  l.style.top = (Math.floor(i / cols) * th + 6) + 'px';
+  const c = b.cfg;
+  l.textContent = c.label || `r=${c.r} speed=${c.speed}${c.dash ? ' dash' : ''} ${c.view || 'game'}`;
+  document.body.appendChild(l);
+}
+const st = built.find(Boolean)?.pusher.stats();
+window.__previewDone = { tiles: built.length, errors, stats: st, layout: built.find(Boolean)?.pusher.info, render: renderer.info.render };
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+# Rebuild the lab site (link page + every project) and push it to the gh-pages branch,
+# which GitHub Pages serves (Settings → Pages → Deploy from a branch → gh-pages / (root)).
+name: Publish lab site
+
+on:
+  push:
+    branches:
+      - claude/yokohama-roll
+      - claude/nextmake-investment-video-jaigyl
+    paths:
+      - 'site/**'
+      - 'yokohama-roll/index.html'
+      - 'yokohama-roll/js/**'
+      - 'nextmake-mv/output/**'
+      - '.github/workflows/pages.yml'
+  schedule:
+    - cron: '23 18 * * *' # daily, picks up changes on the other project branches
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-lab-site
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build and push gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          sh site/publish.sh
