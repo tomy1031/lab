@@ -56,6 +56,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   fs.mkdirSync(dest, { recursive: true });
   copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
   copy(path.join(src, 'js'), path.join(dest, 'js'));
+  if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
 }
 
 // 02 NEXTMAKE Films — the 720p share versions and posters
