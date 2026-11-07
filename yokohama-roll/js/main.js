@@ -179,7 +179,11 @@ const sfx = (fn, ...a) => { try { audio && audio[fn] && audio[fn](...a); } catch
 
 $('loading-text').textContent = 'ヨコハマを つくっています…';
 await new Promise((r) => setTimeout(r, 20));
-const town = buildTown(scene, reg, material, { log: DEBUG, density: parseFloat(qs.get('density') || '1') });
+const vrDevice = await Promise.race([
+  navigator.xr && navigator.xr.isSessionSupported ? navigator.xr.isSessionSupported('immersive-vr').catch(() => false) : false,
+  new Promise((r) => setTimeout(() => r(false), 500)),
+]);
+const town = buildTown(scene, reg, material, { log: DEBUG, density: parseFloat(qs.get('density') || (vrDevice ? '0.6' : '1')) });
 let stage = town;      // current stage object (town, kanto or globe)
 let globe = null, kanto = null;
 let stageName = 'town';
@@ -969,7 +973,7 @@ function disposeFlatStage(st) {
 function enterKanto() {
   disposeFlatStage(town);
   kanto = buildKanto(scene, kantoReg, material, {
-    log: DEBUG, texSize: innerWidth < 900 ? 2048 : 4096, density: parseFloat(qs.get('density') || '1'),
+    log: DEBUG, texSize: innerWidth < 900 || vrDevice ? 2048 : 4096, density: parseFloat(qs.get('density') || (vrDevice ? '0.6' : '1')),
     fujiGeom: worldReg.get('mt_fuji') ? worldReg.get('mt_fuji').geom : null,
   });
   stage = kanto; stageName = 'kanto';
@@ -1219,7 +1223,7 @@ function frame() {
   }
   bumpedNow = false; cheerNow = false;
   cardT -= dt;
-  itemViewer.update(dt);
+  if (!vrActive()) itemViewer.update(dt); // the headset shows the item on its own panel
   if (state !== 'title') ceo.update(dt, ball);
   ceoDropCool -= dt;
   if (state === 'play' && mode !== 'otsukai') {
@@ -1231,12 +1235,12 @@ function frame() {
       ceo.say(CEO.idle(needDisplay(Math.max(0, g.d - ball.r * 2))), { hold: 3.5 });
     }
   }
-  stage.objs.updateVisibility(camera.position, ball.r, stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1);
+  stage.objs.updateVisibility(camera.position, ball.r, (stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1) * (vr ? vr.viewScale : 1));
   core.scale.setScalar(ball.r * 0.86);
   updateEnvironment(dt);
   if (state !== 'title') updateHUD();
   if (vrActive()) vr.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, state, stage: stageName });
-  if (frameNo % 3 === 0) {
+  if (frameNo % 3 === 0 && !vrActive()) {
     if (stageName !== 'world') minimap.drawTown(ball.pos.x, ball.pos.z, Math.atan2(ball.heading.x, ball.heading.z), ball.r);
     else minimap.drawWorld(vecToLatLon(ball.pos), ball.r);
   }
@@ -1249,8 +1253,9 @@ function frame() {
 }
 renderer.setAnimationLoop(frame); // works on screen and inside a WebXR session
 
-document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused) togglePause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused && !vrActive()) togglePause(); });
 addEventListener('resize', () => {
+  if (renderer.xr.isPresenting) return;
   renderer.setSize(innerWidth, innerHeight);
   if (pusherMod) pusherMod.setOutlineViewport(renderer.getDrawingBufferSize(new THREE.Vector2()).y);
   camera.aspect = innerWidth / innerHeight;

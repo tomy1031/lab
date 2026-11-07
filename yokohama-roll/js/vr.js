@@ -61,7 +61,7 @@ const FRAME_RATE = 72;
 const HUD_PERIOD = 0.2;         // redraw the panel at 5 Hz (only when something changed)
 const HUD_W = 1024, HUD_H = 576;
 const PANEL_W = 0.54, PANEL_H = (PANEL_W * HUD_H) / HUD_W; // ~33° × 19° at PANEL_DIST
-const PANEL_DIST = 0.9, PANEL_PITCH = THREE.MathUtils.degToRad(40); // just below the ball and NexMax: a glance down
+const PANEL_DIST = 0.9, PANEL_PITCH = THREE.MathUtils.degToRad(42); // just below the ball and NexMax: a glance down
 const RESULT_DIST = 1.25, RESULT_PITCH = THREE.MathUtils.degToRad(6), RESULT_SCALE = 1.3; // result: at eye level
 const CARD = { x: 660, y: 24, w: 332 };
 const FONT = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif';
@@ -671,9 +671,12 @@ export function setupVR({ renderer, scene, camera, rig, material, getHud }) {
       g.fillStyle = INK; fit(notice.main, LW - 24, 34); g.fillText(notice.main, L + 10, 312);
       fit(notice.sub, LW - 24, 22, 800); g.fillText(notice.sub, L + 10, 352);
     } else if (h.banner && h.banner.main) {
-      g.fillStyle = RED; const bs = fit(h.banner.main, LW, 44); g.fillText(h.banner.main, L, 306);
+      const sub = h.banner.sub || '';
+      g.font = F(26);
+      const subW = sub ? Math.min(g.measureText(sub).width, LW * 0.4) : 0;
+      g.fillStyle = RED; fit(h.banner.main, LW - (sub ? subW + 20 : 0), 44); g.fillText(h.banner.main, L, 306);
       const used = g.measureText(h.banner.main).width;
-      if (h.banner.sub && used + 40 < LW) { g.fillStyle = INK; fit(h.banner.sub, LW - used - 24, Math.min(28, bs)); g.fillText(h.banner.sub, L + used + 24, 306); }
+      if (sub) { g.fillStyle = INK; fit(sub, LW - used - 20, 26); g.fillText(sub, L + used + 20, 306); }
     } else if (h.toast) {
       g.fillStyle = RED; fit(h.toast, LW, 32); g.fillText(h.toast, L, 304);
     }

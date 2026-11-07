@@ -138,6 +138,7 @@ try {
     await waitFrames(3);
     const b = await page.evaluate(() => { const b = window.__game.ball; return { x: b.pos.x, z: b.pos.z, hx: b.heading.x, hz: b.heading.z }; });
     const dx = b.x - a.x, dz = b.z - a.z;
+    // lateral: along right = heading × up; turn: degrees to the right (positive = clockwise from above)
     return { lateral: dx * -a.hz + dz * a.hx, turn: (Math.atan2(a.hx * b.hz - a.hz * b.hx, a.hx * b.hx + a.hz * b.hz) * 180) / Math.PI, vig: vigNow };
   };
   const c1 = await side(1, 30);
@@ -151,7 +152,7 @@ try {
   check('B toggles to ふつう (HUD notice, stored)', !tog.comfort && tog.stored === '0' && /ふつう/.test(tog.hud.notice || ''), JSON.stringify({ comfort: tog.comfort, stored: tog.stored, notice: tog.hud.notice }));
   await shot('notice');
   const n1 = await side(1, 20);
-  check('ふつう: stick X turns smoothly right (vignette on yaw)', n1.turn < -5 && n1.vig > 0.05, JSON.stringify(n1));
+  check('ふつう: stick X turns smoothly right (vignette on yaw)', n1.turn > 5 && n1.vig > 0.05, JSON.stringify(n1)); // side(): right turn > 0
   await page.evaluate(() => window.__xrDevice.controllers.left.updateButtonValue('y-button', 1));
   await waitFrames(3);
   await page.evaluate(() => window.__xrDevice.controllers.left.updateButtonValue('y-button', 0));
