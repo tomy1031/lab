@@ -26,7 +26,7 @@ export class Staircase {
     // Resume slightly easier than last time's threshold: a warm-up that keeps the first
     // trials of a session rewarding, then the staircase walks back down within a few trials.
     const startVal = saved?.thr ?? saved?.value ?? o.start;
-    this.x = Math.log10(startVal) + (saved ? 0.08 * this.easier : 0);
+    this.x = Math.log10(startVal) + (saved ? 0.12 * this.easier : 0);
     this.clamp();
     this.streak = 0;
     this.lastDir = 0;

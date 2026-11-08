@@ -18,8 +18,9 @@ export class SpiritsModule extends Module {
   start() {
     super.start();
     const app = this.app, v = app.view;
-    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-det`, v.sfBands, {
-      start: 0.2, min: 0.002, max: 1, steps: [0.2, 0.1, 0.05],
+    // '-det2': thresholds are kept per pedestal luminance, so the brighter pedestal starts fresh
+    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-det2`, v.sfBands, {
+      start: 0.5, min: 0.002, max: 1, steps: [0.2, 0.1, 0.05],
     });
     this.spirits = [];
     this.spawnIn = 1.2;
@@ -38,7 +39,7 @@ export class SpiritsModule extends Module {
     const nb = v.sfBands.length;
     const cell = this.grid.pick(this.highOnly && nb > 2 ? (c) => c.band >= nb - 2 : null);
     const sf = cell.sf;
-    const sigma = clamp(1.1 / sf, this.minSigma, 0.85);
+    const sigma = clamp(1.3 / sf, this.minSigma, 0.95);   // a few more stripes: easier to spot
     const disc = sigma * 7;
     // fine gratings stay nearer the centre of gaze, where acuity is highest
     const maxEcc = sf > 4 ? Math.min(14, v.field.az) : v.field.az;

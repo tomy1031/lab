@@ -11,8 +11,10 @@ vec3 encodeSRGB(vec3 c){ c = clamp(c, 0.0, 1.0); return mix(c * 12.92, 1.055 * p
 float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 `;
 
-export const MEAN_LUM = 0.3;   // linear luminance of the stimulus pedestal
-const TINT = new THREE.Vector3(1.0, 0.975, 0.93);
+// A bright, clean moonlight-white pedestal: higher mean luminance makes the stripes easier to see
+// (contrast sensitivity rises with luminance) and a neutral tint reads clearly against the night.
+export const MEAN_LUM = 0.5;   // linear luminance of the stimulus pedestal
+const TINT = new THREE.Vector3(0.95, 0.98, 1.0);
 
 const gaborVS = /* glsl */`
   varying vec2 vUv;

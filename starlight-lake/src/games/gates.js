@@ -19,7 +19,7 @@ export class GatesModule extends Module {
     const app = this.app, v = app.view;
     const bands = v.kind === 'screen' ? v.sfBands.filter((sf) => (1 / sf) * 14 < v.field.el * 2) : v.sfBands;
     this.bands = bands.length ? bands : v.sfBands.slice(-1);
-    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-lm`, this.bands, { start: 0.3, min: 0.003, max: 1, steps: [0.2, 0.1, 0.05] });
+    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-lm2`, this.bands, { start: 0.5, min: 0.003, max: 1, steps: [0.2, 0.1, 0.05] });
     const s = app.store.data;
     this.minDur = app.settings.age >= 40 ? 0.1 : 0.08;
     this.dur = Math.max(this.minDur, s.gatesDuration ?? (app.settings.age >= 40 ? 0.6 : 0.5));
