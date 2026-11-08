@@ -93,7 +93,7 @@ const CEO = {
   otsukai: 'ネクマックス、おつかいを 頼む。リストの 6つを 集めてきてくれ。大きい物は 玉を 育ててからだ。',
   kanto0: '関東から だな。夜明けの 川崎から いこう。まずは 1km。',
   world0: '日本から だな。日本列島を まるめて、世界へ ひろげるぞ。',
-  drop: ['あわてるな。ぶつかる前に よく見るんだ。', '急がば回れ、だ。大きい物は よけて通れ。', 'ダッシュは 使いどころが 大事だぞ。', '動いている物には 気をつけろ。'],
+  drop: ['クルマには 気をつけろ。', '動いている物の 前に 出るな。', 'あわてるな。落とした物は また 拾えばいい。'],
   idle: (left) => `目標まで あと ${left}。手を 止めるな。`,
   errand: (name, left) => (left ? `${name}、たしかに 受け取った。あと ${left}つだ。` : 'ぜんぶ そろったな。ありがとう、助かった。'),
   result: {
@@ -245,6 +245,15 @@ addEventListener('keyup', (e) => keys.delete(e.code));
 addEventListener('blur', () => keys.clear());
 
 const joy = { active: false, id: null, x: 0, y: 0, ox: 0, oy: 0 };
+// phones: dash only while the dash button is held (pushing the stick to the edge no longer dashes)
+let touchDash = false;
+{
+  const b = $('btn-dash');
+  const on = (e) => { touchDash = true; b.classList.add('on'); e.preventDefault(); };
+  const off = () => { touchDash = false; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on);
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, off);
+}
 let dragYaw = 0; // accumulated camera yaw from mouse/touch drag
 let mouseDrag = null;
 const cv = renderer.domElement;
@@ -286,7 +295,7 @@ function readInput() {
   if (keys.has('KeyA') || keys.has('ArrowLeft')) t -= 1;
   if (keys.has('KeyD') || keys.has('ArrowRight')) t += 1;
   if (joy.active) { f += joy.y; t += joy.x * 0.9; }
-  const dash = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight') || (joy.active && Math.hypot(joy.x, joy.y) > 0.97);
+  const dash = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight') || touchDash;
   let sx = 0; // sideways roll (VR comfort mode moves the ball sideways instead of turning the view)
   if (vrActive()) {
     const v = vr.readInput();
@@ -642,12 +651,14 @@ function moveSphere(h) {
   ball.heading.addScaledVector(n, -ball.heading.dot(n)).normalize();
 }
 
-// Collisions. Smaller things stick; low things (lower than about half the ball's radius) are rolled
-// over; anything else is a wall. Whether a hit knocks items off depends on how hard it was:
-// the closing speed (your speed plus the other thing's, if it was moving into you) against your
-// normal top speed, and how much bigger the obstacle is than what you could pick up.
-// Normal-speed bumps never cost anything; a full dash into a building, or a car running into you, can.
-const CLIMB_K = 0.55;
+// Collisions.
+// - Smaller than about 72% of the ball's diameter: rolled up.
+// - Low (top no higher than the ball's centre: a ball rolls over a step up to its axle), or flat (much wider than tall, like a
+//   field, a plaza or an airport, whose top is within 1.4 radii): rolled over, never a wall.
+// - Anything else is a wall: you bounce off and are told from which size it can be rolled up.
+// Items only come off when something MOVING runs into you fast (a car, a train, a ship) — never just for
+// rolling into a still wall, however fast.
+const CLIMB_K = 1.0, CLIMB_FLAT_K = 1.4, FLAT_RATIO = 0.3;
 let lastBump = null, dropCool = 0, hintCool = 0;
 const ZERO = new THREE.Vector3();
 function topOf(o) {
@@ -655,23 +666,32 @@ function topOf(o) {
   if (stageName === 'world') return o.pos.length() + stage.objs.topHeight(o);
   return o.pos.y + stage.objs.topHeight(o);
 }
+// Top height to ride on if the ball can roll over this object, else null.
+function rideTop(o, base, r) {
+  const top = topOf(o);
+  const h = top - base;
+  if (h <= r * CLIMB_K) return top;
+  const p = o.proto;
+  if (p.h <= FLAT_RATIO * Math.max(p.w, p.d) && h <= r * CLIMB_FLAT_K) return top;
+  return null;
+}
 function collide() {
   const r = ball.r;
   const hits = [];
-  stage.objs.contacts(ball.pos, r, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
+  // look a little beyond the ball so riding on top of something doesn't flicker on and off
+  stage.objs.contacts(ball.pos, r * 1.12, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
   const base = stageName === 'world' ? ball.pos.length() - r : ball.pos.y - r; // bottom of the ball
   ball.support = -Infinity;
   for (const hit of hits) {
     const o = hit.o;
     if (o.picked) continue;
     if (o.cool > 0) continue;
-    if (o.size < r * PICK_K) { pick(o); continue; }
-    const top = topOf(o);
-    if (top - base <= r * CLIMB_K) {
-      ball.support = Math.max(ball.support, top); // roll over it
-      continue;
-    }
-    // solid: push out along the surface tangent
+    const touching = hit.dist < r;
+    if (touching && o.size < r * PICK_K) { pick(o); continue; }
+    const top = rideTop(o, base, r);
+    if (top !== null) { ball.support = Math.max(ball.support, top); continue; } // roll over it
+    if (!touching) continue;
+    // a wall: push out along the surface tangent
     const n = hit.normal;
     n.addScaledVector(ball.up, -n.dot(ball.up));
     if (n.lengthSq() < 1e-6) continue;
@@ -680,28 +700,27 @@ function collide() {
     ball.pos.addScaledVector(n, pen + 1e-4);
     const ov = o.vel || ZERO;
     const vn = ball.vel.dot(n), on = ov.dot(n);
-    if (vn < 0) ball.vel.addScaledVector(n, -vn * 1.45);       // bounce off
+    if (vn < 0) ball.vel.addScaledVector(n, -vn * 1.3);         // bounce off
     if (on > ball.vel.dot(n)) ball.vel.addScaledVector(n, on - ball.vel.dot(n)); // shoved by a moving thing
     const ms = maxSpeed(false);
     const impact = Math.max(0, on - vn) / ms; // closing speed; 1 = head-on at normal top speed
     if (bumpCool > 0 || impact < 0.25) continue;
     bumpCool = 0.35;
-    shake = Math.max(shake, Math.min(1, impact) * 0.6);
+    shake = Math.max(shake, Math.min(1, impact) * 0.5);
     sfx('sfxBump', Math.min(1, impact));
     bumpedNow = true;
     lastBump = o.name;
-    const heavy = Math.min(1, Math.max(0, o.size / (r * PICK_K) - 1));
-    const damage = impact * (0.7 + 0.3 * heavy);
-    if (damage > 1.15 && dropCool <= 0 && ball.items.length > 4) {
-      const lost = dropItems(damage > 1.6 ? 2 : 1, n);
+    const hitBy = on / ms; // how fast the other thing was coming at you
+    if (hitBy > 0.6 && dropCool <= 0 && ball.items.length > 4) {
+      const lost = dropItems(hitBy > 1.3 ? 2 : 1, n);
       if (lost.length) {
-        dropCool = 2.5;
-        const what = lost.join('と');
-        const moving = ov.lengthSq() > (ms * 0.25) ** 2;
-        notice(moving ? `${o.name}に ぶつかられて ${what}を おとした！` : inpDash ? `ダッシュで ${o.name}に 激突！ ${what}を おとした` : `${o.name}に 強く ぶつかって ${what}を おとした`);
+        dropCool = 3;
+        notice(`${o.name}に ぶつけられて ${lost.join('と')}を おとした！`);
         ceoReact('drop');
+        continue;
       }
-    } else if (hintCool <= 0) {
+    }
+    if (hintCool <= 0) {
       hintCool = 4;
       notice(`${o.name}は 直径 ${needDisplay(o.size / PICK_K * 2)} から まきこめる`);
     }

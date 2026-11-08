@@ -114,6 +114,11 @@
   #result-ceo { display: flex; gap: 10px; align-items: center; text-align: left; background: #eef2fa; border-radius: 12px; padding: 6px 10px; margin: 10px 0 2px; }
   #result-ceo img { width: 44px; height: 44px; border-radius: 50%; flex: none; }
   #result-ceo p { margin: 0; font-weight: 800; font-size: 14px; }
+  #btn-dash { display: none; position: absolute; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(270px + env(safe-area-inset-bottom, 0px));
+    width: 78px; height: 78px; border-radius: 50%; border: 3px solid rgba(255,255,255,.9); background: rgba(226,72,61,.78); color: #fff;
+    font-weight: 800; font-size: 14px; pointer-events: auto; touch-action: none; box-shadow: var(--shadow); }
+  #btn-dash.on { background: var(--red); transform: scale(.94); }
+  @media (pointer: coarse) { #btn-dash { display: block; } }
   #timer.hurry { background: var(--red); color: #fff; animation: pulse 1s infinite; }
   @keyframes pulse { 50% { transform: scale(1.08); } }
 
@@ -192,7 +197,7 @@
   <div class="howto">
     <kbd>W</kbd><kbd>↑</kbd> 前へ　<kbd>S</kbd><kbd>↓</kbd> うしろ　<kbd>A</kbd><kbd>D</kbd> 向きをかえる　<kbd>Space</kbd> ダッシュ<br>
     マウスをドラッグでカメラ回転　<kbd>M</kbd> 音　<kbd>P</kbd> ポーズ<br>
-    スマホは 画面の左がわを スティック、右がわを ドラッグでカメラ<br>
+    スマホは 画面の左がわを スティック、右がわを ドラッグでカメラ、赤いボタンで ダッシュ<br>
     玉より ちいさい物を まきこんで 大きくなろう！ 横浜 → 関東 → 日本 → そして世界へ。
   </div>
 </div>
@@ -219,6 +224,7 @@
   <div id="count-box"><small>まきこんだ数</small><div id="count">0 こ</div></div>
   <div id="toast"></div>
   <div id="notice" role="status"></div>
+  <button id="btn-dash" aria-label="ダッシュ（押しているあいだ）">ダッシュ</button>
   <div id="ceo" class="hidden"><img id="ceo-face" src="img/ceo_face.webp" alt="松井社長" width="56" height="56"><div class="ceo-body"><b>松井社長</b><p id="ceo-text"></p></div></div>
   <div id="banner"><div id="banner-main"></div><div id="banner-sub"></div></div>
   <div id="message"></div>
