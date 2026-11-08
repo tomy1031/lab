@@ -52,13 +52,38 @@ fs.writeFileSync(path.join(out, '.nojekyll'), '');
 copy(path.join(siteSrc, 'index.html'), path.join(out, 'index.html'));
 copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
 
-// 01 ハマころ！ — the game is static files: page + ES modules (three.js comes from the CDN)
+// 01 ハマころ！ — the game is static files: page + ES modules (three.js comes from the CDN).
+// Cache-proof publishing: the code goes into v/<build>/ (a new folder for every change, so browsers can
+// keep it forever and never run stale code), index.html points there, version.json names the build,
+// and sw.js (service worker) is filled in with the build and its file list for the installable PWA.
 {
   const src = exportDir(refs.yokohama, 'yokohama-roll');
   const dest = path.join(out, 'yokohama-roll');
   fs.mkdirSync(dest, { recursive: true });
-  copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
-  copy(path.join(src, 'js'), path.join(dest, 'js'));
+  const build = sh(`git -C "${root}" rev-parse "${refs.yokohama}:yokohama-roll"`).slice(0, 12); // content hash of the game folder
+  const vdir = path.join(dest, 'v', build);
+  fs.mkdirSync(vdir, { recursive: true });
+  copy(path.join(src, 'js'), path.join(vdir, 'js'));
+  if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
+  let html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
+  const tag = '<script type="module" src="js/main.js"></script>';
+  if (!html.includes(tag)) throw new Error('yokohama-roll/index.html: main.js script tag not found');
+  html = html.replace(tag,
+    `<script>window.HAMAKORO_BUILD = '${build}';</script>\n` +
+    // a page cached from before a deploy points at a folder that is gone: fetch the page afresh
+    `<script type="module" src="v/${build}/js/main.js" onerror="location.replace(location.pathname + '?r=' + Date.now())"></script>`);
+  fs.writeFileSync(path.join(dest, 'index.html'), html);
+  fs.writeFileSync(path.join(dest, 'version.json'), JSON.stringify({ build }) + '\n');
+  for (const f of ['manifest.webmanifest']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(path.relative(dest, p).split(path.sep).join('/')); } };
+  walk(dest);
+  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html')];
+  if (fs.existsSync(path.join(src, 'sw.js'))) {
+    const sw = fs.readFileSync(path.join(src, 'sw.js'), 'utf8').replace("'__BUILD__'", `'${build}'`).replace('__PRECACHE__', JSON.stringify(precache));
+    fs.writeFileSync(path.join(dest, 'sw.js'), sw);
+  }
+  console.log(`yokohama-roll build ${build}: ${files.length} files`);
 }
 
 // 02 NEXTMAKE Films — the 720p share versions and posters

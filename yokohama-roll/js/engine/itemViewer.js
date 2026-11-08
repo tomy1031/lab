@@ -3,10 +3,10 @@
 import * as THREE from 'three';
 
 export class ItemViewer {
-  constructor(canvas, material) {
+  constructor(canvas, material, { pixelRatio = 2, antialias = true } = {}) {
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, pixelRatio));
     this.renderer.setClearColor(0x000000, 0);
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 1.6));

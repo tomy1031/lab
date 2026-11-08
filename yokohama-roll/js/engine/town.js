@@ -256,6 +256,9 @@ export function buildTown(scene, reg, material, opts = {}) {
     e.list.push(p);
   }
   for (const [k, e] of ids) if (e.tier > 2) ids.delete(k);
+  // With fewer small things (density < 1, for slower devices) each one counts for more, so the game
+  // keeps its pace: main.js multiplies what a catch adds by o.dw.
+  const DW = 1 / (opts.density || 1);
   const counted = { 0: 0, 1: 0, 2: 0 };
   let scatterTotal = 0;
   const districtsDone = [];
@@ -283,6 +286,7 @@ export function buildTown(scene, reg, material, opts = {}) {
           if (rectHit(x, z, fr) || occHit(x, z, fr)) continue;
           if (p.maxDim > 2 && nearStart(x, z, 6)) continue;
           const o = place(p, x, 0, z, rnd() * Math.PI * 2);
+          o.dw = DW;
           if (p.maxDim >= 0.9) occAdd(x, z, fr * 0.9);
           if (p.move === 'walk' || p.move === 'hop') {
             objs.addMover(o, { type: p.move, hx: x, hz: z, tx: x, tz: z, wait: rnd() * 3, speed: p.speed, yaw: rnd() * 6.28, phase: rnd() * 6 });
@@ -316,6 +320,7 @@ export function buildTown(scene, reg, material, opts = {}) {
         if (M.onRoad(x, z, fr + 0.3)) continue;
         if (rectHit(x, z, fr) || occHit(x, z, fr)) continue;
         const o = place(p, x, 0, z, rnd() * Math.PI * 2);
+        o.dw = DW;
         if (p.maxDim >= 0.9) occAdd(x, z, fr * 0.9);
         if (p.move === 'walk' || p.move === 'hop') {
           objs.addMover(o, { type: p.move, hx: x, hz: z, tx: x, tz: z, wait: rnd() * 3, speed: p.speed, yaw: rnd() * 6.28, phase: rnd() * 6 });
@@ -392,6 +397,7 @@ export function buildTown(scene, reg, material, opts = {}) {
   }
 
   objs.finalize();
+  objs.useGrid(24); // ~30k objects: look only at nearby cells for collisions and the ball's pull
   if (opts.log) console.log('town objects', objs.objs.length, 'scatter', scatterTotal, counted, 'movers', objs.movers.length);
 
   // ---------- movers ----------
@@ -410,16 +416,23 @@ export function buildTown(scene, reg, material, opts = {}) {
     }
   }
 
-  let time = 0;
-  function updateMovers(dt, ball, pickK) {
-    time += dt;
+  let time = 0, tick = 0;
+  // Movers near the ball move every frame; further out (where a step is a few pixels at most) each one
+  // moves every 4th frame by the time that passed, a quarter of them per frame.
+  function updateMovers(frameDt, ball, pickK) {
+    time += frameDt; tick++;
     const bx = ball.pos.x, bz = ball.pos.z, br = ball.r;
-    const range = 260 + br * 30;
-    for (const o of objs.movers) {
+    const range = 260 + br * 30, near = 50 + br * 16;
+    const movers = objs.movers;
+    for (let i = 0; i < movers.length; i++) {
+      const o = movers[i];
       if (o.picked) continue;
       const m = o.mover;
       const dxB = o.pos.x - bx, dzB = o.pos.z - bz;
       if (m.type !== 'drive' && m.type !== 'cable' && (dxB > range || dxB < -range || dzB > range || dzB < -range)) continue;
+      m.acc = (m.acc || 0) + frameDt;
+      if ((dxB > near || dxB < -near || dzB > near || dzB < -near) && ((i + tick) & 3) !== 0) continue;
+      const dt = Math.min(m.acc, 0.5); m.acc = 0;
       if (m.type === 'walk' || m.type === 'hop') {
         const d = Math.hypot(dxB, dzB);
         let vx = 0, vz = 0, sp = m.speed;
