@@ -668,6 +668,7 @@ export class Game {
       visible = on && this.coachHold > 0 && this.state !== 'paused';
       if (this.state === 'tutorial') visible = true;
     }
+    this.coach.projector.motes.material.uniforms.px.value = this.pxScale;
     this.coach.update(dt, { visible });
   }
 
