@@ -1,7 +1,7 @@
 // main.js — ハマころ！ game loop, ball physics, camera, HUD and stage flow.
 import * as THREE from 'three';
 import { makeToyMaterial, nightUniform } from './material.js';
-import { ProtoRegistry } from './engine/objects.js';
+import { ProtoRegistry, LOD } from './engine/objects.js';
 import { buildTown } from './engine/town.js';
 import { buildGlobe, EARTH_R, latLonToVec, vecToLatLon } from './engine/globe.js';
 import { buildKanto } from './engine/kanto.js';
@@ -9,6 +9,7 @@ import * as K from './kanto_map.js';
 import { Minimap } from './engine/minimap.js';
 import { ItemViewer } from './engine/itemViewer.js';
 import { Ceo } from './ceo.js';
+import { resolveQuality, savedChoice, saveChoice, FpsGuard, PRESETS } from './quality.js';
 import * as M from './map.js';
 
 const qs = new URLSearchParams(location.search);
@@ -46,10 +47,14 @@ const SIZE_K_KANTO = 0.6;
 let stageStartD = START_R * 2;
 
 // ---------------------------------------------------------------- renderer / scene
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, qs.has('lowres') ? 1 : 1.75));
+// Graphics quality: 'auto' picks 高/中/低 from the device; the title screen lets the player choose.
+const Q = resolveQuality(qs.get('quality') || savedChoice());
+const renderer = new THREE.WebGLRenderer({ antialias: Q.antialias, powerPreference: 'high-performance' });
+const basePixelRatio = Math.min(devicePixelRatio, qs.has('lowres') ? 1 : Q.pixelRatio);
+renderer.setPixelRatio(basePixelRatio);
+const fpsGuard = new FpsGuard(renderer, basePixelRatio);
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = !qs.has('noshadow');
+renderer.shadowMap.enabled = !qs.has('noshadow') && Q.shadows;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 $('app').appendChild(renderer.domElement);
 
@@ -62,7 +67,7 @@ rig.name = 'camera-rig';
 rig.add(camera);
 const material = makeToyMaterial();
 scene.add(rig);
-const itemViewer = new ItemViewer($('item-canvas'), material);
+const itemViewer = new ItemViewer($('item-canvas'), material, { pixelRatio: Q.level === 'low' ? 1 : 2, antialias: Q.antialias });
 const ceo = new Ceo({ scene, box: $('ceo'), text: $('ceo-text') });
 
 // 松井社長's orders. Indexes of the stage arrays follow that stage's goals: [i] is said when goal i is reached.
@@ -136,7 +141,7 @@ const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 1.4);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 2.2);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(Q.shadowMap, Q.shadowMap);
 sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
@@ -183,7 +188,9 @@ const vrDevice = await Promise.race([
   navigator.xr && navigator.xr.isSessionSupported ? navigator.xr.isSessionSupported('immersive-vr').catch(() => false) : false,
   new Promise((r) => setTimeout(() => r(false), 500)),
 ]);
-const town = buildTown(scene, reg, material, { log: DEBUG, density: parseFloat(qs.get('density') || (vrDevice ? '0.6' : '1')) });
+const density = parseFloat(qs.get('density') || String(Math.min(Q.density, vrDevice ? 0.6 : 1)));
+LOD.k = qs.has('lod') ? +qs.get('lod') : Q.lodK; // far things are drawn with simplified models
+const town = buildTown(scene, reg, material, { log: DEBUG, density });
 let stage = town;      // current stage object (town, kanto or globe)
 let globe = null, kanto = null;
 let stageName = 'town';
@@ -466,13 +473,14 @@ function bulkOf(o) {
   return Math.max(w, m * 0.08) * Math.max(d, m * 0.08) * Math.max(h, m * 0.18);
 }
 function growthOf(o) {
-  const a = stageName === 'town' ? o.vol * GROW_K : bulkOf(o) * (stageName === 'kanto' ? SIZE_K_KANTO : SIZE_K);
+  const a = (stageName === 'town' ? o.vol * GROW_K : bulkOf(o) * (stageName === 'kanto' ? SIZE_K_KANTO : SIZE_K)) * (o.dw || 1);
   const c = growCap() * ball.vol;
   if (!isFinite(c)) return a;
   return a / Math.cbrt(1 + (a / c) ** 3); // ~linear below the cap, flat above it
 }
 function pick(o) {
   o.picked = true;
+  stage.objs.touch(o);
   const gained = growthOf(o);
   ball.vol += gained;
   const newR = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
@@ -535,6 +543,11 @@ function buryItems() {
 
 // Knock items off the ball after a hard hit. Only things stuck on the outside fall off, never a big
 // catch (each item may cost at most 4% of the ball), and they land back in the world to be picked up again.
+// things that just fell off the ball can't be picked up again for a moment
+const cooling = new Set();
+function tickCooling(dt) {
+  for (const o of cooling) { o.cool -= dt; if (o.cool <= 0) cooling.delete(o); }
+}
 function dropItems(n, normal) {
   const lost = [];
   for (let i = ball.items.length - 1; i >= 0 && lost.length < n; i--) {
@@ -559,7 +572,9 @@ function dropItems(n, normal) {
     ball.vol = Math.max(ball.vol - (it.gained || 0), (4 / 3) * Math.PI * START_R ** 3);
     ball.r = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
     o.picked = false;
+    stage.objs.touch(o);
     o.cool = 1.5; // can't be re-picked immediately
+    cooling.add(o);
     stats.count = Math.max(0, stats.count - 1);
     lost.push(o.name);
   }
@@ -660,8 +675,8 @@ function moveSphere(h) {
 // Items only come off when something MOVING runs into you fast (a car, a train, a ship) — never just for
 // rolling into a still wall, however fast.
 const CLIMB_K = 1.0, CLIMB_FLAT_K = 1.4, FLAT_RATIO = 0.3;
-const REACH_MAX = 1.38;   // tiny things are caught up to this × radius from the centre (≈ the ball's footprint)
-const PULL_R = 2.0;       // small things within this × radius drift toward the ball
+const REACH_MAX = 1.19;   // tiny things are caught up to this × radius from the centre
+const PULL_R = 1.5;       // small things within this × radius drift toward the ball
 const PULL_MAX_SIZE = 0.6; // … if smaller than this × radius
 
 // The ball's pull: small loose things nearby slide toward it and get caught. Cars on roads, trains,
@@ -674,7 +689,7 @@ function attract(dt) {
     if (n >= 120 || o.picked || o.cool > 0 || o.landmark || o.size > r * PULL_MAX_SIZE) return;
     const m = o.mover;
     if (m && m.type !== 'walk' && m.type !== 'hop') return;
-    const k = Math.min(1, dt * (1.5 + 5 * (1 - dist / R)));
+    const k = Math.min(1, dt * (0.75 + 2.5 * (1 - dist / R)));
     if (stageName === 'world') {
       const rad = o.pos.length();
       _pt.copy(o.pos).lerp(_v.copy(ball.pos).setLength(rad), k).setLength(rad);
@@ -1027,7 +1042,7 @@ function disposeFlatStage(st) {
 function enterKanto() {
   disposeFlatStage(town);
   kanto = buildKanto(scene, kantoReg, material, {
-    log: DEBUG, texSize: innerWidth < 900 || vrDevice ? 2048 : 4096, density: parseFloat(qs.get('density') || (vrDevice ? '0.6' : '1')),
+    log: DEBUG, texSize: vrDevice ? 2048 : Q.kantoTex, density,
     fujiGeom: worldReg.get('mt_fuji') ? worldReg.get('mt_fuji').geom : null,
   });
   stage = kanto; stageName = 'kanto';
@@ -1060,7 +1075,7 @@ function enterWorld() {
   scene.fog = null;
   sky.visible = false;
   scene.background = new THREE.Color(0x02030c);
-  globe = buildGlobe(scene, worldReg, material, world, { texW: qs.get('tex') ? +qs.get('tex') : innerWidth < 900 ? 2048 : 4096 });
+  globe = buildGlobe(scene, worldReg, material, world, { texW: qs.get('tex') ? +qs.get('tex') : Q.globeTex, patchW: Q.patch });
   stage = globe; stageName = 'world';
   goalIdx = 0;
   setR(startR);
@@ -1171,6 +1186,16 @@ for (const b of document.querySelectorAll('.mode')) {
     startGame(m);
   });
 }
+{
+  // quality selector on the title screen: 自動 → 高 → 中 → 低; changing it reloads the game
+  const order = ['auto', 'high', 'mid', 'low'];
+  const label = () => `画質：${Q.choice === 'auto' ? `自動（${PRESETS[Q.level].label}）` : PRESETS[Q.choice].label}`;
+  $('quality').textContent = label();
+  $('quality').addEventListener('click', () => {
+    saveChoice(order[(order.indexOf(Q.choice) + 1) % order.length]);
+    location.reload();
+  });
+}
 $('btn-back').addEventListener('click', () => { $('stage-select').classList.add('hidden'); $('modes').classList.remove('hidden'); });
 showRecords();
 if (qs.has('autostart')) startGame(qs.get('mode') || 'story');
@@ -1262,7 +1287,7 @@ function frame() {
     if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) showResult('timeup');
     const inp = readInput();
     step(dt, inp);
-    for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
+    tickCooling(dt);
     bumpCool -= dt; dropCool -= dt; hintCool -= dt;
     sfx('sfxRoll', Math.min(1, ball.vel.length() / maxSpeed(false)), Math.min(1, Math.log10(1 + ball.r * 2) / 3));
     flushPickSfx();
@@ -1306,7 +1331,7 @@ function frame() {
     const s = 1 - e * 0.82;
     globe.earth.scale.setScalar(s);
     globe.atmo.scale.setScalar(s);
-    for (const g of globe.objs.byProto.values()) g.mesh.visible = stateT < 1.5;
+    globe.objs.hidden = stateT >= 1.5;
     const toBall = ball.pos.clone().multiplyScalar(e * 0.55);
     globe.earth.position.copy(toBall);
     globe.atmo.position.copy(toBall);
@@ -1329,7 +1354,7 @@ function frame() {
   }
   bumpedNow = false; cheerNow = false;
   cardT -= dt;
-  if (!vrActive()) itemViewer.update(dt); // the headset shows the item on its own panel
+  if (!vrActive() && frameNo % Q.cardEvery === 0) itemViewer.update(dt * Q.cardEvery); // the headset shows the item on its own panel
   if (state !== 'title') ceo.update(dt, ball);
   ceoDropCool -= dt;
   if (state === 'play' && mode !== 'otsukai') {
@@ -1341,12 +1366,26 @@ function frame() {
       ceo.say(CEO.idle(needDisplay(Math.max(0, g.d - ball.r * 2))), { hold: 3.5 });
     }
   }
-  stage.objs.updateVisibility(camera.position, ball.r, (stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1) * (vr ? vr.viewScale : 1));
+  if (frameNo % Q.visEvery === 0) {
+    camera.getWorldPosition(_camW);
+    // half-angle of the view to the screen corner
+    const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * Math.hypot(1, camera.aspect));
+    let cone = null;
+    if (!vrActive()) { // a headset can look anywhere at once: no view cone there
+      camera.getWorldDirection(_camF);
+      const shadowR = renderer.shadowMap.enabled ? Math.max(6, ball.r * 16) * 1.2 : 0;
+      cone = { dir: _camF, angle: half + 0.4, keep: ball.pos, keepR: Math.max(shadowR, ball.r * 3) };
+    }
+    // fog thickens with depth along the view, so toward the screen edges it is fully opaque a little further out
+    const fogFar = scene.fog ? scene.fog.far / (vrActive() ? 0.5 : Math.max(Math.cos(Math.min(half, 1.2)), 0.5)) : 0;
+    stage.objs.updateVisibility(_camW, ball.r, (stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1) * Q.view * (vr ? vr.viewScale : 1), fogFar, cone, stageName === 'world' ? EARTH_R : 0);
+  }
+  if (fpsGuard.tick(dt, state === 'play' && !vrActive()) === 'lowered') notice('動きを かるくするため 画質を下げました');
   core.scale.setScalar(ball.r * 0.86);
   updateEnvironment(dt);
   if (state !== 'title') updateHUD();
   if (vrActive()) vr.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, state, stage: stageName });
-  if (frameNo % 3 === 0 && !vrActive()) {
+  if (frameNo % Q.minimapEvery === 0 && !vrActive()) {
     if (stageName !== 'world') minimap.drawTown(ball.pos.x, ball.pos.z, Math.atan2(ball.heading.x, ball.heading.z), ball.r);
     else minimap.drawWorld(vecToLatLon(ball.pos), ball.r);
   }
@@ -1357,6 +1396,7 @@ function frame() {
   if (noticeTimer > 0 && (noticeTimer -= dt) <= 0) $('notice').classList.remove('show');
   renderer.render(scene, camera);
 }
+const _camW = new THREE.Vector3(), _camF = new THREE.Vector3();
 renderer.setAnimationLoop(frame); // works on screen and inside a WebXR session
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused && !vrActive()) togglePause(); });
@@ -1389,7 +1429,7 @@ window.__game = {
       stats.elapsed += dt;
       if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) { showResult('timeup'); break; }
       step(dt, readInput());
-      for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
+      tickCooling(dt);
       bumpCool -= dt; dropCool -= dt; hintCool -= dt;
       stage.objs.time += dt;
       checkGoals();
