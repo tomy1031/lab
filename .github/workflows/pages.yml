@@ -11,6 +11,8 @@ on:
       - 'yokohama-roll/index.html'
       - 'yokohama-roll/js/**'
       - 'yokohama-roll/img/**'
+      - 'yokohama-roll/sw.js'
+      - 'yokohama-roll/manifest.webmanifest'
       - 'nextmake-mv/output/**'
       - '.github/workflows/pages.yml'
   schedule:

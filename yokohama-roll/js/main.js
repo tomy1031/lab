@@ -597,6 +597,7 @@ function step(dt, inp) {
   const sp = ball.vel.length();
   if (sp > ms) ball.vel.multiplyScalar(ms / sp);
 
+  attract(dt);
   // integrate in sub-steps to avoid tunnelling through thin things
   const travel = ball.vel.length() * dt;
   const sub = Math.min(4, Math.max(1, Math.ceil(travel / (ball.r * 0.6))));
@@ -659,6 +660,33 @@ function moveSphere(h) {
 // Items only come off when something MOVING runs into you fast (a car, a train, a ship) — never just for
 // rolling into a still wall, however fast.
 const CLIMB_K = 1.0, CLIMB_FLAT_K = 1.4, FLAT_RATIO = 0.3;
+const REACH_MAX = 1.38;   // tiny things are caught up to this × radius from the centre (≈ the ball's footprint)
+const PULL_R = 2.0;       // small things within this × radius drift toward the ball
+const PULL_MAX_SIZE = 0.6; // … if smaller than this × radius
+
+// The ball's pull: small loose things nearby slide toward it and get caught. Cars on roads, trains,
+// ships and planes keep to their routes (they are still caught by the wider reach above).
+const _pt = new THREE.Vector3();
+function attract(dt) {
+  const r = ball.r, R = r * PULL_R;
+  let n = 0;
+  stage.objs.contacts(ball.pos, R, (o, dist) => {
+    if (n >= 120 || o.picked || o.cool > 0 || o.landmark || o.size > r * PULL_MAX_SIZE) return;
+    const m = o.mover;
+    if (m && m.type !== 'walk' && m.type !== 'hop') return;
+    const k = Math.min(1, dt * (1.5 + 5 * (1 - dist / R)));
+    if (stageName === 'world') {
+      const rad = o.pos.length();
+      _pt.copy(o.pos).lerp(_v.copy(ball.pos).setLength(rad), k).setLength(rad);
+      const q = new THREE.Quaternion().setFromUnitVectors(_v2.copy(o.pos).normalize(), _v.copy(_pt).normalize());
+      stage.objs.setTransform(o, _pt, q.multiply(o.quat));
+    } else {
+      _pt.set(o.pos.x + (ball.pos.x - o.pos.x) * k, o.pos.y, o.pos.z + (ball.pos.z - o.pos.z) * k);
+      stage.objs.setTransform(o, _pt, null);
+    }
+    n++;
+  });
+}
 let lastBump = null, dropCool = 0, hintCool = 0;
 const ZERO = new THREE.Vector3();
 function topOf(o) {
@@ -678,8 +706,9 @@ function rideTop(o, base, r) {
 function collide() {
   const r = ball.r;
   const hits = [];
-  // look a little beyond the ball so riding on top of something doesn't flicker on and off
-  stage.objs.contacts(ball.pos, r * 1.12, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
+  // look beyond the ball: small things are reached a little further out (the ball's pull, and the bumpy
+  // surface of everything stuck to it), and riding on top of something must not flicker on and off
+  stage.objs.contacts(ball.pos, r * REACH_MAX, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
   const base = stageName === 'world' ? ball.pos.length() - r : ball.pos.y - r; // bottom of the ball
   ball.support = -Infinity;
   for (const hit of hits) {
@@ -687,7 +716,13 @@ function collide() {
     if (o.picked) continue;
     if (o.cool > 0) continue;
     const touching = hit.dist < r;
-    if (touching && o.size < r * PICK_K) { pick(o); continue; }
+    if (o.size < r * PICK_K) {
+      // the smaller it is, the further out it gets caught: tiny things anywhere under the ball's
+      // footprint, things close to the size limit only on real contact
+      const reach = 1 + (REACH_MAX - 1) * Math.max(0, 1 - o.size / (r * PICK_K)) ** 1.5;
+      if (hit.dist < r * reach) { pick(o); continue; }
+    }
+    if (hit.dist > r * 1.12) continue;
     const top = rideTop(o, base, r);
     if (top !== null) { ball.support = Math.max(ball.support, top); continue; } // roll over it
     if (!touching) continue;
@@ -1141,6 +1176,58 @@ showRecords();
 if (qs.has('autostart')) startGame(qs.get('mode') || 'story');
 if (qs.get('stage') === 'kanto') startGame('kanto');
 if (qs.get('stage') === 'world') startGame('world');
+
+// ---------------------------------------------------------------- updates (published site only)
+// The published build (site/build.mjs) sets window.HAMAKORO_BUILD and serves the code from v/<build>/.
+// A service worker makes it installable and playable offline; version.json tells a running game that a
+// newer build is out. On the title or result screen it switches right away, mid-game it asks first.
+const BUILD = window.HAMAKORO_BUILD || null;
+let swReg = null, newBuild = null;
+function applyUpdate() {
+  const go = () => location.replace(location.pathname + '?v=' + encodeURIComponent(newBuild || Date.now())); // a new URL skips any cached page
+  const w = swReg && swReg.waiting;
+  if (w) {
+    navigator.serviceWorker.addEventListener('controllerchange', go, { once: true });
+    w.postMessage('SKIP_WAITING');
+    setTimeout(go, 1500);
+  } else go();
+}
+function offerUpdate() {
+  let tried = null;
+  try { tried = sessionStorage.getItem('hamakoro.updatedTo'); } catch (e) { /* storage blocked */ }
+  if ((state === 'title' || state === 'result') && newBuild && tried !== newBuild) {
+    try { sessionStorage.setItem('hamakoro.updatedTo', newBuild); } catch (e) { /* storage blocked */ }
+    applyUpdate();
+    return;
+  }
+  $('update').classList.remove('hidden');
+}
+$('btn-update').addEventListener('click', applyUpdate);
+async function checkVersion() {
+  if (!BUILD) return;
+  try {
+    const v = await (await fetch('version.json', { cache: 'no-store' })).json();
+    if (v.build && v.build !== BUILD) {
+      newBuild = v.build;
+      if (swReg) swReg.update().catch(() => {});
+      offerUpdate();
+    }
+  } catch (e) { /* offline: keep playing the cached build */ }
+}
+if (BUILD) {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      swReg = reg;
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (nw) nw.addEventListener('statechange', () => { if (nw.state === 'installed' && navigator.serviceWorker.controller) checkVersion(); });
+      });
+    }).catch((e) => console.warn('service worker', e));
+  }
+  setTimeout(checkVersion, 3000);
+  setInterval(checkVersion, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
+}
 
 // ---------------------------------------------------------------- main loop
 const clock = new THREE.Clock();

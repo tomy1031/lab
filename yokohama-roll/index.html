@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ハマころ！</title>
 <meta name="description" content="ちいさな玉で横浜の街をまきこみ、最後は世界までまるめる 3D ゲーム">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1530">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ハマころ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
@@ -141,6 +148,9 @@
   #joy { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgba(255,255,255,.18); border: 3px solid rgba(255,255,255,.5); display: none; z-index: 20; pointer-events: none; }
   #joy-knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; background: rgba(255,210,63,.85); }
 
+  #update { position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 70; display: flex; gap: 10px; align-items: center;
+    background: var(--ink); color: #fff; border-radius: 999px; padding: 6px 8px 6px 16px; font-weight: 800; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.35); max-width: calc(100% - 32px); }
+  #update button { border: 0; border-radius: 999px; background: var(--yellow); color: var(--ink); font-weight: 800; padding: 6px 14px; }
   #fade { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .7s; z-index: 30; }
   #fade.show { opacity: 1; }
 
@@ -232,6 +242,7 @@
 
 <div id="joy"><div id="joy-knob"></div></div>
 <div id="fade"></div>
+<div id="update" class="hidden" role="status"><span>新しいバージョンがあります</span><button id="btn-update">更新する</button></div>
 
 <div id="pause" class="panel"><div class="card"><h2>ひとやすみ</h2><p>玉は ちゃんと 待っています。</p><button id="btn-resume" class="btn">つづける</button></div></div>
 
