@@ -207,7 +207,10 @@ export class AudioEngine {
     const now = this.ctx.currentTime;
     if (now > this.nextChord - 0.5) {
       const dur = 14;
-      this.playChord(CHORDS[this.chordIdx % CHORDS.length], Math.max(now, this.nextChord), dur);
+      const chord = CHORDS[this.chordIdx % CHORDS.length];
+      this.playChord(chord, Math.max(now, this.nextChord), dur);
+      this.chordQueue = this.chordQueue || [];
+      this.chordQueue.push({ at: Math.max(now, this.nextChord), chord });
       this.chordIdx++;
       this.nextChord += dur;
     }
@@ -215,5 +218,103 @@ export class AudioEngine {
       this.bell(sparklePos, { midi: noteOf(10 + Math.floor(Math.random() * 6)), vel: 0.08, dur: 2.5, bright: 1.2 });
       this.nextSparkle = now + 4 + Math.random() * 7;
     }
+    this.scheduleMusic(now);
+  }
+
+  // ---------- music that grows with the combo ----------
+  // level 0: pad only; 1: a soft plucked arpeggio; 2: + a low pulse; 3 (Starfall): + high twinkles.
+  setIntensity(level) { this.level = level; }
+
+  currentChord(at) {
+    const q = this.chordQueue || [];
+    let c = CHORDS[0];
+    for (const e of q) if (e.at <= at) c = e.chord;
+    while (q.length > 3 && q[1].at <= at) q.shift();
+    return c;
+  }
+
+  scheduleMusic(now) {
+    if (!this.music_) {
+      this.music_ = { next: now + 0.1, step: 0, gains: [0, 0, 0] };
+      this.layer = [0, 1, 2].map(() => { const g = this.ctx.createGain(); g.gain.value = 0; g.connect(this.bed); return g; });
+    }
+    const m = this.music_, lv = this.level || 0;
+    const want = [lv >= 1 ? 1 : 0, lv >= 2 ? 1 : 0, lv >= 3 ? 1 : 0];
+    want.forEach((w, i) => { if (m.gains[i] !== w) { m.gains[i] = w; this.layer[i].gain.setTargetAtTime(w * [0.5, 0.45, 0.4][i], now, 1.2); } });
+    const beat = 60 / 84 / 2;                  // eighth notes at 84 bpm
+    while (m.next < now + 0.25) {
+      const t = m.next, k = m.step;
+      const ch = this.currentChord(t);
+      const tones = [...ch.slice(1), ch[1] + 12, ch[2] + 12, ch[3] + 12];
+      const order = [0, 2, 4, 1, 3, 5, 2, 4];
+      this.pluck(t, tones[order[k % 8] % tones.length] + 12, 0.11, this.layer[0]);
+      if (k % 4 === 0) this.pulse(t, ch[0] - 12, this.layer[1]);
+      if (Math.random() < 0.35) this.pluck(t + beat / 2, tones[Math.floor(Math.random() * tones.length)] + 24, 0.06, this.layer[2], 2.2);
+      m.step++; m.next += beat;
+    }
+  }
+
+  pluck(t, midi, vel, dest, decay = 1.1) {
+    const ctx = this.ctx;
+    const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = mtof(midi);
+    const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(700, t + 0.4);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vel, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+    o.connect(f).connect(g).connect(dest); o.start(t); o.stop(t + decay + 0.05);
+  }
+
+  pulse(t, midi, dest) {
+    const ctx = this.ctx;
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = mtof(midi);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+    o.connect(g).connect(dest); o.start(t); o.stop(t + 1);
+  }
+
+  /** Singing bowl: inharmonic partials with a slow beat and a long, calm decay. */
+  bowl(pos, midi = 50, vel = 0.35, dur = 7) {
+    if (!this.enabled) return;
+    const ctx = this.ctx, t = ctx.currentTime + 0.01, f = mtof(midi);
+    const out = this.spatial(pos);
+    [[1, 1], [2.76, 0.45], [5.4, 0.22], [8.9, 0.08]].forEach(([mul, amp], i) => {
+      for (const det of [-1.2, 1.2]) {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * mul + det * (i + 1) * 0.6;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vel * amp * 0.5, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur * (1 - i * 0.18));
+        o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.1);
+      }
+    });
+  }
+
+  /** A breath you can hear: air rising (inhale) or falling (exhale) through a soft chord. */
+  breathSwell(kind, dur) {
+    if (!this.enabled) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    if (kind === 'hold') {
+      for (const m of [86, 90.02]) {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = mtof(m);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.018, t + 0.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+        o.connect(g).connect(this.bed); o.start(t); o.stop(t + dur + 0.1);
+      }
+      return;
+    }
+    const inhale = kind === 'in';
+    const s = ctx.createBufferSource(); s.buffer = this.breathBuf || (this.breathBuf = this.noiseBuffer(2)); s.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9;
+    f.frequency.setValueAtTime(inhale ? 260 : 1300, t); f.frequency.exponentialRampToValueAtTime(inhale ? 1300 : 220, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(inhale ? 0.12 : 0.1, t + dur * (inhale ? 0.8 : 0.25)); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    s.connect(f).connect(g).connect(this.bed); s.start(t); s.stop(t + dur + 0.1);
+    const ch = this.currentChord(t);
+    (inhale ? [ch[1], ch[2] + 12] : [ch[2], ch[0] + 12]).forEach((m) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = mtof(m);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(inhale ? 400 : 1600, t); lp.frequency.exponentialRampToValueAtTime(inhale ? 1800 : 300, t + dur);
+      const og = ctx.createGain();
+      og.gain.setValueAtTime(0.0001, t); og.gain.linearRampToValueAtTime(0.03, t + dur * 0.5); og.gain.linearRampToValueAtTime(0.0001, t + dur);
+      o.connect(lp).connect(og).connect(this.bed); o.start(t); o.stop(t + dur + 0.1);
+    });
   }
 }

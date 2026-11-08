@@ -14,55 +14,131 @@ const MODULES = { lantern: LanternModule, spirits: SpiritsModule, gates: GatesMo
 const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const ORI_LABEL = { 0: '縦', 45: '斜／', 90: '横', 135: '斜＼' };
 
-/** Score and combo. Rising pentatonic bells reward streaks: the sound of flow. */
+/**
+ * Score and combo. Rising pentatonic bells reward streaks, the music thickens as the combo
+ * grows, and at 10 in a row Starfall begins: points x2 and meteors until the next miss.
+ * Every success also sends a mote of light out to the lantern path (the night's goal).
+ */
 export class Score {
   constructor(app) { this.app = app; this.reset(); }
-  reset() { this.points = 0; this.combo = 0; this.best = 0; this.dirty = true; }
-  reward(base, pos) {
+  reset() { this.points = 0; this.combo = 0; this.best = 0; this.chapterBest = 0; this.fever = false; this.dirty = true; }
+  mult() { return (this.fever ? 2 : 1) * (this.app.finale ? 1.5 : 1); }
+  reward(base, pos, { golden = false } = {}) {
     const app = this.app;
     this.combo++;
     this.best = Math.max(this.best, this.combo);
-    const mult = 1 + Math.min(this.combo, 30) * 0.04;
-    const pts = Math.round(base * mult);
+    this.chapterBest = Math.max(this.chapterBest, this.combo);
+    const pts = Math.round(base * (1 + Math.min(this.combo, 30) * 0.04) * this.mult() * (golden ? 3 : 1));
     this.points += pts;
     const step = this.combo <= 15 ? this.combo : 10 + (this.combo % 6);
     app.audio.bell(pos, { midi: noteOf(step), vel: 0.42, dur: 1.6 });
+    if (golden) app.audio.fanfare(pos);
     app.env.platform.pulse(0.25);
-    if (this.combo % 10 === 0) {
+    if (pos) app.fx.ring(pos, { color: golden ? [1.0, 0.85, 0.45] : this.fever ? [1.0, 0.8, 1.0] : [0.7, 0.95, 1.0], size: golden ? 0.5 : 0.32 });
+    if (this.combo === 10 && !this.fever) this.startFever();
+    else if (this.combo % 10 === 0) {
       app.audio.fanfare(pos);
-      const u = app.uiPlacement(1.8, 9, 0.5, 0.13, 0.3);
-      app.fx.text(`${this.combo} COMBO`, app.stagePoint(0, u.el, u.dist), { color: '#c8f0ff', size: 0.13 * u.dist / 1.8, life: 1.6 });
+      this.banner(`${this.combo} COMBO`, '#c8f0ff');
     }
+    app.audio.setIntensity(this.fever ? 3 : this.combo >= 6 ? 2 : this.combo >= 3 ? 1 : 0);
+    if (pos) app.goal.add(pos, golden ? 3 : 1);
     this.dirty = true;
     return pts;
   }
+  banner(text, color, size = 0.13) {
+    const app = this.app;
+    const u = app.uiPlacement(1.8, 9, 0.5, size, 0.3);
+    app.fx.text(text, app.stagePoint(0, u.el, u.dist), { color, size: size * u.dist / 1.8, life: 1.8 });
+  }
+  startFever() {
+    this.fever = true;
+    this.app.env.setFever(true);
+    this.app.audio.fanfare(this.app.stagePoint(0, 20, 6));
+    this.banner('STARFALL  ×2', '#ffe2a6', 0.16);
+  }
+  endFever() {
+    this.fever = false;
+    this.app.env.setFever(false);
+  }
   miss(pos, wrong) {
     if (wrong) this.app.audio.soft(pos);
+    if (this.fever) this.endFever();
     this.combo = 0;
+    this.app.audio.setIntensity(0);
     this.dirty = true;
   }
   add(n) { this.points += n; this.dirty = true; }
 }
 
+/** The night's goal: light the lantern path out to the lighthouse, then light the lighthouse. */
+export class Goal {
+  constructor(app) { this.app = app; this.need = 60; this.got = 0; this.done = false; }
+  reset(minutes) {
+    this.need = Math.max(24, Math.round(minutes * 6));
+    this.got = 0; this.done = false;
+    const sc = this.app.env.scenery;
+    sc.path.setLit(0);
+    sc.setLighthouse(0, false);
+  }
+  progress() { return Math.min(1, this.got / this.need); }
+  add(pos, n = 1) {
+    const app = this.app, sc = app.env.scenery, N = sc.path.N;
+    for (let k = 0; k < n; k++) {
+      this.got++;
+      const lit = Math.min(N, Math.max(1, Math.ceil(this.progress() * N)));
+      const target = sc.path.pairs[lit - 1].c.clone();
+      target.y += 0.3;
+      const level = this.progress();
+      app.fx.flyTo(pos, target, () => {
+        sc.path.setLit(Math.max(sc.path.count, lit));
+        sc.setLighthouse(Math.max(sc.lit, level), this.done);
+      });
+    }
+    if (!this.done && this.got >= this.need) {
+      this.done = true;
+      setTimeout(() => this.ignite(), 2600);
+    }
+  }
+  ignite() {
+    const app = this.app, sc = app.env.scenery;
+    if (!app.director.running) return;
+    sc.setLighthouse(1, true);
+    sc.path.wave();
+    app.audio.fanfare(sc.lighthousePos);
+    app.audio.bowl(sc.lighthousePos, 45, 0.6, 9);
+    app.score.banner('THE LIGHTHOUSE IS LIT', '#ffe9b8', 0.12);
+    app.caption('灯台に灯がともりました。遠くの光を、しばらく眺めてみよう', 4.5);
+    app.store.data.totals.lighthouses = (app.store.data.totals.lighthouses || 0) + 1;
+  }
+}
+
 export class Hud {
   constructor(app) {
     this.app = app;
-    this.state = { title: '', points: 0, combo: 0, left: '' };
+    this.state = { title: '', points: 0, combo: 0, left: '', mode: '', goal: 0 };
     this.panel = new Panel({
-      w: 0.66, h: 0.075, px: 1024, glass: false,
-      draw: (g, W, H) => {
+      w: 0.66, h: 0.09, px: 1024, glass: false,
+      draw: (g, W, H0) => {
         const d = this.state;
+        const H = H0 - 22;                                  // the strip below holds the goal bar
         g.fillStyle = 'rgba(8,14,34,0.55)';
         roundRect(g, 4, 4, W - 8, H - 8, (H - 8) / 2); g.fill();
+        // goal bar: how far the light has travelled toward the lighthouse
+        g.fillStyle = 'rgba(255,255,255,0.12)'; roundRect(g, 60, H + 4, W - 120, 10, 5); g.fill();
+        if (d.goal > 0) {
+          const grad = g.createLinearGradient(60, 0, W - 60, 0);
+          grad.addColorStop(0, '#ffcf8a'); grad.addColorStop(1, '#fff3d6');
+          g.fillStyle = grad; roundRect(g, 60, H + 4, Math.max(10, (W - 120) * d.goal), 10, 5); g.fill();
+        }
         g.font = `500 44px ${FONT}`; g.textBaseline = 'middle';
         g.fillStyle = '#bcd8ff'; g.textAlign = 'left';
         g.font = `600 48px ${TITLE_FONT}`;
         g.fillText(d.title || '', 38, H / 2 + 2);
         g.textAlign = 'center'; g.fillStyle = '#f2f8ff'; g.font = `700 50px ${FONT}`;
-        g.fillText(`✦ ${d.points.toLocaleString()}`, W * 0.52, H / 2 + 2);
-        g.font = `500 42px ${FONT}`; g.textAlign = 'right';
-        g.fillStyle = d.combo >= 5 ? '#9fe8ff' : '#9fb4d8';
-        g.fillText(`${d.combo > 1 ? '×' + d.combo + '  ' : ''}${d.left}`, W - 38, H / 2 + 2);
+        g.fillText(`✦ ${d.points.toLocaleString()}`, W * 0.45, H / 2 + 2);
+        g.font = `${d.mode ? 600 : 500} ${d.mode ? 34 : 42}px ${d.mode ? TITLE_FONT : FONT}`; g.textAlign = 'right';
+        g.fillStyle = d.mode ? '#ffe2a6' : d.combo >= 5 ? '#9fe8ff' : '#9fb4d8';
+        g.fillText(`${d.mode ? d.mode + '  ' : d.combo > 1 ? '×' + d.combo + '  ' : ''}${d.left}`, W - 38, H / 2 + 2);
       },
     });
     app.ui.add(this.panel);
@@ -73,9 +149,11 @@ export class Hud {
     const s = this.app.score;
     this.acc += dt;
     const left = leftSec != null ? fmtTime(Math.max(0, leftSec)) : '';
+    const mode = s.fever ? `STARFALL ×${this.app.finale ? 3 : 2}` : this.app.finale ? 'FINALE ×1.5' : '';
+    const goal = Math.round(this.app.goal.progress() * 100) / 100;
     if (s.dirty || this.acc > 0.5 || title !== this.state.title) {
-      if (s.dirty || left !== this.state.left || title !== this.state.title) {
-        this.state = { title, points: s.points, combo: s.combo, left };
+      if (s.dirty || left !== this.state.left || title !== this.state.title || mode !== this.state.mode || goal !== this.state.goal) {
+        this.state = { title, points: s.points, combo: s.combo, left, mode, goal };
         this.panel.redraw();
       }
       s.dirty = false; this.acc = 0;
@@ -137,12 +215,12 @@ export class Director {
     const app = this.app, kind = app.view.kind, set = app.settings;
     const restVariant = kind === 'screen' ? 'screen' : 'far';
     if (set.course === 'custom') {
-      // Custom: the chosen chapters in turn, ~2.5 min each, a short rest after every two
+      // Custom: the chosen chapters in turn, ~2 min each, a short rest after every two
       const avail = this.available();
       let chosen = CHAPTERS.filter((c) => (set.chapters || []).includes(c) && avail.includes(c));
       if (!chosen.length) chosen = avail;
       const total = set.minutes * 60;
-      const seg = chosen.length === 1 ? 180 : 150;
+      const seg = chosen.length === 1 ? 150 : 120;
       const steps = [{ id: 'rest', dur: kind === 'screen' ? 25 : 40, variant: kind === 'screen' ? 'screen' : 'intro' }];
       let t = steps[0].dur, k = 0, sinceRest = 0;
       while (t < total - 45) {
@@ -166,6 +244,11 @@ export class Director {
     app.closeMenu();
     app.recenter();
     app.score.reset();
+    app.goal.reset(app.settings.minutes);
+    app.finale = false;
+    app.env.setFever(false);
+    app.audio.setIntensity(0);
+    this.lastResult = null;
     this.steps = this.plan();
     this.total = this.steps.reduce((a, s) => a + s.dur + 5, 0);
     this.elapsed = 0;
@@ -179,7 +262,13 @@ export class Director {
 
   nextStep() {
     const app = this.app;
-    if (this.module) { this.results.push({ id: this.step.id, ...this.module.stop() }); this.module = null; }
+    if (this.module) {
+      const stats = this.module.stop();
+      this.results.push({ id: this.step.id, ...stats });
+      if (this.step.id !== 'rest') this.lastResult = this.chapterResult(this.step, stats);
+      this.module = null;
+    }
+    app.finale = false;
     this.idx++;
     if (this.idx >= this.steps.length) { this.finish(); return; }
     this.step = this.steps[this.idx];
@@ -193,20 +282,33 @@ export class Director {
     const seen = app.store.data.seen || (app.store.data.seen = {});
     const first = !seen[step.id];
     seen[step.id] = true;
-    this.cardLeft = step.id === 'rest' ? 2.5 : first ? 9 : 5;
+    this.cardLeft = step.id === 'rest' ? 2.5 : first ? 7 : 3.5;
     const n = this.idx + 1, N = this.steps.length;
+    const r = this.lastResult;
+    this.lastResult = null;
+    if (r?.newBest) setTimeout(() => app.audio.fanfare(null), 300);
+    const top = r ? 70 : 0;
     this.showPanel(new Panel({
-      w: 1.0, h: 0.56, px: 1100,
+      w: 1.0, h: r ? 0.6 : 0.56, px: 1100,
       draw: (g, W, H, panel) => {
         g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+        if (r) {
+          // how the chapter that just ended went
+          g.font = `600 34px ${TITLE_FONT}`; g.fillStyle = '#cfe0ff';
+          const stars = '★'.repeat(r.stars) + '☆'.repeat(3 - r.stars);
+          g.fillText(`${MODULE_INFO[r.id].title}   ${r.points.toLocaleString()} pts   best combo ${r.combo}`, W / 2, 62);
+          g.font = `400 34px ${FONT}`; g.fillStyle = '#ffd98a';
+          g.fillText(stars + (r.newBest ? '   NEW BEST' : ''), W / 2, 104);
+          g.strokeStyle = 'rgba(170,210,255,0.25)'; g.beginPath(); g.moveTo(120, 128); g.lineTo(W - 120, 128); g.stroke();
+        }
         g.fillStyle = '#8fb4e8'; g.font = `600 30px ${TITLE_FONT}`;
-        g.fillText(`CHAPTER ${n}  /  ${N}`.split('').join(String.fromCharCode(8202)), W / 2, 80);
+        g.fillText(`CHAPTER ${n}  /  ${N}`.split('').join(String.fromCharCode(8202)), W / 2, 80 + top);
         g.fillStyle = '#f4f9ff'; g.font = `600 96px ${TITLE_FONT}`;
-        g.fillText(info.title, W / 2, 182);
+        g.fillText(info.title, W / 2, 182 + top);
         g.fillStyle = '#a9c8f0'; g.font = `500 36px ${FONT}`;
-        g.fillText(info.sub, W / 2, 236);
+        g.fillText(info.sub, W / 2, 236 + top);
         g.fillStyle = '#e2ecff'; g.font = `400 36px ${FONT}`;
-        wrapText(g, info.how, W / 2, 310, W - 140, 50, { align: 'center' });
+        wrapText(g, info.how, W / 2, 310 + top, W - 140, 50, { align: 'center' });
         panel.button('go', W / 2 - 170, H - 120, 340, 84, 'はじめる', { primary: true, onClick: () => this.startStep() });
       },
     }), 1.8, 3);
@@ -223,6 +325,23 @@ export class Director {
     this.module = new M(app, this.step);
     this.module.start();
     this.stepTime = 0;
+    this.chapterStart = app.score.points;
+    app.score.chapterBest = 0;
+  }
+
+  /** Stars against your own record for this chapter: beat it for three. */
+  chapterResult(step, stats) {
+    const app = this.app;
+    const points = app.score.points - (this.chapterStart || 0);
+    const ppm = points / Math.max(0.5, this.stepTime / 60);
+    const bests = app.store.data.best || (app.store.data.best = {});
+    const prev = bests[step.id];
+    if (this.stepTime < 20) return null;                      // skipped: nothing to rate
+    const newBest = points > 0 && (!prev || ppm > prev.ppm);
+    if (newBest) bests[step.id] = { ppm: Math.round(ppm), points, date: new Date().toISOString() };
+    const ratio = prev ? ppm / prev.ppm : points > 0 ? 1 : 0;
+    const stars = points <= 0 ? 1 : newBest || ratio >= 1 ? 3 : ratio >= 0.75 ? 2 : 1;
+    return { id: step.id, points, stars, newBest: newBest && !!prev, combo: app.score.chapterBest, acc: stats.trials ? stats.correct / stats.trials : 0 };
   }
 
   showPanel(panel, dist = 1.7, el = 0) {
@@ -243,6 +362,13 @@ export class Director {
       if (this.cardLeft <= 0) this.startStep();
     } else {
       this.stepTime += dt;
+      if (!app.finale && this.step.id !== 'rest' && this.step.dur - this.stepTime <= 15 && this.step.dur > 40) {
+        app.finale = true;
+        app.score.banner('FINALE  ×1.5', '#ffd98a', 0.14);
+        app.audio.bell(null, { midi: noteOf(12), vel: 0.4, dur: 2.5 });
+        app.env.platform.pulse(1.2);
+        app.score.dirty = true;
+      }
       this.module.update(dt);
       if (this.stepTime >= this.step.dur || this.module.done) this.nextStep();
     }
@@ -260,6 +386,9 @@ export class Director {
   finish() {
     const app = this.app;
     this.running = false;
+    app.finale = false;
+    if (app.score.fever) app.score.endFever();
+    app.audio.setIntensity(0);
     this.closePanel();
     app.hud.panel.visible = false;
     const summary = this.summarize();
@@ -292,6 +421,8 @@ export class Director {
       course: this.app.settings.course,
       minutes: +(this.elapsed / 60).toFixed(1),
       score: this.app.score.points,
+      lighthouse: this.app.goal.done,
+      goal: Math.round(this.app.goal.progress() * 100),
       bestCombo: this.app.score.best,
       lanterns: sum(lantern, (r) => r.correct),
       lanternDist: lanternDists.length ? +(lanternDists.reduce((a, b) => a + b, 0) / lanternDists.length).toFixed(1) : null,
@@ -317,6 +448,8 @@ export class Director {
         g.fillText('夜が明けました', W / 2, 92);
         g.fillStyle = '#cfe0ff'; g.font = `500 32px ${FONT}`;
         g.fillText(`${fmtTime(s.minutes * 60)} の旅  ・  ✦ ${s.score.toLocaleString()}  ・  最大コンボ ${s.bestCombo}`, W / 2, 146);
+        g.fillStyle = '#ffd98a'; g.font = `400 28px ${FONT}`;
+        g.fillText(s.lighthouse ? '灯台に灯がともった夜 ✦' : `灯台まで、光の道は ${s.goal}%`, W / 2, 190);
         const rows = [];
         const T = (id) => MODULE_INFO[id].title;
         if (s.lanternDist != null) rows.push([T('lantern'), `${s.lanterns} 個を返した ・ 平均 ${s.lanternDist} m で見抜いた`, prev?.lanternDist != null ? delta(s.lanternDist, prev.lanternDist, 'm', true) : '']);
@@ -324,7 +457,7 @@ export class Director {
         if (s.gatesAcc != null) rows.push([T('gates'), `正答 ${s.gatesAcc}% ・ 提示 ${s.gatesMs} ms`, prev?.gatesMs ? delta(s.gatesMs, prev.gatesMs, 'ms', false) : '']);
         if (s.stereo != null) rows.push([T('depth'), `立体視 ${s.stereo} 秒角`, prev?.stereo ? delta(s.stereo, prev.stereo, '″', false) : '']);
         if (s.comet != null) rows.push([T('comets'), `${s.comet} °/秒 の星をキャッチ`, prev?.comet ? delta(s.comet, prev.comet, '°/s', true) : '']);
-        let y = 230;
+        let y = 250;
         g.textAlign = 'left';
         for (const [a, b, c] of rows) {
           g.fillStyle = '#9fc2f0'; g.font = `600 38px ${TITLE_FONT}`; g.fillText(a, 80, y);

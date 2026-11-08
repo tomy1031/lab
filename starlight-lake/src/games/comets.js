@@ -43,10 +43,11 @@ export class CometsModule extends Module {
     // aim across the field, passing the centre at a random offset
     const tx = rand(-ecc * 0.5, ecc * 0.5), ty = rand(-f.el * 0.5, f.el * 0.5);
     const dx = tx - sx, dy = ty - sy, len = Math.hypot(dx, dy);
-    const g = new Glow(0xe8f4ff, { core: 18, halo: 0.5, star: 0.7 });
+    const golden = Math.random() < 0.12;
+    const g = new Glow(golden ? 0xffe0a0 : 0xe8f4ff, { core: 18, halo: golden ? 0.8 : 0.5, star: golden ? 1.2 : 0.7 });
     this.root.add(g.mesh);
     this.app.eye(g.mesh, 'weak');
-    const c = { g, x: sx, y: sy, vx: dx / len, vy: dy / len, speed: this.st.value, age: 0, hist: [], pos: new THREE.Vector3(), slot: this.freeSlot() };
+    const c = { g, golden, x: sx, y: sy, vx: dx / len, vy: dy / len, speed: this.st.value, age: 0, hist: [], pos: new THREE.Vector3(), slot: this.freeSlot() };
     this.comets.push(c);
     this.app.audio.cue(this.at(sx, sy, STIM_DIST), 9);
   }
@@ -60,8 +61,8 @@ export class CometsModule extends Module {
     super.update(dt);
     const f = this.app.view.field;
     this.spawnIn -= dt;
-    const maxN = this.t > 40 ? 2 : 1;
-    if (this.spawnIn <= 0 && this.comets.length < maxN) { this.spawn(); this.spawnIn = rand(0.5, 1.4); }
+    const maxN = (this.t > 40 ? 2 : 1) + (this.app.finale ? 1 : 0);
+    if (this.spawnIn <= 0 && this.comets.length < maxN) { this.spawn(); this.spawnIn = rand(0.5, 1.4) * (this.app.finale ? 0.6 : 1); }
     this.trailA.fill(0);
     for (let i = this.comets.length - 1; i >= 0; i--) {
       const c = this.comets[i];
@@ -115,9 +116,10 @@ export class CometsModule extends Module {
     const app = this.app;
     this.st.update(true);
     this.stats.trials++; this.stats.correct++;
-    const pts = app.score.reward(70 + Math.round(c.speed * 3), c.pos);
+    const pts = app.score.reward(70 + Math.round(c.speed * 3), c.pos, { golden: c.golden });
+    if (c.golden) app.fx.text(`GOLD  +${pts}`, c.pos.clone().add(new THREE.Vector3(0, 0.12, 0)), { color: '#ffe29a', size: 0.09 });
     this.stats.score += pts;
-    app.fx.burst(c.pos, { count: 36, color: [0.85, 0.92, 1.0], speed: 0.9, size: 0.02 });
+    app.fx.burst(c.pos, { count: c.golden ? 70 : 44, color: c.golden ? [1.0, 0.86, 0.5] : [0.85, 0.92, 1.0], speed: 1.0, size: 0.022 });
     app.input.pulse(p, 0.7, 35);
     this.remove(i);
   }

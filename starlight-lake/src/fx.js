@@ -8,7 +8,7 @@ export class Effects {
   constructor(app) {
     this.app = app;
     this.group = new THREE.Group();
-    const N = 600;
+    const N = 1200;
     this.N = N;
     this.pos = new Float32Array(N * 3); this.vel = new Float32Array(N * 3); this.col = new Float32Array(N * 3);
     this.life = new Float32Array(N); this.max = new Float32Array(N); this.size = new Float32Array(N);
@@ -43,6 +43,21 @@ export class Effects {
     }
     this.textCursor = 0;
     this.flyers = [];
+    this.arcs = [];
+    // expanding rings of light (hit shockwaves)
+    this.rings = [];
+    for (let i = 0; i < 8; i++) {
+      const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 64), new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: new THREE.Vector3(0.7, 0.95, 1) }, uA: { value: 0 } },
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+        vertexShader: 'varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+        fragmentShader: 'uniform vec3 uColor; uniform float uA; varying vec2 vP; void main(){ float r = length(vP); float a = smoothstep(0.8, 0.92, r) * smoothstep(1.0, 0.94, r); gl_FragColor = vec4(uColor * a * uA, 1.0); }',
+      }));
+      m.visible = false; m.renderOrder = 45; m.frustumCulled = false;
+      this.group.add(m);
+      this.rings.push({ m, t: 1, life: 0.6, size: 0.3 });
+    }
+    this.ringCursor = 0;
   }
 
   burst(p, { count = 40, color = [0.7, 0.95, 1.0], speed = 0.8, size = 0.03, life = 0.9, spread = 1 } = {}) {
@@ -76,6 +91,24 @@ export class Effects {
   }
 
   /** A glowing mote that flies from `from` along `dir` (unit, world) to the sky. */
+  /** Shockwave ring at p, facing the viewer. */
+  ring(p, { color = [0.7, 0.95, 1.0], size = 0.35, life = 0.6 } = {}) {
+    const r = this.rings[this.ringCursor]; this.ringCursor = (this.ringCursor + 1) % this.rings.length;
+    r.m.position.copy(p); r.m.visible = true; r.t = 0; r.life = life; r.size = size;
+    r.m.material.uniforms.uColor.value.set(...color);
+  }
+
+  /**
+   * A mote of light flying in an arc from `from` to a world point `to` (e.g. the next lantern of
+   * the path, far out on the lake). The eyes follow it out to the distance.
+   */
+  flyTo(from, to, onArrive, { color = [1.0, 0.85, 0.55], lift = 0.25 } = {}) {
+    const d = from.distanceTo(to);
+    const ctrl = from.clone().lerp(to, 0.45);
+    ctrl.y += Math.max(1.5, d * lift);
+    this.arcs.push({ a: from.clone(), b: to.clone(), c: ctrl, t: 0, dur: 0.9 + Math.min(1.6, d / 90), color, onArrive, p: new THREE.Vector3() });
+  }
+
   fly(from, dir, onArrive) {
     this.flyers.push({ p: from.clone(), dir: dir.clone(), t: 0, onArrive });
   }
@@ -104,6 +137,28 @@ export class Effects {
       t.m.lookAt(head);
     }
 
+    for (const r of this.rings) {
+      if (!r.m.visible) continue;
+      r.t += dt;
+      const k = r.t / r.life;
+      if (k >= 1) { r.m.visible = false; continue; }
+      r.m.scale.setScalar(r.size * (0.4 + 1.6 * (1 - Math.pow(1 - k, 3))));
+      r.m.material.uniforms.uA.value = (1 - k) * 0.9;
+      r.m.lookAt(head);
+    }
+    for (let i = this.arcs.length - 1; i >= 0; i--) {
+      const f = this.arcs[i];
+      f.t += dt / f.dur;
+      const t = Math.min(1, f.t), u = 1 - t;
+      f.p.set(0, 0, 0).addScaledVector(f.a, u * u).addScaledVector(f.c, 2 * u * t).addScaledVector(f.b, t * t);
+      const dist = f.p.distanceTo(head);
+      this.burst(f.p, { count: 2, color: f.color, speed: 0.02 * dist, size: 0.012 * dist + 0.02, life: 0.45 });
+      if (f.t >= 1) {
+        this.arcs.splice(i, 1);
+        this.burst(f.b, { count: 18, color: f.color, speed: 0.03 * dist + 0.3, size: 0.01 * dist + 0.03, life: 0.8 });
+        f.onArrive?.();
+      }
+    }
     for (let i = this.flyers.length - 1; i >= 0; i--) {
       const f = this.flyers[i];
       f.t += dt;

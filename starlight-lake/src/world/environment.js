@@ -4,6 +4,7 @@ import { Terrain } from './terrain.js';
 import { Water } from './water.js';
 import { Particles } from './particles.js';
 import { Platform, Lotus, Constellations } from './garden.js';
+import { Scenery } from './scenery.js';
 import { makeNoiseTexture, srgb, lerp, smooth } from '../util.js';
 
 // One night = one session: dusk -> blue hour -> aurora night -> pre-dawn -> sunrise.
@@ -39,8 +40,13 @@ export class Environment {
     this.platform = new Platform();
     this.lotus = new Lotus(64);
     this.constellations = new Constellations();
+    this.scenery = new Scenery(noise, this.sky.moonDir, ppd);
     this.group.add(this.sky.group, this.sky.worldGroup, this.terrain.group, this.water.mesh,
-      this.particles.group, this.platform.mesh, this.lotus.group, this.constellations.group);
+      this.particles.group, this.platform.mesh, this.lotus.group, this.constellations.group,
+      this.scenery.group, this.scenery.sky, this.scenery.motes);
+    this.auroraBase = 0;
+    this.fever = 0; this.feverTarget = 0;
+    this.breath = 0;                 // 0..1, set by the breathing chapter
     this.phase = 0.3;
     this.veilColor = new THREE.Color();
     this.setPhase(this.phase);
@@ -61,7 +67,7 @@ export class Environment {
     u.uMilky.value = lerp(a.star, b.star, t);
     u.uMoonGlow.value = 0.4 + 0.6 * lerp(a.star, b.star, t);
     this.sky.stars.alpha = lerp(a.star, b.star, t);
-    this.sky.aurora.intensity = lerp(a.aur, b.aur, t);
+    this.auroraBase = lerp(a.aur, b.aur, t);
     this.water.uniforms.uDeep.value.copy(mixHex(a.deep, b.deep, t));
     this.water.uniforms.uHorizon.value.copy(u.uHorizon.value);
     this.water.uniforms.uSpec.value = 0.4 + 0.6 * lerp(a.star, b.star, t);
@@ -70,10 +76,14 @@ export class Environment {
     this.terrain.uniforms.uRim.value.copy(mixHex(a.rim, b.rim, t));
     this.terrain.uniforms.uMist.value = lerp(a.mist, b.mist, t);
     this.particles.fireflyAlpha = lerp(a.fire, b.fire, t);
+    this.scenery.setPalette(u.uHorizon.value, this.terrain.uniforms.uRock.value, this.terrain.uniforms.uRim.value, u.uZenith.value);
     // average scene colour, used by the dichoptic veil so it lowers contrast, not brightness
     const z = u.uZenith.value, h = u.uHorizon.value;
     this.veilColor.setRGB((z.x + h.x) * 0.5, (z.y + h.y) * 0.5, (z.z + h.z) * 0.5, THREE.SRGBColorSpace);
   }
+
+  /** Starfall: meteors pour down and the aurora swells while a long combo lasts. */
+  setFever(on) { this.feverTarget = on ? 1 : 0; this.scenery.setFever(on); }
 
   setPpd(ppd) {
     this.sky.stars.setPpd(ppd);
@@ -88,5 +98,8 @@ export class Environment {
     this.platform.update(t, dt);
     this.lotus.update(t, dt, this.app.view.ppd);
     this.constellations.update(t, this.app.view.ppd, head);
+    this.fever += (this.feverTarget - this.fever) * Math.min(1, dt * 1.5);
+    this.sky.aurora.intensity = Math.min(1.6, this.auroraBase * (1 + 0.7 * this.fever) + 0.35 * this.fever + 0.18 * this.breath);
+    this.scenery.update(t, dt, head, this.app.view.ppd, this.breath);
   }
 }

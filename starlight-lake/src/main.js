@@ -5,7 +5,7 @@ import { Effects } from './fx.js';
 import { AudioEngine } from './audio.js';
 import { UIManager, Panel, wrapText } from './ui.js';
 import { Input } from './input.js';
-import { Score, Hud, Caption, Director } from './session.js';
+import { Score, Hud, Caption, Director, Goal } from './session.js';
 import { FONT, TITLE_FONT, APP_NAME, DEG, CHAPTERS, CHAPTER_HINT, MODULE_INFO } from './config.js';
 import { sph } from './util.js';
 
@@ -58,6 +58,8 @@ export class App {
     this.stageYaw = 0;
     this.scene.add(this.stage);
     this.score = new Score(this);
+    this.goal = new Goal(this);
+    this.finale = false;           // last 15 s of a chapter: faster and worth x1.5
     this.hud = new Hud(this);
     this.captionBox = new Caption(this);
     this.director = new Director(this);

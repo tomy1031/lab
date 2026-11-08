@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Module } from './base.js';
-import { Triplet, Glow } from '../stimuli.js';
+import { Triplet, Glow, RuneRing } from '../stimuli.js';
 import { CellGrid } from '../staircase.js';
 import { pick, clamp } from '../util.js';
 import { STIM_DIST } from '../config.js';
@@ -38,7 +38,8 @@ export class GatesModule extends Module {
     const tri = new Triplet();
     group.add(tri.mesh);
     this.app.eye(tri.mesh, 'weak');
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.96, 1, 96), new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+    const rune = new RuneRing();
+    const ring = rune.mesh;
     ring.renderOrder = 17;
     group.add(ring);
     this.root.add(group);
@@ -83,8 +84,10 @@ export class GatesModule extends Module {
       g.flash = Math.max(0, g.flash - dt * 2);
       const hovered = this.phase === 'respond' && app.input.pointers.some((p) => this.pickGate(p.ray) === g);
       g.hover += ((hovered ? 1 : 0) - g.hover) * Math.min(1, dt * 12);
-      g.ring.material.opacity = 0.25 + 0.35 * g.hover + 0.6 * g.flash;
-      g.ring.material.color.setRGB(0.62 + g.flash * (g.good ? -0.1 : 0.4), 0.85 + g.flash * (g.good ? 0.15 : -0.3), 1.0 - g.flash * (g.good ? 0.3 : 0.4));
+      const ru = g.ring.material.uniforms;
+      ru.uTime.value = this.t * (1 + g.flash * 6);
+      ru.uA.value = 0.45 + 0.5 * g.hover + 1.2 * g.flash;
+      ru.uColor.value.set(0.62 + g.flash * (g.good ? 0.38 : 0.4), 0.85 + g.flash * (g.good ? 0.05 : -0.3), 1.0 - g.flash * (g.good ? 0.45 : 0.4));
     }
     this.pt += dt;
     if (this.phase === 'ready') {

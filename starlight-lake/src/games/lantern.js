@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Module } from './base.js';
 import { LandoltLantern, Glow } from '../stimuli.js';
+import { WATER_Y } from '../config.js';
 import { easeOutCubic, rand, clamp } from '../util.js';
 import { noteOf } from '../audio.js';
 
@@ -34,10 +35,12 @@ export class LanternModule extends Module {
 
   makeLantern(az, lane) {
     const l = new LandoltLantern();
-    this.root.add(l.mesh);
+    // its reflection on the lake: just warm light (a mirrored ring would flip the gap)
+    const refl = new Glow(0xffb070, { core: 5, halo: 0.5 });
+    this.root.add(l.mesh, refl.mesh);
     this.app.eye(l.mesh, 'weak');
-    const obj = { l, az, lane, d: FAR, state: 'wait', timer: 1.2 + lane * 2.6, from: FAR, gap: 0, pos: new THREE.Vector3(), flash: 0, hover: 0 };
-    l.mesh.visible = false;
+    const obj = { l, refl, az, lane, d: FAR, state: 'wait', timer: 1.2 + lane * 2.6, from: FAR, gap: 0, pos: new THREE.Vector3(), flash: 0, hover: 0, lift: 0, golden: false };
+    l.mesh.visible = false; refl.mesh.visible = false;
     return obj;
   }
 
@@ -45,8 +48,10 @@ export class LanternModule extends Module {
     o.state = 'approach'; o.d = FAR + rand(-1, 2);
     o.gap = Math.floor(Math.random() * 4);
     o.l.gap = o.gap;
-    o.l.mesh.visible = true;
+    o.l.mesh.visible = true; o.refl.mesh.visible = true;
     o.l.uniforms.uOpacity.value = 0;
+    o.golden = Math.random() < 0.1;
+    o.l.uniforms.uGold.value = o.golden ? 1 : 0;
     o.wrongs = 0;
     this.app.audio.cue(this.at(o.az, -2, 12), -12);
   }
@@ -55,9 +60,14 @@ export class LanternModule extends Module {
     // A slight downward angle feels natural, like lanterns floating on the water surface.
     const el = -2.5 - 1.5 * (1 - o.d / FAR);
     this.at(o.az, el, o.d, o.pos);
+    o.pos.y += o.lift;
     o.l.mesh.position.copy(o.pos);
     o.l.mesh.scale.setScalar(this.size);
     this.face(o.l.mesh);
+    o.refl.mesh.position.set(o.pos.x, 2 * WATER_Y - o.pos.y, o.pos.z);
+    o.refl.mesh.scale.set(this.size * 0.7, this.size * 2.2, 1);
+    o.refl.mesh.lookAt(this.app.head.x, o.refl.mesh.position.y, this.app.head.z);
+    o.refl.opacity = 0.35 * o.l.uniforms.uOpacity.value * (o.golden ? 1.4 : 1);
   }
 
   update(dt) {
@@ -74,20 +84,26 @@ export class LanternModule extends Module {
         continue;
       }
       if (o.state === 'approach') {
-        o.d -= (FAR - this.near) / this.approach * dt;
+        o.d -= (FAR - this.near) / this.approach * dt * (app.finale ? 1.25 : 1);
         o.l.uniforms.uOpacity.value = Math.min(1, o.l.uniforms.uOpacity.value + dt * 1.5);
         if (o.d <= this.near) this.miss(o);
       } else if (o.state === 'return') {
         o.rt += dt;
         const k = easeOutCubic(Math.min(1, o.rt / 1.1));
         o.d = o.from + (FAR - o.from) * k;
-        if (k >= 1) { o.state = 'approach'; o.gap = (o.gap + 1 + Math.floor(Math.random() * 3)) % 4; o.l.gap = o.gap; }
+        o.lift = Math.sin(Math.PI * k) * (0.6 + o.from * 0.12);      // sent back in a high arc
+        if (k >= 1) {
+          o.state = 'approach'; o.lift = 0;
+          o.gap = (o.gap + 1 + Math.floor(Math.random() * 3)) % 4; o.l.gap = o.gap;
+          o.golden = Math.random() < 0.1; o.l.uniforms.uGold.value = o.golden ? 1 : 0;
+        }
       } else if (o.state === 'sink') {
         o.rt += dt;
         o.l.uniforms.uOpacity.value = Math.max(0, 1 - o.rt / 0.8);
         o.pos.y -= dt * 0.4;
         o.l.mesh.position.copy(o.pos);
-        if (o.rt > 0.8) { o.state = 'wait'; o.timer = 1.0; o.l.mesh.visible = false; }
+        o.refl.opacity = Math.max(0, 0.3 - o.rt * 0.4);
+        if (o.rt > 0.8) { o.state = 'wait'; o.timer = 1.0; o.l.mesh.visible = false; o.refl.mesh.visible = false; }
         continue;
       }
       this.place(o);
@@ -180,13 +196,14 @@ export class LanternModule extends Module {
       this.streak++;
       const d = o.d;
       this.distances.push(+d.toFixed(1));
-      const pts = app.score.reward(100 + Math.round(d * 8), o.pos);
+      const pts = app.score.reward(100 + Math.round(d * 8), o.pos, { golden: o.golden });
       this.stats.score += pts;
       o.flash = 1;
       o.state = 'return'; o.rt = 0; o.from = d;
-      app.fx.burst(o.pos, { count: 26, color: [1.0, 0.8, 0.5], speed: 0.4 + d * 0.02, size: 0.02 + d * 0.004 });
+      const col = o.golden ? [1.0, 0.88, 0.45] : [1.0, 0.8, 0.5];
+      app.fx.burst(o.pos, { count: o.golden ? 60 : 32, color: col, speed: 0.4 + d * 0.03, size: 0.02 + d * 0.004 });
       const labelPos = this.at(o.az * 0.6, 3, Math.min(d, 3.2));
-      app.fx.text(`${d.toFixed(1)} m`, labelPos, { color: '#ffe6b8', size: 0.12 });
+      app.fx.text(`${o.golden ? 'GOLD  ' : ''}${d.toFixed(1)} m`, labelPos, { color: o.golden ? '#ffe29a' : '#ffe6b8', size: 0.12 });
       // keep identifications happening at mid distances so the eyes keep travelling near <-> far
       if (d > 15) this.size *= 0.92; else if (d < 6) this.size *= 1.07;
       if (this.streak % 6 === 0) this.approach = Math.max(6, this.approach * 0.94);

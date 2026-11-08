@@ -11,17 +11,19 @@ export const TITLE_FONT = '"Cormorant Garamond","Iowan Old Style","Palatino Lino
 export const APP_NAME = 'Starlight Lake';
 
 // Session plans. Durations in seconds for a 15-minute night; scaled by the chosen length.
+// Chapters are short (~2 min) and alternate, so the night keeps changing pace.
 // Order follows the evidence: warm-up, accommodation/vergence work (KGU 2025), contrast perceptual
 // learning (Polat 2004, Deveau 2014, Tan & Fong 2008, Yan 2015), lateral masking with brief
 // presentation (Polat 2012 for presbyopia), stereo (Vedamurthy 2016), action/periphery (Li 2009).
 export const PLAN_VR = [
-  { id: 'rest', dur: 40, variant: 'intro' },
-  { id: 'lantern', dur: 180 },
-  { id: 'spirits', dur: 180 },
-  { id: 'rest', dur: 30, variant: 'far' },
-  { id: 'gates', dur: 150 },
-  { id: 'depth', dur: 120 },
-  { id: 'comets', dur: 90 },
+  { id: 'rest', dur: 45, variant: 'intro' },
+  { id: 'lantern', dur: 120 },
+  { id: 'spirits', dur: 120 },
+  { id: 'gates', dur: 105 },
+  { id: 'rest', dur: 32, variant: 'far' },
+  { id: 'comets', dur: 80 },
+  { id: 'spirits', dur: 105, variant: 'high' },
+  { id: 'depth', dur: 95 },
   { id: 'lantern', dur: 110, variant: 'finale' },
 ];
 
@@ -37,7 +39,7 @@ export const PLAN_SCREEN = [
 
 export const MODULE_INFO = {
   rest: { title: 'Still Water', sub: '呼吸と遠くを眺める時間',
-    how: '光の玉を目で追い、呼吸を合わせます。最後に遠くの山を眺めて、まばたきを。' },
+    how: '光の蓮に合わせて呼吸します。吸うと花が開き、吐くと光が遠くの灯台へ流れていきます。最後は遠くを眺めて、まばたきを。' },
   lantern: { title: 'Lantern Drift', sub: '遠近のピント運動',
     how: '近づく灯籠の輪の「切れ目」の方向へ、つまんで(トリガーで)はじき返す。遠くで見抜くほど高得点。' },
   spirits: { title: 'Wisps', sub: 'コントラスト感度トレーニング',

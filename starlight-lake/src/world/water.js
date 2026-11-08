@@ -75,7 +75,7 @@ export class Water {
           float body = mix(0.72, 0.04, fres);
           vec3 R = reflect(-V, N);
           float md = max(dot(R, uMoonDir), 0.0);
-          vec3 spec = uMoonColor * (pow(md, 1400.0) * 2.4 + pow(md, 160.0) * 0.14) * uSpec;
+          vec3 spec = uMoonColor * (pow(md, 2200.0) * 1.3 + pow(md, 220.0) * 0.1) * uSpec;
           vec3 col = uDeep * body + spec + uHorizon * 0.05 * fres;
           gl_FragColor = vec4(dither(col), body);
         }`,

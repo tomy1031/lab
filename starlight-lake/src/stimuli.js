@@ -138,13 +138,13 @@ export class LandoltLantern {
   constructor() {
     this.uniforms = {
       uGap: { value: 0 }, uInk: { value: 0.12 }, uOpacity: { value: 1 }, uFlash: { value: 0 }, uFlashColor: { value: srgb(0x9fffd0) },
-      uTime: { value: 0 }, uSeed: { value: Math.random() * 10 }, uHover: { value: 0 },
+      uTime: { value: 0 }, uSeed: { value: Math.random() * 10 }, uHover: { value: 0 }, uGold: { value: 0 },
     };
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
       uniforms: this.uniforms, transparent: true, depthWrite: false, premultipliedAlpha: true,
       vertexShader: gaborVS,
       fragmentShader: /* glsl */`
-        uniform float uGap, uInk, uOpacity, uFlash, uTime, uSeed, uHover; uniform vec3 uFlashColor; varying vec2 vUv;
+        uniform float uGap, uInk, uOpacity, uFlash, uTime, uSeed, uHover, uGold; uniform vec3 uFlashColor; varying vec2 vUv;
         void main(){
           vec2 p = vUv - 0.5;
           float r = length(p);
@@ -167,7 +167,9 @@ export class LandoltLantern {
           col = mix(col, uFlashColor, uFlash * 0.55);
           // halo
           float halo = exp(-pow(max(r - faceR, 0.0) * 9.0, 2.0)) * (1.0 - face);
-          vec3 glow = vec3(1.0, 0.62, 0.28) * halo * (0.55 + 0.6 * uHover) + uFlashColor * halo * uFlash;
+          vec3 warm = mix(vec3(1.0, 0.62, 0.28), vec3(1.0, 0.86, 0.42), uGold);
+          float sparkle = uGold * pow(0.5 + 0.5 * sin(atan(p.y, p.x) * 8.0 + uTime * 3.0), 8.0) * exp(-pow((r - faceR * 1.25) * 30.0, 2.0));
+          vec3 glow = warm * halo * (0.55 + 0.6 * uHover + 0.5 * uGold) + uFlashColor * halo * uFlash + vec3(1.0, 0.9, 0.6) * sparkle;
           gl_FragColor = vec4(col * face + glow, face) * uOpacity;
         }`,
     }));
@@ -222,4 +224,66 @@ export class Glow {
     this.mesh.renderOrder = 25;
   }
   set opacity(v) { this.uniforms.uOpacity.value = v; }
+}
+
+/**
+ * Decoration around a Gabor "wisp": a corona, six slowly turning petals of light and three
+ * orbiting sparks. It is drawn only outside the stimulus disc (and the disc, drawn after it,
+ * is opaque), so it never changes the grating's contrast. Targets and blanks get the same
+ * halo, so it carries no hint about which is which.
+ */
+export class WispHalo {
+  constructor(golden = false) {
+    this.uniforms = {
+      uTime: { value: 0 }, uA: { value: 0 }, uSeed: { value: Math.random() * 6.28 }, uInner: { value: 0.5 / 2.4 },
+      uColor: { value: golden ? srgb(0xffd27a) : srgb(0x9fd8ff) }, uColor2: { value: golden ? srgb(0xffa860) : srgb(0xc6a8ff) },
+    };
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
+      uniforms: this.uniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: gaborVS,
+      fragmentShader: /* glsl */`
+        uniform float uTime, uA, uSeed, uInner; uniform vec3 uColor, uColor2; varying vec2 vUv;
+        void main(){
+          vec2 p = vUv - 0.5; float r = length(p); float a = atan(p.y, p.x);
+          float rin = uInner;
+          float corona = exp(-pow((r - rin) / (rin * 0.16), 2.0)) * 0.55 + exp(-pow((r - rin) / (rin * 0.55), 2.0)) * 0.22;
+          float pet = pow(0.5 + 0.5 * cos(6.0 * a + uTime * 0.7 + uSeed), 5.0) * exp(-pow((r - rin * 1.55) / (rin * 0.4), 2.0));
+          float sp = 0.0;
+          for (int k = 0; k < 3; k++) {
+            float ang = uTime * 1.5 + float(k) * 2.0944 + uSeed;
+            vec2 c = vec2(cos(ang), sin(ang)) * rin * 1.32;
+            vec2 d = p - c;
+            sp += exp(-dot(d, d) / (rin * rin * 0.008));
+          }
+          float outside = smoothstep(rin * 1.0, rin * 1.06, r) * smoothstep(0.5, 0.4, r);
+          vec3 col = mix(uColor, uColor2, 0.5 + 0.5 * sin(a * 3.0 + uTime * 0.5 + uSeed));
+          gl_FragColor = vec4(col * (corona + pet * 0.6 + sp) * outside * uA, 1.0);
+        }`,
+    }));
+    this.mesh.renderOrder = 19;
+  }
+  /** discRadiusM: physical radius of the stimulus disc. */
+  fit(discRadiusM) { this.mesh.scale.setScalar(discRadiusM * 2 * 2.4); }
+}
+
+/** Ornamented ring for the Star Gates: turning rune dashes around a fine double circle. */
+export class RuneRing {
+  constructor() {
+    this.uniforms = { uTime: { value: 0 }, uA: { value: 0.3 }, uColor: { value: new THREE.Vector3(0.62, 0.85, 1.0) } };
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6), new THREE.ShaderMaterial({
+      uniforms: this.uniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: gaborVS,
+      fragmentShader: /* glsl */`
+        uniform float uTime, uA; uniform vec3 uColor; varying vec2 vUv;
+        void main(){
+          vec2 p = (vUv - 0.5) * 2.6; float r = length(p); float a = atan(p.y, p.x);
+          float ring = exp(-pow((r - 1.0) / 0.012, 2.0)) + exp(-pow((r - 1.1) / 0.008, 2.0)) * 0.6;
+          float dash = step(0.62, fract((a + uTime * 0.12) * 24.0 / 6.2831853)) * exp(-pow((r - 1.05) / 0.018, 2.0));
+          float mark = step(0.93, fract((a - uTime * 0.07) * 6.0 / 6.2831853)) * exp(-pow((r - 1.17) / 0.03, 2.0));
+          float glow = exp(-pow((r - 1.0) / 0.08, 2.0)) * 0.22;
+          gl_FragColor = vec4(uColor * (ring + dash * 0.7 + mark * 0.8 + glow) * uA, 1.0);
+        }`,
+    }));
+    this.mesh.renderOrder = 17;
+  }
 }

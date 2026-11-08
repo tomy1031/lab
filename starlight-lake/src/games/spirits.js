@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Module } from './base.js';
-import { GaborPatch } from '../stimuli.js';
+import { GaborPatch, WispHalo } from '../stimuli.js';
 import { CellGrid } from '../staircase.js';
 import { rand, clamp } from '../util.js';
 import { STIM_DIST } from '../config.js';
@@ -52,9 +52,15 @@ export class SpiritsModule extends Module {
     const g = new GaborPatch();
     g.set({ sf, contrast: isTarget ? cell.st.value : 0, ori: cell.ori, sigmaDeg: sigma, discDeg: disc, dist: STIM_DIST });
     g.opacity = 0;
-    this.root.add(g.mesh);
-    app.eye(g.mesh, 'weak');
-    const s = { g, cell, isTarget, az, el, disc, age: 0, life: this.life, pos: new THREE.Vector3(), state: 'live', hover: 0 };
+    // golden wisps are worth x3; blanks turn golden just as often, so gold is no hint
+    const golden = Math.random() < 0.08;
+    if (golden) g.uniforms.uRimColor.value.set(1.0, 0.82, 0.45);
+    const halo = new WispHalo(golden);
+    halo.fit(g.radiusM);
+    this.root.add(halo.mesh, g.mesh);
+    app.eye(g.mesh, 'weak'); app.eye(halo.mesh, 'weak');
+    const life = this.life * (app.finale ? 0.85 : 1);
+    const s = { g, halo, golden, cell, isTarget, az, el, disc, age: 0, life, pos: new THREE.Vector3(), state: 'live', hover: 0 };
     this.place(s);
     this.spirits.push(s);
     app.audio.cue(s.pos, isTarget ? 0 : 0);   // same sound for both: sound says where, not what
@@ -64,15 +70,23 @@ export class SpiritsModule extends Module {
     this.at(s.az, s.el + s.age * 0.12, STIM_DIST, s.pos);
     s.g.mesh.position.copy(s.pos);
     this.face(s.g.mesh);
+    s.halo.mesh.position.copy(s.pos);
+    s.halo.mesh.quaternion.copy(s.g.mesh.quaternion);
+    s.halo.uniforms.uTime.value = this.t;
+    // the halo blooms open as the wisp appears and drifts away when it goes
+    const k = s.state === 'live' ? Math.min(1, s.age / 0.35) : 1 + (0.35 - s.fade) * 2;
+    s.halo.fit(s.g.radiusM * (0.6 + 0.4 * Math.min(1, k)) * (k > 1 ? k : 1));
+    s.halo.uniforms.uA.value = s.g.uniforms.uOpacity.value * (s.golden ? 1.2 : 0.85) * (1 + s.hover * 0.6);
   }
 
   update(dt) {
     super.update(dt);
     this.spawnIn -= dt;
     const live = this.spirits.filter((s) => s.state === 'live').length;
-    if (this.spawnIn <= 0 && live < this.maxActive) {
+    const finale = this.app.finale;
+    if (this.spawnIn <= 0 && live < this.maxActive + (finale ? 1 : 0)) {
       this.spawn();
-      this.spawnIn = rand(0.6, 1.25);
+      this.spawnIn = rand(0.6, 1.25) * (finale ? 0.65 : 1);
     }
     for (const p of this.app.input.pointers) p._spirit = this.pick(p.ray);
     for (let i = this.spirits.length - 1; i >= 0; i--) {
@@ -90,7 +104,11 @@ export class SpiritsModule extends Module {
       } else {
         s.fade -= dt;
         s.g.opacity = Math.max(0, s.fade / 0.35);
-        if (s.fade <= 0) { s.g.mesh.removeFromParent(); s.g.dispose(); this.spirits.splice(i, 1); continue; }
+        if (s.fade <= 0) {
+          s.g.mesh.removeFromParent(); s.g.dispose();
+          s.halo.mesh.removeFromParent(); s.halo.mesh.geometry.dispose(); s.halo.mesh.material.dispose();
+          this.spirits.splice(i, 1); continue;
+        }
       }
       this.place(s);
     }
@@ -125,9 +143,12 @@ export class SpiritsModule extends Module {
       // While the player is tapping blanks too, hits don't make the next ones fainter.
       if (!this.guessing()) s.cell.st.update(true);
       this.stats.correct++; this.hits++;
-      const pts = app.score.reward(60 + Math.round(40 * (1 - Math.log10(s.cell.st.value * 1000) / 3)), s.pos);
+      const pts = app.score.reward(60 + Math.round(40 * (1 - Math.log10(s.cell.st.value * 1000) / 3)), s.pos, { golden: s.golden });
       this.stats.score += pts;
-      app.fx.burst(s.pos, { count: 34, color: [0.7, 0.92, 1.0], speed: 0.6, size: 0.022 });
+      const col = s.golden ? [1.0, 0.85, 0.45] : [0.7, 0.92, 1.0];
+      app.fx.burst(s.pos, { count: s.golden ? 70 : 40, color: col, speed: s.golden ? 0.9 : 0.6, size: 0.022 });
+      app.fx.burst(s.pos, { count: 16, color: [0.85, 0.7, 1.0], speed: 0.25, size: 0.04, life: 1.4 });
+      if (s.golden) app.fx.text(`GOLD  +${pts}`, s.pos.clone().add(new THREE.Vector3(0, 0.12, 0)), { color: '#ffe29a', size: 0.09 });
       app.input.pulse(p, 0.6, 30);
       app.store.data.totals.spirits++;
       this.vanish(s);
