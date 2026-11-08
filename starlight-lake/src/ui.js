@@ -11,7 +11,8 @@ export class Panel {
    * @param {number} [o.px=1024] canvas width in pixels
    * @param {(g:CanvasRenderingContext2D, W:number, H:number, panel:Panel)=>void} o.draw
    */
-  constructor({ w, h, px = 1024, draw, glass = true }) {
+  constructor({ w, h, px = 1024, draw, glass = true, theme = 'night', accent = '#5ab8ff' }) {
+    this.theme = theme; this.accent = accent;
     this.w = w; this.h = h;
     this.W = px; this.H = Math.round(px * h / w);
     this.canvas = document.createElement('canvas');
@@ -37,10 +38,10 @@ export class Panel {
   redraw() {
     const g = this.g, W = this.W, H = this.H;
     g.clearRect(0, 0, W, H);
-    if (this.glass) glassRect(g, 6, 6, W - 12, H - 12, 36);
+    if (this.glass) (this.theme === 'pop' ? popCard : glassRect)(g, 6, 6, W - 12, H - 12, 40, this.accent);
     this.buttons = [];
     this.drawFn?.(g, W, H, this);
-    for (const b of this.buttons) drawButton(g, b, b.id === this.hoverId);
+    for (const b of this.buttons) (this.theme === 'pop' ? drawPopButton : drawButton)(g, b, b.id === this.hoverId);
     this.tex.needsUpdate = true;
   }
 
@@ -71,6 +72,55 @@ export function glassRect(g, x, y, w, h, r) {
   sg.addColorStop(0, 'rgba(160,215,255,0.55)'); sg.addColorStop(0.5, 'rgba(160,215,255,0.12)'); sg.addColorStop(1, 'rgba(255,200,170,0.45)');
   g.strokeStyle = sg; g.stroke();
   g.restore();
+}
+
+/** Bright, friendly card for the arcade: white with a coloured top band. */
+export function popCard(g, x, y, w, h, r, accent = '#5ab8ff') {
+  g.save();
+  roundRect(g, x + 4, y + 10, w - 8, h - 10, r);
+  g.fillStyle = 'rgba(40,60,120,0.18)'; g.fill();
+  roundRect(g, x, y, w, h - 8, r);
+  const grad = g.createLinearGradient(0, y, 0, y + h);
+  grad.addColorStop(0, '#ffffff'); grad.addColorStop(1, '#f1f6ff');
+  g.fillStyle = grad; g.fill();
+  g.save(); g.clip();
+  g.fillStyle = accent; g.fillRect(x, y, w, 18);
+  g.restore();
+  g.lineWidth = 3; g.strokeStyle = 'rgba(90,130,200,0.25)'; g.stroke();
+  g.restore();
+}
+
+function drawPopButton(g, b, hover) {
+  g.save();
+  const c = b.color || (b.primary ? '#ff6fa8' : '#5ab8ff');
+  const y = b.y + (hover ? -3 : 0);
+  roundRect(g, b.x, b.y + 7, b.w, b.h, Math.min(b.h / 2, 40));
+  g.fillStyle = 'rgba(30,50,100,0.25)'; g.fill();
+  roundRect(g, b.x, y, b.w, b.h, Math.min(b.h / 2, 40));
+  if (b.ghost && !b.selected) { g.fillStyle = hover ? '#eef5ff' : '#ffffff'; g.fill(); g.lineWidth = 4; g.strokeStyle = c; g.stroke(); }
+  else {
+    const grad = g.createLinearGradient(0, y, 0, y + b.h);
+    grad.addColorStop(0, shade(c, hover ? 0.28 : 0.12)); grad.addColorStop(1, c);
+    g.fillStyle = grad; g.fill();
+    if (b.selected || hover) { g.lineWidth = 5; g.strokeStyle = '#ffffff'; g.stroke(); }
+  }
+  g.fillStyle = b.ghost && !b.selected ? shade(c, -0.35) : '#ffffff';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = b.font || `800 ${Math.round(b.h * 0.4)}px ${FONT}`;
+  if (b.sub) {
+    g.fillText(b.label, b.x + b.w / 2, y + b.h * 0.4);
+    g.font = `600 ${Math.round(b.h * 0.2)}px ${FONT}`;
+    g.globalAlpha = 0.9;
+    g.fillText(b.sub, b.x + b.w / 2, y + b.h * 0.75);
+  } else g.fillText(b.label, b.x + b.w / 2, y + b.h / 2 + 2);
+  g.restore();
+}
+
+/** Lighten (k > 0) or darken (k < 0) a #rrggbb colour. */
+export function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16);
+  const f = (v) => Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k));
+  return `rgb(${f((n >> 16) & 255)},${f((n >> 8) & 255)},${f(n & 255)})`;
 }
 
 export function roundRect(g, x, y, w, h, r) {

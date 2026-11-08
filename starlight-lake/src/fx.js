@@ -74,13 +74,14 @@ export class Effects {
     }
   }
 
-  text(str, p, { color = '#e8f6ff', size = 0.16, life = 1.3, rise = 0.25 } = {}) {
+  text(str, p, { color = '#e8f6ff', size = 0.16, life = 1.3, rise = 0.25, font = FONT, glow = 'rgba(120,200,255,0.9)', weight = 700 } = {}) {
     const t = this.texts[this.textCursor]; this.textCursor = (this.textCursor + 1) % this.texts.length;
     const g = t.c.getContext('2d');
     g.clearRect(0, 0, 512, 128);
-    g.font = `700 76px ${FONT}`;
+    g.font = `${weight} 76px ${font}`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.shadowColor = 'rgba(120,200,255,0.9)'; g.shadowBlur = 18;
+    g.shadowColor = glow; g.shadowBlur = 18;
+    if (str.length > 10) g.font = `${weight} ${Math.round(76 * 10 / str.length)}px ${font}`;
     g.fillStyle = color; g.fillText(str, 256, 66);
     t.tex.needsUpdate = true;
     t.m.position.copy(p);

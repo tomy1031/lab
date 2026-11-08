@@ -97,7 +97,12 @@ export class Input {
   }
 
   makeHandVisual() {
-    const mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }), JOINTS.length);
+    // app.handStyle lets a bright scene use solid "gloves" instead of glowing night-time joints
+    const st = this.app.handStyle || {};
+    const mat = st.solid
+      ? new THREE.MeshLambertMaterial({ color: 0xffffff })
+      : new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), mat, JOINTS.length);
     mesh.frustumCulled = false; mesh.visible = false; mesh.renderOrder = 65;
     mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(JOINTS.length * 3), 3);
     return { mesh };
@@ -239,7 +244,9 @@ export class Input {
       vis.setMatrixAt(i, m);
       const tip = TIPS.has(name);
       const glow = tip ? 1.0 : 0.55;
-      vis.instanceColor.setXYZ(i, 0.62 * glow + p.pinch * 0.3, 0.85 * glow, 1.0 * glow);
+      const sc = this.app.handStyle?.color;
+      if (sc) vis.instanceColor.setXYZ(i, sc[0] * (tip ? 1 : 0.92), sc[1] * (tip ? 1 : 0.92) - p.pinch * 0.2, sc[2] * (tip ? 1 : 0.92));
+      else vis.instanceColor.setXYZ(i, 0.62 * glow + p.pinch * 0.3, 0.85 * glow, 1.0 * glow);
     });
     vis.visible = any;
     vis.instanceMatrix.needsUpdate = true;
