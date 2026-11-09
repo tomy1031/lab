@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OFFBEAT GROVE</title>
+<meta name="description" content="裏拍ボクササイズ：森と湖に囲まれた草原で、音楽に合わせてパンチ。表拍・裏拍・シンコペーションを体で覚える Meta Quest 向け WebXR フィットネス。オフラインでも遊べます。">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#10231b">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="OFFBEAT GROVE">
+<script type="importmap">
+{ "imports": { "three": "./js/vendor/three.module.min.js" } }
+</script>
+<style>
+  :root {
+    --bg: #10231b; --sheet: rgba(13, 30, 23, 0.86); --ink: #f5f2e8; --muted: #b7c4b6; --line: rgba(255, 255, 255, 0.14);
+    --chip: rgba(255, 255, 255, 0.07); --chip-hover: rgba(255, 255, 255, 0.14); --sel: #f5f2e8; --sel-ink: #10231b;
+    --leaf: #9be36a; --left: #22c9b6; --right: #ff7552; --gold: #ffc94a; --pink: #ff9fe0;
+    --font: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+  body { overflow: hidden; }
+  #stage, #stage canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, summary:focus-visible, label:focus-within { outline: 3px solid var(--leaf); outline-offset: 2px; }
+
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 50; font-weight: 800; letter-spacing: .08em; }
+  #loading span { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--gold); margin-right: 10px; animation: beat .6s ease-in-out infinite alternate; }
+  @keyframes beat { from { transform: scale(.6); opacity: .5; } to { transform: scale(1.1); opacity: 1; } }
+
+  .sheet { position: fixed; top: 0; bottom: 0; left: 0; width: min(560px, 100%); overflow-y: auto; background: var(--sheet); border-right: 1px solid var(--line);
+    padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 28px max(16px, env(safe-area-inset-left)); backdrop-filter: blur(6px); z-index: 10; }
+  .brand h1 { margin: 6px 0 0; font-size: clamp(34px, 7vw, 46px); line-height: 1; letter-spacing: .02em; font-weight: 900; }
+  .brand h1 b { color: var(--leaf); }
+  .brand .sub { margin: 8px 0 0; font-weight: 800; color: var(--gold); letter-spacing: .06em; }
+  .brand p { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+  h2 { font-size: 13px; letter-spacing: .14em; color: var(--muted); margin: 22px 0 8px; font-weight: 800; }
+  .play { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+  .play .vr { grid-column: 1 / -1; font-size: 20px; padding: 16px; background: var(--leaf); color: var(--sel-ink); border: 0; border-radius: 14px; font-weight: 900; }
+  .play .vr:disabled { background: var(--chip); color: var(--muted); cursor: default; }
+  .play .sec { padding: 11px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; }
+  .play .sec:hover, .chip:hover, .song:hover { background: var(--chip-hover); }
+  #vr-note { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .songs { display: grid; gap: 6px; }
+  .song { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); }
+  .song b { font-size: 16px; }
+  .song small { color: var(--muted); font-size: 12.5px; grid-column: 1 / -1; }
+  .song em { font-style: normal; font-size: 12px; color: var(--muted); align-self: center; }
+  .song[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+  .song[aria-pressed="true"] small, .song[aria-pressed="true"] em { color: rgba(16, 35, 27, .72); }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { flex: 1 1 auto; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 14px; }
+  .chip[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+  .desc { margin: 8px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+  .tip { margin: 8px 0 0; font-size: 13.5px; line-height: 1.7; border-left: 3px solid var(--gold); padding-left: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+  .stepper { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 800; }
+  .stepper button { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; }
+  .stepper output { min-width: 6em; text-align: center; }
+  details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 800; color: var(--muted); letter-spacing: .06em; }
+  .field { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 14px; }
+  .field input[type="range"] { flex: 1; max-width: 220px; accent-color: var(--leaf); }
+  .field input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--leaf); }
+  .small { font-size: 12.5px; color: var(--muted); line-height: 1.7; margin: 6px 0; }
+  .file { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .file label.btn, .btn { display: inline-flex; align-items: center; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 14px; cursor: pointer; }
+  .file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  #track-box { margin-top: 10px; padding: 10px 12px; border-radius: 12px; border: 1px dashed var(--line); }
+  #track-box .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  #track-box .grid button { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 700; font-size: 13px; }
+  ol.how { padding-left: 1.2em; margin: 8px 0; font-size: 13.5px; line-height: 1.75; color: var(--ink); }
+  ol.how li { margin: 2px 0; }
+  kbd { font-family: inherit; font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--chip); }
+  footer { margin-top: 22px; font-size: 12.5px; color: var(--muted); line-height: 1.8; }
+  footer a { color: var(--leaf); }
+  #offline { display: inline-flex; gap: 6px; align-items: center; }
+  #offline i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  #offline.ok i { background: var(--leaf); }
+
+  /* PC play overlay */
+  #playbar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; padding: 12px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); z-index: 12; pointer-events: none; }
+  #playbar > * { pointer-events: auto; }
+  .pad { width: min(28vw, 150px); height: min(28vw, 120px); border-radius: 20px; border: 2px solid rgba(255,255,255,.35); background: rgba(10,25,18,.35); font-weight: 900; font-size: 18px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .pad.L { border-color: var(--left); color: var(--left); }
+  .pad.R { border-color: var(--right); color: var(--right); }
+  .pad.D { width: min(22vw, 110px); color: var(--ink); }
+  .pad:active { transform: scale(.96); }
+  #playbar .mid { flex: 1; text-align: center; font-size: 13px; color: var(--ink); text-shadow: 0 1px 4px rgba(0,0,0,.8); align-self: center; }
+  #pausebtn { position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 12; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: rgba(10,25,18,.6); font-weight: 800; }
+  .modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 20; background: rgba(5, 12, 9, .55); padding: 16px; }
+  .card { width: min(620px, 100%); max-height: 100%; overflow-y: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 24px; }
+  .card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .card .actions button { flex: 1 1 140px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); font-weight: 900; font-size: 16px; }
+  .card .actions button.primary { background: var(--leaf); color: var(--sel-ink); border: 0; }
+  .res-top { display: flex; align-items: center; gap: 18px; }
+  .rank { font-size: 76px; font-weight: 900; line-height: 1; }
+  .score { font-size: 34px; font-weight: 900; }
+  .cats { display: grid; gap: 10px; margin-top: 14px; }
+  .cat { display: grid; grid-template-columns: 7.5em 1fr; gap: 4px 10px; align-items: center; font-size: 13.5px; }
+  .cat b { font-size: 14px; }
+  .hist { display: flex; align-items: flex-end; gap: 2px; height: 34px; border-bottom: 1px solid var(--line); position: relative; }
+  .hist::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,.4); }
+  .hist i { flex: 1; background: currentColor; opacity: .85; border-radius: 2px 2px 0 0; }
+  .advice { margin-top: 14px; line-height: 1.8; font-size: 14.5px; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: rgba(10,25,18,.92); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; z-index: 40; font-size: 14px; max-width: calc(100% - 32px); }
+  #calib .big { display: grid; place-items: center; height: 160px; border-radius: 16px; border: 2px dashed var(--line); font-size: 22px; font-weight: 900; margin-top: 12px; user-select: none; }
+  #calib .big.flash { background: rgba(255,255,255,.12); }
+  @media (max-width: 700px) {
+    .sheet { width: 100%; border-right: 0; background: rgba(13, 30, 23, 0.9); }
+  }
+  @media (prefers-reduced-motion: reduce) { #loading span { animation: none; } }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="loading"><div><span></span>森を準備しています…</div></div>
+
+<main id="menu" class="sheet" aria-label="メニュー">
+  <header class="brand">
+    <h1>OFFBEAT <b>GROVE</b></h1>
+    <p class="sub">裏拍ボクササイズ</p>
+    <p>森と湖に囲まれた草原で、音楽に合わせてパンチ。体（ひざ）で表拍、拳で裏拍。ずれは表拍・裏拍・16分ごとに測って、早い・遅いのクセまで教えます。</p>
+  </header>
+
+  <div class="play">
+    <button class="vr" id="btn-vr" disabled>VR で遊ぶ</button>
+    <button class="sec" id="btn-pc">PC・スマホで遊ぶ</button>
+    <button class="sec" id="btn-auto">オートプレイを見る</button>
+    <p id="vr-note">VR の対応を確認しています…</p>
+  </div>
+
+  <h2>曲</h2>
+  <div class="songs" id="songs"></div>
+  <p class="tip" id="song-tip"></p>
+  <div class="stepper hidden" id="drill">
+    テンポ
+    <button data-bpm="-5" aria-label="5 遅く">−5</button>
+    <output id="drill-bpm">BPM 100</output>
+    <button data-bpm="5" aria-label="5 速く">＋5</button>
+  </div>
+
+  <h2>リズム</h2>
+  <div class="seg" id="modes"></div>
+  <p class="desc" id="mode-desc"></p>
+
+  <div class="row3">
+    <div><h2>むずかしさ</h2><div class="seg" id="diffs"></div></div>
+    <div><h2>ガイド音（打つ場所のクリック）</h2><div class="seg" id="guides"></div></div>
+    <div><h2>長さ</h2><div class="seg" id="lengths"></div></div>
+  </div>
+
+  <h2>じぶんの曲で遊ぶ</h2>
+  <div class="file">
+    <label class="btn" for="file">音楽ファイルをえらぶ<input type="file" id="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac"></label>
+    <span class="small" id="track-status">MP3 などをえらぶと、テンポと拍の位置を自動で見つけます。ファイルはこの端末の中だけで使います。</span>
+  </div>
+  <div id="track-box" class="hidden">
+    <div><b id="track-name"></b> <span class="small" id="track-bpm"></span></div>
+    <div class="grid" aria-label="テンポの調整">
+      <button data-tb="half">÷2</button><button data-tb="-1">−1</button><button data-tb="-0.1">−0.1</button>
+      <button data-tb="+0.1">+0.1</button><button data-tb="+1">+1</button><button data-tb="double">×2</button>
+    </div>
+    <div class="grid" id="track-alts" aria-label="ほかのテンポの候補"></div>
+    <div class="grid" aria-label="拍の位置の調整">
+      <button data-to="swap">表と裏を入れかえる（半拍）</button><button data-to="beat">「1」を1拍ずらす</button>
+      <button data-to="-20">拍を −20ms</button><button data-to="-5">−5ms</button><button data-to="+5">+5ms</button><button data-to="+20">+20ms</button>
+    </div>
+    <div class="grid">
+      <button id="track-check">▶ クリック付きで確認</button><button id="track-use">この曲をえらぶ</button><button id="track-del">消す</button>
+    </div>
+    <p class="small">「クリック付きで確認」で、高いクリックが小節の頭「1」、低いクリックが拍です。クリックがドラムの「ドン・タン」と重なればOK。ハイハットの「チッ」と重なるなら「表と裏を入れかえる」。テンポが途中で変わる曲（生演奏など）は、だんだんずれます。</p>
+  </div>
+
+  <details id="settings">
+    <summary>設定</summary>
+    <div class="field"><span>タイミング補正 <output id="offset-val">0ms</output></span><input type="range" id="offset" min="-150" max="150" step="5" value="0"></div>
+    <p class="small">判定が「おそい」に偏るとき（Bluetooth イヤホンなど音が遅れる環境）は ＋ に。<button class="btn" id="btn-calib" style="padding:4px 10px;margin-left:4px">クリックに合わせて測る</button></p>
+    <div class="field"><span>音楽の音量</span><input type="range" id="vol-music" min="0" max="1" step="0.05"></div>
+    <div class="field"><span>ガイド音の音量</span><input type="range" id="vol-guide" min="0" max="1" step="0.05"></div>
+    <div class="field"><span>効果音の音量</span><input type="range" id="vol-sfx" min="0" max="1" step="0.05"></div>
+    <div class="field"><span>座って遊ぶ（枝くぐりなし）</span><input type="checkbox" id="seated"></div>
+    <div class="field"><span>レーンにカウント「1 & 2 &」を表示</span><input type="checkbox" id="labels"></div>
+    <div class="field"><span>画質（軽量は草木を減らします。次回の起動から）</span><span class="seg" id="quality" style="flex:0 0 auto"></span></div>
+  </details>
+
+  <details>
+    <summary>遊び方</summary>
+    <ol class="how">
+      <li>Quest のブラウザでこのページを開き「VR で遊ぶ」。まわりに 2m×2m ほどの空間をあけて、正面を向いて立ちます。</li>
+      <li>目の前のパネルで曲とリズムを選び、コントローラーのトリガー（ハンドトラッキングなら指でつまむ）で START。</li>
+      <li>青緑は左手、オレンジは右手。的の数字が着く拍です：白い縁と「1 2 3 4」は表拍、金の縁と「&」は裏拍、ピンクの「e・a」は16分の裏。</li>
+      <li>外側のリングが縁に重なった瞬間がジャスト。足元のレーンの線も同じタイミングで流れてきます（実線＝表拍、破線＝裏拍）。</li>
+      <li>矢印つきはフック（横から）とアッパー（下から）。枝が来たら、ひざを曲げてくぐります。いつも小節の頭（1拍目）です。</li>
+      <li>B / Y ボタンで一時停止。終わると、表拍と裏拍それぞれのずれ（早い・遅い・ばらつき）とアドバイスが出ます。</li>
+    </ol>
+    <p class="small">PC・スマホ：<kbd>F</kbd>・<kbd>D</kbd>＝左、<kbd>J</kbd>・<kbd>K</kbd>＝右、<kbd>Space</kbd>＝くぐる、<kbd>Esc</kbd>＝一時停止。スマホは画面下のボタンをタップ。</p>
+    <p class="small">裏拍のコツ：キックの「ドン」でひざを軽く沈め、ひざが伸びる瞬間にパンチ。ガイド音を「だんだん消える」にすると、後半は自分のリズムだけで打つ練習になります。</p>
+    <p class="small">医療機器ではありません。痛みやめまいを感じたらすぐに中止してください。</p>
+  </details>
+
+  <footer>
+    <span id="offline"><i></i><span id="offline-text">オフライン対応を準備中…</span></span><br>
+    <button class="btn hidden" id="update-btn" style="margin:6px 0">新しいバージョンに更新</button>
+    曲はすべて Web Audio でその場で生成しています（オリジナル）。記録と設定はこの端末だけに保存されます。<br>
+    <a href="../">lab にもどる</a>
+  </footer>
+</main>
+
+<div id="playbar" class="hidden">
+  <button class="pad L" id="pad-l" aria-label="左パンチ">左<br><small>F</small></button>
+  <div class="mid" id="play-hint"></div>
+  <button class="pad D" id="pad-d" aria-label="くぐる">くぐる<br><small>Space</small></button>
+  <button class="pad R" id="pad-r" aria-label="右パンチ">右<br><small>J</small></button>
+</div>
+<button id="pausebtn" class="hidden">II 一時停止</button>
+
+<div id="pause" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pause-h">
+  <div class="card">
+    <h3 id="pause-h">一時停止</h3>
+    <p class="small">再開すると1小節のカウントのあと、続きから始まります。</p>
+    <div class="actions">
+      <button class="primary" id="p-resume">▶ 再開</button>
+      <button id="p-retry">最初から</button>
+      <button id="p-menu">メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<div id="results" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="res-title">
+  <div class="card">
+    <h3 id="res-title"></h3>
+    <div class="small" id="res-sub"></div>
+    <div class="res-top"><div class="rank" id="res-rank"></div><div><div class="score" id="res-score"></div><div class="small" id="res-meta"></div></div></div>
+    <div class="cats" id="res-cats"></div>
+    <div class="advice" id="res-advice"></div>
+    <div class="actions">
+      <button class="primary" id="r-again">もう一度</button>
+      <button id="r-menu">メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<div id="calib" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="calib-h">
+  <div class="card">
+    <h3 id="calib-h">タイミングを測る</h3>
+    <p class="small">クリックが 16 回鳴ります。5 回目から、クリックに合わせて下の枠をタップ（または <kbd>Space</kbd>）してください。</p>
+    <div class="big" id="calib-pad" tabindex="0">ここをタップ</div>
+    <p class="small" id="calib-out"></p>
+    <div class="actions"><button id="calib-close">閉じる</button></div>
+  </div>
+</div>
+
+<div id="toast" class="hidden" role="status"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
