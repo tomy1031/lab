@@ -161,14 +161,20 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 06 STAR WEAVER — WebXR rhythm fitness; static files (page + ES modules, three.js from the CDN)
+// 06 STAR WEAVER — WebXR rhythm fitness. Its own tools/build.mjs makes the published build: an installable,
+// offline-capable PWA (code and fonts in v/<content hash>/, version.json, a service worker that stores
+// everything incl. three.js). Trees from before that script are copied as plain static files.
 {
   const dest = path.join(out, 'star-weaver');
   try {
     const src = exportDir(refs.starweaver, 'star-weaver');
     fs.mkdirSync(dest, { recursive: true });
-    copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
-    copy(path.join(src, 'js'), path.join(dest, 'js'));
+    if (fs.existsSync(path.join(src, 'tools', 'build.mjs'))) {
+      sh(`node "${path.join(src, 'tools', 'build.mjs')}" "${dest}"`, { stdio: ['ignore', 'inherit', 'inherit'] });
+    } else {
+      copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
+      copy(path.join(src, 'js'), path.join(dest, 'js'));
+    }
     copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'star-weaver.jpg'));
   } catch (e) {
     console.warn(`star-weaver not found at ${refs.starweaver}; publishing a link page instead:`, e.message);
