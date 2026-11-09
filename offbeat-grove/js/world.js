@@ -4,7 +4,8 @@
 // distance at every scale: grass and flowers at your feet (stereo depth), the forest on both hillsides,
 // the lake, then the ridges fading into the haze.
 //
-// Budget for Quest 3 at 90 Hz: ~30 draw calls, ~250k triangles, no shadows, no post-processing.
+// Budget for Quest 3 at 90 Hz: ~40 draw calls and ~250k triangles per eye with the game running ("low": ~170k),
+// no shadows, no post-processing.
 // Lambert lighting on trees and rocks, everything else has its light baked into vertex colours.
 import * as THREE from 'three';
 import { bakeSky, skyDome, SKY_UV } from './sky.js';
@@ -64,8 +65,8 @@ export class World {
     this.addMountains();
     this.addLake();
     this.addTrees(hi ? 1 : 0.55);
-    this.addGrass(hi ? 13000 : 6500);
-    this.addFlowers(hi ? 2400 : 1200);
+    this.addGrass(hi ? 10000 : 6000);
+    this.addFlowers(hi ? 1800 : 1000);
     this.addRocks();
     this.addDeck();
     this.addBirds();
@@ -247,11 +248,10 @@ export class World {
     const R = this.R;
     // conifer: trunk + four cones, faceted
     const con = mergeGeos([
-      colored(new THREE.CylinderGeometry(0.1, 0.16, 1.6, 6).translate(0, 0.8, 0), '#5a3d28'),
-      colored(new THREE.ConeGeometry(1.5, 2.4, 7).translate(0, 2.0, 0), '#2f5a32'),
-      colored(new THREE.ConeGeometry(1.22, 2.1, 7).translate(0, 3.1, 0), '#356637'),
-      colored(new THREE.ConeGeometry(0.92, 1.8, 7).translate(0, 4.1, 0), '#3b7039'),
-      colored(new THREE.ConeGeometry(0.55, 1.3, 7).translate(0, 5.0, 0), '#43793d'),
+      colored(new THREE.CylinderGeometry(0.1, 0.16, 1.6, 5, 1, true).translate(0, 0.8, 0), '#5a3d28'),
+      colored(new THREE.ConeGeometry(1.5, 2.6, 6).translate(0, 2.1, 0), '#2f5a32'),
+      colored(new THREE.ConeGeometry(1.12, 2.3, 6).translate(0, 3.4, 0), '#366838'),
+      colored(new THREE.ConeGeometry(0.7, 1.9, 6).translate(0, 4.6, 0), '#40763c'),
     ]);
     // broadleaf: trunk + clustered blobs
     const leaf = (r, x, y, z, c) => colored(new THREE.IcosahedronGeometry(r, 0).translate(x, y, z), c);
@@ -279,7 +279,7 @@ export class World {
       this.scene.add(im);
       return im;
     };
-    const conPts = this.scatter(Math.round(1500 * k), 14, 236, (x, z) => forestAt(x, z) * (0.45 + 0.55 * smoothstep(20, 60, Math.abs(x) + Math.max(0, z))), 1.1);
+    const conPts = this.scatter(Math.round(1150 * k), 14, 236, (x, z) => forestAt(x, z) * (0.45 + 0.55 * smoothstep(20, 60, Math.abs(x) + Math.max(0, z))), 1.1);
     place(con, conPts, 1.0, 2.6, [0.3, 0.06]);
     const brdPts = this.scatter(Math.round(320 * k), 12, 150, (x, z) => forestAt(x, z) * (1 - smoothstep(40, 120, Math.hypot(x, z)) * 0.7), 1.6);
     // trees that frame the view near the clearing
