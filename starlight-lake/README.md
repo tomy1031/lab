@@ -61,6 +61,21 @@ Quest のブラウザで `http://localhost:8080/` を開きます。
 **任意の静的ホスティング**
 Netlify・Cloudflare Pages などに `starlight-lake/` フォルダをそのまま置きます。ビルドの手順はありません。
 
+## オフラインで遊ぶ
+
+一度ネットにつないだ状態でページを開くと、Starlight Lake と EYE GYM の両方が端末に保存され、そのあとは**ネットがなくても同じURLを開けば VR で遊べます**。Quest のブラウザでも動きます。
+
+1. Wi-Fi につないだ Quest のブラウザで、https://tomy1031.github.io/lab/starlight-lake/arcade/（または Starlight Lake）を開く
+2. 「VRであそぶ」の下の表示が **「✓ オフライン対応」** になるまで待つ（数秒〜十数秒）。ブックマークしておくと開きやすい
+3. 以後はネットなしで、同じURL（ブックマーク・履歴）を開くだけ。表示は「✓ オフラインで起動しました」になります
+
+- 保存されるもの：このフォルダの全ファイル（2つのアプリ、研究ノート）、three.js、Quest 2 / 3 のコントローラーの3Dモデル、Webフォント（約11MB、ほかの準備が済んだあとに裏で保存）。
+- ネットにつながっているときは毎回新しい版を取りに行くので、更新もそのまま届きます。
+- 記録（スコア・レベル・階段法）は、もともと端末のブラウザ内（localStorage）に保存しています。オフラインで遊んだ記録も同じ場所に残ります。
+- ブラウザの「閲覧データを削除」でサイトのデータを消すと、オフライン用の保存も記録も消えます。
+
+しくみ：`sw.js`（Service Worker）。このフォルダのファイルはネットワーク優先・つながらなければ保存した版、CDN（jsDelivr・Google Fonts）は保存した版を優先します。ページ側の登録と表示は `src/offline.js`。ファイルを足したり変えたりしたら `node tools/offline.mjs` で `sw.js` の一覧と版を更新します（`--check` で古くなっていないかを確認）。
+
 ## 操作
 
 | | コントローラー | ハンドトラッキング | PC（マウス・キーボード） |
@@ -91,6 +106,9 @@ Netlify・Cloudflare Pages などに `starlight-lake/` フォルダをそのま�
 ```
 starlight-lake/
 ├─ index.html            タイトル画面・設定・記録・Far Screen の準備・起動
+├─ sw.js                 オフライン用の Service Worker（Starlight Lake と EYE GYM の両方）
+├─ tools/offline.mjs     sw.js の保存ファイル一覧と版を書き出す
+├─ arcade/               EYE GYM（遊び重視の姉妹版）
 ├─ docs/research.md      研究ノート（論文、限界、推奨プラン）。research.html はその表示用ページ
 └─ src/
    ├─ main.js            アプリ本体（WebXR、視野と画素密度、両眼分離、メニュー）
@@ -101,11 +119,12 @@ starlight-lake/
    ├─ audio.js           環境音、空間音響の鐘、呼吸ガイド（すべて合成）
    ├─ ui.js / fx.js      VR内パネル、光の粒・文字のエフェクト
    ├─ screen.js          画面の大きさの補正（カード法）と視力チェック
+   ├─ offline.js         Service Worker の登録と「オフライン対応」の表示
    ├─ world/             空・オーロラ・山・湖・ホタル・灯籠・蓮・星座
    └─ games/             各章（lantern, spirits, gates, depth, comets, rest）
 ```
 
-three.js r180 を CDN（jsDelivr）から importmap で読み込みます。ビルドの手順はありません。
+three.js r180 を CDN（jsDelivr）から importmap で読み込みます（オフライン用に `sw.js` が保存）。ビルドの手順はありません。
 
 ## 開発用
 

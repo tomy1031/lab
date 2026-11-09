@@ -35,6 +35,10 @@
   .big:disabled { filter: grayscale(.7); opacity: .6; cursor: not-allowed; transform: none; }
   .pink { background: linear-gradient(#ff8dbb, var(--pink)); } .blue { background: linear-gradient(#6fcbff, var(--blue)); }
   .note { font-size: 13px; color: var(--ink-2); line-height: 1.7; margin: 10px 0 0; }
+  .offline { display: inline-block; margin: 10px 0 0; font-size: 12.5px; font-weight: 700; line-height: 1.5; padding: 5px 12px; border-radius: 999px; background: #eef3fb; color: var(--ink-2); }
+  .offline[hidden] { display: none; }
+  .offline[data-state="ok"] { background: #e2f7e8; color: #1d7a3c; }
+  .offline[data-state="off"] { background: #fff1de; color: #9a5800; }
   .stats { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: center; }
   @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
   #radar { width: 300px; height: 300px; max-width: 100%; justify-self: center; }
@@ -76,6 +80,7 @@
         <button class="big blue" id="btn-desktop">この画面であそぶ<small>マウスで体験（Depth Order は VR のみ）</small></button>
       </div>
       <p class="note" id="xr-note"></p>
+      <p class="offline" id="offline" hidden></p>
     </section>
 
     <section class="card">
@@ -108,6 +113,8 @@
 
 <script type="module">
   const params = new URLSearchParams(location.search);
+  // offline play: one service worker (../sw.js) keeps both apps on the device after an online visit
+  import('../src/offline.js').then((m) => m.setupOffline(document.getElementById('offline'), { sw: '../sw.js', scope: '../' }));
   if (params.has('emulate')) {
     const { XRDevice, metaQuest3, metaQuest2 } = await import('https://cdn.jsdelivr.net/npm/iwer@2.6.0/build/iwer.module.js');
     const dev = new XRDevice(params.get('emulate') === 'quest2' ? metaQuest2 : metaQuest3);

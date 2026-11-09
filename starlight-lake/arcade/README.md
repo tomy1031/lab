@@ -23,6 +23,10 @@
 
 それぞれの下敷きにした研究（Polat、Deveau、関学2025、Vedamurthy、Li など）は [研究ノート](../docs/research.md) にあります。
 
+## オフラインで遊ぶ
+
+一度ネットにつないだ状態でこのページを開き、「VRであそぶ」の下が **「✓ オフライン対応」** になれば準備完了です。以後はネットがなくても、同じURL（ブックマーク・履歴）を開けば VR で遊べます。くわしくは [Starlight Lake の README](../README.md#オフラインで遊ぶ) を見てください。
+
 ## つくり
 
 `src/app.js`（進行）、`src/games/`（5ゲーム）、`src/screens.js`（メニュー・結果・記録）、`src/progress.js`（レベル・ランク・デイリー・記録）、`src/world.js`（空のステージ）、`src/sound.js`（BGM と効果音、すべて合成）、`src/visuals.js`（シャボン玉・リング・ボール・星・目のキャラ）。入力・UI・効果・難易度調整は Starlight Lake の `src/` を共有しています。記録はブラウザ内（localStorage）だけに保存されます。

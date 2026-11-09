@@ -71,6 +71,10 @@
   .mode span { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
   .mode.primary { background: linear-gradient(160deg, rgba(120,190,255,0.35), rgba(80,110,220,0.25)); border-color: rgba(170,220,255,0.6); }
   .note { font-size: 12.5px; color: var(--ink-3); margin-top: 10px; line-height: 1.7; }
+  .offline { display: inline-block; margin-top: 10px; font-size: 12.5px; line-height: 1.5; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); color: var(--ink-2); }
+  .offline[hidden] { display: none; }
+  .offline[data-state="ok"] { color: #a6f0c0; border-color: rgba(140,230,170,0.4); }
+  .offline[data-state="off"] { color: #ffd59a; border-color: rgba(255,200,120,0.4); }
 
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
   @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
@@ -139,6 +143,7 @@
         <button class="mode" id="btn-desktop"><b>この画面で試す</b><span>マウスで操作する体験版。記録は残りますが、効果目的ならVRかスクリーンで。</span></button>
       </div>
       <p class="note" id="xr-note"></p>
+      <p class="offline" id="offline" hidden></p>
     </section>
 
     <section class="card" style="border-color: rgba(255,170,210,0.55)">
@@ -255,6 +260,8 @@
 
 <script type="module">
   const params = new URLSearchParams(location.search);
+  // offline play: one service worker (sw.js) keeps both apps on the device after an online visit
+  import('./src/offline.js').then((m) => m.setupOffline(document.getElementById('offline'), { sw: 'sw.js', scope: './' }));
   // ?emulate=quest3 (or quest2): Meta's Immersive Web Emulation Runtime, for testing without a headset
   if (params.has('emulate')) {
     const { XRDevice, metaQuest3, metaQuest2 } = await import('https://cdn.jsdelivr.net/npm/iwer@2.6.0/build/iwer.module.js');
