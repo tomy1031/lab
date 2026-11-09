@@ -1,0 +1,8 @@
+/* fonts.css — self-hosted, subset fonts (see tools/fonts.py) so the app also works offline.
+   Outfit: Latin, variable weight 100–900. Zen Kaku Gothic New: Japanese (and fallback Latin).
+   Both SIL Open Font License 1.1 (OFL texts in this folder). */
+@font-face { font-family: "Outfit"; src: url("Outfit.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Zen Kaku Gothic New"; src: url("ZenKakuGothicNew-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Zen Kaku Gothic New"; src: url("ZenKakuGothicNew-500.woff2") format("woff2"); font-weight: 500 600; font-display: swap; }
+@font-face { font-family: "Zen Kaku Gothic New"; src: url("ZenKakuGothicNew-700.woff2") format("woff2"); font-weight: 700 800; font-display: swap; }
+@font-face { font-family: "Zen Kaku Gothic New"; src: url("ZenKakuGothicNew-900.woff2") format("woff2"); font-weight: 900; font-display: swap; }
