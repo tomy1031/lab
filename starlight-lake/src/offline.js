@@ -36,7 +36,13 @@ export function setupOffline(el, { sw = 'sw.js', scope = './' } = {}) {
     for (let tries = 0; tries < 30; tries++) {
       const worker = reg.active;
       const s = worker && await ask(worker, tries === 0 || tries % 5 === 4 ? 'keep' : 'status');
-      if (s?.ready) { show('ok', navigator.onLine ? TEXT.ready : TEXT.offline); return; }
+      if (s?.ready) {
+        show('ok', navigator.onLine ? TEXT.ready : TEXT.offline);
+        // ask the browser not to clear the saved copy when the headset runs low on space
+        // (Chromium decides silently; a bookmark or frequent visits make it say yes)
+        navigator.storage?.persist?.().catch(() => {});
+        return;
+      }
       if (!navigator.onLine) { show('off', TEXT.notYet); return; }
       show('busy', s ? `${TEXT.saving}（${s.total - s.missing}/${s.total}）` : TEXT.saving);
       await new Promise((r) => setTimeout(r, 2000));
