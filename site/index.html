@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>tomy1031 lab</title>
-<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」">
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、VR 裏拍ボクササイズ「OFFBEAT GROVE」">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -204,6 +204,31 @@
             <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/coach.js"><code>js/coach.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/tutorial.js"><code>js/tutorial.js</code></a>：鏡像のコーチと、待ってくれるチュートリアル</li>
             <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/audio.js"><code>js/audio.js</code></a>：コンボに合わせて楽器が増える音楽エンジン</li>
             <li><a href="https://github.com/tomy1031/lab/pull/4">プルリクエスト #4</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="offbeat-grove">
+      <a class="shot" href="offbeat-grove/"><img src="img/offbeat-grove.jpg" alt="森と湖に囲まれた草原で、金の縁に「&amp;」と書かれた的が飛んでくる OFFBEAT GROVE のプレイ画面。足元のレーンには 1 &amp; 2 &amp; のカウント、奥に湖と山並み" width="1280" height="720" loading="lazy"><span class="no">07</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR フィットネス</span><span>Meta Quest 3</span><span>オフライン対応</span></div>
+        <h2>OFFBEAT GROVE</h2>
+        <p class="lead">裏拍ボクササイズ。森と湖に囲まれた草原で、音楽に合わせて飛んでくる的をパンチします。的と足元のレーンに「1 &amp; 2 &amp; 3 &amp; 4 &amp;」のカウントが付き、体（ひざ）で表拍、拳で裏拍を打つ練習ができます。打つたびにずれを測り、表拍・裏拍・16分ごとに「早い・遅い・ばらつき」とアドバイスを出します。</p>
+        <p class="note">Quest のブラウザで開いて「VR で遊ぶ」。リズムは表拍・裏拍・表裏ミックス・シンコペーションの4つ。曲はスカ・ハウス・ファンクなど6曲（すべて Web Audio で生成したオリジナル）で、自分の音楽ファイルでも遊べます（テンポを自動で検出）。一度開けばネットがなくても動きます。PC・スマホではキーボードやタップで遊べます。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="offbeat-grove/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/offbeat-grove">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/README.md">README</a>：遊び方、裏拍トレーニングのしくみ、曲、自分の曲、オフライン、テスト</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/chart.js"><code>js/chart.js</code></a>：リズムモード別の譜面（4小節ずつ同じパターンをくり返す）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/game.js"><code>js/game.js</code></a>：グローブの当たり判定と、表拍・裏拍別のタイミング分析</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/songs.js"><code>js/songs.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/synth.js"><code>js/synth.js</code></a>：曲と楽器（Web Audio）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/world.js"><code>js/world.js</code></a>：草原・森・湖・空気遠近法の4重の山並み</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/sw.js"><code>sw.js</code></a>：オフライン用のサービスワーカー</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/7">プルリクエスト #7</a>：作業の経緯</li>
           </ul>
         </details>
       </div>

@@ -10,12 +10,14 @@
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
 //   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
+//   OFFBEAT_REF   OFFBEAT GROVE (offbeat-grove/)              default: HEAD
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const sh = (cmd, opts = {}) => (execSync(cmd, { stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8', ...opts }) ?? '').trim();
 const root = sh('git rev-parse --show-toplevel');
@@ -28,6 +30,7 @@ const refs = {
   undokai: process.env.UNDOKAI_REF || 'origin/claude/ecstatic-thompson-v7ve2u',
   starlight: process.env.STARLIGHT_REF || 'origin/claude/jolly-faraday-yhmee4',
   starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
+  offbeat: process.env.OFFBEAT_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -186,6 +189,28 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 07 OFFBEAT GROVE — WebXR offbeat boxercise; static files plus an offline service worker. The game's own
+// tools/bundle.mjs copies what ships and fills sw.js with the build id (the folder's content hash) and the
+// list of files to cache, so the published game works with no network once opened.
+{
+  const dest = path.join(out, 'offbeat-grove');
+  try {
+    const src = exportDir(refs.offbeat, 'offbeat-grove');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.offbeat}:offbeat-grove"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'offbeat-grove.jpg'));
+    console.log(`offbeat-grove build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`offbeat-grove not found at ${refs.offbeat}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OFFBEAT GROVE</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab">リポジトリ</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} offbeat=${refs.offbeat}`);

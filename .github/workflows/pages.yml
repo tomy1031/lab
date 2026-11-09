@@ -14,6 +14,13 @@ on:
       - 'yokohama-roll/sw.js'
       - 'yokohama-roll/manifest.webmanifest'
       - 'nextmake-mv/output/**'
+      - 'offbeat-grove/index.html'
+      - 'offbeat-grove/manifest.webmanifest'
+      - 'offbeat-grove/sw.js'
+      - 'offbeat-grove/js/**'
+      - 'offbeat-grove/img/**'
+      - 'offbeat-grove/docs/preview.jpg'
+      - 'offbeat-grove/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
