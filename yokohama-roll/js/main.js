@@ -1,13 +1,15 @@
 // main.js — ハマころ！ game loop, ball physics, camera, HUD and stage flow.
 import * as THREE from 'three';
 import { makeToyMaterial, nightUniform } from './material.js';
-import { ProtoRegistry } from './engine/objects.js';
+import { ProtoRegistry, LOD } from './engine/objects.js';
 import { buildTown } from './engine/town.js';
 import { buildGlobe, EARTH_R, latLonToVec, vecToLatLon } from './engine/globe.js';
 import { buildKanto } from './engine/kanto.js';
 import * as K from './kanto_map.js';
 import { Minimap } from './engine/minimap.js';
 import { ItemViewer } from './engine/itemViewer.js';
+import { Ceo } from './ceo.js';
+import { resolveQuality, savedChoice, saveChoice, FpsGuard, PRESETS } from './quality.js';
 import * as M from './map.js';
 
 const qs = new URLSearchParams(location.search);
@@ -38,24 +40,82 @@ const WORLD_GOALS = [
   { d: 47, text: '北海道から 沖縄まで 日本を まるめろ！ 目標 300km', done: '日本を まるめた！' },
   { d: 157, text: 'アジアへ ころがれ！ 目標 1,000km', done: 'ユーラシアが ちいさく見える！' },
   { d: 470, text: '世界中を ころがれ！ 目標 3,000km', done: '大陸ごと いけそうだ！' },
-  { d: 706, text: '地球を まるごと まきこめ！ 目標 4,500km', done: 'せかいが まるくなった！' },
+  { d: 628, text: '地球を まるごと まきこめ！ 目標 4,000km', done: 'せかいが まるくなった！' },
 ];
-const SIZE_K = 0.12;          // planet: growth from an item's size (flat things count too)
-const SIZE_K_KANTO = 0.2;
+const SIZE_K = 0.22;          // planet: growth per unit of an item's bulk (see bulkOf)
+const SIZE_K_KANTO = 0.6;
 let stageStartD = START_R * 2;
 
 // ---------------------------------------------------------------- renderer / scene
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, qs.has('lowres') ? 1 : 1.75));
+// Graphics quality: 'auto' picks 高/中/低 from the device; the title screen lets the player choose.
+const Q = resolveQuality(qs.get('quality') || savedChoice());
+const renderer = new THREE.WebGLRenderer({ antialias: Q.antialias, powerPreference: 'high-performance' });
+const basePixelRatio = Math.min(devicePixelRatio, qs.has('lowres') ? 1 : Q.pixelRatio);
+renderer.setPixelRatio(basePixelRatio);
+const fpsGuard = new FpsGuard(renderer, basePixelRatio);
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = !qs.has('noshadow');
+renderer.shadowMap.enabled = !qs.has('noshadow') && Q.shadows;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 $('app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 5000);
+// The camera lives in a rig: on screen the rig stays at the origin; in VR (js/vr.js) the rig follows the ball
+// and scales with it, while the headset moves the camera inside it.
+const rig = new THREE.Group();
+rig.name = 'camera-rig';
+rig.add(camera);
 const material = makeToyMaterial();
-const itemViewer = new ItemViewer($('item-canvas'), material);
+scene.add(rig);
+const itemViewer = new ItemViewer($('item-canvas'), material, { pixelRatio: Q.level === 'low' ? 1 : 2, antialias: Q.antialias });
+const ceo = new Ceo({ scene, box: $('ceo'), text: $('ceo-text') });
+
+// 松井社長's orders. Indexes of the stage arrays follow that stage's goals: [i] is said when goal i is reached.
+const CEO = {
+  story: 'ネクマックス、今日の仕事は 横浜を まるめることだ。まずは 直径 1m。やるか、やらないか。…やるよな？',
+  town: [
+    'よし、1m だ。次は 中華街。屋台も 人も まきこんで 5m を目指せ。',
+    '5m か。海にも 入れるぞ。日が暮れるまでに 20m だ。',
+    '20m。いよいよ ビルが 相手だ。中華街の ビルから いこう。',
+    '60m。オフィスビルも いける。観覧車も 客船も 見えているな？',
+    '150m。仕上げだ。ランドマークタワーごと 横浜を まるめてこい。',
+  ],
+  kantoStart: '横浜は 合格だ。次は 関東。夜明けの 川崎から いこう。まずは 1km。',
+  kanto: [
+    '1km。東京が 見えてきたな。東京タワーと スカイツリーを まきこんで 3km だ。',
+    '東京も まるめたか。空港も 遊園地も まきこんで 8km。',
+    '8km。あとは 山だ。筑波山、丹沢、箱根…関東ごと まるめてこい。',
+  ],
+  worldStart: '関東も まるめたか。ここからは 地球だ。まずは 日本列島から。',
+  world: [
+    '100km。富士山も もう まきこめる。日本列島を まるめて 300km だ。',
+    '日本を まるめた。次は アジアだ。1,000km を目指せ。',
+    'アジアが ちいさく見えるな。世界中を ころがれ。3,000km だ。',
+    '大陸ごと いけるぞ。最後は 地球だ。',
+  ],
+  ending: '見事だ。ちいさな玉が 世界になった。やれば できる。それを 忘れるな。',
+  timeattack: 'タイムアタックだ。5分で どこまで 大きくなれるか。時間は 待ってくれないぞ。',
+  otsukai: 'ネクマックス、おつかいを 頼む。リストの 6つを 集めてきてくれ。大きい物は 玉を 育ててからだ。',
+  kanto0: '関東から だな。夜明けの 川崎から いこう。まずは 1km。',
+  world0: '日本から だな。日本列島を まるめて、世界へ ひろげるぞ。',
+  drop: ['クルマには 気をつけろ。', '動いている物の 前に 出るな。', 'あわてるな。落とした物は また 拾えばいい。'],
+  idle: (left) => `目標まで あと ${left}。手を 止めるな。`,
+  errand: (name, left) => (left ? `${name}、たしかに 受け取った。あと ${left}つだ。` : 'ぜんぶ そろったな。ありがとう、助かった。'),
+  result: {
+    timeup: (d) => `${d} か。次は もっと いけるはずだ。`,
+    clear: () => '5分 かからずに 横浜を まるめたか。たいしたものだ。',
+    errand: () => 'おつかい ありがとう。仕事が 早くて 助かる。',
+    story: () => 'ちいさな一歩が 世界を まるめた。やるか、やらないか。やったな。',
+  },
+};
+let ceoDropCool = 0, ceoIdleT = 0, ceoIdleGoal = -1;
+function ceoLine() { return ceo.current(); }
+function ceoReact(kind) {
+  if (kind === 'drop' && ceoDropCool <= 0) {
+    ceoDropCool = 25;
+    ceo.say(CEO.drop[(Math.random() * CEO.drop.length) | 0], { hold: 3.5 });
+  }
+}
 
 // NexMax pushes the ball (optional module: the game still runs if it fails to load)
 let pusher = null;
@@ -69,11 +129,19 @@ import('./pusher.js').then((m) => {
 }).catch((e) => console.warn('pusher unavailable', e));
 let bumpedNow = false, cheerNow = false;
 
+// VR (WebXR) — optional module; the same game, viewed through a headset
+let vr = null;
+import('./vr.js').then((m) => {
+  vr = m.setupVR({ renderer, scene, camera, rig, material, getHud: () => hudSnapshot() });
+  vr.onSupported((ok) => document.body.classList.toggle('vr-ok', ok));
+}).catch((e) => console.warn('vr unavailable', e));
+const vrActive = () => !!(vr && vr.active);
+
 const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a7a, 1.4);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 2.2);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(Q.shadowMap, Q.shadowMap);
 sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
@@ -116,7 +184,13 @@ const sfx = (fn, ...a) => { try { audio && audio[fn] && audio[fn](...a); } catch
 
 $('loading-text').textContent = 'ヨコハマを つくっています…';
 await new Promise((r) => setTimeout(r, 20));
-const town = buildTown(scene, reg, material, { log: DEBUG, density: parseFloat(qs.get('density') || '1') });
+const vrDevice = await Promise.race([
+  navigator.xr && navigator.xr.isSessionSupported ? navigator.xr.isSessionSupported('immersive-vr').catch(() => false) : false,
+  new Promise((r) => setTimeout(() => r(false), 500)),
+]);
+const density = parseFloat(qs.get('density') || String(Math.min(Q.density, vrDevice ? 0.6 : 1)));
+LOD.k = qs.has('lod') ? +qs.get('lod') : Q.lodK; // far things are drawn with simplified models
+const town = buildTown(scene, reg, material, { log: DEBUG, density });
 let stage = town;      // current stage object (town, kanto or globe)
 let globe = null, kanto = null;
 let stageName = 'town';
@@ -155,6 +229,8 @@ const ball = {
   up: new THREE.Vector3(0, 1, 0),
   items: [],
   coreR: START_R * 0.92,
+  support: -Infinity, // top of something low the ball is rolling over
+  surf: null,         // planet: current surface radius under the ball
 };
 const stats = { count: 0, byName: new Map(), biggest: null, startTime: 0, elapsed: 0, landmarks: [] };
 
@@ -176,6 +252,15 @@ addEventListener('keyup', (e) => keys.delete(e.code));
 addEventListener('blur', () => keys.clear());
 
 const joy = { active: false, id: null, x: 0, y: 0, ox: 0, oy: 0 };
+// phones: dash only while the dash button is held (pushing the stick to the edge no longer dashes)
+let touchDash = false;
+{
+  const b = $('btn-dash');
+  const on = (e) => { touchDash = true; b.classList.add('on'); e.preventDefault(); };
+  const off = () => { touchDash = false; b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on);
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, off);
+}
 let dragYaw = 0; // accumulated camera yaw from mouse/touch drag
 let mouseDrag = null;
 const cv = renderer.domElement;
@@ -217,9 +302,16 @@ function readInput() {
   if (keys.has('KeyA') || keys.has('ArrowLeft')) t -= 1;
   if (keys.has('KeyD') || keys.has('ArrowRight')) t += 1;
   if (joy.active) { f += joy.y; t += joy.x * 0.9; }
-  const dash = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight') || (joy.active && Math.hypot(joy.x, joy.y) > 0.97);
+  const dash = keys.has('Space') || keys.has('ShiftLeft') || keys.has('ShiftRight') || touchDash;
+  let sx = 0; // sideways roll (VR comfort mode moves the ball sideways instead of turning the view)
+  if (vrActive()) {
+    const v = vr.readInput();
+    f += v.f; t += v.t; sx += v.s || 0;
+    if (v.snap) dragYaw += v.snap;
+    if (v.dash) return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), s: Math.max(-1, Math.min(1, sx)), dash: true };
+  }
   if (autopilot.on) return autopilot.input();
-  return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), dash };
+  return { f: Math.max(-1, Math.min(1, f)), t: Math.max(-1, Math.min(1, t)), s: Math.max(-1, Math.min(1, sx)), dash };
 }
 
 // ---------------------------------------------------------------- game state
@@ -298,6 +390,7 @@ function errandPicked(o) {
   if (li) li.classList.add('done');
   const left = ERRAND.length - errandDone.size;
   banner(`${o.name} ゲット！`, left ? `あと ${left} こ` : 'おつかい かんりょう！', 2);
+  ceo.say(CEO.errand(o.name, left), { hold: 3.5 });
   sfx('sfxLevelUp');
   cheerNow = true;
   if (!left) setTimeout(() => showResult('errand'), 1200);
@@ -305,6 +398,17 @@ function errandPicked(o) {
 }
 
 // ---------------------------------------------------------------- toast / banners
+function needDisplay(d) {
+  if (stageName === 'world') { const km = d * WORLD_UNIT_KM; return km < 100 ? `${km.toFixed(0)}km` : `${(Math.ceil(km / 10) * 10).toLocaleString()}km`; }
+  return d < 1 ? `${Math.ceil(d * 100)}cm` : d < 1000 ? `${Math.ceil(d)}m` : `${(d / 1000).toFixed(1)}km`;
+}
+let noticeTimer = 0;
+function notice(text) {
+  const el = $('notice');
+  el.textContent = text;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  noticeTimer = 2.6;
+}
 let toastTimer = 0;
 function toast(name, big = false) {
   const el = $('toast');
@@ -360,14 +464,23 @@ function growCap() {
   }
   return CAP_CURVE[CAP_CURVE.length - 1][1];
 }
+// Kanto / planet: grow by the thing's real bulk. A flat airport or rice field is wide but thin, so it
+// counts for much less than a mountain of the same width (it used to count as a full cube).
+function bulkOf(o) {
+  const p = o.proto, s = o.scale;
+  const w = p.w * s, d = p.d * s, h = p.h * s;
+  const m = Math.max(w, d, h);
+  return Math.max(w, m * 0.08) * Math.max(d, m * 0.08) * Math.max(h, m * 0.18);
+}
 function growthOf(o) {
-  const a = stageName === 'town' ? o.vol * GROW_K : o.size ** 3 * (stageName === 'kanto' ? SIZE_K_KANTO : SIZE_K);
+  const a = (stageName === 'town' ? o.vol * GROW_K : bulkOf(o) * (stageName === 'kanto' ? SIZE_K_KANTO : SIZE_K)) * (o.dw || 1);
   const c = growCap() * ball.vol;
   if (!isFinite(c)) return a;
   return a / Math.cbrt(1 + (a / c) ** 3); // ~linear below the cap, flat above it
 }
 function pick(o) {
   o.picked = true;
+  stage.objs.touch(o);
   const gained = growthOf(o);
   ball.vol += gained;
   const newR = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
@@ -428,42 +541,56 @@ function buryItems() {
   }
 }
 
+// Knock items off the ball after a hard hit. Only things stuck on the outside fall off, never a big
+// catch (each item may cost at most 4% of the ball), and they land back in the world to be picked up again.
+// things that just fell off the ball can't be picked up again for a moment
+const cooling = new Set();
+function tickCooling(dt) {
+  for (const o of cooling) { o.cool -= dt; if (o.cool <= 0) cooling.delete(o); }
+}
 function dropItems(n, normal) {
-  for (let k = 0; k < n && ball.items.length; k++) {
-    const it = ball.items.pop();
-    ballGroup.remove(it.mesh);
+  const lost = [];
+  for (let i = ball.items.length - 1; i >= 0 && lost.length < n; i--) {
+    const it = ball.items[i];
     const o = it.o;
-    if (o.size < ball.r * 0.3) continue; // tiny ones just vanish into the ball
-    ball.vol = Math.max(ball.vol - (it.gained || 0), (4 / 3) * Math.PI * START_R ** 3);
-    ball.r = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
-    // throw it back onto the ground behind the bump
+    if (o.size < ball.r * 0.25) continue;              // tiny bits stay stuck in the ball
+    if ((it.gained || 0) > ball.vol * 0.04) continue;  // a big catch doesn't come off from one bump
+    ball.items.splice(i, 1);
+    ballGroup.remove(it.mesh);
     const side = new THREE.Vector3().crossVectors(ball.up, normal).multiplyScalar((Math.random() - 0.5) * 2);
     const p = ball.pos.clone().addScaledVector(normal, ball.r * 1.4 + o.size).add(side.multiplyScalar(ball.r));
     if (stageName !== 'world') {
       if (!flat.isLand(p.x, p.z) && o.proto.def.move !== 'sail') continue;
       p.y = o.mover && o.mover.type === 'sail' ? o.pos.y : 0;
-      stage.objs.setTransform(o, p, o.quat);
+      stage.objs.teleport(o, p, o.quat);
       if (o.mover && o.mover.type === 'walk') { o.mover.hx = p.x; o.mover.hz = p.z; o.mover.tx = p.x; o.mover.tz = p.z; }
     } else {
-      const n = p.clone().normalize();
-      p.copy(n).multiplyScalar(EARTH_R);
-      stage.objs.setTransform(o, p, new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n));
+      const nn = p.clone().normalize();
+      p.copy(nn).multiplyScalar(EARTH_R);
+      stage.objs.teleport(o, p, new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), nn));
     }
+    ball.vol = Math.max(ball.vol - (it.gained || 0), (4 / 3) * Math.PI * START_R ** 3);
+    ball.r = Math.cbrt((ball.vol * 3) / (4 * Math.PI));
     o.picked = false;
-    o.cool = 1.2; // can't be re-picked immediately
+    stage.objs.touch(o);
+    o.cool = 1.5; // can't be re-picked immediately
+    cooling.add(o);
     stats.count = Math.max(0, stats.count - 1);
+    lost.push(o.name);
   }
-  sfx('sfxDrop');
+  if (lost.length) sfx('sfxDrop');
+  return lost;
 }
 
 // ---------------------------------------------------------------- physics step
 function maxSpeed(dash) {
   const r = ball.r;
   let base;
-  if (stageName === 'kanto') base = 1.8 * r;
-  else if (stageName === 'world') base = r <= 60 ? 1.8 * r : 108 * Math.pow(r / 60, 0.65);
-  else base = r <= 8 ? 1.7 + 5.4 * r : (1.7 + 5.4 * 8) * Math.pow(r / 8, 0.55);
-  return base * (dash ? 1.65 : 1);
+  if (stageName === 'kanto') base = 2.6 * r;
+  else if (stageName === 'world') base = r <= 60 ? 2.6 * r : 156 * Math.pow(r / 60, 0.8);
+  else base = r <= 8 ? 1.7 + 5.4 * r : (1.7 + 5.4 * 8) * Math.pow(r / 8, 0.78);
+  // VR comfort mode slows things a little (vr.speedScale), and the VR module eases the dash in
+  return base * (dash ? 1.65 : 1) * (vrActive() && vr.speedScale ? vr.speedScale : 1);
 }
 
 let inpDash = false;
@@ -479,11 +606,13 @@ function step(dt, inp) {
   const acc = ms * 2.4;
   ball.vel.addScaledVector(ball.heading, inp.f * acc * dt);
   ball.vel.addScaledVector(right, inp.t * acc * 0.35 * dt * (inp.f === 0 ? 1 : 0.4));
-  const fr = inp.f !== 0 ? 0.6 : 1.8;
+  if (inp.s) ball.vel.addScaledVector(right, inp.s * acc * 0.8 * dt);
+  const fr = inp.f !== 0 || inp.s ? 0.6 : 1.8;
   ball.vel.multiplyScalar(Math.exp(-fr * dt));
   const sp = ball.vel.length();
   if (sp > ms) ball.vel.multiplyScalar(ms / sp);
 
+  attract(dt);
   // integrate in sub-steps to avoid tunnelling through thin things
   const travel = ball.vel.length() * dt;
   const sub = Math.min(4, Math.max(1, Math.ceil(travel / (ball.r * 0.6))));
@@ -523,6 +652,7 @@ function moveFlat(h) {
     const e = ball.r * 0.7;
     if (flat.isLand(nx + e, nz) || flat.isLand(nx - e, nz) || flat.isLand(nx, nz + e) || flat.isLand(nx, nz - e)) gy = 0;
   }
+  if (ball.support > gy) gy = ball.support; // rolling over something low
   const ty = gy + ball.r;
   ball.pos.y += (ty - ball.pos.y) * Math.min(1, h * 10);
 }
@@ -530,41 +660,119 @@ function moveFlat(h) {
 function moveSphere(h) {
   ball.pos.addScaledVector(ball.vel, h);
   const n = ball.up.copy(ball.pos).normalize();
-  ball.pos.copy(n).multiplyScalar(EARTH_R + ball.r);
+  const want = Math.max(EARTH_R, ball.support); // rolling over something low
+  ball.surf = ball.surf == null ? want : ball.surf + (want - ball.surf) * Math.min(1, h * 10);
+  ball.pos.copy(n).multiplyScalar(ball.surf + ball.r);
   ball.vel.addScaledVector(n, -ball.vel.dot(n));
   ball.heading.addScaledVector(n, -ball.heading.dot(n)).normalize();
 }
 
-let lastBump = null;
+// Collisions.
+// - Smaller than about 72% of the ball's diameter: rolled up.
+// - Low (top no higher than the ball's centre: a ball rolls over a step up to its axle), or flat (much wider than tall, like a
+//   field, a plaza or an airport, whose top is within 1.4 radii): rolled over, never a wall.
+// - Anything else is a wall: you bounce off and are told from which size it can be rolled up.
+// Items only come off when something MOVING runs into you fast (a car, a train, a ship) — never just for
+// rolling into a still wall, however fast.
+const CLIMB_K = 1.0, CLIMB_FLAT_K = 1.4, FLAT_RATIO = 0.3;
+const REACH_MAX = 1.19;   // tiny things are caught up to this × radius from the centre
+const PULL_R = 1.5;       // small things within this × radius drift toward the ball
+const PULL_MAX_SIZE = 0.6; // … if smaller than this × radius
+
+// The ball's pull: small loose things nearby slide toward it and get caught. Cars on roads, trains,
+// ships and planes keep to their routes (they are still caught by the wider reach above).
+const _pt = new THREE.Vector3();
+function attract(dt) {
+  const r = ball.r, R = r * PULL_R;
+  let n = 0;
+  stage.objs.contacts(ball.pos, R, (o, dist) => {
+    if (n >= 120 || o.picked || o.cool > 0 || o.landmark || o.size > r * PULL_MAX_SIZE) return;
+    const m = o.mover;
+    if (m && m.type !== 'walk' && m.type !== 'hop') return;
+    const k = Math.min(1, dt * (0.75 + 2.5 * (1 - dist / R)));
+    if (stageName === 'world') {
+      const rad = o.pos.length();
+      _pt.copy(o.pos).lerp(_v.copy(ball.pos).setLength(rad), k).setLength(rad);
+      const q = new THREE.Quaternion().setFromUnitVectors(_v2.copy(o.pos).normalize(), _v.copy(_pt).normalize());
+      stage.objs.setTransform(o, _pt, q.multiply(o.quat));
+    } else {
+      _pt.set(o.pos.x + (ball.pos.x - o.pos.x) * k, o.pos.y, o.pos.z + (ball.pos.z - o.pos.z) * k);
+      stage.objs.setTransform(o, _pt, null);
+    }
+    n++;
+  });
+}
+let lastBump = null, dropCool = 0, hintCool = 0;
+const ZERO = new THREE.Vector3();
+function topOf(o) {
+  // height of the object's top above the surface the ball rolls on
+  if (stageName === 'world') return o.pos.length() + stage.objs.topHeight(o);
+  return o.pos.y + stage.objs.topHeight(o);
+}
+// Top height to ride on if the ball can roll over this object, else null.
+function rideTop(o, base, r) {
+  const top = topOf(o);
+  const h = top - base;
+  if (h <= r * CLIMB_K) return top;
+  const p = o.proto;
+  if (p.h <= FLAT_RATIO * Math.max(p.w, p.d) && h <= r * CLIMB_FLAT_K) return top;
+  return null;
+}
 function collide() {
   const r = ball.r;
   const hits = [];
-  stage.objs.contacts(ball.pos, r, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
+  // look beyond the ball: small things are reached a little further out (the ball's pull, and the bumpy
+  // surface of everything stuck to it), and riding on top of something must not flicker on and off
+  stage.objs.contacts(ball.pos, r * REACH_MAX, (o, dist, normal) => hits.push({ o, dist, normal: normal.clone() }));
+  const base = stageName === 'world' ? ball.pos.length() - r : ball.pos.y - r; // bottom of the ball
+  ball.support = -Infinity;
   for (const hit of hits) {
     const o = hit.o;
     if (o.picked) continue;
     if (o.cool > 0) continue;
-    if (o.size < r * PICK_K) { pick(o); continue; }
-    // solid: push out along the surface tangent
+    const touching = hit.dist < r;
+    if (o.size < r * PICK_K) {
+      // the smaller it is, the further out it gets caught: tiny things anywhere under the ball's
+      // footprint, things close to the size limit only on real contact
+      const reach = 1 + (REACH_MAX - 1) * Math.max(0, 1 - o.size / (r * PICK_K)) ** 1.5;
+      if (hit.dist < r * reach) { pick(o); continue; }
+    }
+    if (hit.dist > r * 1.12) continue;
+    const top = rideTop(o, base, r);
+    if (top !== null) { ball.support = Math.max(ball.support, top); continue; } // roll over it
+    if (!touching) continue;
+    // a wall: push out along the surface tangent
     const n = hit.normal;
     n.addScaledVector(ball.up, -n.dot(ball.up));
     if (n.lengthSq() < 1e-6) continue;
     n.normalize();
     const pen = r - hit.dist;
     ball.pos.addScaledVector(n, pen + 1e-4);
-    const vn = ball.vel.dot(n);
-    if (vn < 0) {
-      ball.vel.addScaledVector(n, -vn * 1.45);
-      const ms = maxSpeed(false);
-      const strength = Math.min(1, -vn / ms);
-      if (bumpCool <= 0 && strength > 0.25) {
-        bumpCool = 0.35;
-        shake = Math.max(shake, strength * 0.6);
-        sfx('sfxBump', strength);
-        bumpedNow = true;
-        lastBump = o.name;
-        if (strength > 0.8 && inpDash && ball.items.length > 6) dropItems(strength > 0.95 ? 2 : 1, n);
+    const ov = o.vel || ZERO;
+    const vn = ball.vel.dot(n), on = ov.dot(n);
+    if (vn < 0) ball.vel.addScaledVector(n, -vn * 1.3);         // bounce off
+    if (on > ball.vel.dot(n)) ball.vel.addScaledVector(n, on - ball.vel.dot(n)); // shoved by a moving thing
+    const ms = maxSpeed(false);
+    const impact = Math.max(0, on - vn) / ms; // closing speed; 1 = head-on at normal top speed
+    if (bumpCool > 0 || impact < 0.25) continue;
+    bumpCool = 0.35;
+    shake = Math.max(shake, Math.min(1, impact) * 0.5);
+    sfx('sfxBump', Math.min(1, impact));
+    bumpedNow = true;
+    lastBump = o.name;
+    const hitBy = on / ms; // how fast the other thing was coming at you
+    if (hitBy > 0.6 && dropCool <= 0 && ball.items.length > 4) {
+      const lost = dropItems(hitBy > 1.3 ? 2 : 1, n);
+      if (lost.length) {
+        dropCool = 3;
+        notice(`${o.name}に ぶつけられて ${lost.join('と')}を おとした！`);
+        ceoReact('drop');
+        continue;
       }
+    }
+    if (hintCool <= 0) {
+      hintCool = 4;
+      notice(`${o.name}は 直径 ${needDisplay(o.size / PICK_K * 2)} から まきこめる`);
     }
   }
 }
@@ -687,7 +895,7 @@ function updateCamera(dt, mode = 'play') {
   if (Math.abs(camera.near - near) / near > 0.05 || camera.far !== far) {
     camera.near = near; camera.far = far; camera.updateProjectionMatrix();
   }
-  sky.position.copy(camera.position);
+  camera.getWorldPosition(sky.position);
   sky.scale.setScalar(camera.far * 0.9);
   // shadow box follows the ball
   const sd = skyUniforms.sunDir.value;
@@ -734,6 +942,24 @@ function updateHUD() {
   ring.style.setProperty('--fill', ringScale.toFixed(3));
 }
 
+// Everything the HUD shows, as plain data (the VR module draws it on a panel inside the headset).
+function hudSnapshot() {
+  const vis = (id) => $(id).classList.contains('show');
+  const bar = parseFloat($('goal-bar').style.width) || 0;
+  return {
+    state, mode, stage: stageName,
+    size: $('size').textContent, goal: $('goal-label').textContent, goalProgress: bar / 100,
+    count: $('count').textContent, timer: $('timer').textContent, district: $('district').textContent,
+    message: vis('message') ? $('message').textContent : '',
+    banner: vis('banner') ? { main: $('banner-main').textContent, sub: $('banner-sub').textContent } : null,
+    toast: vis('toast') ? $('toast').textContent : '',
+    ceo: typeof ceoLine === 'function' ? ceoLine() : null,
+    item: cardShown ? { name: cardShown.o.name, meta: $('item-meta').textContent, proto: cardShown.o.proto } : null,
+    errand: mode === 'otsukai' ? ERRAND.map((e) => ({ name: (reg.get(e.id) || { name: e.id }).name, done: errandDone.has(e.id) })) : null,
+    result: state === 'result' ? { title: $('result-title').textContent, desc: $('result-desc').textContent } : null,
+  };
+}
+
 function checkGoals() {
   if (mode === 'otsukai') return;
   const G = goals();
@@ -750,7 +976,9 @@ function checkGoals() {
       else startEnding();
     } else {
       banner(g.done, '');
-      setTimeout(() => state === 'play' && message(G[goalIdx].text, 6), 1800);
+      const order = (stageName === 'town' ? CEO.town : stageName === 'kanto' ? CEO.kanto : CEO.world)[goalIdx - 1];
+      setTimeout(() => { if (state === 'play') { if (order) ceo.say(order, { hold: 5 }); else message(G[goalIdx].text, 6); } }, 1600);
+      ceoIdleT = 0;
       if (stageName === 'town' && goalIdx === 3) sfx('setMusic', 'night');
     }
   }
@@ -814,7 +1042,7 @@ function disposeFlatStage(st) {
 function enterKanto() {
   disposeFlatStage(town);
   kanto = buildKanto(scene, kantoReg, material, {
-    log: DEBUG, texSize: innerWidth < 900 ? 2048 : 4096, density: parseFloat(qs.get('density') || '1'),
+    log: DEBUG, texSize: vrDevice ? 2048 : Q.kantoTex, density,
     fujiGeom: worldReg.get('mt_fuji') ? worldReg.get('mt_fuji').geom : null,
   });
   stage = kanto; stageName = 'kanto';
@@ -847,7 +1075,7 @@ function enterWorld() {
   scene.fog = null;
   sky.visible = false;
   scene.background = new THREE.Color(0x02030c);
-  globe = buildGlobe(scene, worldReg, material, world, { texW: qs.get('tex') ? +qs.get('tex') : innerWidth < 900 ? 2048 : 4096 });
+  globe = buildGlobe(scene, worldReg, material, world, { texW: qs.get('tex') ? +qs.get('tex') : Q.globeTex, patchW: Q.patch });
   stage = globe; stageName = 'world';
   goalIdx = 0;
   setR(startR);
@@ -867,6 +1095,7 @@ function enterWorld() {
 
 function startEnding() {
   state = 'ending'; stateT = 0;
+  ceo.say(CEO.ending, { hold: 7, sky: true });
   banner('地球を まきこむぞ！', '', 3);
   sfx('sfxWhoosh');
   sfx('setMusic', 'ending');
@@ -897,6 +1126,8 @@ function showResult(kind = 'story') {
     cells = [['かかった時間', fmtTime(t)], ['まきこんだ数', `${stats.count.toLocaleString()} こ`], ['さいごの大きさ', diameterDisplay(ball.r)],
       rec ? [rec.isBest ? 'ベスト更新！' : 'ベスト記録', fmtTime(rec.best)] : ['大物', bigName]];
   }
+  const said = kind === 'timeup' ? CEO.result.timeup(fmtMeters(ball.r * 2)) : (CEO.result[kind] || CEO.result.story)();
+  $('result-ceo').querySelector('p').textContent = `「${said}」`;
   $('result-title').textContent = title;
   $('result-desc').textContent = desc;
   $('result-stats').innerHTML = cells.map(([k, v], i) => `<div>${k}<br><b${String(v).length > 10 ? ' style="font-size:14px"' : ''}>${v}</b></div>`).join('');
@@ -933,18 +1164,36 @@ async function startGame(m = 'story') {
   state = 'play';
   stats.elapsed = 0;
   camState.init = false;
-  if (m === 'kanto') { setR(150); enterKanto(); banner('関東から スタート！', '夜明けの関東を まきこめ', 2.6); message(KANTO_GOALS[0].text, 6); return; }
-  if (m === 'world') { setR(10000); enterWorld(); banner('日本から スタート！', '日本、そして 世界へ', 2.6); message(WORLD_GOALS[0].text, 6); return; }
-  if (m === 'timeattack') { banner('タイムアタック！', '5分で どこまで 大きくなれる？', 2.6); message('時間内に できるだけ 大きくなろう！ 300m まで いけば クリア', 6); return; }
-  if (m === 'otsukai') { setupErrand(); banner('おつかい スタート！', 'リストの 6つを まきこめ', 2.6); message('リストの品物を さがして まきこもう！ 大きい物は 玉が育ってから', 7); return; }
-  message(CITY_GOALS[0].text, 6);
+  const order = (text) => setTimeout(() => ceo.say(text, { hold: 6, sky: true }), 1500);
+  if (m === 'kanto') { setR(150); enterKanto(); banner('関東から スタート！', '夜明けの関東を まきこめ', 2.6); order(CEO.kanto0); return; }
+  if (m === 'world') { setR(10000); enterWorld(); banner('日本から スタート！', '日本、そして 世界へ', 2.6); order(CEO.world0); return; }
+  if (m === 'timeattack') { banner('タイムアタック！', '5分で どこまで 大きくなれる？', 2.6); order(CEO.timeattack); return; }
+  if (m === 'otsukai') { setupErrand(); banner('おつかい スタート！', 'リストの 6つを まきこめ', 2.6); order(CEO.otsukai); return; }
   banner('ハマころ！', 'ちいさな玉で ヨコハマを まきこめ！', 2.6);
+  order(CEO.story);
 }
+let wantVR = false;
+$('vr-toggle').addEventListener('click', () => {
+  wantVR = !wantVR;
+  $('vr-toggle').setAttribute('aria-pressed', String(wantVR));
+});
+$('btn-vr').addEventListener('click', () => { if (vr) (vr.active ? vr.exit() : vr.enter()); });
 for (const b of document.querySelectorAll('.mode')) {
   b.addEventListener('click', () => {
     const m = b.dataset.mode;
     if (m === 'select') { $('modes').classList.add('hidden'); $('stage-select').classList.remove('hidden'); return; }
+    if (wantVR && vr) vr.enter(); // must start inside the click (user gesture)
     startGame(m);
+  });
+}
+{
+  // quality selector on the title screen: 自動 → 高 → 中 → 低; changing it reloads the game
+  const order = ['auto', 'high', 'mid', 'low'];
+  const label = () => `画質：${Q.choice === 'auto' ? `自動（${PRESETS[Q.level].label}）` : PRESETS[Q.choice].label}`;
+  $('quality').textContent = label();
+  $('quality').addEventListener('click', () => {
+    saveChoice(order[(order.indexOf(Q.choice) + 1) % order.length]);
+    location.reload();
   });
 }
 $('btn-back').addEventListener('click', () => { $('stage-select').classList.add('hidden'); $('modes').classList.remove('hidden'); });
@@ -953,12 +1202,63 @@ if (qs.has('autostart')) startGame(qs.get('mode') || 'story');
 if (qs.get('stage') === 'kanto') startGame('kanto');
 if (qs.get('stage') === 'world') startGame('world');
 
+// ---------------------------------------------------------------- updates (published site only)
+// The published build (site/build.mjs) sets window.HAMAKORO_BUILD and serves the code from v/<build>/.
+// A service worker makes it installable and playable offline; version.json tells a running game that a
+// newer build is out. On the title or result screen it switches right away, mid-game it asks first.
+const BUILD = window.HAMAKORO_BUILD || null;
+let swReg = null, newBuild = null;
+function applyUpdate() {
+  const go = () => location.replace(location.pathname + '?v=' + encodeURIComponent(newBuild || Date.now())); // a new URL skips any cached page
+  const w = swReg && swReg.waiting;
+  if (w) {
+    navigator.serviceWorker.addEventListener('controllerchange', go, { once: true });
+    w.postMessage('SKIP_WAITING');
+    setTimeout(go, 1500);
+  } else go();
+}
+function offerUpdate() {
+  let tried = null;
+  try { tried = sessionStorage.getItem('hamakoro.updatedTo'); } catch (e) { /* storage blocked */ }
+  if ((state === 'title' || state === 'result') && newBuild && tried !== newBuild) {
+    try { sessionStorage.setItem('hamakoro.updatedTo', newBuild); } catch (e) { /* storage blocked */ }
+    applyUpdate();
+    return;
+  }
+  $('update').classList.remove('hidden');
+}
+$('btn-update').addEventListener('click', applyUpdate);
+async function checkVersion() {
+  if (!BUILD) return;
+  try {
+    const v = await (await fetch('version.json', { cache: 'no-store' })).json();
+    if (v.build && v.build !== BUILD) {
+      newBuild = v.build;
+      if (swReg) swReg.update().catch(() => {});
+      offerUpdate();
+    }
+  } catch (e) { /* offline: keep playing the cached build */ }
+}
+if (BUILD) {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      swReg = reg;
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (nw) nw.addEventListener('statechange', () => { if (nw.state === 'installed' && navigator.serviceWorker.controller) checkVersion(); });
+      });
+    }).catch((e) => console.warn('service worker', e));
+  }
+  setTimeout(checkVersion, 3000);
+  setInterval(checkVersion, 10 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
+}
+
 // ---------------------------------------------------------------- main loop
 const clock = new THREE.Clock();
 let titleT = 0;
 let frameNo = 0;
 function frame() {
-  requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 1 / 20);
   frameNo++;
   if (state === 'title') {
@@ -987,8 +1287,8 @@ function frame() {
     if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) showResult('timeup');
     const inp = readInput();
     step(dt, inp);
-    for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
-    bumpCool -= dt;
+    tickCooling(dt);
+    bumpCool -= dt; dropCool -= dt; hintCool -= dt;
     sfx('sfxRoll', Math.min(1, ball.vel.length() / maxSpeed(false)), Math.min(1, Math.log10(1 + ball.r * 2) / 3));
     flushPickSfx();
     checkGoals();
@@ -1007,12 +1307,12 @@ function frame() {
           enterKanto();
           banner('関東へ ころがれ！', '夜が明けてきた', 3.2);
           sfx('setMusic', 'town');
-          setTimeout(() => message(KANTO_GOALS[0].text, 6), 2500);
+          setTimeout(() => ceo.say(CEO.kantoStart, { hold: 6, sky: true }), 2200);
         } else {
           enterWorld();
           banner('日本へ、そして せかいへ！', 'ここからは 地球サイズ', 3.2);
           sfx('setMusic', 'world');
-          setTimeout(() => message(WORLD_GOALS[0].text, 6), 2500);
+          setTimeout(() => ceo.say(CEO.worldStart, { hold: 6, sky: true }), 2200);
         }
         updateCamera(dt);
         $('fade').classList.remove('show');
@@ -1031,7 +1331,7 @@ function frame() {
     const s = 1 - e * 0.82;
     globe.earth.scale.setScalar(s);
     globe.atmo.scale.setScalar(s);
-    for (const g of globe.objs.byProto.values()) g.mesh.visible = stateT < 1.5;
+    globe.objs.hidden = stateT >= 1.5;
     const toBall = ball.pos.clone().multiplyScalar(e * 0.55);
     globe.earth.position.copy(toBall);
     globe.atmo.position.copy(toBall);
@@ -1046,6 +1346,7 @@ function frame() {
     updateCamera(dt);
   }
 
+  stage.objs.time += dt;
   stage.updateMovers(dt, ball, PICK_K);
   if (pusher) {
     pusher.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, speed: ball.vel.length(), dash: inpDash, bumped: bumpedNow, cheer: cheerNow, planetR: stageName === 'world' ? EARTH_R : 0 });
@@ -1053,12 +1354,38 @@ function frame() {
   }
   bumpedNow = false; cheerNow = false;
   cardT -= dt;
-  itemViewer.update(dt);
-  stage.objs.updateVisibility(camera.position, ball.r, stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1);
+  if (!vrActive() && frameNo % Q.cardEvery === 0) itemViewer.update(dt * Q.cardEvery); // the headset shows the item on its own panel
+  if (state !== 'title') ceo.update(dt, ball);
+  ceoDropCool -= dt;
+  if (state === 'play' && mode !== 'otsukai') {
+    if (goalIdx !== ceoIdleGoal) { ceoIdleGoal = goalIdx; ceoIdleT = 0; }
+    ceoIdleT += dt;
+    if (ceoIdleT > 80) {
+      ceoIdleT = 0;
+      const G = goals(), g = G[Math.min(goalIdx, G.length - 1)];
+      ceo.say(CEO.idle(needDisplay(Math.max(0, g.d - ball.r * 2))), { hold: 3.5 });
+    }
+  }
+  if (frameNo % Q.visEvery === 0) {
+    camera.getWorldPosition(_camW);
+    // half-angle of the view to the screen corner
+    const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * Math.hypot(1, camera.aspect));
+    let cone = null;
+    if (!vrActive()) { // a headset can look anywhere at once: no view cone there
+      camera.getWorldDirection(_camF);
+      const shadowR = renderer.shadowMap.enabled ? Math.max(6, ball.r * 16) * 1.2 : 0;
+      cone = { dir: _camF, angle: half + 0.4, keep: ball.pos, keepR: Math.max(shadowR, ball.r * 3) };
+    }
+    // fog thickens with depth along the view, so toward the screen edges it is fully opaque a little further out
+    const fogFar = scene.fog ? scene.fog.far / (vrActive() ? 0.5 : Math.max(Math.cos(Math.min(half, 1.2)), 0.5)) : 0;
+    stage.objs.updateVisibility(_camW, ball.r, (stageName === 'world' ? 3 : stageName === 'kanto' ? 0.55 : 1) * Q.view * (vr ? vr.viewScale : 1), fogFar, cone, stageName === 'world' ? EARTH_R : 0);
+  }
+  if (fpsGuard.tick(dt, state === 'play' && !vrActive()) === 'lowered') notice('動きを かるくするため 画質を下げました');
   core.scale.setScalar(ball.r * 0.86);
   updateEnvironment(dt);
   if (state !== 'title') updateHUD();
-  if (frameNo % 3 === 0) {
+  if (vrActive()) vr.update(dt, { pos: ball.pos, r: ball.r, heading: ball.heading, up: ball.up, state, stage: stageName });
+  if (frameNo % Q.minimapEvery === 0 && !vrActive()) {
     if (stageName !== 'world') minimap.drawTown(ball.pos.x, ball.pos.z, Math.atan2(ball.heading.x, ball.heading.z), ball.r);
     else minimap.drawWorld(vecToLatLon(ball.pos), ball.r);
   }
@@ -1066,12 +1393,15 @@ function frame() {
   if (toastTimer > 0 && (toastTimer -= dt) <= 0) $('toast').classList.remove('show');
   if (bannerTimer > 0 && (bannerTimer -= dt) <= 0) $('banner').classList.remove('show');
   if (msgTimer > 0 && (msgTimer -= dt) <= 0) $('message').classList.remove('show');
+  if (noticeTimer > 0 && (noticeTimer -= dt) <= 0) $('notice').classList.remove('show');
   renderer.render(scene, camera);
 }
-frame();
+const _camW = new THREE.Vector3(), _camF = new THREE.Vector3();
+renderer.setAnimationLoop(frame); // works on screen and inside a WebXR session
 
-document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused) togglePause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play' && !paused && !vrActive()) togglePause(); });
 addEventListener('resize', () => {
+  if (renderer.xr.isPresenting) return;
   renderer.setSize(innerWidth, innerHeight);
   if (pusherMod) pusherMod.setOutlineViewport(renderer.getDrawingBufferSize(new THREE.Vector2()).y);
   camera.aspect = innerWidth / innerHeight;
@@ -1099,8 +1429,9 @@ window.__game = {
       stats.elapsed += dt;
       if (mode === 'timeattack' && stats.elapsed >= TA_SECONDS) { showResult('timeup'); break; }
       step(dt, readInput());
-      for (const o of stage.objs.objs) if (o.cool > 0) o.cool -= dt;
-      bumpCool -= dt;
+      tickCooling(dt);
+      bumpCool -= dt; dropCool -= dt; hintCool -= dt;
+      stage.objs.time += dt;
       checkGoals();
       stage.updateMovers(dt, ball, PICK_K);
     }

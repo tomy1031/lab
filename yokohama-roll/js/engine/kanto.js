@@ -117,7 +117,8 @@ export function buildKanto(scene, reg, material, opts = {}) {
     const fr = Math.max(p.w, p.d) * 0.5 * m;
     if (!landAround(x, z, fr * 0.8) || occHit(x, z, fr * 0.85)) continue;
     if (Math.hypot(x - S.x, z - S.z) < 700) continue;
-    place(p, x, 0, z, Math.round(rnd() * 4) * (Math.PI / 2) + (rnd() - 0.5) * 0.3, m);
+    const o = place(p, x, 0, z, Math.round(rnd() * 4) * (Math.PI / 2) + (rnd() - 0.5) * 0.3, m);
+    if (o) o.dw = 1 / (opts.density || 1); // fewer blocks on slower devices, each counting for more
     occAdd(x, z, fr * 0.85);
     placed++;
   }

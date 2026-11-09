@@ -8,7 +8,7 @@
 //   FILMS_REF     NEXTMAKE Films (nextmake-mv/output)          default: origin/claude/nextmake-investment-video-jaigyl
 //   AIC_REF       NEXTMAKE AI COMPANY (ai-company/)            default: origin/claude/ai-employee-3d-visualization-bgkso0
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
-//   STARLIGHT_REF ほしあかりの湖 (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
+//   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
@@ -52,13 +52,38 @@ fs.writeFileSync(path.join(out, '.nojekyll'), '');
 copy(path.join(siteSrc, 'index.html'), path.join(out, 'index.html'));
 copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
 
-// 01 ハマころ！ — the game is static files: page + ES modules (three.js comes from the CDN)
+// 01 ハマころ！ — the game is static files: page + ES modules (three.js comes from the CDN).
+// Cache-proof publishing: the code goes into v/<build>/ (a new folder for every change, so browsers can
+// keep it forever and never run stale code), index.html points there, version.json names the build,
+// and sw.js (service worker) is filled in with the build and its file list for the installable PWA.
 {
   const src = exportDir(refs.yokohama, 'yokohama-roll');
   const dest = path.join(out, 'yokohama-roll');
   fs.mkdirSync(dest, { recursive: true });
-  copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
-  copy(path.join(src, 'js'), path.join(dest, 'js'));
+  const build = sh(`git -C "${root}" rev-parse "${refs.yokohama}:yokohama-roll"`).slice(0, 12); // content hash of the game folder
+  const vdir = path.join(dest, 'v', build);
+  fs.mkdirSync(vdir, { recursive: true });
+  copy(path.join(src, 'js'), path.join(vdir, 'js'));
+  if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
+  let html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
+  const tag = '<script type="module" src="js/main.js"></script>';
+  if (!html.includes(tag)) throw new Error('yokohama-roll/index.html: main.js script tag not found');
+  html = html.replace(tag,
+    `<script>window.HAMAKORO_BUILD = '${build}';</script>\n` +
+    // a page cached from before a deploy points at a folder that is gone: fetch the page afresh
+    `<script type="module" src="v/${build}/js/main.js" onerror="location.replace(location.pathname + '?r=' + Date.now())"></script>`);
+  fs.writeFileSync(path.join(dest, 'index.html'), html);
+  fs.writeFileSync(path.join(dest, 'version.json'), JSON.stringify({ build }) + '\n');
+  for (const f of ['manifest.webmanifest']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(path.relative(dest, p).split(path.sep).join('/')); } };
+  walk(dest);
+  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html')];
+  if (fs.existsSync(path.join(src, 'sw.js'))) {
+    const sw = fs.readFileSync(path.join(src, 'sw.js'), 'utf8').replace("'__BUILD__'", `'${build}'`).replace('__PRECACHE__', JSON.stringify(precache));
+    fs.writeFileSync(path.join(dest, 'sw.js'), sw);
+  }
+  console.log(`yokohama-roll build ${build}: ${files.length} files`);
 }
 
 // 02 NEXTMAKE Films — the 720p share versions and posters
@@ -119,7 +144,7 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 05 ほしあかりの湖 — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
+// 05 Starlight Lake — WebXR vision training; static files (page + ES modules + docs, three.js from the CDN)
 {
   const dest = path.join(out, 'starlight-lake');
   try {
@@ -131,19 +156,25 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
     fs.rmSync(dest, { recursive: true, force: true });
     fs.mkdirSync(dest, { recursive: true });
     fs.writeFileSync(path.join(dest, 'index.html'),
-      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ほしあかりの湖</title>' +
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Starlight Lake</title>' +
       '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>・<a href="../">lab にもどる</a></p>');
   }
 }
 
-// 06 STAR WEAVER — WebXR rhythm fitness; static files (page + ES modules, three.js from the CDN)
+// 06 STAR WEAVER — WebXR rhythm fitness. Its own tools/build.mjs makes the published build: an installable,
+// offline-capable PWA (code and fonts in v/<content hash>/, version.json, a service worker that stores
+// everything incl. three.js). Trees from before that script are copied as plain static files.
 {
   const dest = path.join(out, 'star-weaver');
   try {
     const src = exportDir(refs.starweaver, 'star-weaver');
     fs.mkdirSync(dest, { recursive: true });
-    copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
-    copy(path.join(src, 'js'), path.join(dest, 'js'));
+    if (fs.existsSync(path.join(src, 'tools', 'build.mjs'))) {
+      sh(`node "${path.join(src, 'tools', 'build.mjs')}" "${dest}"`, { stdio: ['ignore', 'inherit', 'inherit'] });
+    } else {
+      copy(path.join(src, 'index.html'), path.join(dest, 'index.html'));
+      copy(path.join(src, 'js'), path.join(dest, 'js'));
+    }
     copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'star-weaver.jpg'));
   } catch (e) {
     console.warn(`star-weaver not found at ${refs.starweaver}; publishing a link page instead:`, e.message);
