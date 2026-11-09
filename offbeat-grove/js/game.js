@@ -183,7 +183,7 @@ export class PlaySession {
         const dirW = new THREE.Vector3(...n.dir).applyQuaternion(root.quaternion);
         const vAlong = g.speedAlong(dirW);
         const hitT = t0 + u * (t1 - t0);
-        const comp = Math.min(0.06, (rs * 0.8) / (this.speed.v0 + Math.max(0, vAlong)));
+        const comp = Math.min(0.06, (rs * 0.92) / (this.speed.v0 + Math.max(0, vAlong))); // contact starts before the centres meet
         this.judgeHit(n, hitT + comp, side, vAlong, c1);
       }
     }
@@ -204,7 +204,7 @@ export class PlaySession {
       this.app.desk.punch(side, to, new THREE.Vector3(...best.dir).applyQuaternion(root.quaternion).toArray(), 0.05);
       this.judgeHit(best, songT, side, 9, this.posAt(best, songT));
     } else {
-      const cam = this.app.camera;
+      const cam = this.app.deskHead || this.app.camera;
       const to = new THREE.Vector3(side === 'L' ? -0.17 : 0.17, -0.12, -0.55).applyQuaternion(cam.quaternion).add(cam.position);
       this.app.desk.punch(side, to, new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion).toArray(), 0.06);
     }

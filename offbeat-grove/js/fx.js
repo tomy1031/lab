@@ -58,7 +58,7 @@ export class FX {
     parent.add(this.points);
 
     this.rings = [];
-    const rg = new THREE.RingGeometry(0.12, 0.135, 40);
+    const rg = new THREE.RingGeometry(0.1, 0.111, 40);
     for (let i = 0; i < 10; i++) {
       const m = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: '#fff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
       m.visible = false;
@@ -143,7 +143,7 @@ export class FX {
     for (const r of this.rings) {
       if (r.t >= 1) continue;
       r.t = Math.min(1, r.t + dt * 5);
-      r.m.scale.setScalar(0.9 + r.t * 0.7);
+      r.m.scale.setScalar(0.95 + r.t * 0.5);
       r.m.material.opacity = (1 - r.t) * 0.6;
       if (r.t >= 1) r.m.visible = false;
     }

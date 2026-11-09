@@ -147,11 +147,12 @@ class App {
       this.playRoot.rotation.set(0, 0, 0);
     }
     // the scoreboard floats above the approach path, where your eyes already are
-    this.hud.mesh.position.set(0, eyeY + 0.62, -3.4);
+    this.hud.mesh.position.set(0, eyeY + 0.6, -3.1);
     this.hud.mesh.rotation.set(0.12, 0, 0);
     this.session = new PlaySession(this, { notes, player, opts: { ...s }, title, eyeY, auto: this.auto && !this.xr, keys: !this.xr && !this.auto });
     this.player = player;
     this.simT = null;
+    this.songT = -999;
     player.start(this.audio.now() + 0.3, 0, 0);
     this.state = 'play';
     this.audio.ambience('play');
@@ -184,6 +185,7 @@ class App {
     res.isBest = store.addResult({ song: s.song, mode: s.mode, diff: s.diff, length: s.length }, res);
     this.lastResults = res;
     this.resultsPanel.res = res;
+    this.targets.clear();
     this.state = 'results';
     this.audio.ambience('menu');
     this.panels();
@@ -301,19 +303,25 @@ class App {
     const c = this.camera;
     this.duckT = Math.max(0, this.duckT - dt);
     const playing = this.state === 'play' || this.state === 'paused';
+    // the player's head on a PC (the camera, except in the spectator view)
+    const head = this.deskHead || (this.deskHead = new THREE.Object3D());
+    const d = this.duckT > 0 ? smoothstep(0, 0.12, this.duckT) * smoothstep(0, 0.15, 0.7 - this.duckT + 0.15) : 0;
+    head.position.set(0, 1.6 - d * 0.3, 0);
+    head.rotation.set(-0.16, 0, 0, 'YXZ');
+    head.updateMatrixWorld();
     if (params.get('view') === 'wide' && playing) {
-      c.position.set(0.85, 1.95, 1.45);
-      c.lookAt(0, 1.25, -2.4);
+      c.position.set(0.75, 1.9, 1.25);
+      c.lookAt(-0.05, 1.3, -2.6);
     } else if (playing) {
-      const d = this.duckT > 0 ? smoothstep(0, 0.12, this.duckT) * smoothstep(0, 0.15, 0.7 - this.duckT + 0.15) : 0;
-      c.position.set(0, 1.6 - d * 0.3, 0);
-      c.rotation.set(-0.16, 0, 0, 'YXZ');
+      c.position.copy(head.position);
+      c.quaternion.copy(head.quaternion);
     } else {
       c.position.set(0, 1.62, 0.2);
       c.rotation.set(-0.02 + Math.sin(this.t * 0.05) * 0.03, Math.sin(this.t * 0.045) * 0.6, 0, 'YXZ');
     }
-    this.input.head.copy(c.position);
-    this.input.headQuat.copy(c.quaternion);
+    const src = playing ? head : c;
+    this.input.head.copy(src.position);
+    this.input.headQuat.copy(src.quaternion);
   }
 
   // ---- every frame ----
@@ -344,13 +352,14 @@ class App {
         if (this.input.takePause()) this.pause();
         else sess.update(this.songT, dt);
       } else {
+        const cam = this.deskHead || this.camera;
         // PC: simulate in 10 ms steps of song time, so punches land on time even at a low frame rate
         let from = this.simT === null || this.simT > this.songT ? this.songT - dt : this.simT;
         const span = this.songT - from;
         const n = Math.min(60, Math.max(1, Math.ceil(span / 0.01)));
         for (let i = 1; i <= n && this.state === 'play'; i++) {
           const t = from + (span * i) / n;
-          this.desk.update(span / n || dt, this.camera, t);
+          this.desk.update(span / n || dt, cam, t);
           sess.update(t, span / n || dt);
         }
         this.simT = this.songT;

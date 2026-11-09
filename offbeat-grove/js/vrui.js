@@ -199,7 +199,7 @@ export class ResultsPanel extends Panel {
 
 // score, combo, the count of the bar ("1 & 2 & 3 & 4 &") and the last timing, below the hit zone
 export class Hud extends Panel {
-  constructor() { super(1200, 240, 1.5); this.mesh.renderOrder = 7; this.state = {}; }
+  constructor() { super(1200, 240, 1.6); this.mesh.renderOrder = 7; this.state = {}; }
   set(st) {
     const k = JSON.stringify(st);
     if (k === this._k) return;

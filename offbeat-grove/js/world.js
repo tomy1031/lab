@@ -69,7 +69,7 @@ export class World {
     this.addRocks();
     this.addDeck();
     this.addBirds();
-    this.addPollen(hi ? 380 : 200);
+    this.addPollen(hi ? 260 : 160);
   }
 
   addTerrain() {

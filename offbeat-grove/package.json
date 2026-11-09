@@ -1,0 +1,21 @@
+{
+  "name": "offbeat-grove",
+  "private": true,
+  "type": "module",
+  "description": "OFFBEAT GROVE — offbeat boxercise for Meta Quest (three.js + WebXR, works offline)",
+  "scripts": {
+    "serve": "node tools/serve.mjs 8080",
+    "build": "node tools/bundle.mjs dist",
+    "test": "node tools/music.mjs && node tools/smoke.mjs && node tools/xr.mjs && node tools/offline.mjs",
+    "test:music": "node tools/music.mjs",
+    "test:smoke": "node tools/smoke.mjs",
+    "test:xr": "node tools/xr.mjs",
+    "test:offline": "node tools/offline.mjs",
+    "icons": "node tools/icons.mjs",
+    "shots": "node tools/shots.mjs"
+  },
+  "devDependencies": {
+    "iwer": "2.7.0",
+    "playwright": "1.63.0"
+  }
+}
