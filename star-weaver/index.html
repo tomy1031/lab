@@ -6,9 +6,13 @@
 <title>STAR WEAVER</title>
 <meta name="description" content="Meta Quest 2/3 向けのVRリズムフィットネス。星にタッチし、彗星を腕でなぞって肩をほぐす。横ステップとミニスクワットで全身を動かし、前後の移動はなし。ホログラムのコーチがお手本を見せます。">
 <meta name="theme-color" content="#0b0a24">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="STAR WEAVER">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root {
     --bg: #07061a; --ink: #f6f4ff; --muted: #b0add8; --dim: #7a77a8; --line: rgba(170, 180, 255, 0.18);
@@ -81,6 +85,15 @@
   #deskbar { position: fixed; left: 12px; top: 12px; display: flex; gap: 10px; align-items: center; z-index: 5; max-width: calc(100% - 24px); }
   #deskbar button { padding: 8px 14px; font-size: 13px; }
   #desk-hint { font-size: 12.5px; color: var(--muted); background: rgba(7,6,26,0.72); padding: 6px 10px; border-radius: 8px; }
+  .offline { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+  .offline b { font-family: var(--en); letter-spacing: 0.14em; font-size: 12px; }
+  .offline.ready { color: var(--ink); border-color: rgba(122, 255, 200, 0.45); background: rgba(122, 255, 200, 0.1); }
+  .offline.ready b { color: var(--G); }
+  .offline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--A); box-shadow: 0 0 10px currentColor; }
+  .offline.ready .dot { background: var(--G); }
+  #update { position: fixed; left: 50%; top: max(12px, env(safe-area-inset-top)); transform: translateX(-50%); z-index: 20; display: flex; gap: 12px; align-items: center;
+    padding: 8px 8px 8px 18px; border-radius: 999px; background: rgba(20, 18, 56, 0.95); border: 1px solid rgba(255, 209, 102, 0.5); box-shadow: 0 10px 30px rgba(0,0,0,0.45); font-size: 14px; max-width: calc(100% - 32px); }
+  #update button { padding: 8px 16px; font-size: 13px; }
   @media (max-width: 760px) {
     .two, .modes { grid-template-columns: minmax(0, 1fr); }
     .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -95,6 +108,7 @@
 </head>
 <body>
 <div id="app"></div>
+<div id="update" hidden role="status"><span>新しいバージョンがあります</span><button id="btn-update" class="primary" type="button">UPDATE</button></div>
 <div id="deskbar" hidden><button id="desk-back" class="ghost" type="button">← BACK</button><span id="desk-hint"></span></div>
 <main id="overlay">
   <div class="wrap">
@@ -112,7 +126,9 @@
         ENTER VR
       </button>
       <p id="vr-note" class="note">WebXR を確認しています…</p>
+      <span id="offline" class="offline" hidden><i class="dot"></i><b>OFFLINE</b><span id="offline-text">準備中…</span></span>
       <div class="btns">
+        <button id="install" class="ghost" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>INSTALL APP</button>
         <button id="preview" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>PREVIEW ON PC</button>
         <button id="demo" class="ghost" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>WATCH AUTOPLAY</button>
       </div>
@@ -181,6 +197,7 @@
 
     <footer>
       Meta Quest 2 / 3 のブラウザでこのページを開き「ENTER VR」。初回はチュートリアル（約1分半）から始まります。<br>
+      一度開くと、次からはネットにつながっていなくても遊べます（OFFLINE READY の表示が出たら準備完了）。<br>
       記録と設定はこの端末のブラウザにだけ保存されます。消費カロリーは動きから推定した目安です。
     </footer>
   </div>

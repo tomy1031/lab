@@ -4,7 +4,9 @@
   "description": "STAR WEAVER — WebXR rhythm fitness for Meta Quest (three.js, no build step)",
   "scripts": {
     "serve": "node -e \"require('./tests/serve.cjs')(8080).then(()=>console.log('http://127.0.0.1:8080/'))\"",
-    "test": "node tests/smoke.cjs quick 4 && node tests/tutorial.cjs && node tests/modes.cjs && node tests/xr.cjs",
+    "test": "node tests/smoke.cjs quick 4 && node tests/tutorial.cjs && node tests/modes.cjs && node tests/xr.cjs && node tests/pwa.cjs",
+    "build": "node tools/build.mjs dist",
+    "test:pwa": "node tests/pwa.cjs",
     "test:smoke": "node tests/smoke.cjs quick 4",
     "test:modes": "node tests/modes.cjs",
     "test:xr": "node tests/xr.cjs",

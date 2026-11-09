@@ -1,8 +1,9 @@
 // tests/serve.cjs — tiny static server for the game folder (used by the tests)
 const http = require('http'), fs = require('fs'), path = require('path');
-const root = path.resolve(__dirname, '..');
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
-module.exports = function serve(port = 0) {
+const defaultRoot = path.resolve(__dirname, '..');
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.jpg': 'image/jpeg' };
+// serve(port, root): root defaults to the game folder; tests/pwa.cjs serves a built dist folder instead
+module.exports = function serve(port = 0, root = defaultRoot) {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {
       let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);

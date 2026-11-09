@@ -7,6 +7,7 @@ import { Desktop } from './desktop.js';
 import { MODES } from './timeline.js';
 import { fmtTime } from './util.js';
 import { GLYPHS } from './glyphs.js';
+import { initPWA } from './pwa.js';
 import { FONT } from './theme.js';
 
 const q = new URLSearchParams(location.search);
@@ -154,6 +155,22 @@ if (document.fonts && document.fonts.load) {
     .then(() => game.refreshPanels())
     .catch(() => {});
 }
+
+// ---------------- offline / updates (published builds only) ----------------
+const pwa = initPWA({
+  onStatus: (st) => {
+    const el = $('#offline');
+    el.hidden = false;
+    el.classList.toggle('ready', st.state === 'ready');
+    $('#offline-text').textContent = st.state === 'ready' ? 'READY · ネットなしでも遊べます'
+      : st.state === 'error' ? 'オフライン保存に失敗しました' : `保存中… ${st.cached || 0} / ${st.total || '?'}`;
+  },
+  onUpdate: () => { $('#update').hidden = false; },
+  onInstallable: (on) => { $('#install').hidden = !on; },
+});
+$('#btn-update').addEventListener('click', () => pwa.apply());
+$('#install').addEventListener('click', () => pwa.install && pwa.install());
+window.__pwa = pwa;
 
 showOverlay(true);
 if (params.autoplay || params.tutorial) startDesktop(params.autoplay);
