@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>tomy1031 lab</title>
-<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」">
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -204,6 +204,30 @@
             <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/coach.js"><code>js/coach.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/tutorial.js"><code>js/tutorial.js</code></a>：鏡像のコーチと、待ってくれるチュートリアル</li>
             <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/audio.js"><code>js/audio.js</code></a>：コンボに合わせて楽器が増える音楽エンジン</li>
             <li><a href="https://github.com/tomy1031/lab/pull/4">プルリクエスト #4</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="aetherwalk">
+      <a class="shot" href="aetherwalk/"><img src="img/aetherwalk.jpg" alt="ALT_TEXT" width="1280" height="720" loading="lazy"><span class="no">07</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>AETHERWALK 風渡りの巡礼</h2>
+        <p class="lead">その場で足踏みすると歩き、駆け足をすると走るオープンワールドのフィットネス VR です。空に壊れた輪がかかる島ユラを足で旅して、4 本の鐘塔を足踏みで昇り、湖の小島のボス「凪の心臓」を鎮めます。剣・槍・盾・弓・爆弾・松明は腕を振って使い、敵の攻撃はしゃがむ・横へ 1 歩・盾でよけます。部屋の中を歩き回る必要はありません。</p>
+        <p class="note">Quest のブラウザで開いて「VR をはじめる」。アイテムは体のホルスター（背中・腰・胸・ベルト）から取り出し、投げる・火を移す・口元に運んで食べる、と自由に使えます。祠は駆け足・身かわし・剣舞などの短い運動の挑戦です。歩数・距離・推定消費カロリーを記録します。PC ではプレビュー（W で歩く・マウスで振る）。一度開けば、次からはオフラインでも遊べます。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="aetherwalk/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/aetherwalk/README.md">README</a>：遊び方、操作、運動としての使い方、スペースと安全</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/aetherwalk/docs/DESIGN.md">設計書</a>：足踏みの検出、アイテム、敵、島の地図、アートディレクション、モジュールの約束</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/world"><code>js/world</code></a>：島・空・水・草木・鐘塔・絶景（すべてコードで生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/player"><code>js/player</code></a>・<a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/items"><code>js/items</code></a>：足踏み移動、ホルスター、武器とアイテム</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/game"><code>js/game</code></a>：敵、鐘塔、祠、クエスト、セーブ</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/8">プルリクエスト #8</a>：作業の経緯</li>
           </ul>
         </details>
       </div>

@@ -10,6 +10,7 @@
 //   UNDOKAI_REF   運動会 絆 reel (undokai-reel/output)         default: origin/claude/ecstatic-thompson-v7ve2u (then FILMS_REF)
 //   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
+//   AETHERWALK_REF AETHERWALK (aetherwalk/)                    default: origin/claude/determined-newton-ki8tfm (then FILMS_REF)
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -28,12 +29,14 @@ const refs = {
   undokai: process.env.UNDOKAI_REF || 'origin/claude/ecstatic-thompson-v7ve2u',
   starlight: process.env.STARLIGHT_REF || 'origin/claude/jolly-faraday-yhmee4',
   starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
+  aetherwalk: process.env.AETHERWALK_REF || 'origin/claude/determined-newton-ki8tfm',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
 if (!process.env.UNDOKAI_REF && !hasRef(refs.undokai)) refs.undokai = refs.films;
 if (!process.env.STARLIGHT_REF && !hasRef(refs.starlight)) refs.starlight = refs.films;
 if (!process.env.STARWEAVER_REF && !hasRef(refs.starweaver)) refs.starweaver = refs.films;
+if (!process.env.AETHERWALK_REF && !hasRef(refs.aetherwalk)) refs.aetherwalk = refs.films;
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -186,6 +189,25 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 07 AETHERWALK — WebXR open-world fitness (walk by stepping in place). Like STAR WEAVER, its own
+// tools/build.mjs makes the published build: an installable, offline-capable PWA.
+{
+  const dest = path.join(out, 'aetherwalk');
+  try {
+    const src = exportDir(refs.aetherwalk, 'aetherwalk');
+    fs.mkdirSync(dest, { recursive: true });
+    sh(`node "${path.join(src, 'tools', 'build.mjs')}" "${dest}"`, { stdio: ['ignore', 'inherit', 'inherit'] });
+    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'aetherwalk.jpg'));
+  } catch (e) {
+    console.warn(`aetherwalk not found at ${refs.aetherwalk}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AETHERWALK</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab/pull/8">プルリクエスト #8</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk}`);

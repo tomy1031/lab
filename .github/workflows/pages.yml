@@ -14,6 +14,13 @@ on:
       - 'yokohama-roll/sw.js'
       - 'yokohama-roll/manifest.webmanifest'
       - 'nextmake-mv/output/**'
+      - 'aetherwalk/index.html'
+      - 'aetherwalk/js/**'
+      - 'aetherwalk/img/**'
+      - 'aetherwalk/sw.js'
+      - 'aetherwalk/manifest.webmanifest'
+      - 'aetherwalk/tools/build.mjs'
+      - 'aetherwalk/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
