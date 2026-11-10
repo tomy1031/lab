@@ -164,6 +164,7 @@ export async function createGame(ctx) {
     // put the world's mechanisms back the way they were
     for (const l of G.checkpoints.lights) { if (l.lit) { setPropState(l.prop, 'lit', false); try { l.zone && ctx.zones.remove(l.zone); l.cook && ctx.zones.remove(l.cook); } catch (e) { /* ignore */ } l.zone = l.cook = null; l.lit = false; } }
     for (const b of G.checkpoints.braziers) G.checkpoints.douseBrazier(b);
+    G.checkpoints.lightFree();
     for (const t of G.towers.towers) { t.awake = false; t.lift = 0; setPropState(t.prop, 'awake', false); }
     for (const c of G.pickups.chests) setPropState(c.prop, c.pedestal && c.prop && c.prop.kind === 'pedestal' ? 'taken' : 'open', false);
     for (const kind of ['crackrock', 'thornvine', 'iceblock', 'sleepbell', 'pinwheel', 'lightbridge', 'pedestal', 'shrine']) {
@@ -205,7 +206,8 @@ export async function createGame(ctx) {
   // ── wiring ──
   G.start = function () {
     for (const [name, fn] of [['checkpoints', () => G.checkpoints.load()], ['towers', () => G.towers.load()], ['props', () => G.props.load()],
-      ['pickups', () => G.pickups.load()], ['shrines', () => G.shrines.load()], ['seeds', () => G.seeds.load()], ['enemies', () => G.enemies.loadGroups()]]) {
+      ['pickups', () => G.pickups.load()], ['shrines', () => G.shrines.load()], ['braziers', () => G.checkpoints.lightFree()],
+      ['seeds', () => G.seeds.load()], ['enemies', () => G.enemies.loadGroups()]]) {
       try { fn(); } catch (e) { report('game.' + name + '.load', e); }
     }
     let loaded = false;

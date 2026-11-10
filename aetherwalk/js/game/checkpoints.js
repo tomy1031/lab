@@ -31,11 +31,12 @@ export function createCheckpoints(ctx, G) {
       setPropState(entry.prop, 'lit', true);
       anchorOf(entry.prop, 'fire', entry.firePos);
       if (!entry.prop) entry.firePos.set(entry.x, heightAt(ctx, entry.x, entry.z) + 0.5, entry.z);
+      entry.firePos.y += 0.3;                     // the flames stand above the bowl
       entry.cookPos.copy(entry.firePos).setY(entry.firePos.y + 0.5);
       const Z = ctx.zones;
       if (Z && typeof Z.add === 'function') {
         try {
-          entry.zone = Z.add({ kind: 'fire', pos: entry.firePos, r: 0.55, owner: 'game', data: { id: entry.id } });
+          entry.zone = Z.add({ kind: 'fire', pos: entry.firePos, r: 0.7, owner: 'game', data: { id: entry.id } });
           entry.cook = Z.add({ kind: 'cook', pos: entry.cookPos, r: 0.45, owner: 'game', data: { id: entry.id } });
         } catch (e) { /* ignore */ }
       }
@@ -65,6 +66,8 @@ export function createCheckpoints(ctx, G) {
       emit(ctx, 'fire:out', { id: b.id, pos: b.firePos });
       fx(ctx, 'smoke', b.firePos, { count: 8 });
     },
+    /** braziers that no shrine drives burn from the start: fire for torches and arrows around the island */
+    lightFree() { for (const b of braziers) if (!b.reserved && !b.lit) C.lightBrazier(b, true); },
     byId(id) { return lights.find((l) => l.id === id) || null; },
     nearLit(maxD = 5) {
       playerPos(ctx, _p);
@@ -134,7 +137,8 @@ export function createCheckpoints(ctx, G) {
         // a torch (or any carried fire) touching the fire bowl lights it
         anchorOf(l.prop, 'fire', _a);
         if (!l.prop) _a.set(l.x, heightAt(ctx, l.x, l.z) + 0.5, l.z);
-        if (foreignFire(_a, 0.6)) { C.light(l); continue; }
+        _a.y += 0.3;
+        if (foreignFire(_a, 0.75)) { C.light(l); continue; }
         // the other camps catch the wind when you stand by them (the first one is the torch lesson)
         const tutorial = l.id === 'camp_meadow' && stage <= 1;
         if (!tutorial && d < 3.2) { l.nearT += 0.2; if (l.nearT > 1.5) C.light(l); }

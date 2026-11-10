@@ -85,8 +85,10 @@ export function createShrines(ctx, G) {
       const B = G.checkpoints ? G.checkpoints.braziers : [];
       for (const sh of shrines) {
         if (sh.type === 'sprint') {
-          sh.braziers = B.filter((b) => Math.hypot(b.x - sh.x, b.z - sh.z) < 30)
-            .sort((a, b) => yawTo(a.x - sh.x, a.z - sh.z) - yawTo(b.x - sh.x, b.z - sh.z)).slice(0, 6);
+          const ids = sh.extra && Array.isArray(sh.extra.braziers) ? sh.extra.braziers : null;
+          sh.braziers = ids ? ids.map((id) => B.find((b) => b.id === id)).filter(Boolean)
+            : B.filter((b) => Math.hypot(b.x - sh.x, b.z - sh.z) < 30)
+              .sort((a, b) => yawTo(a.x - sh.x, a.z - sh.z) - yawTo(b.x - sh.x, b.z - sh.z)).slice(0, 6);
           for (const b of sh.braziers) b.reserved = true;
         } else if (sh.type === 'torch') {
           const ex = sh.extra || {};
@@ -385,7 +387,7 @@ export function createShrines(ctx, G) {
     let ux = sh.x - lake.x, uz = sh.z - lake.z;
     const L = Math.hypot(ux, uz) || 1; ux /= L; uz /= L;
     for (let i = 0; i < 8; i++) {
-      const b = { i, base: new THREE.Vector3(), pos: new THREE.Vector3(), alive: true, moving: i === 3 || i === 6, phase: i, target: null };
+      const b = { i, base: new THREE.Vector3(), pos: new THREE.Vector3(), alive: true, moving: ex && ex[i] ? !!ex[i].moving : (i === 3 || i === 6), range: (ex && ex[i] && ex[i].range) || 3, phase: i, target: null };
       if (ex && ex[i]) b.base.set(ex[i].x, ex[i].y ?? (Math.max(0, heightAt(ctx, ex[i].x, ex[i].z)) + 1.6), ex[i].z);
       else {
         const dist = 15 + (i * 25) / 7, off = (i - 3.5) * 0.16;
@@ -420,7 +422,7 @@ export function createShrines(ctx, G) {
     let n = 0;
     for (const b of R.boards) {
       if (b.moving) {
-        const s = Math.sin(R.t * 1.4 + b.phase) * 3;
+        const s = Math.sin(R.t * 1.4 + b.phase) * b.range;
         b.pos.set(b.base.x + Math.cos(b.phase) * s, b.base.y, b.base.z + Math.sin(b.phase) * s);
       }
       if (!b.alive) continue;

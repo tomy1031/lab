@@ -155,7 +155,7 @@ export function createQuest(ctx, G) {
         const camp = G.checkpoints && G.checkpoints.byId('camp_meadow');
         const ped = G.pickups && G.pickups.pedestalChest();
         if (camp && camp.lit && ped) setObjective('pedestal', '台座の剣を手に取ろう', ped.x, ped.z);
-        else setObjective('camp_meadow', camp && camp.lit ? '台座の剣を手に取ろう' : '焚き火に松明の火を移そう', c ? c.x : _p.x, c ? c.z : _p.z);
+        else setObjective('camp_meadow', camp && camp.lit ? '台座の剣を手に取ろう' : '松明に火を灯し、野営地の焚き火へ運ぼう', c ? c.x : _p.x, c ? c.z : _p.z);
         break;
       }
       case 2: { const t = L('tower_meadow'); setObjective('tower_meadow', '風見の鐘塔の頂上で鐘を鳴らそう', t ? t.x : _p.x, t ? t.z : _p.z); break; }
@@ -206,7 +206,7 @@ export function createQuest(ctx, G) {
     if (lastObjKey !== before && Q.stage === 0) {
       const i = tutIndex();
       if (i < TUT.length) toast(ctx, TUT[i].text, TUT[i].en, 'quest', 4000, 'tut');
-      else toast(ctx, 'よくできました — 野営地へ下りよう', 'TUTORIAL DONE', 'quest', 4000, 'tut');
+      else { toast(ctx, 'よくできました — 石舞台の燭台で松明に火を移し、野営地へ', 'TUTORIAL DONE', 'quest', 5000); Q.setStage(1); }
     }
   }
 

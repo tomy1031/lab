@@ -57,6 +57,7 @@ export function createSeeds(ctx, G) {
     markFound(ids) {
       for (const s of seeds) if (ids.includes(s.id)) {
         s.found = true;
+        if (s.type === 'race') { setPropState(s.prop, 'passed', true); setPropState(s.prop, 'visible', false); }
         if (s.type === 'bell') setPropState(s.prop, 'rung', true);
         if (s.type === 'pinwheel') setPropState(s.prop, 'bloomed', true);
       }
@@ -76,6 +77,7 @@ export function createSeeds(ctx, G) {
     emit(ctx, 'seed:found', { id: s.id, type: s.type, count, total: TOTAL });
     const tierUp = count % 4 === 0;
     toast(ctx, `風の種 ${count} / ${TOTAL}`, tierUp ? `AETHER SEED · 追い風の上限 +10・持てる数 +2` : 'AETHER SEED', 'item', tierUp ? 5000 : 3000);
+    if (s.type === 'race') { setPropState(s.prop, 'passed', true); setPropState(s.prop, 'visible', false); }
     G.vitals.refreshCaps();
     G.requestSave && G.requestSave(true);
   }
