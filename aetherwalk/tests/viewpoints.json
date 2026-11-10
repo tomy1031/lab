@@ -1,0 +1,8 @@
+[
+  { "name": "start-meadow-morning", "x": 0, "z": 0, "yaw": 0, "t": 8.5 },
+  { "name": "start-meadow-noon", "x": 0, "z": 0, "yaw": 0, "t": 12 },
+  { "name": "forest-edge-evening", "x": 40, "z": -25, "yaw": 90, "t": 18 },
+  { "name": "ridge-view-sunset", "x": -60, "z": 30, "yaw": 200, "t": 17.5 },
+  { "name": "town-square-day", "x": 15, "z": 15, "yaw": 315, "t": 11 },
+  { "name": "lakeside-night", "x": -20, "z": -50, "yaw": 45, "t": 23 }
+]
