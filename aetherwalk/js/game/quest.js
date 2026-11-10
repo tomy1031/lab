@@ -273,8 +273,7 @@ export function createQuest(ctx, G) {
   ctx.events?.on?.('dummy:hit', () => { if (Q.stage === 0) { Q.tut.dummy = true; tutAdvance(); } });
   ctx.events?.on?.('hit', (e) => { if (Q.stage === 0 && e && e.targetKind === 'dummy') { Q.tut.dummy = true; tutAdvance(); } });
   ctx.events?.on?.('fire:lit', (e) => { if (e && e.id === 'camp_meadow' && Q.stage <= 1) { if (Q.stage === 0) Q.setStage(1); G.inventory.add('flask', 1); refreshObjective(); } });
-  // the waybell
-  ctx.events?.on?.('item:use', (e) => { if (e && e.action === 'ring' && e.itemId === 'waybell' && !(ctx.items && ctx.items.ribbonByItems)) Q.guide(); });
+  // (the waybell item and the X button draw their own ribbon in items/waybell.js; guide() serves the wrist menu)
 
   return Q;
 }

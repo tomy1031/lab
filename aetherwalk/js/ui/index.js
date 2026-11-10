@@ -112,7 +112,11 @@ export async function createUI(ctx) {
   on('shrine:complete', () => { S.trial = null; });
   on('shrine:fail', () => { S.trial = null; });
   on('race:start', (p) => { S.trial = { id: p.id, name: '走り輪 RACE', label: `0/${p.rings}`, k: 0 }; S.trialT = 3; });
-  on('player:damage', () => { ui.overlay.flash(); });
+  on('player:damage', () => {
+    ui.overlay.flash();
+    // a short rumble on both hands when a blow lands
+    try { ctx.input && ctx.input.haptic && (ctx.input.haptic('left', 0.6, 90), ctx.input.haptic('right', 0.6, 90)); } catch (e) { /* ignore */ }
+  });
   on('player:death', () => {
     fadeTarget = 1;
     ui.overlay.fade(true);
@@ -192,10 +196,6 @@ export async function createUI(ctx) {
         game && game.save && game.save();
       }
     }
-    // the X button rings the waybell guide (VR)
-    const input = ctx.input;
-    if (vr && input && input.justPressed && input.justPressed('x') && !(ctx.items && ctx.items.handlesXButton)) ui.guide();
-
     hud.update(dt, vr);
     toasts.update(dt, vr);
     ui.wrist.update(dt, vr);
