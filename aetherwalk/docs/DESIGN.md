@@ -1330,6 +1330,23 @@ window.AW = {
 - **`AW.debug` の追加**：`events(name)`（直近のイベントの写し）、`clearEvents, spawnDummy(dx, dz), dummyState, spawnItem(id, dx, dz, dy), items(), heldItem(hand), addZone(kind, …), handTo, press, hold, look, budget(), stats()`。
 - **CSS**：`tools/build.mjs` は `css/` を配らないので、ランディングと PC 表示の CSS は `index.html` に直接書いた。PC 表示で OPUS-A が使う要素は `#aw-hint`（クリックで開始）`#aw-reticle` `#aw-back`。`#aw-overlay` の中身は OPUS-B。
 
+### 10.19 OPUS-B の補足（実装から決めたこと。既存の API は変えていない）
+
+- **追加のイベント（B が出す）**：`boss:phase { phase, id }`、`boss:stone { left }`、`boss:defeated {}`、`bell:ring { id, strong, pos }`（鐘塔の鐘・眠り鈴）、`dummy:hit { id, hits, speed }`、`prop:break` / `prop:burn` / `prop:melt { id }`、`shrine:beat { id, n }`、`shrine:miss { id }`、`race:start { id, rings, limit }`、`race:ring { id, i, of }`（走り輪の残り時間は `shrine:progress` に種の id で出す）、`map:reveal { region }`、`quest:guide { x, z }`、`inventory:change { slot, itemId }`、`temper { itemId, level }`、`ui:click {}`。身かわしの祠の光の梁も `enemy:telegraph { type:'shrine', attack:'beamH'|'beamV' }` を出す（音と自動プレイが使う）。
+- **足止め（`vitals.speedMul`）**：鐘塔の昇降台で昇っている間（台が下端と頂上のあいだ）と、凪の心臓の「凪の領域」（§5.5 の 2）の間は `speedMul = 0.001`。足踏みは台を上げる／殻をはがすだけで前へ進まない（頭の横移動による身かわしはできる）。locomotion は ≤ 0 を 1 に直すので 0 にはしない。頂上では普通に歩けて、縁から腕を広げて滑空できる。
+- **追い風**：滑空の −4/s は game が `player.gliding` を見て減らす（player 側では減らさない）。風刃の −30 は items が `vitals.spendStamina(30)` を呼ぶ。
+- **食べもの**：`item:consume` で game が `defs.food` を適用する（`hp`: 数か `'full'`、99 以上も全回復／`stamina`: 数か `'full'`／`buff` が frost を含むか `frostberry` なら 60 s 追い風が減らない）。水筒（`how:'drink'`）は 1 口 +2。
+- **持ちもの**：`take('quiver')` → `'arrow'`。`stow(null | 'quiver', id, state)` は袋へ（装備はホルスターが空いていれば元の場所へ）。道しるべの鈴はホルスターに入れない。`temper: { sword, spear }`（0〜3。風見の灯のメニューでかけら 60／90／120）。**items は近接の `base`（と突き）に `ctx.game.inventory.temper[itemId]` を足す**（`temper` イベントも出る）。`markIn(id)` / `markOut(id)` あり。
+- **爆発**：§10.18 のとおり標的には二重に入れない。プレイヤーには中心 4 → 端 1 を `vitals.damage(type:'blast')`。ひび岩は標的への `onHit(type:'blast')` と `explosion` のどちらでも壊れる。
+- **敵の届く高さ**：近接の敵は高さの差が 2.2 m（霜の番人 3.2 m）を超えると予告も攻撃もしない（昇降台・崖の上は安全）。澱み火の光弾は届く。予告の板（`#ff3b5c`）は深度テストなしで描く（草や斜面に隠れない）。
+- **game の追加**：`itemInfo(id)`、`eat(id, how)`、`debug { setStage, awakenTower, god, startShrine, give, today }`、`boss { active, phase, gauge, goal, hp }`、`towers { towers, byId, awaken, onLift, liftLock }`、`shrines { shrines, active, byId, start, cancel }`、`checkpoints { lights, braziers, nearLit(r), spawnFor(id), setCheckpoint }`、`enemies.inCombat()`・`enemies.nearestThreat(x, z, r)`・`enemies.resolveAttack`、`quest.guide()`・`quest.skipTutorial()`・`quest.extraDropsFor(sp)`。
+- **世界のしかけ**：祠が使う燭台（`extra.braziers`、`extra.brazier`）以外の燭台は起動時から灯っている（松明・火矢の火種。石舞台の `brazier_start` でチュートリアルの松明に火を移す）。焚き火の火ゾーンは `anchors.fire` の 0.3 m 上・半径 0.7 m（`cook` はさらに 0.5 m 上）。野営地以外の灯は 3 m 以内に 1.5 s 立つと自分で灯る（野営地はチュートリアルなので松明で灯す）。剣の台座は `chest_sword`（prop kind `'pedestal'`）で、野営地の焚き火が灯ってから近づくと手に入る（`taken`）。宝箱は 1.5 m まで近づくと開く（`hiddenBy` のしかけが壊れて／燃えて／溶けてから）。
+- **走り輪**：開始の輪（prop id = 種の id）に入ると `_r0..4` を `visible:true`。見つけたら開始の輪も `visible:false, passed:true`。
+- **保存**：`?autoplay` も読まない・書かない（本物の保存を守る）。`stats.days[日付]` には `distance, bestCadence` も入る。`quest.flags.killed`（倒した中ボスの出現点）・`quest.flags.gather`（採集点の残り）。アクティブ時間と kcal は `ctx.clock.real` で積分する。
+- **UI**：`?vrhud` で PC 表示でも VR の HUD（浮く板・腕輪・トースト・立体の手首メニュー）を描く（確認用）。手首メニューは Y ボタン、または XR 中に上げた左手首を 0.6 s 見つめると開く。開いている間 `body.awui-menu-open`（PC では `#aw-hint` を隠す）。X ボタンの道しるべは items/waybell.js が扱う（UI は扱わない）。
+- **音**：`audio.play(name, { pos, gain })` の名前は `step swing hit block deflect telegraph attack hurt dodge death respawn enemyDeath explosion bowDraw bowRelease bolt fireLit crackle eat drink heal waybell fan holsterIn holsterOut shard item lift towerBell bellSmall miss click tick beat` と `'sting:<region|vista|bell|shrine|seed|chest|dawn|quest|combatStart|combatEnd|ending|item>'`。
+- **自動プレイ**：開始時に stage 2 まで進め（チュートリアルを飛ばす）、盾を持たせ、`items.equip` で剣と盾を持つ。近い敵と戦い（予告には しゃがむ／横へ／3 回に 1 回は盾）、鐘塔では昇降台を足踏みで昇って鐘を打ち、頂上から滑空で降りる。
+
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 
 1. **座標**：Y 上、+X 東、−Z 北。ヨー 0＝北、時計回りが正。単位は m・秒。原点は島の中心。

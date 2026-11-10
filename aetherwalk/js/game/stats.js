@@ -27,7 +27,10 @@ export function createStats(ctx, G) {
     add(key, n = 1) { s[key] += n; s.session[key] += n; if (key === 'kills' || key === 'deaths') { /* totals only */ } },
   };
 
+  let dayCache = null, dayCheckT = 0;
   function day() {
+    if (dayCache && dayCheckT > 0 && s.days[dayCache.key] === dayCache.d) return dayCache.d;
+    dayCheckT = 10;
     const k = todayKey();
     let d = s.days[k];
     if (!d) {
@@ -36,6 +39,7 @@ export function createStats(ctx, G) {
       const keys = Object.keys(s.days).sort();
       while (keys.length > 60) delete s.days[keys.shift()];
     }
+    dayCache = { key: k, d };
     return d;
   }
 
@@ -54,6 +58,7 @@ export function createStats(ctx, G) {
     // body time follows the real clock even when the frame rate collapses (ctx.clock.real, OPUS-A)
     const real = ctx.clock && ctx.clock.real > 0 ? Math.min(ctx.clock.real, 0.25) : 0;
     const dt = Math.max(dtSim, real);
+    dayCheckT -= dt;
     const pl = ctx.player;
     // distance travelled in the world (skip teleports and big jumps)
     if (pl && pl.pos) {

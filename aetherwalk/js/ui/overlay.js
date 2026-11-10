@@ -99,6 +99,8 @@ export function createOverlay(ctx, S, ui) {
   S.domMenu = { dirty: true };
 
   const set = (el, v) => { if (el._v !== v) { el._v = v; el.textContent = v; } };
+  const css = (el, k, v) => { const key = '_s' + k; if (el[key] !== v) { el[key] = v; el.style[k] = v; } };
+  const pct = (k) => Math.round(100 * Math.max(0, Math.min(1, k)));
   objEl.dataset.disp = 'flex';
   const show = (el, b) => { const d = b ? (el.dataset.disp || 'block') : 'none'; if (el._d !== d) { el._d = d; el.style.display = d; } };
   let sigH = '', hurtT = 0, warnT = 0, fadeOn = false, lastToast = null, lastTitle = null;
@@ -128,8 +130,10 @@ export function createOverlay(ctx, S, ui) {
         hg.clearRect(0, 0, 300, heartsCv.height);
         hearts(hg, 0, 2, 32, v.hp, v.maxHp, 8);
       }
-      barFill.style.width = `${Math.round(100 * v.stamina / Math.max(1, v.maxStamina))}%`;
-      barMark.style.left = `${100 * 50 / v.maxStamina}%`;
+      const sp = pct(v.stamina / Math.max(1, v.maxStamina));
+      if (barFill._p !== sp) { barFill._p = sp; barFill.style.width = sp + '%'; }
+      const mk = Math.round(5000 / v.maxStamina);
+      if (barMark._p !== mk) { barMark._p = mk; barMark.style.left = mk + '%'; }
       barEl.classList.toggle('t2', v.tier >= 2);
       set(tierEl, v.tier ? `追い風 ${v.tier === 2 ? 'II' : 'I'}` : '');
       // objective
@@ -138,25 +142,31 @@ export function createOverlay(ctx, S, ui) {
         show(objEl, true);
         set(objTxt, o.text);
         set(objDist, S.objDist == null ? '' : S.objDist >= 1000 ? `${(S.objDist / 1000).toFixed(1)} km` : `${Math.round(S.objDist)} m`);
-        objArr.style.transform = `rotate(${S.objBearing || 0}rad)`;
-        objArr.style.display = S.objDist == null ? 'none' : '';
+        const deg = Math.round((S.objBearing || 0) * 57.3 / 3) * 3;
+        if (objArr._d !== deg) { objArr._d = deg; objArr.style.transform = 'rotate(' + deg + 'deg)'; }
+        css(objArr, 'display', S.objDist == null ? 'none' : '');
       } else show(objEl, false);
       // trial / boss gauge
       if (S.trial) {
         show(trialEl, true); set(trialN, S.trial.name); set(trialV, S.trial.label);
-        trialFill.style.width = `${Math.round(100 * S.trial.k)}%`;
+        const tp = pct(S.trial.k);
+        if (trialFill._p !== tp) { trialFill._p = tp; trialFill.style.width = tp + '%'; }
       } else if (S.boss && S.boss.phase === 2) {
-        show(trialEl, true); set(trialN, '殻をはがせ — その場で駆け足 140+ spm'); set(trialV, `${Math.round(S.boss.k * 100)}%`);
-        trialFill.style.width = `${Math.round(100 * S.boss.k)}%`;
+        const bp = pct(S.boss.k);
+        show(trialEl, true); set(trialN, '殻をはがせ — その場で駆け足 140+ spm');
+        if (trialFill._p !== bp) { trialFill._p = bp; trialFill.style.width = bp + '%'; set(trialV, bp + '%'); }
       } else show(trialEl, false);
-      stillEl.style.opacity = S.boss && S.boss.phase === 2 ? '1' : '0';
+      css(stillEl, 'opacity', S.boss && S.boss.phase === 2 ? '1' : '0');
       // movement + stats
-      set(cadB, String(S.cadence));
+      if (cadB._n !== S.cadence) { cadB._n = S.cadence; cadB.textContent = String(S.cadence); }
       set(cadEm, S.gait === 'idle' ? '' : S.gait === 'walk' ? '歩き WALK' : S.gait === 'jog' ? '駆け足 JOG' : '全力 SPRINT');
-      stSteps.firstChild.nodeValue = S.stepsToday.toLocaleString();
-      stKm.firstChild.nodeValue = S.kmToday.toFixed(2);
-      stKcal.firstChild.nodeValue = String(Math.round(S.kcalToday));
-      stAct.firstChild.nodeValue = String(Math.floor(S.activeToday / 60));
+      if (stSteps._n !== S.stepsToday) { stSteps._n = S.stepsToday; stSteps.firstChild.nodeValue = S.stepsToday.toLocaleString(); }
+      const km = Math.round(S.kmToday * 100);
+      if (stKm._n !== km) { stKm._n = km; stKm.firstChild.nodeValue = (km / 100).toFixed(2); }
+      const kc = Math.round(S.kcalToday);
+      if (stKcal._n !== kc) { stKcal._n = kc; stKcal.firstChild.nodeValue = String(kc); }
+      const am = Math.floor(S.activeToday / 60);
+      if (stAct._n !== am) { stAct._n = am; stAct.firstChild.nodeValue = String(am); }
       // toast / title (the queue lives in createToasts)
       const t = S.currentToast;
       if (t !== lastToast) {

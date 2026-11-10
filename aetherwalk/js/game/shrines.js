@@ -129,7 +129,15 @@ export function createShrines(ctx, G) {
     setPropState(sh.prop, 'mode', 'active');
     const R = sh.run;
     if (sh.type === 'sprint') { R.acc = 0; R.goal = 40; R.limit = 90; R.lit = 0; for (const b of sh.braziers) G.checkpoints.douseBrazier(b); }
-    if (sh.type === 'torch') { R.limit = 45; if (sh.goal) G.checkpoints.douseBrazier(sh.goal); }
+    if (sh.type === 'torch') {
+      R.limit = 45;
+      if (sh.goal) G.checkpoints.douseBrazier(sh.goal);
+      // the shrine's flame lasts only 45 s on the torch (items: state.burnLimit, §10.18)
+      for (const hand of ['left', 'right']) {
+        const inst = ctx.items && ctx.items.held && ctx.items.held[hand];
+        if (inst && inst.id === 'torch' && inst.state) { inst.state.burnLimit = 45; inst.state.litTime = 0; }
+      }
+    }
     if (sh.type === 'dodge') {
       R.total = 16; R.done = 0; R.dodged = 0; R.nextT = 2.0; R.beam = null;
       R.kinds = []; for (let i = 0; i < 16; i++) R.kinds.push(i % 2 ? 'high' : 'line');
@@ -145,6 +153,7 @@ export function createShrines(ctx, G) {
   }
 
   function complete(sh, record, better) {
+    if (sh.run) sh.run.won = true;
     const first = !(G.quest.shrines[sh.id] && G.quest.shrines[sh.id].done);
     const prev = G.quest.shrines[sh.id] ? G.quest.shrines[sh.id].record : null;
     const improved = prev == null ? false : better(record, prev);
@@ -182,6 +191,13 @@ export function createShrines(ctx, G) {
       if (back > 0) G.inventory.remove('arrow', back);
     }
     if (sh.type === 'sprint') setTimeout(() => { if (active !== sh) for (const b of sh.braziers) G.checkpoints.douseBrazier(b); }, 8000);
+    if (sh.type === 'torch' && R.won) {
+      // a successful carry: the torch goes back to its normal 180 s
+      for (const hand of ['left', 'right']) {
+        const inst = ctx.items && ctx.items.held && ctx.items.held[hand];
+        if (inst && inst.id === 'torch' && inst.state && inst.state.burnLimit === 45) delete inst.state.burnLimit;
+      }
+    }
     sh.run = null;
     if (active === sh) active = null;
   }
@@ -240,11 +256,7 @@ export function createShrines(ctx, G) {
       }
     }
     if (R.t >= R.limit) {
-      // the shrine's flame only lives 45 s here: put the carried torch out
-      for (const hand of ['left', 'right']) {
-        const inst = ctx.items && ctx.items.held && ctx.items.held[hand];
-        if (inst && inst.id === 'torch' && inst.state && inst.state.lit) { inst.state.lit = false; inst.state.litTime = 0; }
-      }
+      // the torch burns out by itself (burnLimit 45 s)
       toast(ctx, '火が消えてしまった', 'THE FLAME WENT OUT', 'warn', 3000);
       fail(sh);
     }
@@ -439,9 +451,12 @@ export function createShrines(ctx, G) {
   }
 
   function progress(sh, value, goal, timeLeft) {
-    const key = Math.round(value * 10) + ':' + Math.ceil(timeLeft);
-    if (key === sh.run.sent) return;
-    sh.run.sent = key;
+    const R = sh.run;
+    const v10 = Math.round(value * 10), tl = Math.ceil(timeLeft);
+    if (v10 === R.sentV && tl === R.sentT) return;
+    const now = ctx.clock ? ctx.clock.time : 0;
+    if (v10 === R.sentV && now - (R.sentAt || 0) < 0.2) return;
+    R.sentV = v10; R.sentT = tl; R.sentAt = now;
     emit(ctx, 'shrine:progress', { id: sh.id, value, goal, timeLeft: Math.max(0, timeLeft) });
   }
 

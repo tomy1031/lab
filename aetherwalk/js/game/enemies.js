@@ -6,6 +6,8 @@ import { createModelKit, COLORS } from './enemyModels.js';
 import { clamp, damp, yawTo, angDiff, heightAt, fx, emit, spawnList, isNight, landmark, setting, DEG } from './util.js';
 
 const MAX_BOLTS = 8, TELE_SLOTS = 3, MAX_SHADOWS = 10;
+// option objects for effects emitted often (no per-frame allocation)
+const FX_DUST3 = { count: 3, color: 0xe8b27a, speed: 1 }, FX_DUST2 = { count: 2, color: 0xe8b27a, speed: 0.8 }, FX_EMBER = { count: 6 };
 
 export function createEnemies(ctx, G) {
   const kit = createModelKit(ctx);
@@ -26,23 +28,26 @@ export function createEnemies(ctx, G) {
   const _from = new THREE.Vector3(), _dir = new THREE.Vector3(), _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion();
   const _s = new THREE.Vector3(), _res = { x: 0, z: 0 }, _zones = [], _up = new THREE.Vector3(0, 1, 0);
 
-  // ── shared blob shadows (1 draw call) ──
+  // ── shared blob shadows (1 draw call). art.blobShadow's shader has no instancing, so the same soft
+  //    disc is made as a Basic material with a radial-alpha canvas texture ──
   let shadows = null;
   try {
     const art = ctx.art || (ctx.world && ctx.world.art);
-    let sgeo = null, smat = null;
-    if (art && typeof art.blobShadow === 'function') {
-      const m = art.blobShadow(1);
-      sgeo = m.geometry; smat = m.material;
-    }
-    if (!sgeo) {
-      sgeo = new THREE.CircleGeometry(1, 16).rotateX(-Math.PI / 2);
-      smat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false });
-    }
+    const draw = (g) => {
+      const S = 64, gr = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+      for (let i = 0; i <= 8; i++) { const r = i / 8, a = 0.42 * Math.pow(1 - r * r, 2); gr.addColorStop(r, `rgba(5,8,20,${a.toFixed(3)})`); }
+      g.clearRect(0, 0, S, S); g.fillStyle = gr; g.fillRect(0, 0, S, S);
+    };
+    let tex = null;
+    if (art && typeof art.canvasTexture === 'function') tex = art.canvasTexture(64, 64, draw);
+    else { const cv = document.createElement('canvas'); cv.width = cv.height = 64; draw(cv.getContext('2d')); tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; }
+    const smat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, fog: false,
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+    const sgeo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
     shadows = new THREE.InstancedMesh(sgeo, smat, MAX_SHADOWS);
     shadows.frustumCulled = false;
     shadows.count = 0;
-    shadows.renderOrder = 1;
+    shadows.renderOrder = 2;
     root.add(shadows);
   } catch (e) { shadows = null; }
 
@@ -512,14 +517,14 @@ export function createEnemies(ctx, G) {
     }
     return { applied: 0, killed: false };
   }
-  function reflectBolt(b) {
+  function reflectBolt(b, announce = true) {
     b.reflected = true; b.charging = false;
     const o = b.owner;
     const sp = Math.max(8, b.vel.length() * 1.6);
     if (o && o.state !== 'dead') b.vel.subVectors(o.center, b.pos).normalize().multiplyScalar(sp);
     else b.vel.multiplyScalar(-1.6);
     fx(ctx, 'spark', b.pos, { count: 12, color: 0xfffbe8, speed: 3 });
-    emit(ctx, 'block', { itemId: 'deflect', parry: true, enemyId: o ? o.id : null, attack: 'bolt' });
+    if (announce) emit(ctx, 'block', { itemId: 'deflect', parry: true, enemyId: o ? o.id : null, attack: 'bolt' });
   }
   function deactivateBolt(b) {
     b.active = false; b.charging = false;
@@ -567,8 +572,10 @@ export function createEnemies(ctx, G) {
           if (d < 1.4) {
             const res = hitTestPlayer(b.shape);
             if (res) {
-              const r = resolveAttack(b.owner || { id: 'bolt' }, b.shape, ATK_BOLT, b.pos, {});
-              if (r === 'block' || r === 'parry') reflectBolt(b);
+              // where it came from (a point back along its flight), so a raised shield faces it
+              _from.copy(b.vel).normalize().multiplyScalar(-3).add(b.pos);
+              const r = resolveAttack(b.owner || { id: 'bolt' }, b.shape, ATK_BOLT, _from, {});
+              if (r === 'block' || r === 'parry') reflectBolt(b, false);   // resolveAttack already sent 'block'
               else { fx(ctx, 'spark', b.pos, { count: 8, color: 0xc23bff, speed: 2 }); deactivateBolt(b); }
               if (!b.active) continue;
             }
@@ -645,7 +652,7 @@ export function createEnemies(ctx, G) {
     if (e.burnT > 0) {
       e.burnT -= dt; e.burnTick += dt;
       e.firePos.copy(e.center);
-      if (e.burnTick >= 1) { e.burnTick -= 1; damageEnemy(e, 2, 'fire', null); fx(ctx, 'ember', e.center, { count: 6 }); }
+      if (e.burnTick >= 1) { e.burnTick -= 1; damageEnemy(e, 2, 'fire', null); fx(ctx, 'ember', e.center, FX_EMBER); }
       const w = ctx.world;
       if (w && typeof w.waterDepthAt === 'function' && w.waterDepthAt(e.pos.x, e.pos.z) > 0.25) e.burnT = 0;
       if (e.burnT <= 0) setFire(e, false);
@@ -754,10 +761,12 @@ export function createEnemies(ctx, G) {
     }
   }
 
+  const _ok = [];
   function pickAttack(e, d) {
     const atks = e.def.attacks;
     if (!atks || !atks.length) return null;
-    const ok = [];
+    const ok = _ok;
+    ok.length = 0;
     for (const a of atks) if (d >= (a.range ? a.range[0] : 0) && d <= (a.range ? a.range[1] : 2)) ok.push(a);
     if (!ok.length) return null;
     if (ok.length === 1) return ok[0];
@@ -892,7 +901,7 @@ export function createEnemies(ctx, G) {
       }
       e.pos.x = nx; e.pos.z = nz;
       C.dist += step;
-      if ((C.t += dt) > 0.05 && (frame & 1)) fx(ctx, 'dust', e.pos, { count: 3, color: 0xe8b27a, speed: 1 });
+      if ((C.t += dt) > 0.05 && (frame & 1)) fx(ctx, 'dust', e.pos, FX_DUST3);
       // resolve when the charge passes the player's position along the line
       if (!C.resolved) {
         const pl = ctx.player;
@@ -1025,7 +1034,7 @@ export function createEnemies(ctx, G) {
         const wantRise = e.burrowed && e.flipT <= 0 ? 0 : 1;
         e.rise = damp(e.rise, wantRise, 0.18, dt);
         y += -0.72 * (1 - e.rise);
-        if (e.burrowed && Math.abs(e.speedNow) > 0.3 && (frame % 5 === 0)) fx(ctx, 'dust', e.pos, { count: 2, color: 0xe8b27a, speed: 0.8 });
+        if (e.burrowed && Math.abs(e.speedNow) > 0.3 && (frame % 5 === 0)) fx(ctx, 'dust', e.pos, FX_DUST2);
         if (e.flipT > 0) {
           spin.rotation.z = damp(spin.rotation.z, Math.PI, 0.1, dt);
           y += 0.75;

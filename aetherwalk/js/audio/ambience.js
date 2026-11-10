@@ -11,7 +11,7 @@ export function createAmbience(S, buses, ctx, sfx) {
   const waves = S.bed(S.pink, 'lowpass', 650, 0.6, buses.amb);
   const lap = S.bed(S.pink, 'bandpass', 900, 1.2, buses.amb);
   const T = 0.65;                        // setTargetAtTime τ ≈ 2 s crossfade
-  let evT = 1, swell = 0, last = '', crackleT = 0, gustT = 0;
+  let evT = 1, swell = 0, lastRegion = '', lastNight = -1, crackleT = 0, gustT = 0;
 
   function target(bed, v) { bed.gain.gain.setTargetAtTime(v, ac.currentTime, T); }
 
@@ -27,9 +27,9 @@ export function createAmbience(S, buses, ctx, sfx) {
       const k = Math.min(1, ws * 0.6 + sp / 9 + (pl.gliding ? 0.5 : 0));
       wind.gain.gain.setTargetAtTime(0.05 + 0.22 * k, ac.currentTime, 0.4);
       wind.filter.frequency.setTargetAtTime(300 + 1100 * k, ac.currentTime, 0.4);
-      const key = `${region}|${night > 0.5}`;
-      if (key !== last) {
-        last = key;
+      const nightK = night > 0.5 ? 1 : 0;
+      if (region !== lastRegion || nightK !== lastNight) {
+        lastRegion = region; lastNight = nightK;
         target(leaves, region === 'forest' ? (night > 0.5 ? 0.025 : 0.05) : region === 'meadow' ? 0.012 : 0);
         target(sand, region === 'canyon' ? 0.035 : 0);
         target(blizzard, region === 'peaks' ? 0.22 : 0);

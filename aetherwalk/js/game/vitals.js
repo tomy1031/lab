@@ -4,7 +4,7 @@ import { clamp, emit, setting } from './util.js';
 export const BASE_HP = 12, MAX_HP_CAP = 32, BASE_STAMINA = 100;
 
 export function createVitals(ctx, G) {
-  let lastSig = '';
+  let sHp = -1, sMax = -1, sSt = -1, sStMax = -1, sTier = -1;
   let regenT = 0, stillT = 0;
 
   const v = {
@@ -101,9 +101,9 @@ export function createVitals(ctx, G) {
     v.damageMul = t === 2 ? 1.25 : 1.0;
   }
   function sig() {
-    const s = `${v.hp}|${v.maxHp}|${Math.round(v.stamina)}|${v.maxStamina}|${v.tier}`;
-    if (s === lastSig) return;
-    lastSig = s;
+    const st = Math.round(v.stamina);
+    if (v.hp === sHp && v.maxHp === sMax && st === sSt && v.maxStamina === sStMax && v.tier === sTier) return;
+    sHp = v.hp; sMax = v.maxHp; sSt = st; sStMax = v.maxStamina; sTier = v.tier;
     emit(ctx, 'vitals', { hp: v.hp, maxHp: v.maxHp, stamina: v.stamina, maxStamina: v.maxStamina, tier: v.tier });
   }
 

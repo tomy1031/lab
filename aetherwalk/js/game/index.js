@@ -68,6 +68,21 @@ export async function createGame(ctx) {
   };
   ctx.events?.on?.('item:consume', (e) => { if (e && e.itemId) G.eat(e.itemId, e.how); });
 
+  // a burstfruit also hurts you a little when you stand in it: at most 4 (§4.1). items already hit the targets.
+  const _bp = new THREE.Vector3(), _bd = new THREE.Vector3();
+  ctx.events?.on?.('explosion', (e) => {
+    const pl = ctx.player;
+    if (!e || !e.pos || !pl || !pl.pos || G.vitals.dead) return;
+    _bp.copy((pl.body && pl.body.chestPos) || pl.pos);
+    const R = e.radius || 4;
+    const d = _bp.distanceTo(e.pos);
+    if (d >= R) return;
+    const dmg = Math.max(1, Math.round(4 * (1 - d / R)));
+    _bd.subVectors(_bp, e.pos).setY(0);
+    if (_bd.lengthSq() < 1e-6) _bd.set(0, 0, 1);
+    G.vitals.damage(dmg, { source: 'world', type: 'blast', dir: _bd.normalize(), enemyId: null, knock: 2.5 });
+  });
+
   // ── falling back to the wind (§5.6): nothing is lost ──
   G.die = function (info) {
     const v = G.vitals;
@@ -240,7 +255,9 @@ export async function createGame(ctx) {
       try { fn(dt); } catch (e) { report('game.' + name, e); }
     }
     if (dt > 0) {
-      if (deathT > 0) { deathT -= dt; if (deathT <= 0) respawn(); }
+      // the 2 s white fade follows real time (like the body), even at a low frame rate
+      const real = ctx.clock && ctx.clock.real > 0 ? Math.min(ctx.clock.real, 0.25) : 0;
+      if (deathT > 0) { deathT -= Math.max(dt, real); if (deathT <= 0) respawn(); }
       if (saveSoon >= 0) { saveSoon -= dt; if (saveSoon < 0) G.save(); }
       saveT -= dt;
       if (saveT <= 0) G.save();

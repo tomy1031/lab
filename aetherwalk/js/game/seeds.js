@@ -138,7 +138,8 @@ export function createSeeds(ctx, G) {
         race.i++;
         if (race.i >= race.pts.length) { endRace(true); return; }
       }
-      emit(ctx, 'shrine:progress', { id: race.s.id, value: race.i, goal: race.pts.length, timeLeft: Math.max(0, race.limit - race.t) });
+      const tl = Math.ceil(Math.max(0, race.limit - race.t));
+      if (tl !== race.sentT || race.i !== race.sentI) { race.sentT = tl; race.sentI = race.i; emit(ctx, 'shrine:progress', { id: race.s.id, value: race.i, goal: race.pts.length, timeLeft: tl }); }
       if (race.t > race.limit) endRace(false);
       return;
     }

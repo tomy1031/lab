@@ -106,6 +106,8 @@ export function createBot(ctx, G) {
         v.swing('right', KINDS[kindI++ % KINDS.length]);
         swingT = 0.6 + Math.random() * 0.25;
       }
+    } else if (towerTick(dt, v, pl)) {
+      B.mode = 'tower';
     } else {
       B.mode = 'travel';
       const o = G.quest && G.quest.objective;
@@ -122,9 +124,11 @@ export function createBot(ctx, G) {
       if (turnT > 0) { turnT -= dt; want += turnBias * 70 * DEG; }
       lookYaw = steer(lookYaw, want, dt, 1.6);
       v.setLook(lookYaw / DEG, -4);
-      // on a tower lift: keep stepping in place until the top
-      const onLift = G.towers && G.towers.onLift;
-      v.setCadence(onLift ? 150 : 140);
+      // high up (a tower top) and not on a lift: spread the arms and glide down
+      const h = ctx.world && ctx.world.heightAt ? ctx.world.heightAt(pl.pos.x, pl.pos.z) : pl.pos.y;
+      const high = pl.pos.y - h > 5 && !(G.towers && G.towers.onLift);
+      if (v.spreadArms) v.spreadArms(high || !!pl.gliding);
+      v.setCadence(140);
     }
 
     // stuck → swing the heading aside for a while
@@ -138,6 +142,36 @@ export function createBot(ctx, G) {
       }
       lastX = pl.pos.x; lastZ = pl.pos.z;
     }
+  }
+
+  /** the objective is a sleeping bell tower: ride the lift with real steps, then strike the bell */
+  function towerTick(dt, v, pl) {
+    const o = G.quest && G.quest.objective;
+    const T = G.towers;
+    const tw = o && T && T.byId ? T.byId(o.id) : null;
+    if (!tw || tw.awake) return false;
+    const dBase = Math.hypot(tw.base.x - pl.pos.x, tw.base.z - pl.pos.z);
+    if (dBase > 25) return false;
+    if (v.spreadArms) v.spreadArms(false);
+    const atTop = tw.lift >= tw.height - 0.05 && pl.pos.y > tw.baseY + tw.height - 1.0;
+    if (atTop) {
+      const ch = tw.chime, h = ctx.input.head.pos;
+      const dh = Math.hypot(ch.x - h.x, ch.z - h.z);
+      lookYaw = steer(lookYaw, yawTo(ch.x - h.x, ch.z - h.z), dt, 4);
+      v.setLook(lookYaw / DEG, Math.atan2(ch.y - h.y, Math.max(0.3, dh)) / DEG);
+      v.setCadence(dh > 1.6 ? 90 : 0);
+      swingT -= dt;
+      if (dh <= 2.0 && swingT <= 0) { v.swing('right', KINDS[kindI++ % KINDS.length]); swingT = 0.8; }
+      return true;
+    }
+    if (T.onLift === tw && dBase < 1.2) {
+      v.setCadence(150);                       // every step lifts the platform 0.2 m
+      return true;
+    }
+    lookYaw = steer(lookYaw, yawTo(tw.base.x - pl.pos.x, tw.base.z - pl.pos.z), dt, 3);
+    v.setLook(lookYaw / DEG, -6);
+    v.setCadence(dBase > 3 ? 120 : 70);
+    return true;
   }
 
   function faceTarget(dt, v, pl) {

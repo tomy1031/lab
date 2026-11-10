@@ -4,6 +4,7 @@ import { ENEMY_DEFS } from './enemies.data.js';
 import { clamp, yawTo, angDiff, heightAt, fx, flash, emit, landmark, spawnList, DEG } from './util.js';
 
 const STONE_HP = 10, GAUGE_GOAL = 20, EXPOSED_T = 8, RUN_SPM = 140;
+const FX_GUST = { count: 1, speed: 2 };
 
 export function createBoss(ctx, G) {
   const E = G.enemies;
@@ -278,7 +279,7 @@ export function createBoss(ctx, G) {
       // run in place: cadence ≥ 140 spm fills the gauge
       if ((pl.cadence || 0) >= RUN_SPM && (pl.moving || pl.gait === 'sprint' || pl.gait === 'jog')) {
         B.gauge = Math.min(GAUGE_GOAL, B.gauge + dt);
-        if ((Math.floor(t * 4) % 2) === 0) fx(ctx, 'gust', _v.copy(pl.pos).setY(pl.pos.y + 1), { count: 1, speed: 2 });
+        if ((Math.floor(t * 4) % 2) === 0) fx(ctx, 'gust', _v.copy(pl.pos).setY(pl.pos.y + 1), FX_GUST);
       }
       for (let i = 0; i < 12; i++) plateOff[i] = (B.gauge / GAUGE_GOAL) * 0.35 * (0.6 + ((i * 7) % 5) / 10);
       if (quake) quakeTick(dt);

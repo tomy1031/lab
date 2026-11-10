@@ -134,6 +134,17 @@ export async function createUI(ctx) {
     a = Math.atan2(Math.sin(a), Math.cos(a));
     if (Math.abs(a) > 0.6) ui.overlay.warn(a, p.duration || 1);
   });
+  // small celebrations: every 1,000 steps and every 10 active minutes today
+  let mkSteps = -1, mkActive = -1;
+  on('stats:tick', () => {
+    const st = ctx.game && ctx.game.stats;
+    if (!st || !st.today) return;
+    const d = st.today();
+    const ks = Math.floor(d.steps / 1000), ka = Math.floor(d.activeSec / 600);
+    if (mkSteps < 0) { mkSteps = ks; mkActive = ka; return; }
+    if (ks > mkSteps) { mkSteps = ks; toast(`今日 ${(ks * 1000).toLocaleString()} 歩！`, { sub: `${ks * 1000} STEPS TODAY · ${d.distance.toFixed(2)} km · ${Math.round(d.kcal)} kcal（目安）`, kind: 'item', ms: 3500 }); }
+    if (ka > mkActive) { mkActive = ka; toast(`アクティブ ${ka * 10} 分`, { sub: `${ka * 10} ACTIVE MINUTES TODAY`, kind: 'item', ms: 3500 }); }
+  });
   on('xr:start', () => { hud.forceDraw(); ui.wrist.redraw(); });
   on('settings:change', () => { if (ui.wrist.open) ui.wrist.redraw(); });
   on('inventory:change', () => { if (ui.wrist.open) ui.wrist.redraw(); });
