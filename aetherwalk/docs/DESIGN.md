@@ -717,7 +717,7 @@ aetherwalk/
    │   ├─ layout.js（座標）  heightfield.js  terrain.js  biomes.js  palette.js  art.js
    │   ├─ sky.js  clouds.js  water.js  grass.js  flora.js  rocks.js  wind.js
    │   ├─ landmarks/（towers.js shrines.js skyanchor.js camps.js ruins.js）
-   │   ├─ props.js  fx.js  life.js（鳥・蛍）  map.js
+   │   ├─ props.js  fx.js  life.js（鳥・蛍）  map.js  spawns.js  collide.js  geo.js  noise.js
    ├─ game/                   OPUS-B
    │   ├─ index.js            createGame(ctx)
    │   ├─ vitals.js  inventory.js  save.js  stats.js  quest.js

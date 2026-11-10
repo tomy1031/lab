@@ -276,11 +276,11 @@ export function createProps(env, sp) {
       const g = new THREE.Group(); g.add(mesh);
       const anchors = { center: toWorld(d, 0, 1.6, 0) };
       const start = !!d.data.start;
-      const gl = fx.glows.add({ x: anchors.center.x, y: anchors.center.y, z: anchors.center.z, size: 3.4, color: 0x7fe9ff, intensity: start ? 0.45 : 0 });
+      const gl = fx.glows.add({ x: anchors.center.x, y: anchors.center.y, z: anchors.center.z, size: 2.4, color: 0x7fe9ff, intensity: start ? 0.3 : 0 });
       const self = {
         object3D: g, anchors, state: { visible: start, passed: false }, hidden: !start,
         onState(key, v) {
-          if (key === 'visible') { self.hidden = !v; g.visible = !!v; fx.glows.set(gl, { intensity: v ? 0.45 : 0 }); if (v && env.ready) fx.api.emit('shard', anchors.center, { count: 8, color: 0x7fe9ff }); }
+          if (key === 'visible') { self.hidden = !v; g.visible = !!v; fx.glows.set(gl, { intensity: v ? 0.3 : 0 }); if (v && env.ready) fx.api.emit('shard', anchors.center, { count: 8, color: 0x7fe9ff }); }
           if (key === 'passed') {
             mat.uniforms.uGlowCol.value.set(v ? 0xffd76a : 0x7fe9ff);
             fx.glows.set(gl, { color: v ? 0xffd76a : 0x7fe9ff });
