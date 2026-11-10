@@ -439,12 +439,12 @@ HP が 0 になると、灰が晴れて島じゅうに花びらの風が吹く�
 
 | id | 名前 | kind | (x, z) | 高さ | r | メモ |
 |---|---|---|---|---|---|---|
-| `start` | 目覚めの石舞台 | `ruin` | (0, 540) | 20 | 10 | 出発点。北向き（yaw 0）。練習用の木人あり |
-| `camp_meadow` | 旅人の野営地 | `waylight` | (−30, 470) | 17 | 8 | 最初の焚き火。剣の台座、水筒 |
+| `start` | 目覚めの石舞台 | `ruin` | (0, 540) | 44 | 10 | 出発点。北向き（yaw 0）。練習用の木人あり。丘の上（湖・塔・天の錨・峰を見わたす） |
+| `camp_meadow` | 旅人の野営地 | `waylight` | (−30, 470) | 26 | 8 | 最初の焚き火。剣の台座、水筒 |
 | `tower_meadow` | 風見の鐘塔 | `tower` | (40, 330) | 38 | 9 | 丘の上。昇降 24 m。風衣をもらう |
 | `shrine_meadow` | 疾走の祠 | `shrine` | (−190, 400) | 24 | 8 | 走る |
 | `pier` | 祈りの桟橋 | `ruin` | (0, 150) | 25 | 6 | 湖の南岸。光の橋の起点 |
-| `isle` | 凪の小島 | `arena` | (0, −40) | 30 | 40 | ボス。天の錨は真上の y 170〜330 |
+| `isle` | 凪の小島 | `arena` | (0, −40) | 27 | 40 | ボス。天の錨は真上の y 170〜330 |
 | `camp_forest` | 森の入口の灯 | `waylight` | (−300, 30) | 32 | 7 | |
 | `tower_forest` | 森の鐘塔 | `tower` | (−450, −20) | 44 | 9 | 樹冠の上に出る。昇降 30 m |
 | `elder_tree` | 大樹ヨルハ | `vista` | (−520, 130) | 40 | 14 | 幹の半径 9 m、高さ 70 m、光る葉。根もとに弓の宝箱 |
@@ -452,11 +452,11 @@ HP が 0 になると、灰が晴れて島じゅうに花びらの風が吹く�
 | `hollow` | 光苔のくぼ地 | `vista` | (−560, −120) | 28 | 20 | きのこの群生 |
 | `camp_canyon` | 峡谷の灯 | `waylight` | (330, 20) | 34 | 7 | |
 | `tower_canyon` | 茜の鐘塔 | `tower` | (470, −40) | 72 | 9 | 台地の上（西側の坂道から上る）。昇降 26 m |
-| `great_arch` | 風穴のアーチ | `vista` | (380, 110) | 36 | 12 | 幅 30 m・高さ 22 m の天然の石橋。下をくぐれる |
+| `great_arch` | 風穴のアーチ | `vista` | (380, 110) | 36 | 20 | 幅 30 m・高さ 22 m の天然の石橋。下をくぐれる |
 | `shrine_canyon` | 身かわしの祠 | `shrine` | (540, 150) | 40 | 8 | よける |
 | `lurker_nest` | 砂潜りの巣 | `arena` | (560, −150) | 31 | 25 | 槍の宝箱 |
 | `hoodoos` | 千本石柱 | `vista` | (430, −200) | 38 | 40 | 細い石柱の林 |
-| `camp_peaks` | 雪線の灯 | `waylight` | (20, −300) | 48 | 7 | |
+| `camp_peaks` | 雪線の灯 | `waylight` | (20, −300) | 44 | 7 | |
 | `tower_peaks` | 霜の鐘塔 | `tower` | (60, −430) | 95 | 9 | 昇降 22 m。手前 (50, −380) に霜の番人 |
 | `shrine_peaks` | 剣舞の祠 | `shrine` | (−170, −400) | 70 | 8 | 斬る |
 | `ice_mirror` | 氷鏡（ひかがみ） | `vista` | (150, −340) | 60 | 35 | 凍った池。上を歩ける。もう1体の番人 |
@@ -500,7 +500,7 @@ HP が 0 になると、灰が晴れて島じゅうに花びらの風が吹く�
 - **1 日 = 現実の 24 分**（ゲーム内 1 時間 = 60 秒）。開始は 7:00。`world.time` が持ち、`world.update` が進める。
 - 区分（`time:phase`）：`dawn` 5:00–7:00／`day` 7:00–17:00／`dusk` 17:00–19:30／`night` 19:30–5:00。
 - 太陽は東（+X）から昇り、**北の空**（仰角 55°）を通って西（−X）に沈む。出発点から北を見ると、昼は峰が逆光の霞に重なり、朝夕は横からの長い光になる。
-  `a = (h − 6) / 12 × π`、`sunDir = normalize(cos a, 0.82·sin a, −0.57·sin a)`。夜は月（環月）がその反対側を回る。
+  `a = (h − 5.25) / 13.5 × π`、`sunDir = normalize(cos a, 0.82·sin a, −0.57·sin a − 0.3·cos² a)`（日の出 5:15・日の入り 18:45、沈むのは西北西）。夜は月（環月）がその反対側を回る。向きは `world.sunDirection` から読む（式を写さない）。
 - 夜は凪の殻と澱み火が増え、蛍・光るきのこ・道灯・天環・オーロラが主役になる。暗すぎて歩けない夜にはしない（月明かりの青で地面は読める）。
 - 天気 [v1]：地域ごとの「空気」だけ（森の霧、峰の粉雪、峡谷の砂の筋、浜の波しぶき）と、流れる雲の影。雨・雷・気温は [later]。
 
@@ -585,7 +585,7 @@ PBR、リアルタイムの影、ポストプロセスは使わない。安い�
 | id | 名前 | 立つ場所 (x, z)／向き | 時刻 | なにが美しいか |
 |---|---|---|---|---|
 | `v_awakening` | 目覚めの眺め | (0, 540)／yaw 0 | 7:00 | 朝の横からの光。花の斜面の先に風見の鐘塔、湖のきらめき、空に浮かぶ天の錨、霞に重なる白冠峰が一直線。天環が空を斜めに横切る |
-| `v_tower` | 風見の塔の頂 | (40, 330)＋24 m／yaw 300 | 17:30 | 黄金色の島の全景。森の樹冠が逆光で縁どられ、湖に太陽の道、雲の影が丘を渡る |
+| `v_tower` | 風見の塔の頂 | (40, 330) の甲板の上（地面＋24 m）／yaw 300 | 17:30 | 黄金色の島の全景。森の樹冠が逆光で縁どられ、湖に太陽の道、雲の影が丘を渡る |
 | `v_elder` | 大樹ヨルハの木漏れ日 | (−500, 160)／yaw 315 | 10:00 | 巨大な幹と、霧に差す何本もの光の筋。光の胞子が上へ昇る。夜（22:00）は葉と蛍が青緑に光る |
 | `v_arch` | 風穴のアーチの夕陽 | (410, 120)／yaw 285 | 18:15 | 赤い石のアーチが額縁になり、その中に沈む太陽と天の錨の影絵。地層が燃えるように染まる |
 | `v_aurora` | 氷鏡のオーロラ | (150, −330)／yaw 320 | 23:00 | 白冠峰の上にオーロラのカーテン。凍った池に空と天環が映る。粉雪 |
@@ -924,7 +924,7 @@ World = {
   waterLevelAt(x, z) → number,             // その地点の水面の y。水がなければ -Infinity
   waterDepthAt(x, z) → number,             // max(0, 水面 − 地面)
   regionAt(x, z) → 'meadow'|'forest'|'lake'|'canyon'|'peaks'|'coast'|'sea',
-  surfaceAt(x, z) → 'grass'|'dirt'|'sand'|'rock'|'snow'|'stone'|'wood'|'water'|'ice',
+  surfaceAt(x, z, y /*任意：足もとの高さ。渡すと台・桟橋の材質を返す*/) → 'grass'|'dirt'|'sand'|'rock'|'snow'|'stone'|'wood'|'water'|'ice',
   pathAt(x, z) → number,                   // 0..1（巡礼路の上で 1）
 
   // ── 衝突（円とレイだけ。物理エンジンなし）──
@@ -941,7 +941,7 @@ World = {
   // ── 配置データ（読むだけ）──
   landmarks,        // { [id]: { id, name, kind, x, y, z, r, yaw } }（§6.3）
   landmarkList,     // 同じものの配列
-  vistas,           // [{ id, name, x, z, yaw, time, lift /*足す高さ m*/ }]（§7.5）
+  vistas,           // [{ id, name, x, z, yaw, time, lift /*groundAt(x, z, ∞) に足す高さ m。塔の頂は甲板が足場なので 0*/, pitch /*おすすめの見上げ角（度）。任意*/ }]（§7.5）
   spawnPoints: {
     player:    { x, z, yaw },
     waylights: [{ id, x, z }],
@@ -1009,6 +1009,14 @@ Prop = { id, kind, x, y, z, r, yaw, object3D,
 | `appletree` / `bush` | `fruit: n` | `fruit0..n` | 実の数だけ実を表示（つかめる実そのものは items の世界アイテム） |
 
 標的（`ctx.targets`）と火ゾーンの登録は OPUS-B が `anchors` の位置で行う。
+
+**実装メモ（FABLE、world の実際の出し方）**
+- Prop の id：`waylight`／`tower`／`shrine` はランドマーク id と同じ。宝箱は `spawnPoints.chests[].id`（剣は kind `pedestal`、id `chest_sword`。`taken` でも `open` でも剣が消える）。風の種は `spawnPoints.seeds[].id`（走り輪の 5 つは `<id>_r0`〜`_r4`、出発の輪だけ最初から `visible: true`）。採集の木・株は `spawnPoints.gather[].id`。ほかに `lightbridge`、`dummy_start`、`brazier_*`。
+- `spawnPoints.shrines[].extra`：sprint `{ braziers: [propId×6] }`、torch `{ brazier: propId, target: {x, z}, x, z }`（祠の火は prop の `anchors.fire`）、dodge `{ yaw }`、archery `{ targets: [{x, y, z, moving}×8] }`（入江の岩の上）。
+- 塔：甲板（地面＋liftHeight、半径 5.5 m）と土台は world が `addPlatform` ずみ。昇降台の足場だけ game が作る。anchors は `liftBase`／`top`／`chime`／`roof`。
+- `appletree`／`bush` の飾りの実は、items の本物の実が出ている近距離（27 m 以内）では隠れる。
+- 石舞台・鐘塔・祠の敷石は `pathAt = 1`・`surfaceAt = 'stone'`。`landmarks[id].yaw` は表の値 +0.37°。
+- 高さの表（§6.3）は目安。実際の値は `landmarks[id].y`。湖の水面は中心から 205 m まで。
 
 **art**（見た目をそろえるための道具。敵・アイテム・UI もこれを使う）
 
@@ -1300,6 +1308,27 @@ window.AW = {
 - `sw.js`・`manifest.webmanifest`・`js/pwa.js`・`img/`、`README.md`（遊び方・操作・スペース・安全）。lab の `README.md` と `site/` への追加は最後の統合で行う。
 
 ---
+
+### 10.18 OPUS-A の補足（実装から決めたこと。既存の API は変えていない）
+
+- **爆発のダメージ**：items は半径 4 m の標的すべてに `onHit({ type:'blast', itemId:'bomb', damage: 14→4 })` を呼んでから `explosion { pos, radius, damage, self }` を出す。game は `explosion` で**標的のダメージを二重に入れない**（プレイヤーへの最大 4、標的でないひび岩などだけを扱う）。
+- **ダメージ 0 の onHit**：`minSpeed` 未満で触れたとき（コツン）と風扇の突風（`type:'gust'`）でも `onHit` を `damage: 0` で呼ぶ（眠り鈴を鳴らす・押す用）。投げたものは標的ごとに 1 回だけ当たる。
+- **実時間での積分**：player と items は `update(dt)` の中で `ctx.clock.real`（一時停止中 0、最大 0.5 s）を 0.05 s 以下に分けて積分する。フレームレートが落ちても歩く速さは実際のケイデンスに従う。loop が渡す `dt` は契約どおり ≤ 0.05。
+- **§2.1 の調整**：停止の待ち時間は `max(clamp(1.6·m, 0.45, 0.9), m + 0.25)`（50〜66 spm の一定のリズムが途中で止まらないように）。確定の窓は 1.25 s。`|vy| > 0.5` によるしゃがみ判定は、立位より 6 cm 以上低いときだけ（勢いのある駆け足の縦速度は 0.5 m/s を超えるため）。`seated` を入れると `armOnlyWalk` も入る。
+- **自動の画質調整**：XR 中（または `?autoperf`）だけ。PC の rAF は 60 Hz に固定されるので間隔では測れない。XR では平均 14.4 ms 未満（72 Hz を守れている）が続けば戻す。
+- **`?stub=world,game,ui,audio`**：指定したモジュールを stubs に置き換える（担当ごとの切り分け用）。
+- **矢筒**：`inventory.take('quiver')` で矢を 1 本取る。肩で矢を離すと `inventory.stow('quiver', 'arrow', {})`。
+- **持ちもの袋へしまう**：手のものを袋へ戻すとき（`equip` の入れ替えなど）は `inventory.stow(null, itemId, state)`。装備の状態（水筒の残り口数）は items が覚えておき、次に抜いたとき戻す。
+- **`item:consume`**：水筒は 1 口ごとに出す（`{ itemId:'flask', how:'drink', gulpsLeft }`、効果は `defs.flask.food` が 1 口ぶん）。食べものは食べ終えたとき 1 回（`bites` 口、0.4 s ごと）。
+- **`item:use` の action**：`'ring' 'fuse' 'pour' 'fill' 'fan' 'bite' 'nock'`。
+- **松明の燃える時間**：`instance.state.burnLimit`（秒）を書けば 180 s の代わりに使う（灯しの祠の 45 s 用。`ctx.items.held.right.state.burnLimit = 45`）。
+- **かけら・種・珠**：世界に置かれたもの（`items.spawn('shard', …)`）は 1 m 以内を通るか手で触れると `inventory.add` で集まる（`item:pickup` は inventory が出す）。数のある束（`count > 1`）はつかむと全部袋に入る。
+- **戻ってくる装備**：落とした・投げた自分の装備は 8 s 後か 25 m 離れると消え、`inventory.markIn(id)` と `item:return` を出す。
+- **追加のイベント**：`player:turn { yaw }`（スナップ／スムーズターン）、`player:recenter {}`。`hit` には `targetId, targetKind, applied, killed, blocked` が付く。
+- **`input.virtual` の追加**：`setLook(yawDeg, pitchDeg)` の yaw は**ワールドの向き**（0＝北）。ほかに `addLook, getLook, setHandOffset, setGuard, setHandPose('rest'|'guard'|'bow'|'drink'|'eat'|'pour'|'draw'), hold(btn, down), setStick, setReach, isSwinging`。`swing` の種類は `slashH slashV thrust throw fan shake`。
+- **`ctx.items` の追加**（player が使う）：`createInHand, grabWorld, nearestGrabbable, rayGrabbable, pull, cancelPull, drop, stow, isHeld, tipSpeed(hand), bowInfo(hand), budget()`。
+- **`AW.debug` の追加**：`events(name)`（直近のイベントの写し）、`clearEvents, spawnDummy(dx, dz), dummyState, spawnItem(id, dx, dz, dy), items(), heldItem(hand), addZone(kind, …), handTo, press, hold, look, budget(), stats()`。
+- **CSS**：`tools/build.mjs` は `css/` を配らないので、ランディングと PC 表示の CSS は `index.html` に直接書いた。PC 表示で OPUS-A が使う要素は `#aw-hint`（クリックで開始）`#aw-reticle` `#aw-back`。`#aw-overlay` の中身は OPUS-B。
 
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 
