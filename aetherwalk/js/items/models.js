@@ -135,13 +135,13 @@ const BUILD = {
     b.gem(0, 0.022, -1.39, 0.008);
   },
   torch(b) {
-    // a knotted branch, a pitch-soaked cloth head bound with cord
-    b.lathe([[0.016, -0.3], [0.019, -0.22], [0.017, -0.12], [0.02, -0.02], [0.018, 0.08], [0.02, 0.13], [0.0, 0.14]], 7, C.wood, [0, 0, 0.0], [-R90, 0, 0], 1, { shade: grain('z', 3) });
-    b.lathe([[0.019, -0.03], [0.036, -0.02], [0.043, 0.02], [0.044, 0.06], [0.038, 0.1], [0.022, 0.12], [0.0, 0.125]], 8, C.pitch, [0, 0, -0.42], [R90, 0, 0], 1, {
-      shade: (x, y, z, c) => { const k = 0.5 + 0.5 * Math.sin(Math.atan2(y, x) * 5 + z * 140); c.lerp(MIXC.setHex(C.cloth), 0.15 + 0.25 * k); },
+    // a knotted branch (handle end z +0.13 → head z −0.41), a pitch-soaked cloth head bound with cord
+    b.lathe([[0.0, -0.135], [0.018, -0.13], [0.02, -0.06], [0.017, 0.06], [0.02, 0.17], [0.018, 0.3], [0.021, 0.41], [0.0, 0.415]], 7, C.wood, [0, 0, 0], [-R90, 0, 0], 1, { shade: grain('z', 3) });
+    b.lathe([[0.0, 0.0], [0.024, 0.002], [0.04, 0.02], [0.045, 0.055], [0.04, 0.095], [0.026, 0.118], [0.0, 0.124]], 8, C.pitch, [0, 0, -0.395], [-R90, 0, 0], 1, {
+      shade: (x, y, z, c) => { const k = 0.5 + 0.5 * Math.sin(Math.atan2(y, x) * 5 + z * 140); c.lerp(MIXC.setHex(C.cloth), 0.12 + 0.25 * k); if (z < -0.5) c.multiplyScalar(0.6); },
     });
-    b.torus(0.04, 0.0035, 4, 10, Math.PI * 2, C.cloth, [0, 0, -0.43], [0, 0, 0], 1, { smooth: true });
-    b.torus(0.043, 0.0035, 4, 10, Math.PI * 2, C.cloth, [0, 0, -0.49], [0, 0, 0], 1, { smooth: true });
+    b.torus(0.042, 0.0035, 4, 10, Math.PI * 2, C.cloth, [0, 0, -0.42], [0, 0, 0], 1, { smooth: true });
+    b.torus(0.044, 0.0035, 4, 10, Math.PI * 2, C.cloth, [0, 0, -0.475], [0, 0, 0], 1, { smooth: true });
   },
   shield(b) {
     // Ø0.48 decagon board, 0.03 thick; face +X = five bevelled planks with grain + gold boss + gem; smooth gold rim;
@@ -196,13 +196,19 @@ const BUILD = {
     b.cyl(0.0065, 0.0058, 0.014, 5, C.gold, [0, 0, -0.004], [R90, 0, 0], 1, { metal: true, smooth: true });
   },
   bomb(b) {
-    b.ico(0.062, 2, C.bomb, [0, 0, 0], [0, 0, 0], 1, {
+    // a burstfruit: a dark husk split by six glowing ochre seams, a woody stem and a frayed fuse
+    b.ico(0.062, 2, 0x3e1518, [0, 0, 0], [0, 0, 0], [1, 1, 1.08], {
       smooth: true,
-      shade: (x, y, z, c) => { const s = Math.sin(x * 160) * Math.sin(y * 150) * Math.sin(z * 170); if (s > 0.55) c.lerp(MIXC.setHex(C.bombDot), 0.75); c.ao = 0.85 + 0.15 * Math.max(0, -z / 0.062); },
+      shade: (x, y, z, c) => {
+        const a = Math.atan2(y, x), seam = Math.abs(Math.sin(a * 3));
+        if (seam < 0.2) c.lerp(MIXC.setHex(C.bombDot), 0.85 * (1 - seam / 0.2));
+        else c.lerp(MIXC.setHex(0x6e2024), 0.4 * seam);
+        c.ao = 0.75 + 0.25 * Math.min(1, Math.max(0, (-z + 0.02) / 0.08));
+      },
     });
-    b.lathe([[0.0, 0], [0.012, 0.002], [0.009, 0.012], [0.006, 0.016]], 6, C.dark, [0, 0, -0.058], [R90, 0, 0], 1, {});
-    b.tube([[0, 0, -0.072], [0.004, 0.003, -0.082], [0.0, 0.006, -0.092], [-0.004, 0.003, -0.1]], 0.0025, 6, 4, C.cloth, {});
-    b.box(0.032, 0.003, 0.016, C.green, [0.014, 0.0, -0.068], [0, 0.4, 0.2]);
+    b.lathe([[0.0, 0], [0.013, 0.002], [0.009, 0.012], [0.006, 0.017]], 6, C.dark, [0, 0, -0.064], [-R90, 0, 0], 1, {});
+    b.tube([[0, 0, -0.078], [0.004, 0.003, -0.088], [0.0, 0.006, -0.098], [-0.004, 0.003, -0.106]], 0.0025, 6, 4, C.cloth, {});
+    b.box(0.032, 0.003, 0.016, C.green, [0.014, 0.0, -0.072], [0, 0.4, 0.2]);
   },
   rock(b) {
     b.dodeca(0.05, C.rock, [0, 0, 0], [0.3, 0.5, 0], [1, 0.8, 0.9], { shade: (x, y, z, c) => c.multiplyScalar(0.9 + 0.2 * hash(Math.round(x * 400) + Math.round(y * 300) * 7)) });

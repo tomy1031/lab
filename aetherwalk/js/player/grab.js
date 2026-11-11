@@ -136,12 +136,25 @@ export function createGrab(ctx, P, holsters) {
     if (show && !bell) {
       bell = items.makeModel('waybell');
       bell.name = 'wrist-waybell';
-      bell.scale.setScalar(0.75);
-      bell.position.set(-0.035, 0.085, 0.01);
-      bell.rotation.set(Math.PI / 2, 0, 0);
+      bell.scale.setScalar(0.42);
+      bell.userData.onAnchor = false;
       input.hands.left.object3D.add(bell);
     }
-    if (bell) bell.visible = !!show;
+    if (bell) {
+      bell.visible = !!show;
+      // small, on the palm side of the left cuff (follows the wrist of the skinned hand once it is there)
+      const anchor = input.hands.left.object3D.getObjectByName('wrist-anchor');
+      if (anchor && !bell.userData.onAnchor) {
+        anchor.add(bell);
+        bell.userData.onAnchor = true;
+        bell.position.set(0.0, -0.036, 0.028);
+        bell.rotation.set(-0.5, 0, Math.PI);
+      } else if (!anchor && !bell.userData.placed) {
+        bell.userData.placed = true;
+        bell.position.set(-0.035, 0.085, 0.01);
+        bell.rotation.set(Math.PI / 2, 0, 0);
+      }
+    }
     // distance-grab highlight (VR only; the PC preview uses the reticle)
     aimT -= dt;
     if (aimT > 0) return;

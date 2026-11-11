@@ -123,6 +123,7 @@ export async function createItems(ctx) {
     inst.holdQuat.identity();
     const d = inst.def;
     if (d.id === 'shield' && hand === 'left') inst.holdQuat.copy(FLIP_Z);
+    else if (d.id === 'bow') inst.holdPos.set(0, 0.034, 0);            // its leather grip (y −0.034) sits in the fist
     else if (d.cat === 'food') inst.holdPos.set(-s * 0.04, -0.035, 0);
     else if (d.id === 'bomb' || d.id === 'rock' || d.cat === 'material' || d.cat === 'key') inst.holdPos.set(-s * 0.035, -0.03, 0);
     inst.object3D.position.copy(inst.holdPos);

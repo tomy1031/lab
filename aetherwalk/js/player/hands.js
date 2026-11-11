@@ -109,8 +109,9 @@ export function createHands(ctx, P) {
   const handMat = ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.35, spec: 0.12, gloss: 10 });
   const cuffs = createAttached(ctx, 'glove-cuffs', cuffGeometry(),
     ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.6, gloss: 40 }), 2, 1e6);
-  loadHandData().then((data) => {
+  loadHandData().then(async (data) => {
     for (const side of HANDS) {
+      await new Promise((r) => setTimeout(r, 0));          // one hand's texture bake per task (no long stall)
       const h = H[side];
       const rig = createHandRig(data[side], side, handMat, new THREE.Vector3(h.s * GRIP_C[0], GRIP_C[1], GRIP_C[2]), ctx.art);
       h.rig = rig;
@@ -194,7 +195,7 @@ export function createHands(ctx, P) {
     for (const side of HANDS) {
       const h = H[side];
       const hd = input.hands[side];
-      if (rigReady && h.rig) {
+      if (h.rig) {                                      // per hand: no frame with both gloves while the other bakes
         h.rig.mesh.visible = hd.tracked;
         h.anchor.visible = hd.tracked;
         if (hd.tracked) poseRig(h, side, hd, dt);
@@ -208,7 +209,7 @@ export function createHands(ctx, P) {
         h.mesh.visible = hd.tracked;
       }
       if (hd.tracked && (ctx.world?.nightFactor ?? 0) > 0.5) {
-        if (h.anchor && rigReady) _gp.set(0, 0.032, 0.03).applyQuaternion(h.anchor.getWorldQuaternion(_jq)).add(h.anchor.getWorldPosition(_jp));
+        if (h.anchor) _gp.set(0, 0.032, 0.03).applyQuaternion(h.anchor.getWorldQuaternion(_jq)).add(h.anchor.getWorldPosition(_jp));
         else _gp.set(h.s * 0.082, 0.088, 0).applyQuaternion(hd.quat).add(hd.pos);
         sprites.push(_gp, 0.1, GEM_GLOW);                // art.glow size 0.05 = radius → 0.1 across
       }

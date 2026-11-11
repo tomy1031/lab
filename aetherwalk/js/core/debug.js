@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { wrapDeg360, DEG } from './util.js';
 import { createDummy } from './stubs.js';
+const SRGB = Uint8Array.from({ length: 256 }, (_, v) => { const l = v / 255; return Math.round(255 * (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)); });
 
 // names of everything OPUS-A draws (hands, items, their effects, comfort aids)
 const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
@@ -201,6 +202,8 @@ export function installDebug(ctx, loop) {
       r.render(scene, cam);
       const px = new Uint8Array(w * h * 4);
       r.readRenderTargetPixels(rt, 0, 0, w, h, px);
+      // the target holds linear colour; encode to sRGB so colours (and dark faces) are judged as they appear on screen
+      for (let i = 0; i < px.length; i += 4) { px[i] = SRGB[px[i]]; px[i + 1] = SRGB[px[i + 1]]; px[i + 2] = SRGB[px[i + 2]]; }
       r.setRenderTarget(null);
       r.setClearColor(cc, ca);
       scene.background = bg; scene.fog = fog;
@@ -225,7 +228,7 @@ export function installDebug(ctx, loop) {
       // largest connected patch of one colour (a "single-colour face")
       const lab = new Int32Array(w * h).fill(-1);
       const keyAt = (i) => (px[i * 4 + 3] === 0 && px[i * 4] + px[i * 4 + 1] + px[i * 4 + 2] === 0) ? -1 : ((px[i * 4] >> 4) << 8 | (px[i * 4 + 1] >> 4) << 4 | (px[i * 4 + 2] >> 4));
-      let face = 0;
+      let face = 0, faceKey = -1, faceAt = -1;
       const stack = [];
       for (let i0 = 0; i0 < w * h; i0++) {
         if (lab[i0] !== -1) continue;
@@ -239,12 +242,14 @@ export function installDebug(ctx, loop) {
           const nb = [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
           for (const j of nb) if (j >= 0 && lab[j] === -1 && keyAt(j) === k) { lab[j] = i0; stack.push(j); }
         }
-        if (size > face) face = size;
+        if (size > face) { face = size; faceKey = k; faceAt = i0; }
       }
       const T = w * h;
       return { frac: +(n / T).toFixed(4), bottom10: +(bottom / T).toFixed(4), topRow: n ? +(top / h).toFixed(3) : null,
         bbox: n ? [+(minX / w).toFixed(3), +(minY / h).toFixed(3), +(maxX / w).toFixed(3), +(maxY / h).toFixed(3)] : null,
-        biggestColor: +(big / T).toFixed(4), biggestFace: +(face / T).toFixed(4) };
+        biggestColor: +(big / T).toFixed(4), biggestFace: +(face / T).toFixed(4),
+        faceColor: faceKey < 0 ? null : '#' + faceKey.toString(16).padStart(3, '0'),
+        faceAt: faceAt < 0 ? null : [+((faceAt % w) / w).toFixed(3), +(1 - ((faceAt / w) | 0) / h).toFixed(3)] };
     },
   });
   function safe(fn, dflt) { try { return fn(); } catch { return dflt; } }
