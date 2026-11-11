@@ -3,11 +3,15 @@
 import * as THREE from 'three';
 import { ENEMY_DEFS, LINE_HALF, NOTICE_DAY, NOTICE_NIGHT, LEASH, ACTIVE_R, DESPAWN_R, MAX_ACTIVE, MAX_ATTACKERS } from './enemies.data.js';
 import { createModelKit, COLORS } from './enemyModels.js';
-import { clamp, damp, yawTo, angDiff, heightAt, fx, emit, spawnList, isNight, landmark, setting, DEG } from './util.js';
+import { createTelegraphs } from './telegraph.js';
+import { clamp, damp, yawTo, angDiff, heightAt, fx, flash, emit, spawnList, isNight, landmark, setting, DEG } from './util.js';
 
 const MAX_BOLTS = 8, TELE_SLOTS = 3, MAX_SHADOWS = 10;
 // option objects for effects emitted often (no per-frame allocation)
-const FX_DUST3 = { count: 3, color: 0xe8b27a, speed: 1 }, FX_DUST2 = { count: 2, color: 0xe8b27a, speed: 0.8 }, FX_EMBER = { count: 6 };
+const FX_DUST3 = { count: 3, color: 0xe8b27a, speed: 1 }, FX_DUST2 = { count: 2, color: 0xe8c79a }, FX_EMBER = { count: 6 };
+const FX_POOF = { count: 22 }, FX_SHARD = { count: 6, color: 0xffd76a }, FX_FLASH = { color: 0xc23bff, size: 1.2, life: 0.3 };
+const DIE_T = 0.35;
+const FX_RING = { color: 0xd9d4e6, size: 1.0 }, FX_RING_BIG = { color: 0xd9d4e6, size: 1.6 };   // 'ring' size = radius (m)
 
 export function createEnemies(ctx, G) {
   const kit = createModelKit(ctx);
@@ -51,22 +55,13 @@ export function createEnemies(ctx, G) {
     root.add(shadows);
   } catch (e) { shadows = null; }
 
-  // ── telegraph meshes (#ff3b5c, the warning color is used ONLY here) ──
-  const teleGeo = buildTelegraphGeos();
-  const tele = [];
-  for (let i = 0; i < TELE_SLOTS; i++) {
-    // drawn over grass and slopes: a warning must always be seen (§5.2)
-    const mat = new THREE.MeshBasicMaterial({ color: COLORS.danger, transparent: true, opacity: 0.5, depthWrite: false, depthTest: false,
-      side: THREE.DoubleSide, fog: false });
-    const band = new THREE.Mesh(teleGeo.band(), mat);
-    const fan = new THREE.Mesh(teleGeo.fan, mat);
-    const ring = new THREE.Mesh(teleGeo.ring, mat);
-    for (const m of [band, fan, ring]) { m.visible = false; m.frustumCulled = false; m.renderOrder = 50; root.add(m); }
-    tele.push({ band, fan, ring, mat, owner: null, t: 0, dur: 1, kind: null });
-  }
+  // ── telegraphs (#ff3b5c, the warning colour is used ONLY here): edge + fill + motion, see telegraph.js ──
+  const tg = createTelegraphs(ctx, root, (x, z) => heightAt(ctx, x, z), TELE_SLOTS);
 
   // ── enemy bolts (wisp light balls) ──
-  const boltMat = new THREE.MeshBasicMaterial({ color: COLORS.danger, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  let boltMat = null;
+  try { const art = ctx.art || (ctx.world && ctx.world.art); if (art && typeof art.basic === 'function') boltMat = art.basic({ color: COLORS.danger, transparent: true, additive: true }); } catch (e) { boltMat = null; }
+  if (!boltMat) boltMat = new THREE.MeshBasicMaterial({ color: COLORS.danger, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
   const boltMesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), boltMat, MAX_BOLTS);
   boltMesh.frustumCulled = false;
   boltMesh.count = 0;
@@ -183,7 +178,8 @@ export function createEnemies(ctx, G) {
     const e = {
       id, type, def, model, ctrl: opts.ctrl || null,
       pos: new THREE.Vector3(x, y, z), center: new THREE.Vector3(x, y + def.center, z),
-      yaw: opts.yaw ?? rnd() * Math.PI * 2, hp: opts.hp ?? def.hp, maxHp: opts.hp ?? def.hp,
+      yaw: opts.yaw ?? (opts.group || !ctx.player || !ctx.player.pos ? rnd() * Math.PI * 2 : yawTo(ctx.player.pos.x - x, ctx.player.pos.z - z)),
+      hp: opts.hp ?? def.hp, maxHp: opts.hp ?? def.hp,
       state: 'idle', t: 0, home: { x: opts.home ? opts.home.x : x, z: opts.home ? opts.home.z : z, r: (opts.home && opts.home.radius) || 6 },
       group: opts.group || null, extraDrops: opts.drops || null, tag: opts.tag || null, noDrops: !!opts.noDrops,
       atk: null, atkCd: 0.6 + rnd() * 0.8, token: false, teleSlot: null,
@@ -215,6 +211,8 @@ export function createEnemies(ctx, G) {
       case 'rimeguard': e.spheres = [S(0.95, 'armor', 0, 1.95, 0), S(0.5, 'armor', 0, 0.7, 0), S(0.32, 'armor', 0, 2.8, 0), S(0.36, 'weak', 0, 2.05, 0.78)]; break;
       default: e.spheres = [S(e.def.radius || 0.5, 'body', 0, e.def.center || 0.5, 0)];
     }
+    const weak = (e.type === 'husk' || e.type === 'rimeguard') ? e.spheres.find((q) => q.part === 'weak') : null;
+    e.coreWorld = weak ? weak.c : e.center;
   }
 
   function addTarget(e) {
@@ -267,7 +265,7 @@ export function createEnemies(ctx, G) {
   function damageEnemy(e, dmg, by, hit) {
     if (dmg <= 0 || e.state === 'dead') return false;
     e.hp = Math.max(0, e.hp - dmg);
-    e.hurtT = 0.12;
+    e.hurtT = 0.08;
     e.model.setHurt(true);
     if (e.state === 'idle' || e.state === 'wander' || e.state === 'sleep' || e.state === 'return') setState(e, 'chase');
     if (e.hp <= 0) { kill(e, by); return true; }
@@ -287,25 +285,32 @@ export function createEnemies(ctx, G) {
     removeTarget(e);
     setFire(e, false);
     e.state = 'dead';
-    e.dyingT = 0.6;
-    const p = _v.copy(e.center);
-    fx(ctx, 'poof', p, { count: 26, color: 0xd9d4e6, speed: 1.6, life: 1.4 });
-    fx(ctx, 'shard', p, { count: 10, color: 0xffd76a, speed: 2.2 });
+    // ash unravels on the wind and the core's light rises; gold remains (no blood, no debris) — ART_REVIEW B-P2-8
+    e.dyingT = DIE_T;
+    e.dieY = e.model.root.position.y;
+    e.deathFx = 0.25;
+    const core = e.coreWorld || e.center;
+    e.corePos = (e.corePos || new THREE.Vector3()).copy(core);
+    fx(ctx, 'poof', e.corePos, FX_POOF);
     emit(ctx, 'enemy:death', { id: e.id, type: e.type, pos: e.center.clone(), by: by || 'player' });
-    if (!e.noDrops) dropLoot(e);
+    e.shardsDropped = e.noDrops ? 0 : dropLoot(e);
+    e.model.setHurt(false);
   }
 
+  /** returns how many light shards fell */
   function dropLoot(e) {
     const P = G.pickups;
-    if (!P) return;
+    if (!P) return 0;
+    let shards = 0;
     const drops = (e.extraDrops || []).concat(e.def.drops || []);
     for (const d of drops) {
       if (d.chance != null && rnd() > d.chance) continue;
       const n = d.min + Math.floor(rnd() * (d.max - d.min + 1));
       if (n <= 0) continue;
-      if (d.itemId === 'shard') P.dropShards(e.pos, n);
+      if (d.itemId === 'shard') { P.dropShards(e.pos, n); shards += n; }
       else P.dropItem(d.itemId, e.pos, n);
     }
+    return shards;
   }
 
   function stagger(e, sec) {
@@ -364,61 +369,10 @@ export function createEnemies(ctx, G) {
   function releaseToken(e) { if (e.token) { attackers.delete(e.id); e.token = false; } }
 
   // ── telegraphs ──
-  function telegraphShow(owner, kind, opts) {
-    let slot = null;
-    for (const s of tele) if (s.owner === owner) { slot = s; break; }
-    if (!slot) for (const s of tele) if (!s.owner) { slot = s; break; }
-    if (!slot) return null;
-    slot.owner = owner; slot.t = 0; slot.dur = opts.dur || 1; slot.kind = kind;
-    slot.band.visible = slot.fan.visible = slot.ring.visible = false;
-    if (kind === 'line') {
-      layBand(slot.band, opts.x0, opts.z0, opts.x1, opts.z1, opts.halfWidth ?? LINE_HALF);
-      slot.band.visible = true;
-    } else if (kind === 'high') {
-      slot.fan.position.set(opts.x, opts.y, opts.z);
-      slot.fan.rotation.set(0, -opts.yaw, 0);
-      const s = opts.reach || 2.3;
-      slot.fan.scale.set(s, 1, s);
-      slot.fan.visible = true;
-    } else if (kind === 'sphere') {
-      slot.ring.position.set(opts.x, heightAt(ctx, opts.x, opts.z) + 0.06, opts.z);
-      const s = Math.max(0.35, opts.radius || 0.5);
-      slot.ring.scale.set(s, 1, s);
-      slot.ring.visible = true;
-    }
-    return slot;
-  }
-  function telegraphHide(owner) {
-    for (const s of tele) if (s.owner === owner) {
-      s.owner = null; s.band.visible = s.fan.visible = s.ring.visible = false;
-    }
-  }
-  function clearTelegraph(e) { telegraphHide(e); }
-  function layBand(mesh, x0, z0, x1, z1, half) {
-    // a terrain-hugging strip from (x0,z0) to (x1,z1): segment rows of 2 vertices
-    const pos = mesh.geometry.attributes.position;
-    const rows = pos.count / 2;
-    const dx = x1 - x0, dz = z1 - z0, L = Math.hypot(dx, dz) || 1;
-    const nx = -dz / L * half, nz = dx / L * half;
-    for (let i = 0; i < rows; i++) {
-      const t = i / (rows - 1);
-      const cx = x0 + dx * t, cz = z0 + dz * t;
-      const y = heightAt(ctx, cx, cz) + 0.12;
-      pos.setXYZ(i * 2, cx + nx, y, cz + nz);
-      pos.setXYZ(i * 2 + 1, cx - nx, y, cz - nz);
-    }
-    pos.needsUpdate = true;
-    mesh.geometry.computeBoundingSphere();
-  }
-  function teleTick(dt) {
-    for (const s of tele) {
-      if (!s.owner) continue;
-      s.t += dt;
-      const k = clamp(s.t / s.dur, 0, 1);
-      // brighter and faster pulse as the hit approaches
-      s.mat.opacity = (s.kind === 'high' ? 0.14 : 0.3) + 0.3 * k + 0.12 * Math.sin(s.t * (10 + 18 * k));
-    }
-  }
+  function telegraphShow(owner, kind, opts) { return tg.show(owner, kind, opts); }
+  function telegraphHide(owner) { tg.hide(owner); }
+  function clearTelegraph(e) { tg.hide(e); }
+  function teleTick(dt) { tg.tick(dt); }
 
   // ── attack resolution (§5.3): dodge → block/parry → damage ──
   function hitTestPlayer(shape) {
@@ -622,10 +576,19 @@ export function createEnemies(ctx, G) {
       if (e.ctrl) { try { e.ctrl.update(e, dt); } catch (err) { reportOnce(err); } continue; }
       if (e.state === 'dead') {
         e.dyingT -= dt;
-        const k = clamp(e.dyingT / 0.6, 0, 1);
+        // the shell shrinks over 0.35 s while sinking 0.2 m
+        const k = clamp(e.dyingT / DIE_T, 0, 1);
         e.model.root.scale.setScalar(Math.max(0.01, k));
-        e.model.root.position.y += dt * 0.6;
-        if (e.dyingT <= 0) removeEnemy(e);
+        e.model.root.position.y = e.dieY - 0.2 * (1 - k);
+        if (e.deathFx > 0) {
+          e.deathFx -= dt;
+          if (e.deathFx <= 0) {
+            FX_SHARD.count = 6 + (e.shardsDropped || 0);
+            fx(ctx, 'shard', e.corePos, FX_SHARD);
+            flash(ctx, e.corePos, FX_FLASH);
+          }
+        }
+        if (e.dyingT <= 0 && e.deathFx <= 0) removeEnemy(e);
         continue;
       }
       // far from the player → retire (the group remembers its spawn)
@@ -789,7 +752,7 @@ export function createEnemies(ctx, G) {
     e.atkKind = kind;
     if (kind === 'high') {
       e.shapeHigh.y = gy + stand * 0.80;
-      telegraphShow(e, 'high', { x: e.pos.x, y: e.shapeHigh.y, z: e.pos.z, yaw: e.aimYaw, reach: (atk.range ? atk.range[1] : 2.3) + 0.2, dur: atk.windup });
+      telegraphShow(e, 'high', { x: e.pos.x, y: e.shapeHigh.y, z: e.pos.z, yaw: e.aimYaw, reach: (atk.range ? atk.range[1] : 2.3) + 0.2, arc: (atk.arc || 80) + 24, dur: atk.windup });
     } else if (kind === 'line') {
       const len = atk.length || (d + (atk.extra || 2));
       const ux = Math.sin(e.aimYaw), uz = -Math.cos(e.aimYaw);
@@ -859,7 +822,7 @@ export function createEnemies(ctx, G) {
     const shape = kind === 'high' ? e.shapeHigh : kind === 'line' ? e.shapeLine : e.shapeSphere;
     resolveAttack(e, shape, atk, _from, { inReach });
     if (kind === 'line') {
-      fx(ctx, 'ring', _v.set((e.shapeLine.x0 + e.shapeLine.x1) / 2, e.pos.y, (e.shapeLine.z0 + e.shapeLine.z1) / 2), { color: 0xd9d4e6, size: 2 });
+      fx(ctx, 'ring', _v.set((e.shapeLine.x0 + e.shapeLine.x1) / 2, e.pos.y, (e.shapeLine.z0 + e.shapeLine.z1) / 2), e.type === 'rimeguard' ? FX_RING_BIG : FX_RING);
       fx(ctx, 'dust', _v.set(e.shapeLine.x0 + (e.shapeLine.x1 - e.shapeLine.x0) * 0.4, e.pos.y, e.shapeLine.z0 + (e.shapeLine.z1 - e.shapeLine.z0) * 0.4), { count: 14, speed: 2 });
     } else if (kind === 'high') {
       fx(ctx, 'gust', _v.copy(e.center), { count: 8, dir: _v2.set(Math.sin(e.aimYaw), 0, -Math.cos(e.aimYaw)), speed: 4 });
@@ -1003,7 +966,6 @@ export function createEnemies(ctx, G) {
         const walk = Math.abs(e.speedNow) > 0.1 ? 1 : 0;
         spin.rotation.z = Math.sin(e.anim * 4) * 0.05 * walk;
         y += Math.abs(Math.sin(e.anim * 4)) * 0.04 * walk;
-        const A = m.armsPivot;
         let ax = Math.sin(e.anim * 4) * 0.25 * walk + 0.05, ay = 0;
         if (e.atk && (e.state === 'windup' || e.state === 'attack' || e.state === 'recover')) {
           const at = e.state === 'attack' ? clamp(e.t / 0.2, 0, 1) : e.state === 'recover' ? 1 : 0;
@@ -1017,9 +979,10 @@ export function createEnemies(ctx, G) {
             spin.rotation.x = e.state === 'windup' ? 0.15 * windK : 0;
           }
         } else spin.rotation.x = 0;
-        A.rotation.set(ax, 0, 0);
+        m.setArms(ax);
         spin.rotation.y = ay;
         if (e.state === 'stagger') spin.rotation.x = -0.25 * Math.sin(Math.min(1, e.t * 4) * Math.PI);
+        if (m.glow) m.glow.scale.setScalar(m.glowSize * (1 + 0.15 * Math.sin(e.anim * Math.PI * 1.6)));
         break;
       }
       case 'wisp': {
@@ -1034,7 +997,8 @@ export function createEnemies(ctx, G) {
         const wantRise = e.burrowed && e.flipT <= 0 ? 0 : 1;
         e.rise = damp(e.rise, wantRise, 0.18, dt);
         y += -0.72 * (1 - e.rise);
-        if (e.burrowed && Math.abs(e.speedNow) > 0.3 && (frame % 5 === 0)) fx(ctx, 'dust', e.pos, FX_DUST2);
+        // a sand trail every 0.15 s while it swims under the sand
+        if (e.burrowed && Math.abs(e.speedNow) > 0.3) { e.dustT = (e.dustT || 0) - dt; if (e.dustT <= 0) { e.dustT = 0.15; fx(ctx, 'dust', e.pos, FX_DUST2); } }
         if (e.flipT > 0) {
           spin.rotation.z = damp(spin.rotation.z, Math.PI, 0.1, dt);
           y += 0.75;
@@ -1045,7 +1009,6 @@ export function createEnemies(ctx, G) {
       case 'rimeguard': {
         const walk = Math.abs(e.speedNow) > 0.1 ? 1 : 0;
         y += Math.abs(Math.sin(e.anim * 2.4)) * 0.06 * walk;
-        const A = m.armsPivot;
         let ax = Math.sin(e.anim * 2.4) * 0.15 * walk;
         spin.rotation.x = 0;
         if (e.atk && e.atk.id === 'quake' && (e.state === 'windup' || e.state === 'attack' || e.state === 'recover')) {
@@ -1053,7 +1016,7 @@ export function createEnemies(ctx, G) {
         } else if (e.atk && e.atk.id === 'beam' && e.state === 'windup') {
           spin.rotation.x = -0.12 * windK;
         }
-        A.rotation.set(ax, 0, 0);
+        m.setArms(ax);
         if (e.state === 'stagger') spin.rotation.x = -0.15 * Math.sin(Math.min(1, e.t * 3) * Math.PI);
         break;
       }
@@ -1123,7 +1086,7 @@ export function createEnemies(ctx, G) {
       placeModel(e, 0);
     }
     attackers.clear();
-    for (const s of tele) { s.owner = null; s.band.visible = s.fan.visible = s.ring.visible = false; }
+    tg.hideAll();
   }
 
   let reported = false;
@@ -1159,36 +1122,4 @@ export function createEnemies(ctx, G) {
   ctx.events?.on?.('time:phase', (p) => { if (p && p.phase === 'dawn') api.onDawn(); });
 
   return api;
-}
-
-// ── telegraph geometry ──
-function buildTelegraphGeos() {
-  // fan: a 100° slab at head height with a bright vertical rim (a "line at head height")
-  const arc = 100 * DEG, segs = 14;
-  const pos = [];
-  const a0 = -arc / 2;
-  for (let i = 0; i < segs; i++) {
-    const t0 = a0 + (arc * i) / segs, t1 = a0 + (arc * (i + 1)) / segs;
-    const x0 = Math.sin(t0), z0 = -Math.cos(t0), x1 = Math.sin(t1), z1 = -Math.cos(t1);
-    // flat sector, from 0.35 to 1.0 of the radius
-    pos.push(x0 * 0.35, 0, z0 * 0.35, x0, 0, z0, x1, 0, z1);
-    pos.push(x0 * 0.35, 0, z0 * 0.35, x1, 0, z1, x1 * 0.35, 0, z1 * 0.35);
-    // rim curtain (8 cm tall)
-    pos.push(x0, -0.04, z0, x1, -0.04, z1, x1, 0.04, z1);
-    pos.push(x0, -0.04, z0, x1, 0.04, z1, x0, 0.04, z0);
-  }
-  const fan = new THREE.BufferGeometry();
-  fan.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  fan.computeBoundingSphere();
-  const ring = new THREE.RingGeometry(0.72, 1.0, 24).rotateX(-Math.PI / 2);
-  const band = () => {
-    const rows = 14, g = new THREE.BufferGeometry();
-    const p = new Float32Array(rows * 2 * 3);
-    const idx = [];
-    for (let i = 0; i < rows - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
-    g.setIndex(idx);
-    return g;
-  };
-  return { fan, ring, band };
 }

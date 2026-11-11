@@ -1,7 +1,7 @@
 // js/ui/hud.js — VR HUD (§10.11): ① the left-forearm band ② a small panel that lazily follows, lower-left, 1.2 m ahead.
 // Never glued to the head. Redrawn only when what it shows changes (≤ 5 Hz). (OPUS-B)
 import * as THREE from 'three';
-import { makePanel, card, text, gauge, hearts, C } from './text.js';
+import { makePanel, card, text, gauge, hearts, wrap, C } from './text.js';
 
 const GAIT = { idle: '休み', walk: '歩き WALK', jog: '駆け足 JOG', sprint: '全力 SPRINT' };
 const TIER = ['', '追い風 I', '追い風 II'];
@@ -81,7 +81,8 @@ export function createHud(ctx, S) {
   return {
     float, band,
     update(dt, vr) {
-      const showFloat = vr && S.hudVisible && ctx.settings && ctx.settings.get('hudMode') !== 'wrist';
+      // hidden while the wrist menu is open (it shows the same things, and they would overlap)
+      const showFloat = vr && S.hudVisible && !S.menuOpen && ctx.settings && ctx.settings.get('hudMode') !== 'wrist';
       float.mesh.visible = !!showFloat;
       const left = ctx.input && ctx.input.hands && ctx.input.hands.left;
       const showBand = vr && S.hudVisible && left && left.tracked && left.object3D;
@@ -117,75 +118,89 @@ export function createHud(ctx, S) {
       } else placed = false;
     },
     forceDraw() { sigF = sigB = ''; drawT = 0; },
+    hideAll() { float.mesh.visible = false; band.mesh.visible = false; },
   };
 }
 
 export function createToasts(ctx, S) {
+  // VR placement (ART_REVIEW B-P2-7): nothing within 10° of the gaze.
+  //   title — 13° above the gaze, 2.2 m, 0.9 m wide, 2.4 s     toast — 18° below, 1.4 m, 0.5 m wide, one at a time
+  // Both follow the head's direction about 0.6 s late. Smallest text ≥ 1.1° (≈ 22 px on Quest 2).
   const root = new THREE.Group();
   root.name = 'ui:toasts';
   ctx.scene.add(root);
-  const toast = makePanel(ctx, 1024, 200, 0.95, { renderOrder: 62, depthTest: false });
-  const title = makePanel(ctx, 1024, 240, 1.5, { renderOrder: 62, depthTest: false });
+  const TOAST_D = 1.4, TITLE_D = 2.2, TOAST_DOWN = 18 * Math.PI / 180, TITLE_UP = 13 * Math.PI / 180;
+  const toast = makePanel(ctx, 1024, 256, 0.5, { renderOrder: 62, depthTest: false });
+  const title = makePanel(ctx, 1024, 200, 0.9, { renderOrder: 62, depthTest: false });
   root.add(toast.mesh, title.mesh);
   toast.mesh.visible = title.mesh.visible = false;
-  const _h = new THREE.Vector3(), _t = new THREE.Vector3();
-  let curT = null, curTitle = null, tPlaced = false, nPlaced = false;
+  const _h = new THREE.Vector3(), _f = new THREE.Vector3();
+  let curT = null, curTitle = null, gYaw = 0, gPitch = 0, gInit = false;
+  const BG = 'rgba(27,36,64,0.8)';
 
   function drawToast(t) {
     const g = toast.g, W = toast.w, H = toast.h;
     g.clearRect(0, 0, W, H);
-    const accent = t.kind === 'warn' ? '#ffb347' : t.kind === 'item' ? C.gold : t.kind === 'quest' ? C.cyan : C.line;
-    card(g, 10, 10, W - 20, H - 20, 30, C.bg, accent);
-    g.fillStyle = accent; g.fillRect(34, 40, 6, H - 80);
-    const main = String(t.text || '');
-    const size = main.length > 26 ? 34 : 42;
-    text(g, main, 64, t.sub ? 92 : 112, { size, weight: 700, color: C.ink, maxW: W - 110 });
-    if (t.sub) text(g, String(t.sub), 64, 146, { size: 26, weight: 500, color: C.dim, maxW: W - 110 });
+    const accent = t.kind === 'warn' ? '#ffb347' : t.kind === 'quest' ? C.cyan : C.gold;
+    card(g, 6, 6, W - 12, H - 12, 34, BG, accent);
+    g.fillStyle = accent; g.fillRect(30, 34, 8, H - 68);
+    // one line at 74 px if it fits, else up to two lines at 60 px
+    let size = 74, ls = wrap(g, String(t.text || ''), W - 104, size, 700);
+    if (ls.length > 1) { size = 60; ls = wrap(g, String(t.text || ''), W - 104, size, 700).slice(0, 2); }
+    let y = ls.length > 1 ? (t.sub ? 78 : 112) : (t.sub ? 112 : 150);
+    for (const L of ls) { text(g, L, 62, y, { size, weight: 700, color: C.ink, maxW: W - 96 }); y += size * 1.12; }
+    if (t.sub) text(g, String(t.sub), 62, H - 36, { size: 56, weight: 500, color: C.gold, maxW: W - 96 });   // 1.12° ≈ 23 px on Quest 2
     toast.flush();
   }
   function drawTitle(t) {
     const g = title.g, W = title.w, H = title.h;
     g.clearRect(0, 0, W, H);
-    const grd = g.createLinearGradient(0, 0, W, 0);
-    grd.addColorStop(0, 'rgba(27,36,64,0)'); grd.addColorStop(0.2, 'rgba(27,36,64,0.72)'); grd.addColorStop(0.8, 'rgba(27,36,64,0.72)'); grd.addColorStop(1, 'rgba(27,36,64,0)');
-    g.fillStyle = grd; g.fillRect(0, 30, W, H - 60);
-    g.fillStyle = C.gold; g.fillRect(W / 2 - 160, 44, 320, 3); g.fillRect(W / 2 - 160, H - 47, 320, 3);
-    text(g, String(t.text || ''), W / 2, 136, { size: 64, weight: 800, align: 'center', color: C.white, maxW: W - 80 });
-    if (t.sub) text(g, String(t.sub), W / 2, 182, { size: 26, weight: 500, align: 'center', color: C.gold, maxW: W - 80 });
+    card(g, 6, 6, W - 12, H - 12, 40, BG, null);
+    g.fillStyle = C.gold; g.fillRect(W / 2 - 150, 16, 300, 4);
+    text(g, String(t.text || ''), W / 2, 112, { size: 92, weight: 800, align: 'center', color: C.ink, maxW: W - 60 });
+    if (t.sub) text(g, String(t.sub), W / 2, 178, { size: 50, weight: 500, align: 'center', color: C.gold, maxW: W - 60 });
     title.flush();
+  }
+  function place(mesh, dist, dPitch) {
+    const p = Math.max(-1.2, Math.min(1.1, gPitch + dPitch));
+    _f.set(Math.sin(gYaw) * Math.cos(p), Math.sin(p), -Math.cos(gYaw) * Math.cos(p));
+    mesh.position.copy(_h).addScaledVector(_f, dist);
+    mesh.lookAt(_h);
   }
 
   return {
     toast, title,
+    hideAll() { toast.mesh.visible = false; title.mesh.visible = false; },
     update(dt, vr) {
-      // queue
+      // queues (shared with the PC overlay)
       if (curT) { curT.left -= dt * 1000; if (curT.left <= 0) curT = null; }
       if (!curT && S.toastQueue.length) { curT = S.toastQueue.shift(); curT.left = curT.ms || 3000; if (vr) drawToast(curT); curT.drawn = vr; }
       if (curT && vr && !curT.drawn) { drawToast(curT); curT.drawn = true; }
       if (curTitle) { curTitle.left -= dt * 1000; if (curTitle.left <= 0) curTitle = null; }
-      if (!curTitle && S.titleQueue.length) { curTitle = S.titleQueue.shift(); curTitle.left = curTitle.ms || 3000; if (vr) drawTitle(curTitle); curTitle.drawn = vr; }
+      if (!curTitle && S.titleQueue.length) { curTitle = S.titleQueue.shift(); curTitle.left = curTitle.ms || 2400; if (vr) drawTitle(curTitle); curTitle.drawn = vr; }
       if (curTitle && vr && !curTitle.drawn) { drawTitle(curTitle); curTitle.drawn = true; }
       toast.mesh.visible = !!(vr && curT && S.hudVisible);
       title.mesh.visible = !!(vr && curTitle && S.hudVisible);
       S.currentToast = curT; S.currentTitle = curTitle;
-      if (!vr) { tPlaced = nPlaced = false; return; }
+      if (!vr) { gInit = false; return; }
+      // the gaze, followed ~0.6 s late
       const head = ctx.input.head;
       _h.copy(head.pos);
-      const yaw = head.yaw ?? 0;
-      const fx = Math.sin(yaw), fz = -Math.cos(yaw);
-      const k = 1 - Math.exp(-dt / 0.6);
+      _f.set(0, 0, -1).applyQuaternion(head.quat);
+      const yaw = Math.atan2(_f.x, -_f.z), pitch = Math.asin(Math.max(-1, Math.min(1, _f.y)));
+      if (!gInit) { gYaw = yaw; gPitch = pitch; gInit = true; }
+      const k = 1 - Math.exp(-dt / 0.3);
+      let dy = yaw - gYaw;
+      dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      gYaw += dy * k; gPitch += (pitch - gPitch) * k;
       if (toast.mesh.visible) {
-        _t.set(_h.x + fx * 2.0, _h.y - 0.32, _h.z + fz * 2.0);
-        if (!tPlaced || toast.mesh.position.distanceToSquared(_t) > 9) { toast.mesh.position.copy(_t); tPlaced = true; } else toast.mesh.position.lerp(_t, k);
-        toast.mesh.lookAt(_h);
-        toast.mat.opacity = Math.min(1, curT.left / 300, ((curT.ms || 3000) - curT.left) / 200 + 0.2);
-      } else tPlaced = false;
+        place(toast.mesh, TOAST_D, -TOAST_DOWN);
+        toast.mat.opacity = Math.max(0, Math.min(1, curT.left / 300, ((curT.ms || 3000) - curT.left) / 200));
+      }
       if (title.mesh.visible) {
-        _t.set(_h.x + fx * 2.2, _h.y + 0.28, _h.z + fz * 2.2);
-        if (!nPlaced || title.mesh.position.distanceToSquared(_t) > 9) { title.mesh.position.copy(_t); nPlaced = true; } else title.mesh.position.lerp(_t, k);
-        title.mesh.lookAt(_h);
-        title.mat.opacity = Math.min(1, curTitle.left / 500, ((curTitle.ms || 3000) - curTitle.left) / 300 + 0.1);
-      } else nPlaced = false;
+        place(title.mesh, TITLE_D, TITLE_UP);
+        title.mat.opacity = Math.max(0, Math.min(1, ((curTitle.ms || 2400) - curTitle.left) / 300, curTitle.left / 600));
+      }
     },
   };
 }

@@ -30,7 +30,7 @@ export async function createUI(ctx) {
   const fadeMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 8), fadeMat);
   fadeMesh.renderOrder = 100; fadeMesh.visible = false; fadeMesh.frustumCulled = false;
   if (ctx.camera) ctx.camera.add(fadeMesh);
-  let fade = 0, fadeTarget = 0, activeRun = 0, nudged = false, lastRegionT = -99;
+  let fade = 0, fadeTarget = 0, activeRun = 0, nudged = false, lastRegionT = -99, teleportT = -99, pendingRegion = null;
 
   function toast(text, opts = {}) {
     if (!text) return;
@@ -40,16 +40,26 @@ export async function createUI(ctx) {
     S.toastQueue.push({ text, sub: t.sub || '', kind: t.kind || 'info', ms: t.ms || 3000, tag: t.tag || null });
     while (S.toastQueue.length > 4) S.toastQueue.shift();
   }
-  function title(text, sub = '', ms = 3200) {
+  // titles show for 2.4 s (0.3 s in, 0.6 s out) — ART_REVIEW B-P1-3 / B-P2-7
+  function title(text, sub = '', ms = 2400, tag = null) {
     if (!text) return;
-    S.titleQueue.push({ text, sub, ms });
+    S.titleQueue.push({ text, sub, ms: ms || 2400, tag });
     while (S.titleQueue.length > 2) S.titleQueue.shift();
+  }
+  function dropRegionTitles() {
+    for (let i = S.titleQueue.length - 1; i >= 0; i--) if (S.titleQueue[i].tag === 'region') S.titleQueue.splice(i, 1);
+    if (S.currentTitle && S.currentTitle.tag === 'region') S.currentTitle.left = Math.min(S.currentTitle.left, 1);
   }
 
   ui = {
     S,
     get menuOpen() { return ui.wrist.open; },
-    setHudVisible(b) { S.hudVisible = !!b; document.body.classList.toggle('aw-nohud', !b); if (!b && ui.wrist.open) ui.closeMenu(); },
+    setHudVisible(b) {
+      S.hudVisible = !!b;
+      document.body.classList.toggle('aw-nohud', !b);
+      // hide every board at once (the wrist band lives on the left hand) — ART_REVIEW B-P3-1
+      if (!b) { hud.hideAll(); toasts.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
+    },
     toast, title,
     openMenu(page = 'map') {
       const ok = ui.wrist.openMenu(page);
@@ -87,13 +97,18 @@ export async function createUI(ctx) {
     for (let i = S.toastQueue.length - 1; i >= 0; i--) if (S.toastQueue[i].tag === 'tut') S.toastQueue.splice(i, 1);
     if (S.currentToast && S.currentToast.tag === 'tut') S.currentToast.left = Math.min(S.currentToast.left, 200);
   });
+  // a region's name appears only after you have walked in it for 1.5 s — never on a teleport or a vista
   on('region:enter', (p) => {
     const n = REGION_NAMES[p.region];
-    if (!n || p.region === 'sea') return;
+    if (!n || p.region === 'sea') { pendingRegion = null; return; }
     const now = ctx.clock ? ctx.clock.time : 0;
-    if (now - lastRegionT < 8) return;
-    lastRegionT = now;
-    title(n[0], n[1]);
+    if (now - teleportT < 1.2) return;
+    pendingRegion = { region: p.region, t: 0 };
+  });
+  on('player:teleport', () => {
+    teleportT = ctx.clock ? ctx.clock.time : 0;
+    pendingRegion = null;
+    dropRegionTitles();
   });
   on('shrine:start', (p) => { S.trial = { id: p.id, name: trialName(p.id), label: '', k: 0 }; S.trialT = 4; });
   on('shrine:progress', (p) => {
@@ -190,6 +205,21 @@ export async function createUI(ctx) {
       const a = Math.atan2(dx, -dz) - look;
       S.objBearing = Math.atan2(Math.sin(a), Math.cos(a));
     } else S.objDist = null;
+    if (pendingRegion && pl && pl.pos) {
+      pendingRegion.t += dt;
+      if (pendingRegion.t >= 1.5) {
+        const w = ctx.world;
+        let here = pendingRegion.region;
+        try { if (w && w.regionAt) here = w.regionAt(pl.pos.x, pl.pos.z); } catch (e) { /* stub */ }
+        const now = ctx.clock ? ctx.clock.time : 0;
+        if (here === pendingRegion.region && now - lastRegionT > 6) {
+          lastRegionT = now;
+          const n = REGION_NAMES[here];
+          title(n[0], n[1], 2400, 'region');
+        }
+        pendingRegion = null;
+      }
+    }
     if (S.trial && dt > 0) { S.trialT -= dt; if (S.trialT <= 0 && !(game && game.shrines && game.shrines.active) && !(game && game.seeds && game.seeds.race)) S.trial = null; }
     const B = game && game.boss;
     S.boss = B && B.active ? (S.boss && S.boss.phase === B.phase ? Object.assign(S.boss, { k: B.gauge / B.goal }) : { phase: B.phase, k: B.gauge / B.goal }) : null;
@@ -207,10 +237,11 @@ export async function createUI(ctx) {
         game && game.save && game.save();
       }
     }
+    S.menuOpen = ui.wrist.open;
     hud.update(dt, vr);
     toasts.update(dt, vr);
     ui.wrist.update(dt, vr);
-    ui.overlay.update(dt, isVR());
+    ui.overlay.update(dt, isVR() || forceVR);   // ?vrhud shows what the headset shows (no PC overlay)
     // fade
     fade += (fadeTarget - fade) * Math.min(1, dt * (fadeTarget > fade ? 2.5 : 1.5));
     fadeMat.opacity = fade;

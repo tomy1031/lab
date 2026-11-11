@@ -1,11 +1,12 @@
 // js/game/enemyModels.js — low-poly, flat-shaded Nagi creatures made in code (OPUS-B).
-// Each model: ≤ 3 meshes (shell body, moving shell part, glowing core/eyes) and < 1500 triangles.
+// Each model: ≤ 3 draw calls (shell body — arms posed on the CPU inside it —, glowing core/eyes, a core glow) and < 1500 triangles.
+// Readability at 15 m (ART_REVIEW B-P2-6): sky-coloured rim 0.6, lighter ash, bigger glowing cores.
 // Model forward is local −Z (yaw 0 = north). Blob shadows are drawn by enemies.js as one InstancedMesh.
 import * as THREE from 'three';
 import { mergeGeos, paint, paintY, xform } from './util.js';
 
 export const COLORS = {
-  ash: 0x6b6770, ashLight: 0x8f8a97, ashDark: 0x45414c, core: 0xc23bff, danger: 0xff3b5c,
+  ash: 0x6b6770, ashLight: 0xa39eae, ashDark: 0x45414c, core: 0xc23bff, danger: 0xff3b5c,
   ice: 0x9fe3f5, iceDeep: 0x5d6a82, sand: 0xb59a7e,
 };
 
@@ -21,8 +22,8 @@ export function createModelKit(ctx) {
       blending: opts.additive ? THREE.AdditiveBlending : THREE.NormalBlending, depthWrite: opts.depthWrite ?? !opts.transparent });
   };
   const mats = {
-    shell: mat({ vertexColors: true, flat: true, rim: 0.35 }),
-    melt: mat({ vertexColors: true, flat: true, rim: 0.2, color: 0x9a8f99 }),
+    shell: mat({ vertexColors: true, flat: true, rim: 0.6 }),
+    melt: mat({ vertexColors: true, flat: true, rim: 0.45, color: 0x9a8f99 }),
     core: basic({ color: COLORS.core }),
     danger: basic({ color: COLORS.danger }),       // ONLY for telegraphs (§5.2)
     hurt: basic({ color: 0xfffbe8 }),              // brief white flash when hit
@@ -35,7 +36,7 @@ export function createModelKit(ctx) {
     const ball = paintY(new THREE.IcosahedronGeometry(0.13, 0), COLORS.ashDark, COLORS.ashLight, -0.13, 0.13);
     parts.push(ball);
     const ico = new THREE.IcosahedronGeometry(1, 0);
-    const p = ico.attributes.position, seen = [];
+    const p = ico.attributes.position, seen = [], tips = [];
     const up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3(), q = new THREE.Quaternion();
     for (let i = 0; i < p.count; i++) {
       d.set(p.getX(i), p.getY(i), p.getZ(i)).normalize();
@@ -46,13 +47,18 @@ export function createModelKit(ctx) {
       q.setFromUnitVectors(up, d);
       cone.applyQuaternion(q);
       parts.push(paintY(cone, COLORS.ash, 0x2f2c35, -0.2, 0.2));
+      if (tips.length < 8) {                       // 8 glowing tips (§5.2 core colour)
+        const tip = new THREE.ConeGeometry(0.02, 0.06, 4);
+        tip.translate(0, 0.235, 0);
+        tip.applyQuaternion(q);
+        tips.push(tip);
+      }
     }
     const body = mergeGeos(parts);
     body.scale(1.25, 1.25, 1.25);
-    const eye = new THREE.OctahedronGeometry(0.06, 0);
-    eye.scale(1.3, 0.55, 0.5);
-    eye.translate(0, 0.27, -0.19);
-    return { body, core: eye };
+    const core = mergeGeos(tips);
+    core.scale(1.25, 1.25, 1.25);
+    return { body, core };
   }
 
   function husk() {
@@ -66,7 +72,7 @@ export function createModelKit(ctx) {
     // ribs around the chest hollow
     const ribL = paint(xform(new THREE.BoxGeometry(0.05, 0.36, 0.06), { x: -0.17, y: 1.12, z: -0.3, rz: 0.25 }), COLORS.ashDark);
     const ribR = paint(xform(new THREE.BoxGeometry(0.05, 0.36, 0.06), { x: 0.17, y: 1.12, z: -0.3, rz: -0.25 }), COLORS.ashDark);
-    const hollow = paint(xform(new THREE.CircleGeometry(0.15, 6), { y: 1.12, z: -0.315 }), 0x1d1b22);
+    const hollow = paint(xform(new THREE.CircleGeometry(0.2, 6), { y: 1.12, z: -0.315 }), 0x1d1b22);
     const body = mergeGeos([lathe, yoke, hood, face, ribL, ribR, hollow]);
 
     const arm = (sx) => {
@@ -76,12 +82,12 @@ export function createModelKit(ctx) {
       return [up, lo, claw];
     };
     const arms = mergeGeos([...arm(-1), ...arm(1)]);
-    const coreG = new THREE.OctahedronGeometry(0.1, 0);
-    coreG.translate(0, 1.12, -0.3);
+    const coreG = new THREE.OctahedronGeometry(0.16, 0);      // 1.6× chest core (B-P2-6)
+    coreG.translate(0, 1.12, -0.32);
     const eyeL = xform(new THREE.BoxGeometry(0.07, 0.022, 0.02), { x: -0.055, y: 1.75, z: -0.17, rz: 0.2 });
     const eyeR = xform(new THREE.BoxGeometry(0.07, 0.022, 0.02), { x: 0.055, y: 1.75, z: -0.17, rz: -0.2 });
     const core = mergeGeos([coreG, eyeL, eyeR]);
-    return { body, arms, armsPivot: [0, 1.42, 0], core };
+    return { body, arms, armsPivot: [0, 1.42, 0], core, glowAt: [0, 1.12, -0.36], glowSize: 0.45, glowOpacity: 0.65 };
   }
 
   function wisp() {
@@ -111,7 +117,8 @@ export function createModelKit(ctx) {
     const belly = xform(new THREE.OctahedronGeometry(0.28, 0), { y: 0.2, sy: 0.35 });
     const eyeL = xform(new THREE.BoxGeometry(0.08, 0.04, 0.04), { x: -0.13, y: 0.45, z: -1.08 });
     const eyeR = xform(new THREE.BoxGeometry(0.08, 0.04, 0.04), { x: 0.13, y: 0.45, z: -1.08 });
-    return { body, core: mergeGeos([belly, eyeL, eyeR]) };
+    const seam = xform(new THREE.BoxGeometry(0.04, 0.05, 0.62), { y: 0.76, z: 0.06, rx: -0.12 });   // core seam at the fin's base
+    return { body, core: mergeGeos([belly, eyeL, eyeR, seam]) };
   }
 
   function rimeguard() {
@@ -139,7 +146,7 @@ export function createModelKit(ctx) {
     const coreG = xform(new THREE.OctahedronGeometry(0.22, 0), { y: 2.05, z: 0.74 });
     const eyeL = xform(new THREE.BoxGeometry(0.08, 0.05, 0.03), { x: -0.09, y: 2.8, z: -0.285 });
     const eyeR = xform(new THREE.BoxGeometry(0.08, 0.05, 0.03), { x: 0.09, y: 2.8, z: -0.285 });
-    return { body, arms, armsPivot: [0, 2.3, 0], core: mergeGeos([coreG, eyeL, eyeR]) };
+    return { body, arms, armsPivot: [0, 2.3, 0], core: mergeGeos([coreG, eyeL, eyeR]), glowAt: [0, 2.05, 0.82], glowSize: 0.6, glowOpacity: 0.75 };
   }
 
   function stillheart() {
@@ -163,7 +170,22 @@ export function createModelKit(ctx) {
 
   const BUILD = { thornling, husk, wisp, lurker, rimeguard, stillheart };
   function geo(type) {
-    if (!geos[type]) geos[type] = (BUILD[type] || husk)();
+    if (!geos[type]) {
+      const g = (BUILD[type] || husk)();
+      if (g.arms && g.armsPivot && type !== 'wisp') {
+        // arms live inside the body mesh (one draw call); each instance poses them on the CPU (flat shading needs no normals)
+        const pv = g.armsPivot;
+        const local = g.arms.attributes.position.array.slice();
+        const placed = g.arms.clone();
+        placed.translate(pv[0], pv[1], pv[2]);
+        const merged = mergeGeos([g.body, placed]);
+        const start = g.body.attributes.position.count;
+        merged.computeBoundingSphere();
+        merged.boundingSphere.radius += 1.2;
+        g.skin = { geo: merged, start, count: local.length / 3, local, pivot: pv };
+      }
+      geos[type] = g;
+    }
     return geos[type];
   }
 
@@ -176,20 +198,57 @@ export function createModelKit(ctx) {
     root.add(spin);
     const m = { type, root, spin, body: null, arms: null, armsPivot: null, core: null, glow: null, plates: null, stones: null,
       _danger: false, _hurt: false };
-    if (g.body) { m.body = new THREE.Mesh(g.body, mats.shell); spin.add(m.body); }
-    if (g.arms) {
-      // arm geometry is already built relative to its shoulder pivot
+    m.setArms = () => {};
+    if (g.skin) {
+      const K = g.skin;
+      const geom = new THREE.BufferGeometry();
+      const pa = new THREE.BufferAttribute(K.geo.attributes.position.array.slice(), 3);
+      pa.setUsage(THREE.DynamicDrawUsage);
+      geom.setAttribute('position', pa);
+      geom.setAttribute('normal', K.geo.attributes.normal);
+      geom.setAttribute('color', K.geo.attributes.color);
+      geom.boundingSphere = K.geo.boundingSphere;
+      m.body = new THREE.Mesh(geom, mats.shell);
+      spin.add(m.body);
+      let lastA = 0;
+      // swing both arms about the shoulder line (local X), like the old pivot group did
+      m.setArms = (ax) => {
+        if (Math.abs(ax - lastA) < 0.002) return;
+        lastA = ax;
+        const c = Math.cos(ax), sn = Math.sin(ax), L = K.local, P = pa.array, o = K.start * 3, px = K.pivot[0], py = K.pivot[1], pz = K.pivot[2];
+        for (let i = 0; i < K.count; i++) {
+          const x = L[i * 3], y = L[i * 3 + 1], z = L[i * 3 + 2];
+          P[o + i * 3] = px + x;
+          P[o + i * 3 + 1] = py + y * c - z * sn;
+          P[o + i * 3 + 2] = pz + y * sn + z * c;
+        }
+        pa.needsUpdate = true;
+      };
+    } else if (g.body) { m.body = new THREE.Mesh(g.body, mats.shell); spin.add(m.body); }
+    if (g.arms && !g.skin) {
+      // the wisp's orbiting shards: a separate spinning mesh
       m.armsPivot = new THREE.Group();
       if (g.armsPivot) m.armsPivot.position.fromArray(g.armsPivot);
       m.arms = new THREE.Mesh(g.arms, mats.shell);
       m.armsPivot.add(m.arms);
       spin.add(m.armsPivot);
     }
-    if (g.core) { m.core = new THREE.Mesh(g.core, mats.core); (type === 'thornling' ? root : spin).add(m.core); }
+    if (g.core) { m.core = new THREE.Mesh(g.core, mats.core); spin.add(m.core); }
+    if (g.glowAt) {
+      try {
+        if (art && typeof art.glow === 'function') {
+          m.glow = art.glow({ color: COLORS.core, size: g.glowSize, opacity: g.glowOpacity });
+          m.glow.position.fromArray(g.glowAt);
+          m.glowSize = g.glowSize;
+          spin.add(m.glow);
+        }
+      } catch (e) { m.glow = null; }
+    }
     if (type === 'wisp' || type === 'thornling') {
       try {
         if (art && typeof art.glow === 'function') {
-          m.glow = type === 'wisp' ? art.glow({ color: COLORS.core, size: 1.2, opacity: 0.85 }) : art.glow({ color: COLORS.core, size: 0.55, opacity: 0.55 });
+          m.glowSize = type === 'wisp' ? 1.2 : 0.6;
+          m.glow = type === 'wisp' ? art.glow({ color: COLORS.core, size: 1.2, opacity: 0.85 }) : art.glow({ color: COLORS.core, size: 0.6, opacity: 0.6 });
           (type === 'thornling' ? root : spin).add(m.glow);
           if (type === 'thornling') m.glow.position.set(0, 0.24, 0);
         }
@@ -206,10 +265,15 @@ export function createModelKit(ctx) {
         if (art && typeof art.glow === 'function') { m.glow = art.glow({ color: COLORS.core, size: 5, opacity: 0.7 }); spin.add(m.glow); }
       } catch (e) { m.glow = null; }
     }
+    const glowColor = (hex) => {
+      const u = m.glow && m.glow.material && m.glow.material.uniforms && m.glow.material.uniforms.uColor;
+      if (u && u.value && u.value.setHex) u.value.setHex(hex);
+    };
     m.setDanger = (b) => {
       if (m._danger === b) return;
       m._danger = b;
       if (m.core && !m._hurt) m.core.material = b ? mats.danger : mats.core;
+      if (type !== 'stillheart') glowColor(b ? COLORS.danger : COLORS.core);   // the windup glows #ff3b5c too
     };
     m.setHurt = (b) => {
       if (m._hurt === b) return;
@@ -219,7 +283,6 @@ export function createModelKit(ctx) {
     m.setMelt = (b) => {
       const mm = b ? mats.melt : mats.shell;
       if (m.body) m.body.material = mm;
-      if (m.arms) m.arms.material = mm;
     };
     root.traverse((o) => { o.castShadow = false; o.receiveShadow = false; });
     return m;

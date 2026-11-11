@@ -234,7 +234,7 @@ export function createBoss(ctx, G) {
       E.resolveAttack(B.heart, shapeLine, ATK[1], B.center, {});
       _v.set((shapeLine.x0 + shapeLine.x1) / 2, 0, (shapeLine.z0 + shapeLine.z1) / 2);
       _v.y = heightAt(ctx, _v.x, _v.z);
-      fx(ctx, 'ring', _v, { color: 0xd9d4e6, size: 4 });
+      fx(ctx, 'ring', _v, { color: 0xd9d4e6, size: 3 });
       fx(ctx, 'dust', _v, { count: 24, speed: 3 });
       quake = null;
     }
