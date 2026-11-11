@@ -8,7 +8,7 @@ const VERT = /* glsl */`
 ${AW_PARS}
 uniform vec4 uWind;
 uniform vec3 uGlowCol;
-uniform float uGlowAmt, uGlowNight, uFogMul, uRim;
+uniform float uGlowAmt, uGlowNight, uFogMul, uRim, uSunRim;
 varying vec3 vCol; varying vec4 vFog;
 void main() {
   vec3 p = position;
@@ -22,6 +22,9 @@ void main() {
   vec3 c = awLight(n, color.rgb, vd, uRim);
   float back = max(dot(vd, -uSunDir), 0.0);
   c += color.rgb * uSunCol * (back * back * uv.x * 0.5);
+  // 逆光の縁どり（夕日を背にした岩や塔の輪郭が光る）
+  float fr = 1.0 - max(dot(n, vd), 0.0);
+  c += color.rgb * uSunCol * (back * back * fr * fr * uSunRim);
   c += uGlowCol * (0.35 + 0.65 * color.rgb) * (uv.y * (uGlowAmt + uGlowNight * uFogP.z));
   vCol = c;
   vFog = awFog(wp.xyz);
@@ -37,11 +40,11 @@ void main() {
 }`;
 
 // glow: 発光色、amt: いつもの発光、night: 夜に足す発光
-export function structMaterial({ glow = 0x7fe9ff, amt = 0, night = 0, fogMul = 1, rim = 0.15, side = THREE.FrontSide } = {}) {
+export function structMaterial({ glow = 0x7fe9ff, amt = 0, night = 0, fogMul = 1, rim = 0.15, sunRim = 0.35, side = THREE.FrontSide } = {}) {
   const m = new AwMaterial({
     uniforms: sharedUniforms([...FOG_LIGHT_UNIFORMS, 'uWind'], {
       uGlowCol: { value: new THREE.Color(glow) }, uGlowAmt: { value: amt }, uGlowNight: { value: night },
-      uFogMul: { value: fogMul }, uRim: { value: rim }, uOpacity: { value: 1 },
+      uFogMul: { value: fogMul }, uRim: { value: rim }, uSunRim: { value: sunRim }, uOpacity: { value: 1 },
     }),
     vertexShader: VERT, fragmentShader: FRAG, vertexColors: true, side,
   });

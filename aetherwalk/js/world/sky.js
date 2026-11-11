@@ -21,15 +21,25 @@ vec3 awSkyBase(vec3 d) {
   c = mix(c, awFogColorDir(d), exp(-y * 13.0));
   return c;
 }
+// 天環：細く明るい帯 B（外へ向かって明るい）、切れ目、淡い帯 A（中に細い暗線）、内側のかすかな帯 C、にじみ。
+// 縞は細かく弱く（線の束に見せない）。地平に近いほど大気に沈む。
+float awBand(float s, float a, float b, float e) { return smoothstep(a - e, a + e, s) * smoothstep(b + e, b - e, s); }
 vec3 awRing(vec3 d) {
   float s = dot(d, uRingN);
-  float w = abs(s);
   float al = dot(d, uRingU);
-  float ringlets = 0.55 + 0.45 * sin(s * 620.0);
-  float band = smoothstep(0.026, 0.017, w) * ringlets;
-  float gaps = smoothstep(-0.25, 0.1, sin(al * 5.3 + 0.7) + 0.6 * sin(al * 13.1 + 2.0));
-  float glow = exp(-w * 42.0) * 0.22;
-  return uRingCol * ((band * (0.25 + 0.75 * gaps) + glow) * smoothstep(-0.01, 0.12, d.y));
+  float e = 0.0011;
+  float fine = 0.88 + 0.12 * sin(s * 2600.0) * sin(s * 950.0 + 1.3);
+  float C = awBand(s, -0.023, -0.0135, e * 2.0) * 0.13;
+  float B = awBand(s, -0.0135, 0.0, e) * (0.62 + 0.38 * clamp((s + 0.0135) / 0.0135, 0.0, 1.0)) * fine;
+  float A = awBand(s, 0.0032, 0.0118, e) * 0.46 * (1.0 - 0.65 * awBand(s, 0.0083, 0.0093, 0.0003));
+  float halo = exp(-abs(s + 0.004) * 55.0) * 0.1;
+  float vary = 0.8 + 0.2 * sin(al * 3.1 + 0.7) * sin(al * 7.9 + 2.0);
+  return uRingCol * ((B + A + C) * vary + halo) * smoothstep(0.015, 0.3, d.y);
+}
+// 映りこみ用：細部を落とした、ぼけた帯（さざ波でにじむ）
+vec3 awRingSoft(vec3 d) {
+  float s = dot(d, uRingN) + 0.004;
+  return uRingCol * (smoothstep(0.03, 0.0, abs(s)) * 0.22 + exp(-abs(s) * 40.0) * 0.06) * smoothstep(0.015, 0.3, d.y);
 }
 vec3 awAurora(vec3 d) {
   float north = smoothstep(0.05, 0.6, -d.z);
@@ -48,6 +58,12 @@ vec3 awAurora(vec3 d) {
 vec3 awSky(vec3 d) {
   vec3 c = awSkyBase(d) + awRing(d);
   if (uSkyP.z > 0.003) c += awAurora(d);
+  return c;
+}
+// 水・氷に映す空（天環はぼかす）
+vec3 awSkyRefl(vec3 d) {
+  vec3 c = awSkyBase(d) + awRingSoft(d);
+  if (uSkyP.z > 0.003) c += awAurora(d) * 0.85;
   return c;
 }
 `;

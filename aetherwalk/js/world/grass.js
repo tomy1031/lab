@@ -95,7 +95,7 @@ export function createGrass(env) {
         float back = max(dot(vd, -uSunDir), 0.0);
         c += alb * uSunCol * (back * back * y * 0.55);
         float cl = texture2D(uNoiseTex, w * uCloud.x + uCloud.yz).r;
-        c *= 1.0 - smoothstep(0.45, 0.57, cl) * uCloud.w;
+        c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
         vCol = c;
         vFog = awFog(p);
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
@@ -113,15 +113,20 @@ export function createGrass(env) {
   group.add(grass);
 
   // ── 花（茎 2 + 花びら 4 三角形）──
-  const NF = Math.round(1250 * (isQ3 ? 1.3 : 1));
+  const NF = Math.round(1700 * (isQ3 ? 1.3 : 1));
   const fg = new THREE.InstancedBufferGeometry();
-  // 0-2: 茎、3-7: 花（中心 3、まわり 4-7）
-  fg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-    -0.06, 0, 0, 0.06, 0, 0, 0, 1, 0,
-    0, 1, 0, -1, 1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1,
-  ]), 3));
-  fg.setAttribute('aPart', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 2, 1, 1, 1, 1]), 1));
-  fg.setIndex([0, 1, 2, 3, 5, 4, 3, 6, 5, 3, 7, 6, 3, 4, 7]);
+  // 0-2: 茎、3: 花の中心、4-13: 花びら 5 枚（1 枚 = 中心から細い三角 1 つ。すき間があるので紙吹雪に見えない）
+  {
+    const pos = [-0.06, 0, 0, 0.06, 0, 0, 0, 1, 0, 0, 1, 0], part = [0, 0, 0, 2], idx = [0, 1, 2];
+    for (let k = 0; k < 5; k++) {
+      const a = (k / 5) * Math.PI * 2;
+      for (const d of [-0.42, 0.42]) { pos.push(Math.cos(a + d) * 1.2, 1, Math.sin(a + d) * 1.2); part.push(1); }
+      idx.push(3, 5 + k * 2, 4 + k * 2);
+    }
+    fg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+    fg.setAttribute('aPart', new THREE.BufferAttribute(new Float32Array(part), 1));
+    fg.setIndex(idx);
+  }
   const fo = new Float32Array(NF * 4), ft = new Float32Array(NF * 2);
   for (let i = 0; i < NF; i++) {
     const S = i % 3 === 0 ? 60 : 30;
@@ -152,10 +157,10 @@ export function createGrass(env) {
         vec4 gc = texture2D(uColorTex, (w + 800.0) / 1600.0);
         vec4 rg = texture2D(uRegionTex, (w + 800.0) / 1600.0);
         float ptc = texture2D(uNoiseTex, w * 0.011).r;
-        float pm = smoothstep(0.42, 0.62, ptc + (rg.g - 0.3) * 0.25 - rg.b * 0.2);
+        float pm = smoothstep(0.36, 0.58, ptc + (rg.g - 0.3) * 0.25 + rg.r * 0.06 - rg.b * 0.2);
         float keep = step(aOff.z, gc.a * pm * 1.3) * step(0.25, gc.a);
         float hs = (0.2 + 0.22 * aOff.w) * (0.7 + 0.3 * aTile.y) * keep * fade;
-        float sz = (0.03 + 0.03 * aOff.z) * (0.6 + 0.4 * aTile.y) * keep * fade;
+        float sz = (0.04 + 0.04 * aOff.z) * (0.6 + 0.4 * aTile.y) * keep * fade;
         vec2 bend = awBend(w, aOff.w) * 0.6;
         int idx = int(mod(aOff.w * 97.0, 4.0));
         vec3 pal = uPalM[idx] * rg.r + uPalF[idx] * rg.g + uPalC[idx] * rg.b + uPalP[idx] * rg.a;
@@ -176,9 +181,9 @@ export function createGrass(env) {
           alb = aPart > 1.5 ? mix(pal, vec3(1.0, 0.8, 0.25), 0.7) : pal;
         }
         vec3 c = awLight(vec3(0.0, 1.0, 0.0), alb, vec3(0.0, 1.0, 0.0), 0.0);
-        if (aPart > 0.5) c += pal * (0.1 + 0.55 * rg.g * uFogP.z);      // 森の花は夜に光る
+        if (aPart > 0.5) c += pal * (0.06 * (1.0 - uFogP.z) + 0.55 * rg.g * uFogP.z);      // 森の花は夜に光る（草原の花は夜は沈む）
         float cl = texture2D(uNoiseTex, w * uCloud.x + uCloud.yz).r;
-        c *= 1.0 - smoothstep(0.45, 0.57, cl) * uCloud.w * 0.8;
+        c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w * 0.8;
         vCol = c;
         vFog = awFog(p);
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);

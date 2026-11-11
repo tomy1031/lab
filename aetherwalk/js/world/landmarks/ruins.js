@@ -17,17 +17,49 @@ function pillar(P, x, z, h, r = 0.48, broken = false) {
 export function buildStart(env, def) {
   const P = [];
   P.push(part(G.cyl(8.4, 8.9, 0.5, 24, 1, true), { pos: [0, 0.05, 0], bottom: stoneD, top: stone, vary: 0.08 }));
-  // 舞台の敷石：同心の輪に石を 1 枚ずつ敷く（すき間から暗い下地が見える）
-  P.push(part(G.disc(8.4, 24), { pos: [0, 0.27, 0], color: 0x6f6a5e }));
-  const rr = [0, 1.9, 2.25, 3.9, 4.2, 6.1, 6.45, 8.38], tones = [[0xd8d2c0, 0xcfc8b4], [0xf2c66b, 0xf2c66b], [0xc9c2ae, 0xbab39f], [0xe0dac8, 0xe0dac8], [0xd2ccb9, 0xc0b9a5], [0xe0dac8, 0xe0dac8], [0xc9c2ae, 0xb8b19d]];
+  // 舞台の敷石：同心の輪に石を 1 枚ずつ敷く。古びた暖かい灰色、ところどころ苔。目地は細く淡く（床が壁のように見えないように）
+  P.push(part(G.disc(8.4, 24), { pos: [0, 0.27, 0], color: 0x8a8474 }));
+  const rr = [0, 1.9, 2.25, 3.9, 4.2, 6.1, 6.45, 8.38];
+  const tones = [[0xc4bca5, 0xbab29a], [0xf2c66b, 0xf2c66b], [0xb4ac95, 0xaba38c], [0xc2b9a1, 0xc2b9a1], [0xb0a891, 0xa59d86], [0xbcb39b, 0xbcb39b], [0xa79f88, 0x9d957e]];
+  const moss = [0x8d9672, 0x7f8a66];
   for (let i = 0; i < rr.length - 1; i++) {
-    const seg = i === 0 ? 6 : i % 2 ? 1 : 6 + i * 3, gap = i % 2 ? 0 : 0.035 / Math.max(1, rr[i + 1]);
+    const seg = i === 0 ? 6 : i % 2 ? 1 : 6 + i * 3, gap = i % 2 ? 0 : 0.022 / Math.max(1, rr[i + 1]);
     for (let j = 0; j < seg; j++) {
       const a0 = (j / seg) * Math.PI * 2 + i * 0.41, al = (Math.PI * 2) / seg;
-      P.push(part(new THREE.RingGeometry(Math.max(0.12, rr[i] + 0.03), rr[i + 1] - 0.03, seg === 1 ? 28 : 3, 1, a0 + gap, al - gap * 2).rotateX(-Math.PI / 2), { pos: [0, 0.3, 0], color: tones[i][j % 2], glow: i === 1 ? 0.8 : 0 }));
+      const mossy = i >= 4 && i % 2 === 0 && (j * 7 + i) % 5 === 2;
+      P.push(part(new THREE.RingGeometry(Math.max(0.12, rr[i] + 0.02), rr[i + 1] - 0.02, seg === 1 ? 28 : 3, 1, a0 + gap, al - gap * 2).rotateX(-Math.PI / 2), { pos: [0, 0.3, 0], color: mossy ? moss[j % 2] : tones[i][j % 2], vary: 0.05, glow: i === 1 ? 0.8 : 0 }));
     }
   }
+  // 風の羅針：金の輪から 8 方へ細い筋。北の筋は長く、先に矢じり（出発の向き）
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2, L = k === 0 ? 3.6 : k % 2 ? 1.1 : 1.7, r0 = 2.35;
+    const cx = Math.sin(a) * (r0 + L / 2), cz = -Math.cos(a) * (r0 + L / 2);
+    P.push(part(G.box(k === 0 ? 0.14 : 0.08, 0.02, L), { pos: [cx, 0.315, cz], rot: [0, -a, 0], color: 0xf2c66b, glow: 0.7 }));
+  }
+  P.push(part(G.cone(0.34, 0.7, 3), { pos: [0, 0.32, -(2.35 + 3.6 + 0.3)], rot: [-Math.PI / 2, 0, 0], scale: [1, 1, 0.08], color: 0xf2c66b, glow: 0.8 }));
   P.push(part(G.cyl(9.6, 10.2, 0.25, 20), { pos: [0, -0.1, 0], color: stoneD, vary: 0.1 }));
+  // 北へ降りる石段と、段の下の小さな灯籠（巡礼路のはじまり）
+  const hl = (lx, lz) => env.hf.heightAt(def.x + lx, def.z + lz) - def.y;
+  for (let k = 0; k < 3; k++) {
+    const z = -(10.6 + k * 0.8), top = -0.2 - k * 0.25, bot = Math.min(hl(0, z), top) - 0.5;
+    P.push(part(G.box(4.6 - k * 0.3, top - bot, 0.86), { pos: [0, (top + bot) / 2, z], bottom: stoneD, top: k % 2 ? stone : 0xbdb6a3, jitter: 0.02, vary: 0.08 }));
+  }
+  for (const sx of [-3.3, 3.3]) {
+    const z = -14.6, g = hl(sx, z);
+    P.push(part(G.box(0.62, 0.3, 0.62), { pos: [sx, g + 0.1, z], color: stoneD }));
+    P.push(part(G.cyl(0.13, 0.17, 0.95, 6), { pos: [sx, g + 0.72, z], bottom: stone, top: stoneL }));
+    P.push(part(G.box(0.4, 0.3, 0.4), { pos: [sx, g + 1.34, z], color: stoneL }));
+    P.push(part(G.octa(0.12), { pos: [sx, g + 1.34, z], scale: [1, 1.3, 1], color: 0xfff0c0, glow: 1 }));
+    P.push(part(G.cone(0.34, 0.34, 4), { pos: [sx, g + 1.66, z], rot: [0, Math.PI / 4, 0], color: 0x4f79b8 }));
+    const wp = toWorld(def, sx, g + 1.34, z);
+    env.fx.glows.add({ x: wp.x, y: wp.y, z: wp.z, size: 1.1, color: 0xffc46a, mode: 1, intensity: 0.8, flicker: 0.1 });
+    const cp = toWorld(def, sx, 0, z);
+    env.col.addCollider({ x: cp.x, z: cp.z, r: 0.3, y0: def.y + g - 0.5, y1: def.y + g + 2.0, kind: 'structure' });
+  }
+  for (let k = 0; k < 3; k++) {
+    const z = -(10.6 + k * 0.8), a = toWorld(def, -2.2, 0, z - 0.4), b = toWorld(def, 2.2, 0, z + 0.4);
+    env.col.addPlatform({ x0: Math.min(a.x, b.x), x1: Math.max(a.x, b.x), z0: Math.min(a.z, b.z), z1: Math.max(a.z, b.z), y: def.y - 0.2 - k * 0.25, surface: 'stone' });
+  }
   // 北の門（-z が北＝正面）
   pillar(P, -5.2, -7.0, 5.6, 0.4); pillar(P, 5.2, -7.0, 5.6, 0.4);
   P.push(part(G.box(2.4, 0.55, 0.9), { pos: [-4.5, 6.75, -7.0], rot: [0, 0, 0.1], color: stoneL, jitter: 0.04 }));
@@ -91,7 +123,7 @@ export function buildPier(env, def, lakeLevel) {
   for (const sx of [-2.6, 2.6]) {
     const p = toWorld(def, sx, y + 4.65, -L - 4.6);
     env.col.addCollider({ x: p.x, z: p.z, r: 0.2, y0: lakeLevel, y1: lakeLevel + 6, kind: 'structure' });
-    env.fx.glows.add({ x: p.x, y: p.y, z: p.z, size: 1.6, color: 0xffc46a, mode: 1, intensity: 0.9, flicker: 0.1 });
+    env.fx.glows.add({ x: p.x, y: p.y, z: p.z, size: 1.15, color: 0xffc46a, mode: 1, intensity: 0.6, flicker: 0.1 });
   }
   return { mesh, end: toWorld(def, 0, y, -L - 4.9), floorY: lakeLevel + 1.15 };
 }
@@ -166,7 +198,7 @@ export function buildArch(env, def) {
   P.push(part(G.dodeca(4.6), { pos: [23, 1.0, -2.0], scale: [1.2, 0.8, 1.3], color: col, jitter: 0.5 }));
   P.push(part(G.dodeca(3.2), { pos: [-17, 9.5, -3.6], scale: [1, 1.3, 1], color: col, jitter: 0.4 }));
   for (const [x, y] of [[-6, 26.0], [2, 26.8], [8, 25.7]]) P.push(part(G.ico(1.5, 0), { pos: [x, y, 0.4], scale: [1.8, 0.5, 1.6], bottom: 0x587f5a, top: 0xa8c896, sway: 0.4 }));
-  const mesh = new THREE.Mesh(merge(P), structMaterial({ rim: 0.25, fogMul: 0.9 }));
+  const mesh = new THREE.Mesh(merge(P), structMaterial({ rim: 0.25, sunRim: 1.6, fogMul: 0.9 }));
   for (const [x, z, r] of [[-19.5, 0, 5.2], [19.5, 0, 5.2], [-23, 2.5, 5], [23.5, -2, 4.4], [-16.5, -3, 3]]) {
     const p = toWorld(def, x, 0, z);
     env.col.addCollider({ x: p.x, z: p.z, r, y0: def.y - 2, y1: def.y + 16, kind: 'rock' });
@@ -180,9 +212,17 @@ export function buildElder(env, def) {
   const P = [];
   const bark = 0x5a4636, barkD = 0x35291f, barkL = 0x75604c;
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  const barkC = (p, n) => { const t = Math.min(1, p.y / 40), k = 0.62 + 0.38 * Math.max(0, n.y * 0.5 + 0.5) + 0.1 * Math.sin(p.y * 0.9 + p.x * 0.5); return [(0.05 + 0.1 * t) * k, (0.035 + 0.075 * t) * k, (0.025 + 0.05 * t) * k]; };
+  // 樹皮：上ほど明るく、上を向いた面と根もとに苔
+  const barkC = (p, n) => {
+    const t = Math.min(1, p.y / 40), k = 0.66 + 0.34 * Math.max(0, n.y * 0.5 + 0.5) + 0.1 * Math.sin(p.y * 0.9 + p.x * 0.5);
+    const c = [(0.08 + 0.12 * t) * k, (0.056 + 0.085 * t) * k, (0.04 + 0.055 * t) * k];
+    const m = Math.min(1, Math.max(0, n.y * 1.6 - 0.15)) * (p.y < 12 ? 0.85 : 0.45) * (0.6 + 0.4 * Math.sin(p.x * 0.7 + p.z * 0.5));
+    return [c[0] + (0.07 - c[0]) * m, c[1] + (0.16 - c[1]) * m, c[2] + (0.08 - c[2]) * m];
+  };
+  // 幹をのぼる光の筋（昼はかすか、夜は青緑に光る）
+  const vein = (p) => { const a = Math.atan2(p.x, p.z); return Math.pow(Math.max(0, Math.sin(a * 5 + p.y * 0.09)), 18) * (p.y > 2 && p.y < 44 ? 0.9 : 0); };
   // 幹：根もとで広がり、上で分かれる
-  P.push(part(tubeGeo([V(0, -1, 0), V(0, 3, 0), V(0.3, 9, 0), V(0.6, 20, -0.2), V(0.2, 32, 0.3), V(-0.4, 42, 0)], [14, 10.6, 9, 7.6, 6.6, 5.2], [14, 10.6, 9, 7.6, 6.6, 5.2], 12, V(0, 0, 1), false), { color: barkC, jitter: 0.5 }));
+  P.push(part(tubeGeo([V(0, -1, 0), V(0, 3, 0), V(0.3, 9, 0), V(0.6, 20, -0.2), V(0.2, 32, 0.3), V(-0.4, 42, 0)], [14, 10.6, 9, 7.6, 6.6, 5.2], [14, 10.6, 9, 7.6, 6.6, 5.2], 16, V(0, 0, 1), false), { color: barkC, jitter: 0.5, glow: vein }));
   // 根：幹から下り、地面にもぐる
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2 + rng.range(-0.2, 0.2), len = rng.range(14, 26), sx = Math.sin(a), cz = Math.cos(a), bend = rng.range(-0.25, 0.25);
@@ -210,10 +250,10 @@ export function buildElder(env, def) {
   env.col.addCollider({ x: def.x, z: def.z, r: 10.5, y0: def.y - 2, y1: def.y + 60, kind: 'tree' });
   // 木漏れ日
   const fx = env.fx;
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i < 15; i++) {
     const a = rng.range(0, 6.28), d = rng.range(16, 46);
     const x = def.x + Math.sin(a) * d, z = def.z + Math.cos(a) * d;
-    fx.shafts.add({ from: V(x, env.hf.heightAt(x, z) - 1, z), sun: true, len: rng.range(50, 66), width: rng.range(3.5, 7), color: 0xffeeb0, intensity: rng.range(0.05, 0.1) });
+    fx.shafts.add({ from: V(x, env.hf.heightAt(x, z) - 1, z), sun: true, len: rng.range(50, 66), width: rng.range(3.5, 7), color: 0xffeeb0, intensity: rng.range(0.1, 0.17) });
   }
   for (let i = 0; i < 5; i++) {
     const a = rng.range(0, 6.28), d = rng.range(12, 30);

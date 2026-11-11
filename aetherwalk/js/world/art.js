@@ -238,8 +238,12 @@ export function createArt() {
       vec3 c = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
       float s = length(modelMatrix[0].xyz);
       vec4 mv = viewMatrix * vec4(c, 1.0);
-      mv.xy += position.xy * s;
-      vF = 1.0 - awFog(c).a * 0.85;
+      // 板をカメラの方へ寄せる（地面や壁に切られない）。見かけの大きさは保つ
+      float dist = length(mv.xyz);
+      float sc = (dist - min(s * 0.85, dist * 0.6)) / max(dist, 1e-3);
+      mv.xyz *= sc;
+      mv.xy += position.xy * s * sc;
+      vF = (1.0 - awFog(c).a * 0.85) * smoothstep(s * 0.45, s * 1.4, dist);   // にじみの中に入ったら消す
       gl_Position = projectionMatrix * mv;
     }`;
   const GLOW_FRAG = /* glsl */`

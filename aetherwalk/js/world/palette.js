@@ -22,7 +22,7 @@ const BAND = C(0xc85a8f);
 // 地域の空気：霧の色み（掛ける）と濃さ。順番は meadow, forest, canyon, peaks, lake, coast
 export const REGION_AIR = {
   meadow: { tint: C(0xffffff), mul: 1.0 },
-  forest: { tint: C(0xa8e0c8), mul: 1.8 },
+  forest: { tint: C(0xa8e0c8), mul: 3.4 },
   canyon: { tint: C(0xffe4cc), mul: 1.05 },
   peaks: { tint: C(0xdce9ff), mul: 1.3 },
   lake: { tint: C(0xffffff), mul: 0.8 },
@@ -101,7 +101,7 @@ export function createPalette() {
     U.uSkyP.value.w = glowAmt;
     // 天環：昼は淡い白、夜は月の色で光る
     U.uRingCol.value.copy(st.sun).lerp(tmp.set(0xbfe9ff), 0.5).multiplyScalar(0.22 + st.night * 0.5);
-    U.uCloud.value.w = 0.42 * (1 - st.night * 0.7);
+    U.uCloud.value.w = 0.3 * (1 - st.night * 0.7);
     return st;
   }
   return { state: st, apply };

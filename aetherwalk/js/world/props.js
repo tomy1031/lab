@@ -208,15 +208,19 @@ export function createProps(env, sp) {
         return merge(P);
       }), mat);
       rotor.position.set(0, 1.12, 0.05);
+      rotor.scale.setScalar(1.35);
       const g = new THREE.Group(); g.add(stem, rotor);
       const anchors = { center: toWorld(d, 0, 1.12, 0) };
       const gl = fx.glows.add({ x: anchors.center.x, y: anchors.center.y, z: anchors.center.z, size: 1.1, color: 0xffd76a, intensity: 0 });
+      // 見つけやすいように、夜はかすかに灯る（咲いたら上の glow が主役）
+      const gFaint = fx.glows.add({ x: anchors.center.x, y: anchors.center.y, z: anchors.center.z, size: 0.75, color: 0xfff1c0, mode: 1, intensity: 0.3 });
       return {
         object3D: g, anchors, state: { spin: 0, bloomed: false },
         onState(key, v) {
           if (key === 'bloomed') {
             mat.uniforms.uGlowAmt.value = v ? 1.2 : 0.1;
             fx.glows.set(gl, { intensity: v ? 0.8 : 0 });
+            fx.glows.set(gFaint, { intensity: v ? 0 : 0.3 });
             if (v && env.ready) { fx.api.emit('petal', anchors.center, { count: 18 }); fx.api.flash(anchors.center, { color: 0xffd76a, size: 3, life: 0.6 }); }
           }
         },
@@ -303,7 +307,7 @@ export function createProps(env, sp) {
       const P = [];
       for (let i = 0; i < n; i++) P.push(part(G.box(3.0, 0.07, 3.0), { pos: [0, -0.04, -(i + 0.5) * (len / n)], color: i % 2 ? 0xdff6ff : 0xbfe9ff, glow: 1 }));
       for (const sx of [-1.62, 1.62]) P.push(part(G.box(0.07, 0.07, len), { pos: [sx, 0.02, -len / 2], color: 0xffe9a8, glow: 1 }));
-      const mesh = new THREE.Mesh(merge(P), structMaterial({ glow: 0x9fe9ff, amt: 1.0, night: 0.3 }));
+      const mesh = new THREE.Mesh(merge(P), structMaterial({ glow: 0x9fe9ff, amt: 0.55, night: 0.25 }));
       mesh.position.set(0, 0, z0 - d.z);
       const g = new THREE.Group(); g.add(mesh);
       g.visible = false;

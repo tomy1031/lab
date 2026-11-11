@@ -36,7 +36,12 @@ void main() {
     wp.xz += vec2(aInst2.x, aInst2.y) * (position.y * position.y * aInst.w * aInst2.z * 0.18);
     // 岩の地色：0 草原 1 地層 2 峰 3 森（苔）4 白い崖
     if (aInst2.w < 0.5) alb *= vec3(0.33, 0.3, 0.23);
-    else if (aInst2.w > 3.5) alb *= vec3(0.9, 0.86, 0.77);
+    else if (aInst2.w > 3.5) {
+      // 白い崖の岩：白亜の肌、上に海辺の草、波に洗われる根もとは濡れて暗い
+      alb = mix(vec3(0.62, 0.6, 0.55), vec3(0.93, 0.91, 0.85), color.g) * (0.9 + 0.1 * sin(wp.y * 2.4));
+      alb = mix(alb, vec3(0.2, 0.42, 0.13), smoothstep(0.72, 0.9, n.y) * smoothstep(1.5, 4.0, wp.y));
+      alb *= mix(0.42, 1.0, smoothstep(-0.2, 1.6, wp.y));
+    }
     else if (aInst2.w > 2.5) alb = mix(alb * vec3(0.11, 0.115, 0.09), vec3(0.05, 0.2, 0.08), smoothstep(0.2, 0.75, n.y) * 0.8);
     else if (aInst2.w > 1.5) alb *= vec3(0.11, 0.145, 0.22);
   #endif
@@ -46,13 +51,17 @@ void main() {
     alb = st * (0.55 + 0.9 * color.g);
   }
   alb *= vec3(1.0 + aInst2.z * 0.16, 1.0 + aInst2.z * 0.05, 1.0 - aInst2.z * 0.12);
-  if (aInst2.w > 1.5) alb = mix(alb, vec3(0.92, 0.95, 1.0), smoothstep(0.35, 0.8, n.y) * 0.85);
+  if (aInst2.w > 1.5) {
+    // 雪：上を向いた面に、まだらに積もる（全体を灰色にしない）
+    float patchy = 0.28 * sin(wp.x * 1.7 + wp.y * 2.3) * sin(wp.z * 1.9 - wp.y * 1.3);
+    alb = mix(alb, vec3(0.93, 0.96, 1.0), smoothstep(0.5, 0.78, n.y + patchy) * 0.92);
+  }
   vec3 vd = normalize(cameraPosition - wp);
   vec3 c = awLight(n, alb, vd, 0.3 * sw + 0.12);
   float back = max(dot(vd, -uSunDir), 0.0);
   c += alb * uSunCol * (back * back * sw * 0.6);
   float cl = texture2D(uNoiseTex, wp.xz * uCloud.x + uCloud.yz).r;
-  c *= 1.0 - smoothstep(0.45, 0.57, cl) * uCloud.w;
+  c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
   c += uGlowCol * color.rgb * (uv.y * (0.15 + 2.2 * uFogP.z));
   vCol = c;
   vFog = awFog(wp);
@@ -160,14 +169,16 @@ function treeGeos() {
   ]);
   // 3 針葉樹（峰）
   const tier = (r, y, h, seg, bot, top, open = true) => part(G.cone(r, h, seg, open), { pos: [0, y + h / 2, 0], bottom: bot, top, sway: 0.6, topLight: 0.4 });
+  // 枝は地面近くから。段を深く重ね、下の段ほど広く垂れる（目の高さで傘に見えないように）
   const pineNear = merge([
-    part(G.cyl(0.16, 0.3, 3, 5), { pos: [0, 1.5, 0], color: 0x4a3a30 }),
-    tier(2.5, 1.6, 3.4, 8, 0x1e4442, 0x2f5a57, false), tier(2.0, 3.6, 3.2, 8, 0x234b48, 0x38665f),
-    tier(1.5, 5.6, 3.0, 7, 0x275250, 0x427268), tier(1.0, 7.6, 2.8, 6, 0x2b5855, 0x4c7e72), tier(0.55, 9.4, 2.2, 5, 0x30605c, 0x5a8c7e),
+    part(G.cyl(0.16, 0.3, 2.2, 5), { pos: [0, 1.1, 0], color: 0x4a3a30 }),
+    tier(2.35, 0.55, 2.7, 9, 0x24504c, 0x33615c, false), tier(2.0, 1.95, 2.7, 8, 0x26534f, 0x396a63),
+    tier(1.62, 3.35, 2.6, 8, 0x295853, 0x417268), tier(1.25, 4.7, 2.5, 7, 0x2c5c57, 0x4a7d72),
+    tier(0.88, 6.0, 2.3, 6, 0x30605b, 0x55887c), tier(0.5, 7.2, 2.0, 5, 0x34655f, 0x5f9285),
   ]);
   const pineFar = merge([
-    part(G.cone(2.4, 6.2, 5, false), { pos: [0, 4.6, 0], bottom: 0x1e4442, top: 0x38665f, sway: 0.6 }),
-    part(G.cone(1.3, 5.2, 4, true), { pos: [0, 9.0, 0], bottom: 0x275250, top: 0x52857a, sway: 0.6 }),
+    part(G.cone(2.3, 6.4, 5, false), { pos: [0, 3.5, 0], bottom: 0x24504c, top: 0x3b6b64, sway: 0.6 }),
+    part(G.cone(1.25, 4.6, 4, true), { pos: [0, 6.9, 0], bottom: 0x295853, top: 0x55887c, sway: 0.6 }),
   ]);
   // 4 峡谷の灌木
   const shrubNear = merge([
@@ -251,7 +262,7 @@ export function createFlora(env) {
   };
   const taken = [];
   const farFrom = (x, z, r) => { for (let i = 0; i < taken.length; i += 3) { const dx = taken[i] - x, dz = taken[i + 1] - z, rr = r + taken[i + 2]; if (dx * dx + dz * dz < rr * rr) return false; } return true; };
-  const keepClear = [[LM.start.x, LM.start.z, 26], [0, 440, 0], [-420, 220, 5], [LM.elder_tree.x, LM.elder_tree.z, 30], [LM.great_arch.x, LM.great_arch.z, 24]];
+  const keepClear = [[LM.start.x, LM.start.z, 26], [0, 440, 0], [-420, 220, 5], [LM.elder_tree.x, LM.elder_tree.z, 44], [LM.great_arch.x, LM.great_arch.z, 24]];
   const clearOf = (x, z) => { for (const k of keepClear) if (Math.hypot(x - k[0], z - k[1]) < k[2]) return false; return true; };
   // 出発点からの眺めの軸（塔・湖・天の錨・峰）は木を置かない
   const inSightline = (x, z) => z > 150 && z < 540 && Math.abs(x - (z - 150) / 390 * 0) < 26 + (540 - z) * 0.09;

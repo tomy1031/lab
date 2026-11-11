@@ -1,7 +1,7 @@
 // js/world/landmarks/towers.js — FABLE
 // 鐘塔：6 本柱の吹き抜けの塔。中を昇降台が上下し、頂の甲板に鐘が下がる。目覚めると天の錨へ光の柱を放つ。
 import * as THREE from 'three';
-import { part, merge, G } from '../geo.js';
+import { part, merge, G, tubeGeo } from '../geo.js';
 import { structMaterial, toWorld } from './common.js';
 import { LAKE_C } from '../layout.js';
 
@@ -19,22 +19,39 @@ export function buildTower(env, def, tw) {
   // 土台の敷石
   parts.push(part(G.cyl(7.2, 7.6, 0.3, 12), { pos: [0, 0.0, 0], bottom: T.stoneD, top: T.stone, vary: 0.1 }));
   parts.push(part(G.ring(2.3, 2.7, 16), { pos: [0, 0.17, 0], color: 0xf2c66b, glow: 1 }));
-  // 柱：甲板より下は太く、上は細い
+  // 柱：根もとは重い石の控え壁（足が大地に立つ）、その上に細い柱。甲板の上は笠を支える細柱
+  const BH = Math.min(6, H * 0.24);
   for (let i = 0; i < 6; i++) {
     const a = (i + 0.5) / 6 * Math.PI * 2, x = Math.sin(a) * R, z = Math.cos(a) * R;
-    parts.push(part(G.cyl(0.3, 0.46, H, 6, 3), { pos: [x, H / 2, z], bottom: T.stoneD, top: T.stone, jitter: 0.03, jitterY: 0, vary: 0.1 }));
-    parts.push(part(G.box(1.1, 0.5, 1.1), { pos: [x, 0.4, z], rot: [0, a, 0], color: T.stoneD }));
+    const xo = Math.sin(a) * (R + 0.35), zo = Math.cos(a) * (R + 0.35);
+    parts.push(part(G.cyl(0.62, 1.05, BH, 4), { pos: [xo, BH / 2, zo], rot: [0, a + Math.PI / 4, 0], bottom: T.stoneD, top: T.stone, jitter: 0.04, jitterY: 0, vary: 0.1 }));
+    parts.push(part(G.cone(0.72, 0.9, 4), { pos: [xo, BH + 0.42, zo], rot: [0, a + Math.PI / 4, 0], color: T.roof }));
+    parts.push(part(G.cyl(0.27, 0.4, H - BH + 0.3, 6, 2), { pos: [x, BH + (H - BH) / 2 - 0.15, z], bottom: T.stoneD, top: T.stone, jitter: 0.02, jitterY: 0, vary: 0.1 }));
     const x2 = Math.sin(a) * 5.15, z2 = Math.cos(a) * 5.15;
     parts.push(part(G.cyl(0.12, 0.15, 5.4, 5), { pos: [x2, H + 2.7, z2], bottom: T.stoneD, top: T.stone }));
     parts.push(part(G.box(0.42, 0.5, 0.42), { pos: [x2, H + 0.25, z2], rot: [0, a, 0], color: T.stoneD }));
     // 光る紋（柱の内側）
-    parts.push(part(G.box(0.12, H * 0.5, 0.05), { pos: [x * 0.9, H * 0.5, z * 0.9], rot: [0, a, 0], color: 0xbfe9ff, glow: 1 }));
+    parts.push(part(G.box(0.1, (H - BH) * 0.6, 0.05), { pos: [x * 0.92, BH + (H - BH) * 0.45, z * 0.92], rot: [0, a, 0], color: 0xbfe9ff, glow: 1 }));
+    // 甲板から垂れる旗（ひとつおき）
+    if (i % 2 === 0) {
+      const ab = a + Math.PI / 6, bx = Math.sin(ab) * 5.25, bz = Math.cos(ab) * 5.25;
+      const fl = new THREE.PlaneGeometry(1.15, 4.6, 1, 4);
+      for (const side of [0, Math.PI]) parts.push(part(fl, { pos: [bx, H - 2.65, bz], rot: [0, ab + side, 0], bottom: T.roof, top: T.roofL, sway: (p) => Math.max(0, H - 0.4 - p.y) * 0.18 }));
+      parts.push(part(G.octa(0.16), { pos: [bx, H - 5.05, bz], scale: [1, 1.5, 0.5], rot: [0, ab, 0], color: 0xf2c66b, glow: 0.6 }));
+    }
   }
-  // 柱をつなぐ輪
-  const rings = Math.max(2, Math.round(H / 7));
-  for (let k = 1; k <= rings; k++) {
-    const y = (H * k) / (rings + 1);
-    parts.push(part(G.torus(R, 0.17, 4, 6), { rot: [Math.PI / 2, 0, Math.PI / 6 * 0], pos: [0, y, 0], color: T.stoneD }));
+  // 控え壁をつなぐ帯、中ほどの金の帯、甲板の下の太い帯（横線は少なく）
+  parts.push(part(G.torus(R + 0.25, 0.3, 4, 6), { rot: [Math.PI / 2, 0, Math.PI / 6], pos: [0, BH - 0.1, 0], color: T.stoneD }));
+  parts.push(part(G.torus(R, 0.12, 4, 12), { rot: [Math.PI / 2, 0, 0], pos: [0, BH + (H - BH) * 0.55, 0], color: 0xf2c66b, glow: 0.4 }));
+  parts.push(part(G.torus(R + 0.05, 0.26, 4, 6), { rot: [Math.PI / 2, 0, Math.PI / 6], pos: [0, H - 0.6, 0], color: T.stoneD }));
+  // 風のらせん：柱の外を 2 回り半のぼる細い光の帯
+  {
+    const pts = [], ra = [], turns = 2.5, n = 64;
+    for (let k = 0; k <= n; k++) {
+      const t = k / n, ang = t * turns * Math.PI * 2 + 0.4, y = BH + 0.6 + t * (H - BH - 1.6), r = R + 0.48;
+      pts.push(new THREE.Vector3(Math.sin(ang) * r, y, Math.cos(ang) * r)); ra.push(0.085);
+    }
+    parts.push(part(tubeGeo(pts, ra, ra, 4), { color: 0xd8f6ff, glow: 0.9 }));
   }
   // 甲板（まん中は昇降台の穴）
   parts.push(part(new THREE.RingGeometry(2.25, 5.5, 12).rotateX(-Math.PI / 2), { pos: [0, H, 0], color: T.stone, vary: 0.12 }));
@@ -81,8 +98,8 @@ export function buildTower(env, def, tw) {
   // 衝突と甲板
   for (let i = 0; i < 6; i++) {
     const a = (i + 0.5) / 6 * Math.PI * 2;
-    const p = toWorld(def, Math.sin(a) * R, 0, Math.cos(a) * R);
-    env.col.addCollider({ x: p.x, z: p.z, r: 0.5, y0: def.y - 1, y1: def.y + H, kind: 'structure' });
+    const p = toWorld(def, Math.sin(a) * (R + 0.3), 0, Math.cos(a) * (R + 0.3));
+    env.col.addCollider({ x: p.x, z: p.z, r: 0.95, y0: def.y - 1, y1: def.y + H, kind: 'structure' });
   }
   env.col.addPlatform({ x: def.x, z: def.z, r: 5.5, y: def.y + H, surface: 'stone' });
   env.col.addPlatform({ x: def.x, z: def.z, r: 7.3, y: def.y + 0.15, surface: 'stone' });

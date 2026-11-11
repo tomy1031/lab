@@ -9,15 +9,16 @@ const FOGU = [...FOG_LIGHT_UNIFORMS, 'uVH'];
 
 // kind ごとの既定
 const PRESET = {
-  spark: { count: 10, color: 0xffd76a, speed: 4.5, size: 0.07, life: 0.45, spread: 1, grav: -9, drag: 1.5, add: 1, up: 0.3 },
-  dust: { count: 8, color: 0xc9b89a, speed: 1.2, size: 0.3, life: 0.9, spread: 1, grav: 0.3, drag: 2.5, add: 0, up: 0.5, alpha: 0.5 },
+  spark: { count: 10, color: 0xffd76a, speed: 4.5, size: 0.08, life: 0.5, spread: 1, grav: -9, drag: 1.5, add: 1, up: 0.3 },
+  dust: { count: 8, color: 0xc9b89a, speed: 1.3, size: 0.36, life: 1.0, spread: 1, grav: 0.3, drag: 2.5, add: 0, up: 0.5, alpha: 0.5 },
   splash: { count: 12, color: 0xdff6ff, speed: 3.2, size: 0.1, life: 0.7, spread: 0.7, grav: -9.8, drag: 0.4, add: 0, up: 1.2, alpha: 0.9 },
   ember: { count: 6, color: 0xff9a3c, speed: 0.9, size: 0.06, life: 1.6, spread: 0.6, grav: 1.2, drag: 0.8, add: 1, up: 1 },
-  smoke: { count: 5, color: 0x8a8690, speed: 0.6, size: 0.5, life: 1.8, spread: 0.6, grav: 0.8, drag: 1, add: 0, up: 1, alpha: 0.4 },
+  smoke: { count: 5, color: 0x8a8690, speed: 0.7, size: 0.7, life: 2.4, spread: 0.6, grav: 0.9, drag: 1.1, add: 0, up: 1, alpha: 0.5 },
   leaf: { count: 8, color: 0x7fd06a, speed: 1.6, size: 0.11, life: 2.2, spread: 1, grav: -1.2, drag: 1.2, add: 0, up: 0.6, alpha: 1 },
   petal: { count: 10, color: 0xffc4dc, speed: 1.4, size: 0.09, life: 3.0, spread: 1, grav: -0.5, drag: 1.0, add: 0, up: 0.7, alpha: 1 },
-  poof: { count: 22, color: 0xb9b3c4, speed: 1.6, size: 0.26, life: 1.3, spread: 1, grav: 1.4, drag: 1.6, add: 0.6, up: 0.6, alpha: 0.75 },
-  ring: { count: 28, color: 0xfff1c0, speed: 5.0, size: 0.16, life: 0.55, spread: 0, grav: 0, drag: 2.2, add: 1, up: 0 },
+  poof: { count: 22, color: 0x9a94a6, speed: 1.6, size: 0.3, life: 1.4, spread: 1, grav: 1.2, drag: 1.6, add: 0, up: 0.6, alpha: 0.8 },
+  // ring：size は輪の半径（m）。粒の大きさ・数・速さは半径から決める
+  ring: { count: 0, color: 0xfff1c0, speed: 0, size: 1.2, life: 0.55, spread: 0, grav: 0, drag: 3.2, add: 1, up: 0 },
   heal: { count: 12, color: 0x9dffb0, speed: 0.7, size: 0.1, life: 1.2, spread: 0.8, grav: 1.5, drag: 0.5, add: 1, up: 1 },
   shard: { count: 8, color: 0xffd76a, speed: 2.2, size: 0.09, life: 0.9, spread: 1, grav: -3, drag: 1.2, add: 1, up: 1 },
   gust: { count: 14, color: 0xd8f6ff, speed: 7, size: 0.12, life: 0.5, spread: 0.35, grav: 0, drag: 1.2, add: 1, up: 0 },
@@ -28,6 +29,7 @@ export function createFx(env) {
   const group = new THREE.Group();
   group.name = 'aw-fx';
   const tmpC = new THREE.Color(), tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
+  const CORE = new THREE.Color(0xd58bff);
   let now = 0;
 
   // ── 粒子のプール ──
@@ -58,7 +60,11 @@ export function createFx(env) {
         vC = vec4(lit * al, al * (1.0 - add));
         vec4 mv = viewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = clamp(aDat.z * (0.6 + 0.6 * k * (1.0 - add)) * projectionMatrix[1][1] * uVH * 0.5 / max(-mv.z, 0.05), 0.0, 220.0) * live;
+        // 遠くても 3 px より小さくしない（そのぶん淡く）
+        float ps = aDat.z * (0.6 + 0.6 * k * (1.0 - add)) * projectionMatrix[1][1] * uVH * 0.5 / max(-mv.z, 0.05);
+        float pmin = 3.0 * uVH / 900.0;
+        vC *= clamp(ps / pmin, 0.25, 1.0);
+        gl_PointSize = clamp(max(ps, pmin), 0.0, 220.0) * live;
       }`,
     fragmentShader: /* glsl */`
       varying vec4 vC;
@@ -88,17 +94,22 @@ export function createFx(env) {
   function emit(kind, pos, opts = {}) {
     const P = PRESET[kind] || PRESET.spark;
     if (!pos) return;
-    let count = opts.count ?? P.count;
+    const isRing = kind === 'ring';
+    const ringR = isRing ? Math.min(12, Math.max(0.2, opts.size ?? P.size)) : 0;
+    let count = opts.count ?? (isRing ? Math.round(Math.min(48, 16 + ringR * 8)) : P.count);
     if (quality > 1) count = Math.ceil(count * 0.5);
     count = Math.min(count, 80);
     tmpC.set(opts.color ?? P.color);
-    const speed = opts.speed ?? P.speed, size = opts.size ?? P.size, life = opts.life ?? P.life, spread = opts.spread ?? P.spread;
+    const life = opts.life ?? (isRing ? P.life + ringR * 0.05 : P.life), spread = opts.spread ?? P.spread;
+    // 輪：抵抗 drag のもとで寿命のうちに半径 ringR まで広がる初速
+    const speed = isRing ? ringR * P.drag / (1 - Math.exp(-P.drag * life)) : (opts.speed ?? P.speed);
+    const size = isRing ? 0.06 + ringR * 0.04 : (opts.size ?? P.size);
     const dir = opts.dir;
     for (let i = 0; i < count; i++) {
       let vx, vy, vz;
-      if (kind === 'ring') {
-        const a = (i / count) * Math.PI * 2;
-        vx = Math.cos(a) * speed; vz = Math.sin(a) * speed; vy = 0.2;
+      if (isRing) {
+        const a = (i / count) * Math.PI * 2 + Math.random() * 0.1;
+        vx = Math.cos(a) * speed; vz = Math.sin(a) * speed; vy = 0.15;
       } else {
         // 球の中の乱数方向
         let x, y, z, l;
@@ -109,8 +120,14 @@ export function createFx(env) {
         else { vx = (x / l) * spread * s; vy = ((y / l) * spread + P.up) * s; vz = (z / l) * spread * s; }
       }
       const j = 0.82 + Math.random() * 0.36;
+      if (kind === 'poof' && i % 3 === 0) {
+        // 灰がほどけるとき、芯の色の小さな光がのぼる
+        put(pos.x + (Math.random() - 0.5) * 0.3, pos.y + (Math.random() - 0.5) * 0.3, pos.z + (Math.random() - 0.5) * 0.3, vx * 0.4, Math.abs(vy) * 0.5 + 0.6, vz * 0.4,
+          now, life * (1.0 + 0.6 * Math.random()), 0.07 * j, 1, CORE.r, CORE.g, CORE.b, 1, 0.8, 0.9);
+        continue;
+      }
       put(pos.x + (Math.random() - 0.5) * 0.1, pos.y + (Math.random() - 0.5) * 0.1, pos.z + (Math.random() - 0.5) * 0.1, vx, vy, vz,
-        now, life * (0.7 + 0.6 * Math.random()), size * j, P.alpha ?? 1, tmpC.r * j, tmpC.g * j, tmpC.b * j, P.add, P.grav, P.drag);
+        now, life * (isRing ? 0.9 + 0.2 * Math.random() : 0.7 + 0.6 * Math.random()), size * j, P.alpha ?? 1, tmpC.r * j, tmpC.g * j, tmpC.b * j, P.add, P.grav, P.drag);
     }
   }
   function ribbon(from, to, opts = {}) {
@@ -158,8 +175,14 @@ export function createFx(env) {
         float smin = dist * 0.0032;
         if (s < smin) { k *= max(s / smin, 0.25); s = smin; }
         k *= smoothstep(1500.0, 900.0, dist) * (1.0 - awFog(c).a * 0.75);
+        // にじみの中に入ったら消す（画面いっぱいの白飛びを防ぐ）
+        k *= smoothstep(s * 0.55, s * 1.5, dist);
         vC = aCol.rgb * k;
-        mv.xy += position.xy * s * step(0.002, k);
+        // 板をカメラの方へ寄せる（地面や壁に切られない）。見かけの大きさは保つ
+        float pull = min(s * 0.85, dist * 0.6);
+        float sc = (dist - pull) / max(dist, 1e-3);
+        mv.xyz *= sc;
+        mv.xy += position.xy * s * sc * step(0.002, k);
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */`
@@ -241,7 +264,11 @@ export function createFx(env) {
         vec3 side = normalize(cross(axis, cameraPosition - (b + axis * position.y)));
         vec3 p = b + axis * position.y + side * (position.x * wdt * (aCol.a > 0.5 ? 0.55 + 0.9 * (1.0 - position.y) : 1.0));
         vP = vec2(position.x * 2.0, position.y);
-        float nearFade = smoothstep(1.0, 6.0, dist);
+        // 木漏れ日は太く明るいので、近くでは消す（目の前で白飛びしない）
+        float nearFade = aCol.a > 0.5 ? smoothstep(6.0, 22.0, dist) : smoothstep(1.0, 6.0, dist);
+        // 筋の向きに沿って見ると板が重なって白飛びするので、軸と視線が平行に近いほど消す
+        float para = abs(dot(normalize(axis), (cameraPosition - mid) / max(dist, 1e-3)));
+        nearFade *= smoothstep(0.93, 0.7, para);
         vC = aCol.rgb * k * nearFade * (1.0 - awFog(mix(b, mid, 0.5)).a * 0.7);
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
       }`,

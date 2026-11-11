@@ -14,6 +14,7 @@ const P = {
   strata: [rgb(0x8f3a34), rgb(0xc8553a), rgb(0xe07a45), rgb(0xf0b070), rgb(0xc8553a), rgb(0xa8443a), rgb(0xe07a45)],
   snow: rgb(0xf4f8ff), snowSh: rgb(0xb9cdea), rockP: rgb(0x5d6a82), rockP2: rgb(0x48536c), alpine: rgb(0x6c9a70),
   sandL: rgb(0xe9dcb5), sandB: rgb(0xf2e3bd), coastGrass: rgb(0x8fbf6a), chalk: rgb(0xf3efe4), chalk2: rgb(0xd9d2c0),
+  flW: rgb(0xfff4e0), flY: rgb(0xffd84d), flP: rgb(0xff9fc0), flB: rgb(0xa8d4ff),
   isle: rgb(0x7f9f86), path: rgb(0xe2d6b8), pathP: rgb(0xc9cedb), bedL: rgb(0x6f9c8e), bedS: rgb(0xc8d8b0), deep: rgb(0x1c4f6a),
 };
 
@@ -22,8 +23,8 @@ export function createBiomes(hf) {
   const cM = [0, 0, 0], cF = [0, 0, 0], cC = [0, 0, 0], cP = [0, 0, 0], t = [0, 0, 0], t2 = [0, 0, 0];
   const { nm, ns } = hf;
 
-  // out[0..2] = rgb、戻り値 = 草の密度 0..1。far = 遠景用（道を太く薄く）
-  function colorAt(x, z, out, far) {
+  // out[0..2] = rgb、戻り値 = 草の密度 0..1。far = 遠景用（道を太く薄く）。flowers = 地形の頂点色だけ：花の群れを地面に塗る
+  function colorAt(x, z, out, far, flowers) {
     const h = hf.heightAt(x, z);
     const e = far ? 6 : 2;
     const hE = hf.heightAt(x + e, z), hW = hf.heightAt(x - e, z), hS = hf.heightAt(x, z + e), hN = hf.heightAt(x, z - e);
@@ -38,6 +39,11 @@ export function createBiomes(hf) {
     mix3(cM, P.grassA, P.grassB, smoothstep(0.35, 0.7, n2));
     mix3(cM, cM, P.grassDry, smoothstep(30, 44, h) * 0.45 * n);
     mix3(cM, cM, P.rockM, steep);
+    // 花の群れ（遠くから色の帯に見える。草の色テクスチャには入れない）
+    if (flowers && w[0] > 0.2) {
+      const a = smoothstep(0.55, 0.69, nm.fbm(x / 22 + 71.3, z / 22 + 19.7, 2)) * (1 - steep) * smoothstep(48, 40, h) * 0.34;
+      if (a > 0.003) { const pk = nm.n2(x / 70 + 3.1, z / 70 + 8.2); mix3(cM, cM, pk < 0.36 ? P.flW : pk < 0.56 ? P.flY : pk < 0.8 ? P.flP : P.flB, a); }
+    }
     // 森
     mix3(cF, P.mossA, P.mossB, smoothstep(0.3, 0.75, n2) * 0.8);
     mix3(cF, cF, P.rockF, steep);
@@ -61,7 +67,9 @@ export function createBiomes(hf) {
     out[0] = cM[0] * w[0] + cF[0] * w[1] + cC[0] * w[2] + cP[0] * w[3];
     out[1] = cM[1] * w[0] + cF[1] * w[1] + cC[1] * w[2] + cP[1] * w[3];
     out[2] = cM[2] * w[0] + cF[2] * w[1] + cC[2] * w[2] + cP[2] * w[3];
-    dens = (w[0] + w[1] * 0.8 + w[2] * (mesaTop * 0.4) + w[3] * (1 - smoothstep(0.05, 0.3, snow)) * 0.55 * smoothstep(60, 50, h)) * (1 - steep);
+    // 峡谷の谷底にもまばらな枯れ草（かたまりで）
+    const dry = w[2] * (mesaTop * 0.4 + (1 - mesaTop) * (0.12 + 0.26 * smoothstep(0.4, 0.6, n2)));
+    dens = (w[0] + w[1] * 0.8 + dry + w[3] * (1 - smoothstep(0.05, 0.3, snow)) * 0.55 * smoothstep(60, 50, h)) * (1 - steep);
     const snowW = w[3] * snow;
 
     // 湖の岸

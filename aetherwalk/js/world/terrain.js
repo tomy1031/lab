@@ -112,8 +112,10 @@ void main() {
     band *= 0.86 + 0.14 * smoothstep(0.0, 0.12, e);
     alb = mix(alb, band, vSt.x);
   }
-  vec3 c = alb * vLit * (0.8 + 0.4 * d);
-  c *= 1.0 - smoothstep(0.45, 0.57, cl) * uCloud.w;
+  // 粒の模様：雪や白い砂のような明るい地面では弱く（汚れて見えないように）
+  float lum = dot(alb, vec3(0.3, 0.55, 0.15));
+  vec3 c = alb * vLit * (1.0 + (d - 0.5) * mix(0.4, 0.14, smoothstep(0.45, 0.8, lum)));
+  c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
   c = mix(c, vFog.rgb, vFog.a);
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
@@ -146,7 +148,7 @@ export function createTerrain(ctx, hf, biomes) {
     const il = 1 / Math.sqrt(gx * gx + gz * gz + 4 * e * e);
     pos[vi] = x; pos[vi + 1] = h; pos[vi + 2] = z;
     nor[vi] = -gx * il; nor[vi + 1] = 2 * e * il; nor[vi + 2] = -gz * il;
-    biomes.colorAt(x, z, out, far);
+    biomes.colorAt(x, z, out, far, true);
     const ci = (vi / 3) * 4;
     col[ci] = out[0]; col[ci + 1] = out[1]; col[ci + 2] = out[2]; col[ci + 3] = out[3];
     return h;

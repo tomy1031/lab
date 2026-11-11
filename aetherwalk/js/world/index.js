@@ -60,7 +60,7 @@ export async function createWorld(ctx) {
 
   const sky = createSky(ctx, fork('sky'));
   root.add(sky.group);
-  const water = createWater(ctx, hf);
+  const water = createWater(ctx, hf, biomes);
   root.add(water.group);
   progress('草木を植えています', 0.5);
 

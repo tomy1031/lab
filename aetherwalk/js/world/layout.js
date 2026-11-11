@@ -69,13 +69,13 @@ export const PATHS = [
 
 // 絶景（§7.5）
 export const VISTAS = [
-  { id: 'v_awakening', name: '目覚めの眺め', x: 0, z: 540, yaw: 0, time: 7.0, lift: 0 },
-  { id: 'v_tower', name: '風見の塔の頂', x: 40, z: 330, yaw: 300, time: 17.5, lift: 0 },   // 甲板が足場（groundAt に含まれる）なので足す高さは 0
-  { id: 'v_elder', name: '大樹ヨルハの木漏れ日', x: -500, z: 160, yaw: 315, time: 10.0, lift: 0, pitch: 12 },
+  { id: 'v_awakening', name: '目覚めの眺め', x: 0, z: 532, yaw: 0, time: 7.0, lift: 0 },    // 舞台の北の縁、石段の上（床が画面の下を占めないように）
+  { id: 'v_tower', name: '風見の塔の頂', x: 36.6, z: 328, yaw: 300, time: 17.5, lift: 0 },   // 甲板の縁（足もとの床を画面に入れない）   // 甲板が足場（groundAt に含まれる）なので足す高さは 0
+  { id: 'v_elder', name: '大樹ヨルハの木漏れ日', x: -492, z: 108, yaw: 232, time: 10.0, lift: 0, pitch: 6 },   // 大樹の広場（半径 44 m に木を置かない）から幹と光の筋
   { id: 'v_arch', name: '風穴のアーチの夕陽', x: 410, z: 120, yaw: 285, time: 18.25, lift: 0 },
   { id: 'v_aurora', name: '氷鏡のオーロラ', x: 150, z: -330, yaw: 320, time: 23.0, lift: 0 },
-  { id: 'v_cape', name: '白波の岬の朝焼け', x: 480, z: 500, yaw: 90, time: 5.75, lift: 0 },
-  { id: 'v_pier', name: '祈りの桟橋の星鏡', x: 0, z: 150, yaw: 0, time: 21.0, lift: 0, pitch: 10 },
+  { id: 'v_cape', name: '白波の岬の朝焼け', x: 496, z: 496, yaw: 90, time: 5.75, lift: 0 },   // 灯台跡を背に、崖の先
+  { id: 'v_pier', name: '祈りの桟橋の星鏡', x: 0, z: 118.6, yaw: 0, time: 21.0, lift: 0, pitch: 10 },   // 桟橋の先の祈り台
 ];
 
 export const TOWERS = [

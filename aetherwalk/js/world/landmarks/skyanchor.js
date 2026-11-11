@@ -26,11 +26,13 @@ export function buildSkyAnchor(env) {
     if (i % 2 === 0) P.push(part(G.cone(w * 0.8, h * 0.8, 5, true), { pos: [x * 0.9, y - h * 0.4 - 6, z * 0.9], rot: [Math.PI + Math.cos(a) * 0.25, 0, Math.sin(a) * 0.25], color: crystal, glow: 0.5 }));
   }
   // 岩の衣（腰まわりの浮き島。上は草）
+  // 浮き岩：上は草、側面は暖かい石、下面は結晶の光を受けて淡い青（下から見上げるので暗くしない）
   const rock = (p, n) => {
     const up = Math.max(0, n.y);
-    if (up > 0.6) return [0.2 + 0.08 * up, 0.5, 0.2];
-    const k = 0.7 + 0.3 * up;
-    return [0.3 * k, 0.36 * k, 0.5 * k];
+    if (up > 0.6) return [0.24 + 0.08 * up, 0.55, 0.22];
+    if (n.y < -0.3) return [0.36, 0.48, 0.62];
+    const k = 0.78 + 0.22 * up + 0.08 * Math.sin(p.y * 0.7 + p.x * 0.3);
+    return [0.5 * k, 0.46 * k, 0.43 * k];
   };
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2 + rng.range(-0.2, 0.2), r = rng.range(30, 44), s = rng.range(11, 19);
