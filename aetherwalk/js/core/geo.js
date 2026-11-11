@@ -8,31 +8,44 @@ const _c = new THREE.Color();
 
 export class GeoBuilder {
   constructor() { this.parts = []; this.tag = 0; }
-  /** add a geometry with colour and transform: pos [x,y,z], rot [x,y,z] (radians, XYZ), scale [x,y,z] or number */
-  add(geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scale = 1) {
+  /** add a geometry with colour and transform: pos [x,y,z], rot [x,y,z] (radians, XYZ), scale [x,y,z] or number.
+   *  opts: { smooth (keep the primitive's own normals), metal (second material group), ao (0..1),
+   *          shade(x, y, z, colour) → per-vertex colour tweak in item space (grain, wear; may set colour.ao) } */
+  add(geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scale = 1, opts = {}) {
     _e.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
     _q.setFromEuler(_e);
     if (typeof scale === 'number') _s.set(scale, scale, scale); else _s.set(scale[0], scale[1], scale[2]);
     _p.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
     _m.compose(_p, _q, _s);
+    if (opts.smooth && !geo.attributes.normal) geo.computeVertexNormals();
     const g = geo.index ? geo.toNonIndexed() : geo;
     if (g !== geo) geo.dispose();
     g.applyMatrix4(_m);
-    this.parts.push({ g, color: new THREE.Color(color), tag: this.tag });
+    this.parts.push({ g, color: new THREE.Color(color), tag: this.tag, smooth: !!opts.smooth, metal: !!opts.metal, ao: opts.ao ?? 1, shade: opts.shade || null });
     return this;
   }
-  box(w, h, d, color, pos, rot, scale) { return this.add(new THREE.BoxGeometry(w, h, d), color, pos, rot, scale); }
-  /** cylinder along Y by default */
-  cyl(rTop, rBot, h, seg, color, pos, rot, scale) { return this.add(new THREE.CylinderGeometry(rTop, rBot, h, seg, 1), color, pos, rot, scale); }
-  cone(r, h, seg, color, pos, rot, scale) { return this.add(new THREE.ConeGeometry(r, h, seg, 1), color, pos, rot, scale); }
-  ico(r, detail, color, pos, rot, scale) { return this.add(new THREE.IcosahedronGeometry(r, detail), color, pos, rot, scale); }
-  oct(r, color, pos, rot, scale) { return this.add(new THREE.OctahedronGeometry(r, 0), color, pos, rot, scale); }
-  dodeca(r, color, pos, rot, scale) { return this.add(new THREE.DodecahedronGeometry(r, 0), color, pos, rot, scale); }
-  sphere(r, ws, hs, color, pos, rot, scale) { return this.add(new THREE.SphereGeometry(r, ws, hs), color, pos, rot, scale); }
-  torus(r, tube, rs, ts, arc, color, pos, rot, scale) { return this.add(new THREE.TorusGeometry(r, tube, rs, ts, arc), color, pos, rot, scale); }
+  box(w, h, d, color, pos, rot, scale, opts) { return this.add(new THREE.BoxGeometry(w, h, d), color, pos, rot, scale, opts); }
+  /** cylinder along Y by default (opts.hseg: height segments) */
+  cyl(rTop, rBot, h, seg, color, pos, rot, scale, opts) { return this.add(new THREE.CylinderGeometry(rTop, rBot, h, seg, opts?.hseg || 1), color, pos, rot, scale, opts); }
+  cone(r, h, seg, color, pos, rot, scale, opts) { return this.add(new THREE.ConeGeometry(r, h, seg, 1), color, pos, rot, scale, opts); }
+  ico(r, detail, color, pos, rot, scale, opts) { return this.add(new THREE.IcosahedronGeometry(r, detail), color, pos, rot, scale, opts); }
+  oct(r, color, pos, rot, scale, opts) { return this.add(new THREE.OctahedronGeometry(r, 0), color, pos, rot, scale, opts); }
+  dodeca(r, color, pos, rot, scale, opts) { return this.add(new THREE.DodecahedronGeometry(r, 0), color, pos, rot, scale, opts); }
+  sphere(r, ws, hs, color, pos, rot, scale, opts) { return this.add(new THREE.SphereGeometry(r, ws, hs), color, pos, rot, scale, opts); }
+  torus(r, tube, rs, ts, arc, color, pos, rot, scale, opts) { return this.add(new THREE.TorusGeometry(r, tube, rs, ts, arc), color, pos, rot, scale, opts); }
+  /** a lathe around Y from [[radius, y], …] (smooth unless opts.smooth === false) */
+  lathe(pts, seg, color, pos, rot, scale, opts = {}) {
+    const g = new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(1e-4, r), y)), seg);
+    return this.add(g, color, pos, rot, scale, { smooth: true, ...opts });
+  }
+  /** a tube along points [[x,y,z], …] (smooth) */
+  tube(pts, radius, tubular, radial, color, opts = {}) {
+    const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
+    return this.add(new THREE.TubeGeometry(curve, tubular, radius, radial, false), color, [0, 0, 0], [0, 0, 0], 1, { smooth: true, ...opts });
+  }
   /** a convex polygon in the Y-Z plane ([[y, z], …], any order around), extruded along X from x0 to x1;
    *  every triangle is wound outward (front faces visible) */
-  prismYZ(pts, x0, x1, color) {
+  prismYZ(pts, x0, x1, color, opts = {}) {
     const n = pts.length;
     let cy = 0, cz = 0;
     for (const [y, z] of pts) { cy += y; cz += z; }
@@ -59,7 +72,7 @@ export class GeoBuilder {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(tri, 3));
-    return this.add(g, color);
+    return this.add(g, color, [0, 0, 0], [0, 0, 0], 1, opts);
   }
   /** a raw triangle list [x,y,z, …] */
   tris(arr, color, pos, rot, scale) {
@@ -68,28 +81,46 @@ export class GeoBuilder {
     g.computeVertexNormals();
     return this.add(g, color, pos, rot, scale);
   }
-  /** merge → non-indexed BufferGeometry with position, normal (flat), color and an optional per-vertex tag */
-  build({ tags = false } = {}) {
-    let n = 0;
-    for (const p of this.parts) n += p.g.attributes.position.count;
-    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), tag = tags ? new Uint8Array(n) : null;
+  /** merge → non-indexed BufferGeometry: position, normal (per-face, or the part's own when smooth), colour RGBA
+   *  (A = AO), optional per-vertex tags; groups: matte parts first (group 0), metal parts after (group 1) */
+  build({ tags = false, groups = true } = {}) {
+    const order = groups ? [...this.parts.filter((p) => !p.metal), ...this.parts.filter((p) => p.metal)] : this.parts;
+    let n = 0, nMatte = 0;
+    for (const p of order) { n += p.g.attributes.position.count; if (!p.metal) nMatte += p.g.attributes.position.count; }
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 4), tag = tags ? new Uint8Array(n) : null;
+    const smooth = new Uint8Array(Math.floor(n / 3));
     let o = 0;
-    for (const p of this.parts) {
-      const a = p.g.attributes.position;
+    for (const p of order) {
+      const a = p.g.attributes.position, na = p.g.attributes.normal;
       for (let i = 0; i < a.count; i++) {
-        pos[(o + i) * 3] = a.getX(i); pos[(o + i) * 3 + 1] = a.getY(i); pos[(o + i) * 3 + 2] = a.getZ(i);
-        _c.copy(p.color);
-        col[(o + i) * 3] = _c.r; col[(o + i) * 3 + 1] = _c.g; col[(o + i) * 3 + 2] = _c.b;
-        if (tag) tag[o + i] = p.tag;
+        const x = a.getX(i), y = a.getY(i), z = a.getZ(i), k = o + i;
+        pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
+        if (p.smooth && na) { nor[k * 3] = na.getX(i); nor[k * 3 + 1] = na.getY(i); nor[k * 3 + 2] = na.getZ(i); }
+        _c.copy(p.color); _c.ao = p.ao;
+        if (p.shade) p.shade(x, y, z, _c);
+        col[k * 4] = _c.r; col[k * 4 + 1] = _c.g; col[k * 4 + 2] = _c.b; col[k * 4 + 3] = _c.ao;
+        if (tag) tag[k] = p.tag;
       }
+      if (p.smooth && na) smooth.fill(1, o / 3, (o + a.count) / 3);
       o += a.count;
       p.g.dispose();
     }
+    for (let t = 0; t < smooth.length; t++) {
+      if (smooth[t]) continue;
+      const i = t * 9;
+      const ax = pos[i + 3] - pos[i], ay = pos[i + 4] - pos[i + 1], az = pos[i + 5] - pos[i + 2];
+      const bx = pos[i + 6] - pos[i], by = pos[i + 7] - pos[i + 1], bz = pos[i + 8] - pos[i + 2];
+      const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+      const L = Math.hypot(nx, ny, nz) || 1;
+      for (let j = 0; j < 3; j++) { nor[i + j * 3] = nx / L; nor[i + j * 3 + 1] = ny / L; nor[i + j * 3 + 2] = nz / L; }
+    }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
     if (tag) geo.userData.tags = tag;
-    flatNormals(geo);
+    if (groups) { geo.addGroup(0, nMatte, 0); if (n > nMatte) geo.addGroup(nMatte, n - nMatte, 1); }
+    geo.userData.hasMetal = n > nMatte;
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     this.parts = [];

@@ -63,3 +63,11 @@ export const DEVICE_RENDER = {
   quest3: { scale: { low: 0.85, mid: 1.0, high: 1.2 }, foveation: 0.5, fps: { low: 72, mid: 72, high: 90 }, auto: 'high' },
   pc: { scale: { low: 0.85, mid: 1.0, high: 1.2 }, foveation: 0, fps: { low: 60, mid: 60, high: 60 }, auto: 'high' },
 };
+
+// WebXR hand joints in the order of XRHand (and of the skinned hand's bones)
+export const HAND_JOINTS = ['wrist',
+  'thumb-metacarpal', 'thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thumb-tip',
+  'index-finger-metacarpal', 'index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate', 'index-finger-phalanx-distal', 'index-finger-tip',
+  'middle-finger-metacarpal', 'middle-finger-phalanx-proximal', 'middle-finger-phalanx-intermediate', 'middle-finger-phalanx-distal', 'middle-finger-tip',
+  'ring-finger-metacarpal', 'ring-finger-phalanx-proximal', 'ring-finger-phalanx-intermediate', 'ring-finger-phalanx-distal', 'ring-finger-tip',
+  'pinky-finger-metacarpal', 'pinky-finger-phalanx-proximal', 'pinky-finger-phalanx-intermediate', 'pinky-finger-phalanx-distal', 'pinky-finger-tip'];

@@ -4,7 +4,7 @@
 // autoplay bot use exactly the same downstream code as VR).
 import * as THREE from 'three';
 import { clamp, ema, yawOfQuat, pitchOfQuat, DEG, wrapPi, smoothstep, lerp } from './util.js';
-import { DEFAULT_STAND_HEIGHT } from './config.js';
+import { DEFAULT_STAND_HEIGHT, HAND_JOINTS } from './config.js';
 const HANDS = ['left', 'right'];
 
 export const BUTTONS = ['triggerL', 'triggerR', 'gripL', 'gripR', 'a', 'b', 'x', 'y', 'stickL', 'stickR', 'menu'];
@@ -101,6 +101,9 @@ function makeHand(side, rig) {
     // history of local positions (for throw velocity)
     hist: { t: new Float64Array(HIST), x: new Float64Array(HIST), y: new Float64Array(HIST), z: new Float64Array(HIST), i: 0, len: 0 },
     prevLocalPos: new THREE.Vector3(), prevLocalQuat: new THREE.Quaternion(), hasPrev: false,
+    // hand tracking: the 25 joint matrices in rig space (column-major 4×4 each) when jointsValid
+    joints: new Float32Array(25 * 16), jointsValid: false, jointSpaces: null, jointSrc: null,
+    thumbRest: false,                 // a thumb is on the stick / face buttons (controllers)
   };
 }
 
@@ -273,6 +276,7 @@ export function createInput(ctx) {
     for (const b of BUTTONS) cur[b] = false;
     stick.left.x = stick.left.y = stick.right.x = stick.right.y = 0;
     hands.left.tracked = hands.right.tracked = false;
+    hands.left.jointsValid = hands.right.jointsValid = false;
     const session = frame.session;
     let anyHand = false;
     for (const src of session.inputSources) {
@@ -298,6 +302,19 @@ export function createInput(ctx) {
       const S = side === 'left' ? 'L' : 'R';
       if (src.hand) {
         anyHand = true;
+        // all 25 joints (for the skinned hand)
+        if (h.jointSrc !== src) { h.jointSrc = src; h.jointSpaces = HAND_JOINTS.map((n) => src.hand.get(n)); }
+        if (h.jointSpaces.every(Boolean)) {
+          if (frame.fillPoses) h.jointsValid = !!frame.fillPoses(h.jointSpaces, refSpace, h.joints);
+          else {
+            h.jointsValid = true;
+            for (let i = 0; i < 25; i++) {
+              const jp = frame.getJointPose(h.jointSpaces[i], refSpace);
+              if (!jp) { h.jointsValid = false; break; }
+              h.joints.set(jp.transform.matrix, i * 16);
+            }
+          }
+        }
         // pinch from joint distances (thumb tip ↔ index tip = grab, ↔ middle tip = use)
         const jt = (name) => { const j = src.hand.get(name); return j ? frame.getJointPose(j, refSpace) : null; };
         const th = jt('thumb-tip'), ix = jt('index-finger-tip'), mi = jt('middle-finger-tip');
@@ -336,6 +353,7 @@ export function createInput(ctx) {
       cur['trigger' + S] = !!tr && (tr.pressed || tr.value > 0.55);
       cur['grip' + S] = !!sq && (sq.pressed || sq.value > 0.55);
       cur['stick' + S] = !!st && st.pressed;
+      h.thumbRest = !!((st && st.touched) || (b4 && b4.touched) || (b5 && b5.touched));
       if (side === 'left') { cur.x = !!b4 && b4.pressed; cur.y = !!b5 && b5.pressed; }
       else { cur.a = !!b4 && b4.pressed; cur.b = !!b5 && b5.pressed; }
       const ax = g.axes || [];

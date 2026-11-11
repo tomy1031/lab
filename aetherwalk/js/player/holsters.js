@@ -51,7 +51,9 @@ export function createHolsters(ctx, P) {
     let o = 0;
     for (const p of parts) {
       pos.set(p.attributes.position.array, o * 3);
-      if (p.attributes.color) col.set(p.attributes.color.array, o * 3); else col.fill(1, o * 3, (o + p.attributes.position.count) * 3);
+      const ca = p.attributes.color;
+      if (ca) for (let i = 0; i < ca.count; i++) { col[(o + i) * 3] = ca.getX(i); col[(o + i) * 3 + 1] = ca.getY(i); col[(o + i) * 3 + 2] = ca.getZ(i); }
+      else col.fill(1, o * 3, (o + p.attributes.position.count) * 3);
       o += p.attributes.position.count;
       p.dispose();
     }
