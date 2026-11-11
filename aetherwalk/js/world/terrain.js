@@ -22,7 +22,7 @@ export function createTextures(hf, biomes) {
   // 地面の色＋草の密度（4 m / texel）
   const CS = 400;
   const cdata = new Uint8Array(CS * CS * 4);
-  const out = [0, 0, 0, 0];
+  const out = [0, 0, 0, 0, 0, 0, 0];
   const enc = (v) => { v = v < 0 ? 0 : v > 1 ? 1 : v; return Math.round((v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055) * 255); };
   for (let j = 0; j < CS; j++) for (let i = 0; i < CS; i++) {
     const x = -HALF + (i + 0.5) * (1600 / CS), z = -HALF + (j + 0.5) * (1600 / CS);
@@ -81,7 +81,8 @@ uniform vec4 uCloud;
 #ifdef AW_FAR
 uniform sampler2D uMask;
 #endif
-varying vec3 vCol; varying vec4 vFog; varying vec4 vUv; varying vec3 vLit; varying vec2 vSt;
+attribute vec3 aDet;      // x: 草原の細部 y: 道 z: 道の雪
+varying vec3 vCol; varying vec4 vFog; varying vec4 vUv; varying vec3 vLit; varying vec2 vSt; varying vec4 vDet;
 void main() {
   vec3 p = position;
   #ifdef AW_FAR
@@ -90,6 +91,9 @@ void main() {
     p.y -= s * 14.0;
   #endif
   vLit = awLight(normal, vec3(1.0), normalize(cameraPosition - position), 0.1);
+  // 日なたの重み（日なたは暖かく、陰は青く寄せる。夜はなし）
+  float nl = clamp((dot(normal, uSunDir) + 0.3) / 1.3, 0.0, 1.0);
+  vDet = vec4(aDet, nl * nl * smoothstep(0.05, 0.4, dot(uSunCol, vec3(0.3, 0.55, 0.15))));
   vCol = color.rgb;
   vSt = vec2(color.a, position.y);
   vUv = vec4(position.xz * 0.131, position.xz * uCloud.x + uCloud.yz);
@@ -98,12 +102,53 @@ void main() {
 }`;
 const FRAG = /* glsl */`
 uniform sampler2D uNoiseTex; uniform vec4 uCloud; uniform vec3 uStrata[6];
-varying vec3 vCol; varying vec4 vFog; varying vec4 vUv; varying vec3 vLit; varying vec2 vSt;
+varying vec3 vCol; varying vec4 vFog; varying vec4 vUv; varying vec3 vLit; varying vec2 vSt; varying vec4 vDet;
 void main() {
   vec4 nz = texture2D(uNoiseTex, vUv.xy);
   float d = nz.g;
   float cl = texture2D(uNoiseTex, vUv.zw).r;
   vec3 alb = vCol;
+  float grain = 1.0;
+  if (vDet.x > 0.01) {
+    // 草原：中くらいのむら（クローバーの深い青緑 ↔ 日なたの黄緑、2〜3 m）と、草の毛並み（葉先の明るさ・根もとの暗さ）。
+    // 遠くでは細かい模様が平均されて、刈りこんだ芝ではなく草の色合いに見える
+    float md = vDet.x;
+    float cv = smoothstep(0.3, 0.72, nz.r * 0.75 + nz.a * 0.25);
+    alb *= mix(vec3(1.0), mix(vec3(0.8, 0.96, 0.9), vec3(1.1, 1.05, 0.82), cv), md);
+    float fur = (nz.g - 0.5) * 1.6 + (nz.b - 0.5) * 0.5;
+    alb *= 1.0 + fur * 0.3 * md;
+    alb = mix(alb, alb * vec3(1.25, 1.2, 0.85) + vec3(0.012, 0.012, 0.0), smoothstep(0.78, 0.92, nz.a) * 0.5 * md);
+    grain = 1.0 - 0.75 * md;
+  }
+  if (vDet.y > 0.004) {
+    // 道：踏み固めた土。縁は細かく崩れて草がはみ出し、小石が散る
+    float pw = vDet.y;
+    #ifndef AW_FAR
+      float en = (nz.g - 0.5) * 0.6 + (nz.a - 0.5) * 0.5 + (nz.r - 0.5) * 0.3;
+      pw = smoothstep(0.3, 0.7, pw + en * 0.75);
+    #endif
+    vec3 pc = mix(vec3(0.56, 0.47, 0.3), vec3(0.6, 0.62, 0.68), vDet.z) * (0.86 + 0.28 * nz.r);
+    pc = mix(pc, pc * vec3(0.78, 0.74, 0.7), smoothstep(0.55, 0.8, nz.a) * 0.6);
+    alb = mix(alb, pc, pw);
+    #ifndef AW_FAR
+      // 小石（3〜8 cm）：12 cm の升ごとに 1 つ置くかどうかを決める。縁に多く、道の上はまばら。遠くでは消す
+      vec2 q = vUv.xy * (8.4 / 0.131);
+      vec2 ci = floor(q), cf = fract(q) - 0.5;
+      float hs = fract(sin(dot(ci, vec2(127.1, 311.7))) * 43758.5453);
+      float zone = smoothstep(0.05, 0.4, vDet.y) * (1.0 - 0.6 * smoothstep(0.75, 1.0, vDet.y)) * (1.0 - smoothstep(0.35, 0.9, length(fwidth(q))));
+      float rr = length((cf - (vec2(fract(hs * 13.7), fract(hs * 71.3)) - 0.5) * 0.36) * vec2(1.0, 1.0 + 0.5 * fract(hs * 3.3)));
+      float rad = 0.1 + 0.16 * fract(hs * 7.1);
+      float on = step(1.0 - 0.2 * zone, hs);
+      float st = on * smoothstep(rad, rad - 0.05, rr);
+      float rim = on * smoothstep(rad + 0.07, rad, rr) * (1.0 - st);
+      // 石の色は道の土に近く、上（太陽側）が明るく下に影。輪郭のまわりは少し暗い
+      alb *= 1.0 - rim * 0.25;
+      alb = mix(alb, pc * (1.05 + 0.35 * fract(hs * 5.9)) * (0.82 + 0.3 * smoothstep(0.12, -0.12, cf.y + cf.x * 0.4)), st);
+    #endif
+    grain = mix(grain, 1.0, pw);
+  }
+  // 日なたは少し暖かく、陰は少し青く（彩度の高い黄緑一色に見せない）
+  alb *= mix(vec3(0.93, 0.99, 1.07), vec3(1.05, 1.01, 0.91), vDet.w);
   if (vSt.x > 0.01) {
     // 地層：高さで色の帯を決める（ノイズで縁をゆらす）
     float hh = (vSt.y + nz.b * 2.4) / 2.7;
@@ -123,7 +168,7 @@ void main() {
   }
   // 粒の模様：雪や白い砂のような明るい地面では弱く（汚れて見えないように）
   float lum = dot(alb, vec3(0.3, 0.55, 0.15));
-  vec3 c = alb * vLit * (1.0 + (d - 0.5) * mix(0.4, 0.14, smoothstep(0.45, 0.8, lum)));
+  vec3 c = alb * vLit * (1.0 + (d - 0.5) * mix(0.4, 0.14, smoothstep(0.45, 0.8, lum)) * grain);
   c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
   c *= dap;
   c = mix(c, vFog.rgb, vFog.a);
@@ -146,11 +191,11 @@ export function createTerrain(ctx, hf, biomes) {
   });
   const nearMat = mk(false), farMat = mk(true);
 
-  const out = [0, 0, 0, 0];
+  const out = [0, 0, 0, 0, 0, 0, 0];
   // 頂点を格子からほんの少しずらす：カメラが格子点の真上で水平を向くと頂点の w がちょうど 0 になり、
   // ソフトウェア GPU（SwiftShader）で三角形が乱れて描かれるため。高さはずらした位置で読むので面は変わらない
   const EX = 0.0131, EZ = 0.0077;
-  function fill(pos, nor, col, vi, x, z, far) {
+  function fill(pos, nor, col, vi, x, z, far, det) {
     x += EX; z += EZ;
     const h = hf.heightAt(x, z);
     const e = far ? 5 : 1.5;
@@ -161,6 +206,7 @@ export function createTerrain(ctx, hf, biomes) {
     biomes.colorAt(x, z, out, far, true);
     const ci = (vi / 3) * 4;
     col[ci] = out[0]; col[ci + 1] = out[1]; col[ci + 2] = out[2]; col[ci + 3] = out[3];
+    det[vi] = out[4]; det[vi + 1] = out[5]; det[vi + 2] = out[6];
     return h;
   }
   function gridIndex(n) {
@@ -179,11 +225,12 @@ export function createTerrain(ctx, hf, biomes) {
   const farIndex = gridIndex(FN);
   for (let q = 0; q < 4; q++) {
     const x0 = -HALF + (q % 2) * 800, z0 = -HALF + (q >> 1) * 800;
-    const pos = new Float32Array((FN + 1) * (FN + 1) * 3), nor = new Float32Array(pos.length), col = new Float32Array((FN + 1) * (FN + 1) * 4);
+    const pos = new Float32Array((FN + 1) * (FN + 1) * 3), nor = new Float32Array(pos.length), col = new Float32Array((FN + 1) * (FN + 1) * 4), det = new Float32Array(pos.length);
     let vi = 0;
-    for (let j = 0; j <= FN; j++) for (let i = 0; i <= FN; i++) { fill(pos, nor, col, vi, x0 + i * FS, z0 + j * FS, true); vi += 3; }
+    for (let j = 0; j <= FN; j++) for (let i = 0; i <= FN; i++) { fill(pos, nor, col, vi, x0 + i * FS, z0 + j * FS, true, det); vi += 3; }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aDet', new THREE.BufferAttribute(det, 3));
     g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
     g.setAttribute('color', new THREE.BufferAttribute(col, 4));
     // 深い海の底は描かない（水面が不透明なので見えない）
@@ -208,6 +255,7 @@ export function createTerrain(ctx, hf, biomes) {
     g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(CV * CV * 3), 3));
     g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(CV * CV * 3), 3));
     g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(CV * CV * 4), 4));
+    g.setAttribute('aDet', new THREE.BufferAttribute(new Float32Array(CV * CV * 3), 3));
     g.setIndex(nearIndex);
     g.boundingSphere = new THREE.Sphere();
     const m = new THREE.Mesh(g, nearMat);
@@ -216,15 +264,15 @@ export function createTerrain(ctx, hf, biomes) {
     chunks.push({ mesh: m, geo: g, cx: -999, cz: -999, ready: false, want: false });
   }
   function buildChunk(c) {
-    const pos = c.geo.attributes.position.array, nor = c.geo.attributes.normal.array, col = c.geo.attributes.color.array;
+    const pos = c.geo.attributes.position.array, nor = c.geo.attributes.normal.array, col = c.geo.attributes.color.array, det = c.geo.attributes.aDet.array;
     const x0 = -HALF + c.cx * CH, z0 = -HALF + c.cz * CH;
     let vi = 0, mn = 1e9, mx = -1e9;
     for (let j = 0; j <= CN; j++) for (let i = 0; i <= CN; i++) {
-      const h = fill(pos, nor, col, vi, x0 + i * 2, z0 + j * 2, false);
+      const h = fill(pos, nor, col, vi, x0 + i * 2, z0 + j * 2, false, det);
       if (h < mn) mn = h; if (h > mx) mx = h;
       vi += 3;
     }
-    c.geo.attributes.position.needsUpdate = true; c.geo.attributes.normal.needsUpdate = true; c.geo.attributes.color.needsUpdate = true;
+    c.geo.attributes.position.needsUpdate = true; c.geo.attributes.normal.needsUpdate = true; c.geo.attributes.color.needsUpdate = true; c.geo.attributes.aDet.needsUpdate = true;
     c.geo.boundingSphere.center.set(x0 + CH / 2, (mn + mx) / 2, z0 + CH / 2);
     c.geo.boundingSphere.radius = Math.hypot(CH * 0.7072, (mx - mn) / 2);
     c.mesh.visible = true; c.ready = true;

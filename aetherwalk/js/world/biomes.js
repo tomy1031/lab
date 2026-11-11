@@ -8,14 +8,15 @@ export const rgb = (hex) => [lin(((hex >> 16) & 255) / 255), lin(((hex >> 8) & 2
 const mix3 = (o, a, b, t) => { o[0] = a[0] + (b[0] - a[0]) * t; o[1] = a[1] + (b[1] - a[1]) * t; o[2] = a[2] + (b[2] - a[2]) * t; return o; };
 
 const P = {
-  grassA: rgb(0x5fae4a), grassB: rgb(0x78bd4c), grassDry: rgb(0x9cbf55), rockM: rgb(0x9a9484),
+  // 草原：彩度を抑えた自然な緑。深い緑（くぼみ・クローバー）→ 日なたの黄緑 → 乾いた丘の頂（麦わら色）
+  grassA: rgb(0x4d8539), grassB: rgb(0x6c9541), grassDeep: rgb(0x3f7536), grassDry: rgb(0x9a9654), rockM: rgb(0x9a9484),
   mossA: rgb(0x2f6b3e), mossB: rgb(0x4c9048), rockF: rgb(0x55584c), litter: rgb(0x6a5230), soil: rgb(0x3a3324),
   sandC: rgb(0xe8b27a), sandC2: rgb(0xd99d68), dryC: rgb(0xd9b85a),
   strata: [rgb(0x8f3a34), rgb(0xc8553a), rgb(0xe07a45), rgb(0xf0b070), rgb(0xc8553a), rgb(0xa8443a), rgb(0xe07a45)],
   snow: rgb(0xf4f8ff), snowSh: rgb(0xb9cdea), rockP: rgb(0x5d6a82), rockP2: rgb(0x48536c), alpine: rgb(0x6c9a70),
   sandL: rgb(0xe9dcb5), sandB: rgb(0xf2e3bd), coastGrass: rgb(0x8fbf6a), chalk: rgb(0xf3efe4), chalk2: rgb(0xd9d2c0),
   flW: rgb(0xfff4e0), flY: rgb(0xffd84d), flP: rgb(0xff9fc0), flB: rgb(0xa8d4ff),
-  isle: rgb(0x7f9f86), path: rgb(0xe2d6b8), pathP: rgb(0xc9cedb), bedL: rgb(0x6f9c8e), bedS: rgb(0xc8d8b0), deep: rgb(0x1c4f6a),
+  isle: rgb(0x7f9f86), path: rgb(0xcbbb95), pathP: rgb(0xc9cedb), bedL: rgb(0x6f9c8e), bedS: rgb(0xc8d8b0), deep: rgb(0x1c4f6a),
 };
 
 export function createBiomes(hf) {
@@ -23,8 +24,9 @@ export function createBiomes(hf) {
   const cM = [0, 0, 0], cF = [0, 0, 0], cC = [0, 0, 0], cP = [0, 0, 0], t = [0, 0, 0], t2 = [0, 0, 0];
   const { nm, ns } = hf;
 
-  // out[0..2] = rgb、戻り値 = 草の密度 0..1。far = 遠景用（道を太く薄く）。flowers = 地形の頂点色だけ：花の群れを地面に塗る
-  function colorAt(x, z, out, far, flowers) {
+  // out[0..2] = rgb、out[3] = 地層(+)/森の床(-)、戻り値 = 草の密度 0..1。far = 遠景用（道を太く薄く）
+  // terrain = 地形の頂点用：道の色は混ぜず（画素で縁を崩して塗る）、out[4] = 草原の細部の重み、out[5] = 道の重み、out[6] = 道の雪
+  function colorAt(x, z, out, far, terrain) {
     const h = hf.heightAt(x, z);
     const e = far ? 6 : 2;
     const hE = hf.heightAt(x + e, z), hW = hf.heightAt(x - e, z), hS = hf.heightAt(x, z + e), hN = hf.heightAt(x, z - e);
@@ -35,15 +37,13 @@ export function createBiomes(hf) {
     const steep = smoothstep(0.82, 0.64, ny);
     let dens = 0, strata = 0;
 
-    // 草原
+    // 草原：大きなむら（64 m）・中くらいのむら（18 m の深い緑）・丘の頂の乾き（凸なほど）・高いところの麦わら色
+    const cavM = (hE + hW + hS + hN) * 0.25 - h;
     mix3(cM, P.grassA, P.grassB, smoothstep(0.35, 0.7, n2));
-    mix3(cM, cM, P.grassDry, smoothstep(30, 44, h) * 0.45 * n);
+    mix3(cM, cM, P.grassDeep, smoothstep(0.45, 0.78, ns.n2(x / 18 + 1.3, z / 18 + 8.8)) * 0.4 + clamp(cavM * 0.5, 0, 0.3));
+    mix3(cM, cM, P.grassDry, clamp(smoothstep(30, 46, h) * 0.38 * n + clamp(-cavM * 0.35, 0, 0.22), 0, 0.55));
     mix3(cM, cM, P.rockM, steep);
-    // 花の群れ（遠くから色の帯に見える。草の色テクスチャには入れない）
-    if (flowers && w[0] > 0.2) {
-      const a = smoothstep(0.55, 0.69, nm.fbm(x / 22 + 71.3, z / 22 + 19.7, 2)) * (1 - steep) * smoothstep(48, 40, h) * 0.34;
-      if (a > 0.003) { const pk = nm.n2(x / 70 + 3.1, z / 70 + 8.2); mix3(cM, cM, pk < 0.36 ? P.flW : pk < 0.56 ? P.flY : pk < 0.8 ? P.flP : P.flB, a); }
-    }
+    let grassy = w[0] * (1 - steep);
     // 森
     // 苔の緑 → 落ち葉の茶 → 暗い土。大きなむら（n2）と小さなむら（n）で混ぜる
     mix3(cF, P.mossA, P.mossB, smoothstep(0.3, 0.75, n2) * 0.8);
@@ -80,7 +80,7 @@ export function createBiomes(hf) {
     const dC = Math.hypot(x - LAKE_C.x, z - LAKE_C.z);
     if (dC < 262) {
       const s = smoothstep(26.4 + n * 0.8, 25.2, h) * smoothstep(236, 214, dC);
-      mix3(out, out, P.sandL, s); dens *= 1 - s;
+      mix3(out, out, P.sandL, s); dens *= 1 - s; grassy *= 1 - s;
       if (h < LAKE_LEVEL && dC < 206) { mix3(out, out, P.bedL, smoothstep(0, 2.5, LAKE_LEVEL - h)); mix3(out, out, P.deep, smoothstep(2, 8, LAKE_LEVEL - h) * 0.7); dens = 0; }
     }
     // 凪の小島：灰がかった苔
@@ -95,20 +95,31 @@ export function createBiomes(hf) {
       mix3(t, P.chalk, P.chalk2, n * 0.8 + (Math.floor(h / 2.4) % 2) * 0.2);
       mix3(out, out, t, steep * cliffW);
       const beach = smoothstep(4.6 + n * 1.2, 2.6, h) * smoothstep(150, 90, cd);
-      mix3(out, out, P.sandB, beach); dens *= 1 - beach;
+      mix3(out, out, P.sandB, beach); dens *= 1 - beach; grassy *= 1 - beach;
       if (h < 0.3) { mix3(out, out, P.bedS, smoothstep(0.3, -1.5, h) * 0.6); mix3(out, out, P.deep, smoothstep(-2, -10, h) * 0.8); dens = 0; }
     }
     // 川床
-    if (hf.waterDepthAt(x, z) > 0.02 && dC > 180 && h > 0) { mix3(out, out, P.bedL, 0.55); dens = 0; }
+    if (hf.waterDepthAt(x, z) > 0.02 && dC > 180 && h > 0) { mix3(out, out, P.bedL, 0.55); dens = 0; grassy = 0; }
     // 道
     const pd = hf.pathDistAt(x, z);
+    let pathW = 0;
     if (pd < 14) {
-      const p = far ? smoothstep(11, 2, pd) * 0.6 : smoothstep(3.2, 1.7, pd);
-      mix3(t2, P.path, P.pathP, snowW);
-      const k = 0.9 + 0.2 * ns.n2(x / 1.7, z / 1.7);
-      t2[0] *= k; t2[1] *= k; t2[2] *= k;
-      mix3(out, out, t2, p);
+      pathW = far ? smoothstep(11, 2, pd) * 0.6 : smoothstep(3.4, 1.5, pd);
+      if (!terrain) {
+        mix3(t2, P.path, P.pathP, snowW);
+        const k = 0.9 + 0.2 * ns.n2(x / 1.7, z / 1.7);
+        t2[0] *= k; t2[1] *= k; t2[2] *= k;
+        mix3(out, out, t2, pathW);
+      }
       dens *= smoothstep(2.4, 4.6, pd);
+    }
+    if (terrain) {
+      out[4] = clamp(grassy, 0, 1); out[5] = pathW; out[6] = snowW;
+      // 近景だけ：3〜5 m の草むらのむら（明るい日なたの株 ↔ 深い株）。遠くから草の毛並みが続いて見える
+      if (!far && grassy > 0.05) {
+        const m = (ns.n2(x / 3.3 + 17.1, z / 3.3 + 4.9) - 0.5) * 2 * grassy, k = 1 + 0.1 * m;
+        out[0] *= k * (1 + 0.06 * m); out[1] *= k; out[2] *= k * (1 - 0.1 * m);
+      }
     }
     // くぼみの陰（雪は青く沈む）
     const cav = (hE + hW + hS + hN) * 0.25 - h;

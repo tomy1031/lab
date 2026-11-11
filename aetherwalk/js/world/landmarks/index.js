@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { buildSkyAnchor } from './skyanchor.js';
 import { buildStart, buildPier, buildFallenBridge, buildLighthouse, buildArch, buildElder, buildIsle } from './ruins.js';
-import { yawRot } from './common.js';
+import { yawRot, STONE_WET } from './common.js';
 import { LAKE_LEVEL } from '../layout.js';
 
 export function createLandmarks(env, sp) {
@@ -36,6 +36,9 @@ export function createLandmarks(env, sp) {
   let timer = 0;
   function update(view) {
     anchor.update(view);
+    // 石の濡れ：夜明け（5〜8 時）にいちばん濡れ、日が高くなると乾く。夜は夜露で少し
+    const h = env.world.time, sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    STONE_WET.value = Math.max(sm(4.6, 5.6, h) * (1 - sm(7.6, 9.6, h)), view.st.night * 0.45);
     timer -= view.dt;
     if (timer > 0 && !view.jump) return;
     timer = 0.3;

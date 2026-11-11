@@ -134,6 +134,42 @@ function leafTexture() {
   return leafTex;
 }
 
+// 針葉の枝の絵（256²）：下から上へのびる小枝と、斜め前へ生える細い針葉。先ほど細く、明るい
+let needleTex = null;
+function needleTexture() {
+  if (needleTex) return needleTex;
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 256;
+  const c = cv.getContext('2d');
+  const R = makeRng(5150);
+  c.lineCap = 'round';
+  const twig = (x0, y0, x1, y1, w, depth) => {
+    const L = Math.hypot(x1 - x0, y1 - y0), ux = (x1 - x0) / L, uy = (y1 - y0) / L;
+    const n = Math.round(L / 2.6);
+    for (let i = 2; i < n; i++) {
+      const t = i / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t;
+      const nl = (14 + 10 * Math.sin(Math.PI * t)) * (1 - 0.45 * t) * (depth ? 0.7 : 1);
+      for (const s of [-1, 1]) {
+        const ang = Math.atan2(uy, ux) + s * R.range(0.55, 0.9);
+        const lum = Math.round(110 + 120 * t + R.range(-25, 25));
+        c.strokeStyle = `rgb(${lum},${lum},${lum})`; c.lineWidth = R.range(1.6, 2.4);
+        c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(ang) * nl, y + Math.sin(ang) * nl); c.stroke();
+      }
+    }
+    c.strokeStyle = 'rgb(90,90,90)'; c.lineWidth = w;
+    c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  };
+  twig(128, 252, 128, 6, 3.4, 0);
+  for (let i = 0; i < 6; i++) {
+    const y = 220 - i * 34, s = i % 2 ? 1 : -1, len = 70 - i * 8;
+    twig(128, y, 128 + s * len, y - len * 0.75, 2, 1);
+  }
+  needleTex = new THREE.CanvasTexture(cv);
+  needleTex.colorSpace = THREE.NoColorSpace;
+  needleTex.generateMipmaps = true; needleTex.minFilter = THREE.LinearMipmapLinearFilter; needleTex.magFilter = THREE.LinearFilter;
+  needleTex.anisotropy = 2;
+  return needleTex;
+}
+
 // 葉むらの板：かたまり（blob）の表面に、斜めに重なる板を並べる。法線は中心から外向き（球のように陰影がつく）
 // blobs: [{ c: [x, y, z], r: [rx, ry, rz], n, bot, top }]
 export function leafCards(blobs, rng, size = 0.62) {
@@ -184,6 +220,38 @@ export function leafCards(blobs, rng, size = 0.62) {
       }
     }
   }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uv), 2));
+  return g;
+}
+
+// 針葉樹の枝の板：段ごとに放射状に垂れる板（葉の絵の右半分＝羊歯の葉を、暗い青緑の針葉の枝として使う）
+export function pineCards(tiers, per, rng, far = false) {
+  const pos = [], nor = [], col = [], uv = [];
+  const cb = new THREE.Color(0x163a36), ct = new THREE.Color(0x3d6f5f), c = new THREE.Color();
+  tiers.forEach(([r, y, h], ti) => {
+    const n = per - (ti > 3 ? 3 : 0);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + ti * 0.7 + rng.range(-0.2, 0.2), dx = Math.sin(a), dz = Math.cos(a), sx = dz, sz = -dx;
+      const reach = r * rng.range(1.0, 1.15), w = r * (far ? 1.0 : 0.9) * rng.range(0.85, 1.1);
+      const root = [dx * r * 0.1, y + h * 0.85, dz * r * 0.1], tip = [dx * reach, y + rng.range(-0.15, 0.15), dz * reach];
+      // 板の面は枝に沿って少しねじる（真横から見ても線にならない）
+      const tw = rng.range(0.25, 0.55);
+      const q = [[root, -0.5, 0], [root, 0.5, 0], [tip, 0.5, 1], [root, -0.5, 0], [tip, 0.5, 1], [tip, -0.5, 1]];
+      const bright = rng.range(0.85, 1.15);
+      for (const [p0, sd, t] of q) {
+        const ww = w * (0.45 + 0.55 * t) * sd;
+        pos.push(p0[0] + sx * ww, p0[1] + ww * tw * (t - 0.3), p0[2] + sz * ww);
+        nor.push(dx * 0.78, 0.45, dz * 0.78);
+        c.copy(cb).lerp(ct, (0.25 + 0.75 * t) * (0.6 + 0.4 * ti / tiers.length)).multiplyScalar(bright);
+        col.push(c.r, c.g, c.b);
+        uv.push(0.5 + sd * 0.98, 0.02 + t * 0.96);
+      }
+    }
+  });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
   g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
@@ -306,9 +374,11 @@ function treeGeos() {
     tube([[0.08, 3.3, 0], [0.9, 4.3, 0.3], [1.7, 4.9, 0.6]], [0.18, 0.13, 0.06], 4, bf),
     tube([[0.06, 3.6, 0], [-0.7, 4.6, -0.5], [-1.5, 5.2, -0.9]], [0.17, 0.12, 0.06], 4, bf),
   ]);
+  // 遠景：近くの木と同じ色の葉むらの芯（3 つ）＋葉の板（extraFar）。近くと遠くの境目が見えないように
+  // 遠景（安く：芯 1 つ＋大きな葉の板 3 枚＝ 34 三角形）。近くの木と同じ色と光
   const broadFar = merge([
-    part(G.cyl(0.25, 0.42, 4.2, 3), { pos: [0, 2.1, 0], color: 0x4a3a2e }),
-    part(G.ico(2.7, 0), { pos: [0.1, 6.0, 0], scale: [1.2, 0.8, 1.2], bottom: 0x2f7532, top: 0x86c452, smooth: V(0, 5, 0), sway: 1 }),
+    part(G.cyl(0.22, 0.4, 4.6, 4, 1, true), { pos: [0, 2.3, 0], bottom: 0x3a2e24, top: 0x5e4b3b }),
+    part(G.ico(1, 0), { pos: [0.1, 5.9, 0], scale: [3.5, 2.4, 3.5], bottom: lin(0x4a9a3e).map((v) => v * 0.5), top: lin(0xb9e36e).map((v) => v * 0.72), smooth: V(0.1, 4.6, 0), sway: 1, topLight: 0.6 }),
   ]);
   // 2 森の巨木：根を張った太い幹、高い枝、傘のように広がる葉むら
   const giantBlobs = [
@@ -334,15 +404,15 @@ function treeGeos() {
   // 3 針葉樹（峰）
   const tier = (r, y, h, seg, bot, top, open = true) => part(G.cone(r, h, seg, open), { pos: [0, y + h / 2, 0], bottom: bot, top, sway: 0.6, topLight: 0.4 });
   // 枝は地面近くから。段を深く重ね、下の段ほど広く垂れる（目の高さで傘に見えないように）
+  // 芯の円すいは暗く細め。その外に針葉の枝の板（pineCards）を段ごとに垂らす
+  const PT = [[2.35, 0.55, 2.7], [2.0, 1.95, 2.7], [1.62, 3.35, 2.6], [1.25, 4.7, 2.5], [0.88, 6.0, 2.3], [0.5, 7.2, 2.0]];
   const pineNear = merge([
     part(G.cyl(0.16, 0.3, 2.2, 5), { pos: [0, 1.1, 0], color: 0x4a3a30 }),
-    tier(2.35, 0.55, 2.7, 9, 0x24504c, 0x33615c, false), tier(2.0, 1.95, 2.7, 8, 0x26534f, 0x396a63),
-    tier(1.62, 3.35, 2.6, 8, 0x295853, 0x417268), tier(1.25, 4.7, 2.5, 7, 0x2c5c57, 0x4a7d72),
-    tier(0.88, 6.0, 2.3, 6, 0x30605b, 0x55887c), tier(0.5, 7.2, 2.0, 5, 0x34655f, 0x5f9285),
+    ...PT.map(([r, y, h], i) => tier(r * 0.5, y + h * 0.15, h * 0.85, 6, 0x0f2725, 0x1b3c38, i > 0)),
   ]);
   const pineFar = merge([
-    part(G.cone(2.3, 6.4, 5, false), { pos: [0, 3.5, 0], bottom: 0x24504c, top: 0x3b6b64, sway: 0.6 }),
-    part(G.cone(1.25, 4.6, 4, true), { pos: [0, 6.9, 0], bottom: 0x295853, top: 0x55887c, sway: 0.6 }),
+    part(G.cone(2.0, 6.4, 5, false), { pos: [0, 3.5, 0], bottom: 0x1c4440, top: 0x356660, sway: 0.6 }),
+    part(G.cone(1.1, 4.6, 4, true), { pos: [0, 6.9, 0], bottom: 0x24504c, top: 0x4e8278, sway: 0.6 }),
   ]);
   // 4 峡谷の灌木
   const shrubNear = merge([
@@ -353,7 +423,7 @@ function treeGeos() {
     leafBlob(0.6, [0.5, 2.4, -0.3], [1.2, 0.65, 1.2], 0x628a62, 0xa8c896, 0),
   ]);
   const shrubFar = merge([part(G.octa(1.2), { pos: [0, 1.7, 0], scale: [1.4, 0.7, 1.3], bottom: 0x587f5a, top: 0x9fbf8c, smooth: V(0, 1, 0) })]);
-  return { broad: [broadNear, broadFar], giant: [giantNear, giantFar], pine: [pineNear, pineFar], shrub: [shrubNear, shrubFar], broadBlobs, giantBlobs };
+  return { broad: [broadNear, broadFar], giant: [giantNear, giantFar], pine: [pineNear, pineFar], shrub: [shrubNear, shrubFar], broadBlobs, giantBlobs, pineTiers: PT };
 }
 function rockGeos() {
   const grey = (p, n) => { const k = 0.55 + 0.45 * Math.max(0, n.y) + 0.12 * Math.sin(p.y * 2.1); return [k, k, k]; };
@@ -437,13 +507,29 @@ function mushroomGeo() {
   one(0, 0, 0.42, 0.26, 0x62e6ff); one(0.3, 0.15, 0.26, 0.17, 0x8ff0ff); one(-0.22, 0.24, 0.2, 0.13, 0xff9be0);
   return merge(parts);
 }
+// 道灯：台石、細い柱、道の側へ曲がる腕木、吊るした小さな灯籠（笠・灯・底板）。腕は +x（置くときに道の方へ向ける）
+const LAMP_ARM = 0.42, LAMP_Y = 1.7;
 function lampGeo() {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const lathe = (prof, seg = 6) => new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(r, y)), seg);
   return merge([
-    part(G.cyl(0.07, 0.11, 1.9, 5), { pos: [0, 0.95, 0], bottom: 0x6f6a60, top: 0x9a9484 }),
-    part(G.cyl(0.2, 0.26, 0.14, 6), { pos: [0, 0.07, 0], color: 0x8a8476 }),
-    part(G.box(0.34, 0.06, 0.34), { pos: [0, 1.9, 0], color: 0x7a7468 }),
-    part(G.octa(0.2), { pos: [0, 2.16, 0], scale: [1, 1.25, 1], color: 0xfff0c0, glow: 1 }),
-    part(G.cone(0.3, 0.2, 4), { pos: [0, 2.48, 0], rot: [0, Math.PI / 4, 0], color: 0x5f6a82 }),
+    part(lathe([[0.001, 0], [0.17, 0], [0.17, 0.08], [0.11, 0.15], [0.001, 0.15]]), { color: 0x8a8476 }),
+    part(lathe([[0.001, 0], [0.065, 0], [0.05, 1.72], [0.065, 1.76], [0.07, 1.84], [0.001, 1.86]], 6), { pos: [0, 0.12, 0], bottom: 0x5a5248, top: 0x7a7062 }),
+    part(tubeGeo([V(0.02, 1.86, 0), V(0.16, 2.02, 0), V(0.32, 2.04, 0), V(LAMP_ARM, 1.95, 0)], [0.026, 0.022, 0.02, 0.016], [0.026, 0.022, 0.02, 0.016], 4, V(0, 0, 1)), { color: 0x3f3a33 }),
+    part(G.cyl(0.006, 0.006, 0.1, 3), { pos: [LAMP_ARM, 1.9, 0], color: 0x3f3a33 }),
+    part(lathe([[0.001, 0.13], [0.04, 0.11], [0.15, 0.03], [0.16, 0.0], [0.001, 0.0]], 4), { pos: [LAMP_ARM, LAMP_Y + 0.12, 0], rot: [0, Math.PI / 4, 0], color: 0x3a4456 }),
+    part(G.box(0.15, 0.17, 0.15), { pos: [LAMP_ARM, LAMP_Y + 0.03, 0], color: 0xfff0c0, glow: 1 }),
+    ...[[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([qx, qz]) => part(G.box(0.02, 0.19, 0.02), { pos: [LAMP_ARM + qx * 0.078, LAMP_Y + 0.03, qz * 0.078], color: 0x3f3a33 })),
+    part(G.box(0.19, 0.025, 0.19), { pos: [LAMP_ARM, LAMP_Y - 0.065, 0], color: 0x3f3a33 }),
+  ]);
+}
+
+function lampFarGeo() {
+  return merge([
+    part(G.cyl(0.05, 0.08, 1.95, 3, 1, true), { pos: [0, 0.98, 0], bottom: 0x5a5248, top: 0x7a7062 }),
+    part(G.box(LAMP_ARM, 0.04, 0.04), { pos: [LAMP_ARM / 2, 1.97, 0], color: 0x3f3a33 }),
+    part(G.box(0.16, 0.2, 0.16), { pos: [LAMP_ARM, LAMP_Y + 0.03, 0], color: 0xfff0c0, glow: 1 }),
+    part(G.cone(0.17, 0.13, 4, true), { pos: [LAMP_ARM, LAMP_Y + 0.18, 0], rot: [0, Math.PI / 4, 0], color: 0x3a4456 }),
   ]);
 }
 
@@ -453,19 +539,22 @@ export function createFlora(env) {
   group.name = 'aw-flora';
   const rng = env.fork('flora');
   const mat = floraMaterial(0x7ff5e1), matLamp = floraMaterial(0xffc46a), matRock = floraMaterial(0x7ff5e1, true), matLeaf = floraMaterial(0x7ff5e1, false, true);
+  // 針葉樹の枝の板：葉と同じシェーダーで、絵だけ針葉に替える
+  const matNeedle = floraMaterial(0x7ff5e1, false, true);
+  matNeedle.uniforms.uLeafTex = { value: needleTexture() };
   const tg = treeGeos(), rg = rockGeos();
   const S = {
-    broad: new Scatter(tg.broad[0], tg.broad[1], mat, { nearDist: 78, farDist: 760, name: 'tree-broad', extra: { geo: leafCards(tg.broadBlobs, makeRng(31), 0.42), material: matLeaf } }),
+    broad: new Scatter(tg.broad[0], tg.broad[1], mat, { nearDist: 78, farDist: 760, name: 'tree-broad', extra: { geo: leafCards(tg.broadBlobs, makeRng(31), 0.42), material: matLeaf }, extraFar: { geo: leafCards(tg.broadBlobs.map((b) => ({ ...b, n: 1, shell: false })), makeRng(43), 0.95), material: matLeaf } }),
     giant: new Scatter(tg.giant[0], tg.giant[1], mat, { nearDist: 88, farDist: 820, name: 'tree-giant', always: 40, extra: { geo: leafCards(tg.giantBlobs, makeRng(32), 0.36), material: matLeaf }, extraFar: { geo: leafCards(tg.giantBlobs.map((b, i) => ({ ...b, n: i ? 1 : 3, shell: false })), makeRng(42), 0.62), material: matLeaf } }),
     fern: new Scatter(fernGeo(makeRng(33)), null, matLeaf, { nearDist: 44, farDist: 44, name: 'fern', always: 6 }),
     log: new Scatter(logGeo(), null, mat, { nearDist: 80, farDist: 80, name: 'log' }),
-    pine: new Scatter(tg.pine[0], tg.pine[1], mat, { nearDist: 100, farDist: 760, name: 'tree-pine' }),
+    pine: new Scatter(tg.pine[0], tg.pine[1], mat, { nearDist: 100, farDist: 760, name: 'tree-pine', extra: { geo: pineCards(tg.pineTiers, 10, makeRng(44)), material: matNeedle }, extraFar: { geo: pineCards([[2.2, 0.8, 5.6]], 4, makeRng(45), true), material: matNeedle } }),
     shrub: new Scatter(tg.shrub[0], tg.shrub[1], mat, { nearDist: 70, farDist: 420, name: 'tree-shrub' }),
     boulder: new Scatter(rg.boulder[0], rg.boulder[1], matRock, { nearDist: 70, farDist: 520, name: 'rock-boulder' }),
     pillar: new Scatter(rg.pillar[0], rg.pillar[1], matRock, { nearDist: 130, farDist: 900, name: 'rock-pillar', always: 40 }),
     stack: new Scatter(rg.stack[0], rg.stack[1], matRock, { nearDist: 260, farDist: 900, name: 'rock-stack' }),
     mushroom: new Scatter(mushroomGeo(), null, mat, { nearDist: 75, farDist: 75, name: 'mushroom' }),
-    lamp: new Scatter(lampGeo(), null, matLamp, { nearDist: 150, farDist: 150, name: 'lamp' }),
+    lamp: new Scatter(lampGeo(), lampFarGeo(), matLamp, { nearDist: 45, farDist: 150, name: 'lamp' }),
   };
   const w = [0, 0, 0, 0];
   const nearLandmark = (x, z, pad) => {
@@ -640,9 +729,11 @@ export function createFlora(env) {
       const x = b[0] - tz * 2.9 * side, z = b[1] + tx * 2.9 * side;
       if (hf.waterDepthAt(x, z) > 0 || nearLandmark(x, z, 1) || !farFrom(x, z, 1)) continue;
       const h = hf.heightAt(x, z);
-      S.lamp.add(x, h - 0.05, z, 1, rng.range(0, 6.28), 0, 0);
+      // 腕木を道の方へ向ける（インスタンスの回転：x' = x cos − z sin, z' = x sin + z cos）
+      const dx = b[0] - x, dz = b[1] - z, yaw = Math.atan2(dz, dx);
+      S.lamp.add(x, h - 0.05, z, 1, yaw, 0, 0);
       col.addCollider({ x, z, r: 0.16, y0: h, y1: h + 2.4, kind: 'structure' });
-      lamps.push([x, h + 2.16, z]);
+      lamps.push([x + Math.cos(yaw) * LAMP_ARM, h - 0.05 + LAMP_Y + 0.03, z + Math.sin(yaw) * LAMP_ARM]);
     }
   }
 
