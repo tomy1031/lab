@@ -97,6 +97,13 @@ if (mapMatch) {
     for (const name of [...found].sort()) cdn.push(addonsBase + name);
     if (!found.size) warn('no three/addons imports found in js/');
   }
+  // other CDN assets the game fetches at run time (e.g. the hand model): full https://cdn.jsdelivr.net/… literals in js/
+  const assets = new Set();
+  for (const f of list(path.join(src, 'js'))) {
+    if (!f.endsWith('.js')) continue;
+    for (const m of fs.readFileSync(f, 'utf8').matchAll(/['"](https:\/\/cdn\.jsdelivr\.net\/npm\/[^'"\s]+\.(?:glb|gltf|bin|ktx2))['"]/g)) assets.add(m[1]);
+  }
+  for (const u of [...assets].sort()) cdn.push(u);
 } else warn('no import map in index.html; three.js is not stored offline');
 
 // everything in the output folder is stored, except the three files that are never cached, and fonts' .txt licences

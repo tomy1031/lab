@@ -270,3 +270,8 @@ npm test
 ---
 
 ※ 医療機器ではありません。痛み・しびれ・めまいが出たらすぐに中止し、症状が強い場合は医師に相談してください。消費カロリーは手と頭の動きから推定した目安です。
+
+## クレジット（Credits）
+
+- 手のモデル：[WebXR Input Profiles](https://github.com/immersive-web/webxr-input-profiles) の `generic-hand`（`@webxr-input-profiles/assets` 1.0.20、MIT License、© 2019 Amazon）。cdn.jsdelivr.net から読みこみ、手袋の色・縫い目・金の袖口はゲーム内で加えている。読みこめないとき（オフラインでまだ保存されていないなど）は内蔵の手袋に切りかわる。
+  Hand mesh: `generic-hand` from WebXR Input Profiles (`@webxr-input-profiles/assets` 1.0.20), MIT License, © 2019 Amazon.
