@@ -70,6 +70,20 @@ const C_BACK = new THREE.Color(0x5e3c26), C_KNUCKLE = new THREE.Color(0x7a5134),
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _ax = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _one = new THREE.Vector3(1, 1, 1), _c = new THREE.Color();
 const X1 = new THREE.Vector3(1, 0, 0), Y1 = new THREE.Vector3(0, 1, 0), Z1 = new THREE.Vector3(0, 0, 1);
+/** smallest distance (in X-Y) from a segment to the axis through (cx, cy) along Z */
+function segAxis(a0, a1, cx, cy) {
+  let d = Infinity;
+  for (let s = 0; s <= 4; s++) d = Math.min(d, Math.hypot(a0.x + (a1.x - a0.x) * s / 4 - cx, a0.y + (a1.y - a0.y) * s / 4 - cy));
+  return d;
+}
+const _sp = new THREE.Vector3();
+/** distance from point p to segment a-b */
+function segPoint(a, b, p) {
+  _sp.subVectors(b, a);
+  const L = _sp.lengthSq();
+  const t = L > 0 ? Math.min(1, Math.max(0, ((p.x - a.x) * _sp.x + (p.y - a.y) * _sp.y + (p.z - a.z) * _sp.z) / L)) : 0;
+  return Math.hypot(a.x + _sp.x * t - p.x, a.y + _sp.y * t - p.y, a.z + _sp.z * t - p.z);
+}
 
 /** one hand: geometry (skinned on the CPU), pose state, posing helpers */
 export function createHandRig(data, side, material, gripCenter = new THREE.Vector3(), art = null) {
@@ -162,9 +176,21 @@ export function createHandRig(data, side, material, gripCenter = new THREE.Vecto
       Q[b].premultiply(_q);
     }
   }
-  /** pose = rest + per finger flex angles (array of 5 × 3) */
+  /** swing the whole thumb about its base (CMC) by a rotation vector in the hand's space (opposition) */
+  function swingThumb(rx, ry, rz) {
+    const a = Math.hypot(rx, ry, rz);
+    if (a < 1e-6) return;
+    _q.setFromAxisAngle(_ax.set(rx / a, ry / a, rz / a), a);
+    const pivot = P[1];
+    for (let k = 1; k < 5; k++) {
+      if (k > 1) { _v.copy(P[k]).sub(pivot).applyQuaternion(_q); P[k].copy(pivot).add(_v); }
+      Q[k].premultiply(_q);
+    }
+  }
+  /** pose = rest + per finger flex angles (5 × 3) + the thumb's base swing (3: rotation vector) */
   function pose(angles) {
     setRest();
+    swingThumb(angles[15] || 0, angles[16] || 0, angles[17] || 0);
     for (let f = 0; f < 5; f++) {
       const F = FINGERS[f];
       for (let j = 0; j < 3; j++) bend(F.bones, F.bones.indexOf(F.flex[j]), angles[f * 3 + j]);
@@ -178,34 +204,29 @@ export function createHandRig(data, side, material, gripCenter = new THREE.Vecto
       Q[i].set(arr[i * 7 + 3], arr[i * 7 + 4], arr[i * 7 + 5], arr[i * 7 + 6]);
     }
   }
-  /** curl angles that close a finger onto a cylinder along Z through (cx, cy) of radius r (+ finger radius) */
+  /** curl angles that close the hand onto a cylinder along Z through (cx, cy) of radius r (+ finger radius):
+   *  each finger joint, base first, bends until its own segment lies against the cylinder; then the
+   *  thumb (base swing + two flexes) is searched to wrap over the top and rest on the index finger's outside */
   function solveWrap(r, cx = 0, cy = 0, maxA = 1.75) {
     cx += gripCenter.x; cy += gripCenter.y;
-    const out = new Float32Array(15);
+    const out = new Float32Array(18);
     const tmpP = P.map((p) => p.clone()), tmpQ = Q.map((q) => q.clone());
-    for (let f = 0; f < 5; f++) {
+    setRest();                       // solve from the unshifted rest pose (the axis is given in the asset's space)
+    for (let f = 1; f < 5; f++) {
       const F = FINGERS[f];
-      const fr = f === 0 ? 0.0105 : f === 4 ? 0.0075 : 0.0085;
+      const fr = f === 4 ? 0.0075 : 0.0085;
       const R = r + fr;
       for (let j = 0; j < 3; j++) {
         const from = F.bones.indexOf(F.flex[j]);
-        // save
         const save = F.bones.map((b) => [P[b].clone(), Q[b].clone()]);
         const clear = (a) => {
           F.bones.forEach((b, i) => { P[b].copy(save[i][0]); Q[b].copy(save[i][1]); });
           bend(F.bones, from, a);
-          // smallest distance from the moved segment(s) to the axis
-          let dmin = Infinity;
-          for (let k = from; k < F.bones.length - 1; k++) {
-            const a0 = P[F.bones[k]], a1 = P[F.bones[k + 1]];
-            for (let s = 0; s <= 4; s++) {
-              const x = a0.x + (a1.x - a0.x) * s / 4 - cx, y = a0.y + (a1.y - a0.y) * s / 4 - cy;
-              dmin = Math.min(dmin, Math.hypot(x, y));
-            }
-          }
-          return dmin;
+          // only the segment this joint drives: it bends until it lies against the handle; the joints after it
+          // then wrap further round (checking everything distal would stop the base early on thick things)
+          return segAxis(P[F.bones[from]], P[F.bones[from + 1]], cx, cy);
         };
-        const lim = j === 0 ? maxA * 0.95 : maxA;
+        const lim = j === 2 ? maxA * 0.8 : maxA;
         let lo = 0, hi = lim;
         if (clear(hi) >= R) lo = hi;
         else if (clear(0) < R) lo = 0;
@@ -215,10 +236,69 @@ export function createHandRig(data, side, material, gripCenter = new THREE.Vecto
         bend(F.bones, from, lo);
       }
     }
+    solveThumb(out, r, cx, cy);
     for (let i = 0; i < 25; i++) { P[i].copy(tmpP[i]); Q[i].copy(tmpQ[i]); }
     return out;
   }
-
+  // the thumb: a small random + pattern search over (swing rx, ry, rz, flex base, mid, tip), fingers already posed
+  const TH0 = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const THQ = [new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion(), new THREE.Quaternion()];
+  const _t = new THREE.Vector3(), _n = new THREE.Vector3();
+  function solveThumb(out, r, cx, cy) {
+    for (let k = 1; k < 5; k++) { TH0[k].copy(P[k]); THQ[k].copy(Q[k]); }
+    // target: just outside the index finger's middle phalanx (over it, seen from outside the fist)
+    _t.copy(P[7]).lerp(P[8], 0.6);
+    _n.set(_t.x - cx, _t.y - cy, 0).normalize();
+    _t.addScaledVector(_n, 0.016);
+    const RT = r + 0.0095;
+    const fingerSegs = [[6, 7], [7, 8], [8, 9], [11, 12], [12, 13], [13, 14]];
+    const palmSegs = [[5, 6], [10, 11], [15, 16]];
+    const apply = (x) => {
+      for (let k = 1; k < 5; k++) { P[k].copy(TH0[k]); Q[k].copy(THQ[k]); }
+      swingThumb(x[0], x[1], x[2]);
+      for (let j = 0; j < 3; j++) bend(FINGERS[0].bones, j, x[3 + j]);
+    };
+    const cost = (x) => {
+      apply(x);
+      let c = P[4].distanceToSquared(_t) * 1e4;
+      for (let k = 1; k < 4; k++) {
+        const a = P[k], b = P[k + 1];
+        for (let s = 0; s <= 4; s++) {
+          if (k === 1 && s < 2) continue;
+          _v.copy(a).lerp(b, s / 4);
+          const tr = k === 3 ? 0.0085 : 0.0095;
+          const dr = Math.hypot(_v.x - cx, _v.y - cy) - (r + tr);
+          if (dr < 0) c += dr * dr * 4e6;
+          for (const [i0, i1] of fingerSegs) { const d = segPoint(P[i0], P[i1], _v) - (0.0085 + tr) * 0.92; if (d < 0) c += d * d * 4e6; }
+          if (k > 1) for (const [i0, i1] of palmSegs) { const d = segPoint(P[i0], P[i1], _v) - (0.016 + tr); if (d < 0) c += d * d * 4e6; }
+        }
+      }
+      c += (x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) * 0.05 + (x[3] * x[3] + x[4] * x[4] + x[5] * x[5]) * 0.02;
+      return c;
+    };
+    const LO = [-1.6, -1.6, -1.6, -0.3, -0.3, -0.3], HI = [1.6, 1.6, 1.6, 1.0, 1.3, 1.4];
+    let best = [0, 0, 0, 0, 0, 0], bc = cost(best);
+    let seed = 12345;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    for (let i = 0; i < 1500; i++) {
+      const x = LO.map((l, k) => l + (HI[k] - l) * rnd());
+      const c = cost(x);
+      if (c < bc) { bc = c; best = x; }
+    }
+    let step = 0.2;
+    while (step > 0.004) {
+      let improved = false;
+      for (let k = 0; k < 6; k++) for (const dir of [1, -1]) {
+        const x = best.slice(); x[k] = Math.min(HI[k], Math.max(LO[k], x[k] + dir * step));
+        const c = cost(x);
+        if (c < bc) { bc = c; best = x; improved = true; }
+      }
+      if (!improved) step *= 0.5;
+    }
+    apply(best);
+    out[0] = best[3]; out[1] = best[4]; out[2] = best[5]; out[15] = best[0]; out[16] = best[1]; out[17] = best[2];
+    return bc;
+  }
   /** CPU skinning of the current pose into the geometry */
   function skin() {
     for (let i = 0; i < 25; i++) {

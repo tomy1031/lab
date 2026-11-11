@@ -6,6 +6,7 @@ import { GeoBuilder, flatNormals } from '../core/geo.js';
 import { getGems, getSprites, createAttached } from '../core/gems.js';
 import { loadHandData, createHandRig } from './handrig.js';
 import { ema } from '../core/util.js';
+import { GRIPS, gripKey } from '../core/grips.js';
 const HANDS = ['left', 'right'];
 
 const CREAM = 0xf4ecd8, PAD = 0xe2d6b8, SEAM = 0xc9b48a, GOLD = 0xffd76a;
@@ -40,48 +41,56 @@ function gloveGeometry(s) {
   return b.build({ tags: true });
 }
 
-// ── the gold cuff (wrist joint frame: −Z toward the fingers, +Z up the forearm, +Y back of the hand) ──
+// ── the gold bracer (wrist joint frame: −Z toward the fingers, +Z up the forearm, +Y back of the hand, X across) ──
+// Fitted: it hugs the forearm just behind the wrist crease (the glove's wrist is ≈ 5.4 × 4.0 cm), ≈ 1.3 cm wider
+// than the wrist overall, 4.6 cm long, rolled lips at both ends; the elbow end is closed by the sleeve's leather,
+// gently domed, so it never reads as an empty hoop (the hand mesh stops 2 cm behind the wrist joint).
 function cuffGeometry() {
-  // a flared elliptical band, rolled lip at the open end, smooth; vertex colours: polished edges, softer middle
-  const seg = 16, rings = [
-    // z, rx, ry, colour k (1 = bright edge)
-    [-0.004, 0.0335, 0.0255, 1], [0.004, 0.0348, 0.0268, 0.7], [0.024, 0.0372, 0.0288, 0.55],
-    [0.04, 0.041, 0.0318, 0.95], [0.047, 0.042, 0.0325, 1], [0.047, 0.0385, 0.0295, 0.7],
+  const seg = 16;
+  // z, rx, ry, tone (0 groove … 1 polished edge)
+  const rings = [
+    [0.0035, 0.0284, 0.0216, 0.35], [0.0072, 0.0332, 0.0262, 1], [0.0115, 0.0338, 0.0268, 0.6], [0.0262, 0.0342, 0.0272, 0.55],
+    [0.0285, 0.0336, 0.0266, 0.1], [0.0308, 0.0345, 0.0275, 0.55], [0.0455, 0.0353, 0.0283, 0.6], [0.0498, 0.0349, 0.0279, 1],
+    [0.0522, 0.0318, 0.0252, 0.4],
   ];
   const pos = [], col = [], idx = [];
-  const g0 = new THREE.Color(0xc99a3e), g1 = new THREE.Color(0xffe08a), c = new THREE.Color();
-  for (let r = 0; r < rings.length; r++) {
-    const [z, rx, ry, k] = rings[r];
-    c.copy(g0).lerp(g1, k);
+  const dark = new THREE.Color(0x7a5520), mid = new THREE.Color(0xb8862e), hi = new THREE.Color(0xd6a74c), c = new THREE.Color();
+  for (const [z, rx, ry, k] of rings) {
+    if (k < 0.5) c.copy(dark).lerp(mid, k / 0.5); else c.copy(mid).lerp(hi, (k - 0.5) / 0.5);
     for (let i = 0; i < seg; i++) {
       const a = (i / seg) * Math.PI * 2;
       pos.push(Math.cos(a) * rx, Math.sin(a) * ry, z);
-      col.push(c.r, c.g, c.b);
+      col.push(c.r, c.g, c.b, 1);
     }
   }
   for (let r = 0; r < rings.length - 1; r++) for (let i = 0; i < seg; i++) {
     const a = r * seg + i, b = r * seg + (i + 1) % seg, cc = (r + 1) * seg + i, d = (r + 1) * seg + (i + 1) % seg;
-    idx.push(a, cc, b, b, cc, d);
+    idx.push(a, b, cc, b, d, cc);                         // wound outward (front faces outside)
   }
+  // the sleeve end: the glove's leather, gently domed (its own vertices: a hard edge against the gold lip)
+  const base = pos.length / 3, last = rings[rings.length - 1], sleeve = new THREE.Color(0x4f3321);
+  for (let i = 0; i < seg; i++) {
+    const a = (i / seg) * Math.PI * 2;
+    pos.push(Math.cos(a) * last[1] * 0.96, Math.sin(a) * last[2] * 0.96, last[0] - 0.0004);
+    col.push(sleeve.r, sleeve.g, sleeve.b, 0.7);
+  }
+  pos.push(0, 0, last[0] + 0.005);
+  col.push(sleeve.r, sleeve.g, sleeve.b, 1);
+  for (let i = 0; i < seg; i++) idx.push(base + i, base + (i + 1) % seg, base + seg);   // faces up the arm (+Z)
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4));
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
 }
 
-// how a closed hand wraps what it holds: a cylinder along the grip's Z of radius r at (cx·s, cy)
-const WRAP = {
-  sword: [0.017, 0, 0], spear: [0.017, 0, 0], torch: [0.021, 0, 0], bow: [0.024, 0, 0], shield: [0.013, 0.004, 0],
-  windfan: [0.013, 0, 0], waybell: [0.011, 0, 0], flask: [0.045, 0, 0], arrow: [0.007, 0, 0],
-  bomb: [0.058, -0.035, -0.03], rock: [0.045, -0.035, -0.03], food: [0.042, -0.04, -0.035], small: [0.026, -0.035, -0.03],
-  fist: [0.004, 0.006, -0.012],
-};
-// where the held item's axis sits in the hand asset's space (right hand; x mirrors for the left)
-const GRIP_C = [0.004, -0.046, 0.004];
-// relaxed hand (rad per joint): fingers gently bent, more toward the pinky
-const RELAXED = [0.12, 0.12, 0.1, 0.1, 0.14, 0.1, 0.16, 0.2, 0.12, 0.2, 0.24, 0.15, 0.25, 0.28, 0.18];
+// the centre of the fist (= grip-space origin, where a held handle's axis runs) in the hand asset's space
+// (right hand; x mirrors for the left): just inside the palm at the finger roots, mid-way across the four fingers
+const GRIP_C = [-0.002, -0.03, 0.012];
+// relaxed hand (rad per joint, base → tip): all four fingers in a soft natural cascade (a little more toward the
+// pinky), the thumb loose beside the index; [15..17] = the thumb's base swing (none at rest)
+const RELAXED = [0.08, 0.12, 0.1, 0.2, 0.3, 0.16, 0.24, 0.34, 0.18, 0.28, 0.38, 0.2, 0.32, 0.42, 0.22, 0, 0, 0];
 
 export function createHands(ctx, P) {
   const input = ctx.input;
@@ -101,14 +110,14 @@ export function createHands(ctx, P) {
     // the fallback glove's gem (moved to the skinned hand's cuff once that loads)
     const gem = gems.add(input.hands[side].object3D, s * 0.079, 0.088, 0, 0.011);
     H[side] = { s, mesh, geo, rest, gem, curl: -1, shown: 0.15, k1: [s * 0.04, -0.035], k2: [s * 0.04, -0.081],
-      rig: null, cur: Float32Array.from(RELAXED), angles: new Float32Array(15), wraps: new Map(), anchor: null, joints: new Float32Array(25 * 7) };
+      rig: null, cur: new Float32Array(5), angles: new Float32Array(18), wraps: new Map(), anchor: null, joints: new Float32Array(25 * 7) };
   }
 
   // ── realistic skinned hands (WebXR generic hand, MIT) — loaded in the background, fallback above ──
   let rigReady = false;
   const handMat = ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.35, spec: 0.12, gloss: 10 });
   const cuffs = createAttached(ctx, 'glove-cuffs', cuffGeometry(),
-    ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.6, gloss: 40 }), 2, 1e6);
+    ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.7, gloss: 50 }), 2, 1e6);
   loadHandData().then(async (data) => {
     for (const side of HANDS) {
       await new Promise((r) => setTimeout(r, 0));          // one hand's texture bake per task (no long stall)
@@ -122,9 +131,9 @@ export function createHands(ctx, P) {
       h.anchor = new THREE.Object3D();
       h.anchor.name = 'wrist-anchor';
       obj.add(h.anchor);
-      cuffs.add(h.anchor, 0, 0, 0.004, 1);
+      cuffs.add(h.anchor, 0, 0, 0, 1);
       gems.remove(h.gem);
-      h.gem = gems.add(h.anchor, 0, 0.0285, 0.03, 0.0085);
+      h.gem = gems.add(h.anchor, 0, 0.0298, 0.0285, 0.0068);       // on the back of the wrist, in the groove
       h.wraps.clear();
     }
     rigReady = true;
@@ -135,11 +144,11 @@ export function createHands(ctx, P) {
   });
 
   function wrapFor(h, side, held) {
-    const id = !held ? 'fist' : WRAP[held.id] ? held.id : held.def?.cat === 'food' ? 'food' : (held.def?.cat === 'material' || held.def?.cat === 'key') ? 'small' : 'sword';
+    const id = gripKey(held?.id, held?.def);
     let w = h.wraps.get(id);
     if (!w) {
-      const [r, cx, cy] = WRAP[id];
-      w = h.rig.solveWrap(r, cx * h.s, cy);
+      const g = GRIPS[id];
+      w = h.rig.solveWrap(g.r, g.at[0] * h.s, g.at[1]);
       h.wraps.set(id, w);
     }
     return w;
@@ -170,9 +179,9 @@ export function createHands(ctx, P) {
       if (held) { target[0] = 1; target[1] = 0.85 + 0.15 * t; target[2] = target[3] = target[4] = 1; }
       else if (pulling) { target[0] = 0.35; target[1] = 0.45; target[2] = target[3] = target[4] = 0.55; }
       else {
-        target[0] = g > 0.5 || hd.thumbRest ? 0.55 : 0.12;      // thumb rests on the controller or lifts
-        target[1] = 0.12 + 0.8 * t;                               // trigger curls the index
-        target[2] = target[3] = target[4] = 0.08 + 0.9 * g;       // grip curls middle, ring, pinky
+        target[0] = g > 0.5 || hd.thumbRest ? 0.45 : 0;          // thumb rests on the controller or lifts
+        target[1] = 0.85 * t;                                     // trigger curls the index
+        target[2] = target[3] = target[4] = 0.92 * g;             // grip curls middle, ring, pinky
       }
       const closed = wrapFor(h, side, held);
       const k = ema(0.06, dt > 0 ? dt : (ctx.clock.dt || 0.016));
@@ -183,6 +192,7 @@ export function createHands(ctx, P) {
           h.angles[i] = RELAXED[i] + (closed[i] - RELAXED[i]) * h.cur[f];
         }
       }
+      for (let i = 15; i < 18; i++) h.angles[i] = RELAXED[i] + (closed[i] - RELAXED[i]) * h.cur[0];
       rig.pose(h.angles);
     }
     rig.skin();
@@ -209,7 +219,7 @@ export function createHands(ctx, P) {
         h.mesh.visible = hd.tracked;
       }
       if (hd.tracked && (ctx.world?.nightFactor ?? 0) > 0.5) {
-        if (h.anchor) _gp.set(0, 0.032, 0.03).applyQuaternion(h.anchor.getWorldQuaternion(_jq)).add(h.anchor.getWorldPosition(_jp));
+        if (h.anchor) _gp.set(0, 0.031, 0.0285).applyQuaternion(h.anchor.getWorldQuaternion(_jq)).add(h.anchor.getWorldPosition(_jp));
         else _gp.set(h.s * 0.082, 0.088, 0).applyQuaternion(hd.quat).add(hd.pos);
         sprites.push(_gp, 0.1, GEM_GLOW);                // art.glow size 0.05 = radius → 0.1 across
       }

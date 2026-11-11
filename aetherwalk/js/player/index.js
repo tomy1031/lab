@@ -49,7 +49,7 @@ export async function createPlayer(ctx) {
   P.body.hitTest = body.hitTest;
   P.holsters = { slotPos: holsters.slotPos, handIn: holsters.handIn, slotLocal: holsters.slotLocal, contentOf: holsters.contentOf };
   P.steps_ = steps;                     // internals for debugging
-  P.loco = loco; P.bodySim = body; P.grab = grab; P.desktop = desktop; P.comfort = comfort;
+  P.loco = loco; P.bodySim = body; P.grab = grab; P.desktop = desktop; P.comfort = comfort; P.hands = hands;
 
   P.turn = (deg) => loco.turn((deg || 0) * DEG);
   P.recenter = () => {

@@ -4,6 +4,7 @@
 // sibling files: melee, shield, bow, projectiles (thrown / flying / falling items, wind blades), bomb, torch,
 // food, flask, windfan, waybell.
 import * as THREE from 'three';
+import { GRIPS, gripKey } from '../core/grips.js';
 import { ITEM_DEFS } from './defs.js';
 import { createModels } from './models.js';
 import { createMelee } from './melee.js';
@@ -119,13 +120,12 @@ export async function createItems(ctx) {
 
   function holdOffset(inst, hand) {
     const s = hand === 'left' ? -1 : 1;
-    inst.holdPos.set(0, 0, 0);
     inst.holdQuat.identity();
     const d = inst.def;
     if (d.id === 'shield' && hand === 'left') inst.holdQuat.copy(FLIP_Z);
-    else if (d.id === 'bow') inst.holdPos.set(0, 0.034, 0);            // its leather grip (y −0.034) sits in the fist
-    else if (d.cat === 'food') inst.holdPos.set(-s * 0.04, -0.035, 0);
-    else if (d.id === 'bomb' || d.id === 'rock' || d.cat === 'material' || d.cat === 'key') inst.holdPos.set(-s * 0.035, -0.03, 0);
+    // the handle's axis goes where the hand closes (core/grips.js): through the curled fingers
+    const g = GRIPS[gripKey(d.id, d)];
+    inst.holdPos.set(s * (g.at[0] - g.model[0]), g.at[1] - g.model[1], 0);
     inst.object3D.position.copy(inst.holdPos);
     inst.object3D.quaternion.copy(inst.holdQuat);
   }
