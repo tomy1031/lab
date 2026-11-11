@@ -1331,6 +1331,10 @@ window.AW = {
 - **`input.virtual` の追加**：`setLook(yawDeg, pitchDeg)` の yaw は**ワールドの向き**（0＝北）。ほかに `addLook, getLook, setHandOffset, setGuard, setHandPose('rest'|'guard'|'bow'|'drink'|'eat'|'pour'|'draw'), hold(btn, down), setStick, setReach, isSwinging`。`swing` の種類は `slashH slashV thrust throw fan shake`。
 - **`ctx.items` の追加**（player が使う）：`createInHand, grabWorld, nearestGrabbable, rayGrabbable, pull, cancelPull, drop, stow, isHeld, tipSpeed(hand), bowInfo(hand), budget()`。
 - **`AW.debug` の追加**：`events(name)`（直近のイベントの写し）、`clearEvents, spawnDummy(dx, dz), dummyState, spawnItem(id, dx, dz, dy), items(), heldItem(hand), addZone(kind, …), handTo, press, hold, look, budget(), stats()`。
+- **PC の手の置き場（ART_REVIEW A-P1-1/2）**：XR でないときだけ。何も持たない手は頭の空間で `[±0.24, −0.47, −0.46]`（画面の外）、持っている手は `[±0.22, −0.49, −0.55]`（親指を上にした握りは袖口が握りの 0.11 m 上に来るので、レビューの −0.36 より下げて手袋が下端から 6% 以内に収まるようにした）、盾は `[−0.34, −0.46, −0.50]` で面を外へ 35°。`setHandPose('raise')` は松明を前に掲げる。
+- **鍛え直し**：近接の `base` と突きに `ctx.game.inventory.temper[itemId]`（0〜3）を足す。game がスタブなら 0。
+- **滑空の追い風**：player は `spendStamina` を呼ばない（§10.19）。`vitals.stamina ≤ 0` のときだけ降下を 3 m/s にする。
+- **小さな光の共有描画**（OPUS-A 内部）：水色の宝石（手袋の袖口・盾・剣の鍔）は 1 つの `InstancedMesh`（`art.basic #7fe9ff`）、拾えるものと夜の宝石のにじみは 1 つの加算 `art.basic` のカメラ向き四角（`glow-sprites`）、矢と石の足もとの影も 1 つ（`item-shadows`）。数が増えてもドローコールは増えない。`AW.debug.budget()` は場面を数えて OPUS-A の実際のドローコール・三角形を返し、`AW.debug.coverage(pattern, w, minLum)` は名前の合う物だけを描いて画面の占有率を返す（受け入れ確認用）。
 - **CSS**：`tools/build.mjs` は `css/` を配らないので、ランディングと PC 表示の CSS は `index.html` に直接書いた。PC 表示で OPUS-A が使う要素は `#aw-hint`（クリックで開始）`#aw-reticle` `#aw-back`。`#aw-overlay` の中身は OPUS-B。
 
 ### 10.19 OPUS-B の補足（実装から決めたこと。既存の API は変えていない）
