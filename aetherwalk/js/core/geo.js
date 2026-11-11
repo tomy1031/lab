@@ -9,7 +9,7 @@ const _c = new THREE.Color();
 export class GeoBuilder {
   constructor() { this.parts = []; this.tag = 0; }
   /** add a geometry with colour and transform: pos [x,y,z], rot [x,y,z] (radians, XYZ), scale [x,y,z] or number.
-   *  opts: { smooth (keep the primitive's own normals), metal (true: steel group 1, 'gold': gold group 2), ao (0..1),
+   *  opts: { smooth (keep the primitive's own normals), metal (steel / gold / brass: second material group), ao (0..1),
    *          shade(x, y, z, colour) → per-vertex colour tweak in item space (grain, wear; may set colour.ao) } */
   add(geo, color, pos = [0, 0, 0], rot = [0, 0, 0], scale = 1, opts = {}) {
     _e.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
@@ -21,7 +21,7 @@ export class GeoBuilder {
     const g = geo.index ? geo.toNonIndexed() : geo;
     if (g !== geo) geo.dispose();
     g.applyMatrix4(_m);
-    this.parts.push({ g, color: new THREE.Color(color), tag: this.tag, smooth: !!opts.smooth, metal: opts.metal === 'gold' ? 2 : opts.metal ? 1 : 0, ao: opts.ao ?? 1, shade: opts.shade || null });
+    this.parts.push({ g, color: new THREE.Color(color), tag: this.tag, smooth: !!opts.smooth, metal: opts.metal ? 1 : 0, ao: opts.ao ?? 1, shade: opts.shade || null });
     return this;
   }
   box(w, h, d, color, pos, rot, scale, opts) { return this.add(new THREE.BoxGeometry(w, h, d), color, pos, rot, scale, opts); }
@@ -82,10 +82,10 @@ export class GeoBuilder {
     return this.add(g, color, pos, rot, scale);
   }
   /** merge → non-indexed BufferGeometry: position, normal (per-face, or the part's own when smooth), colour RGBA
-   *  (A = AO), optional per-vertex tags; groups: matte parts (material 0), steel (1), gold (2) */
+   *  (A = AO), optional per-vertex tags; groups: matte parts (material 0), metal parts (1) */
   build({ tags = false, groups = true } = {}) {
-    const order = groups ? [0, 1, 2].flatMap((k) => this.parts.filter((p) => p.metal === k)) : this.parts;
-    const count = [0, 0, 0];
+    const order = groups ? [0, 1].flatMap((k) => this.parts.filter((p) => p.metal === k)) : this.parts;
+    const count = [0, 0];
     let n = 0;
     for (const p of order) { n += p.g.attributes.position.count; count[p.metal] += p.g.attributes.position.count; }
     const nMatte = count[0];
@@ -123,7 +123,7 @@ export class GeoBuilder {
     if (tag) geo.userData.tags = tag;
     if (groups) {
       let start = 0;
-      for (let k = 0; k < 3; k++) { if (count[k]) geo.addGroup(start, count[k], k); start += count[k]; }
+      for (let k = 0; k < 2; k++) { if (count[k]) geo.addGroup(start, count[k], k); start += count[k]; }
     }
     geo.userData.hasMetal = n > nMatte;
     geo.computeBoundingSphere();

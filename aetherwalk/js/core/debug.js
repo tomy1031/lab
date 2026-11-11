@@ -171,8 +171,8 @@ export function installDebug(ctx, loop) {
         if (!(o.isMesh || o.isLine) || !MINE.test(o.name || '') || !vis(o)) return;
         const n = o.isInstancedMesh ? o.count : 1;
         if (n <= 0) return;
-        drawCalls++;
         const g = o.geometry;
+        drawCalls += Array.isArray(o.material) && g.groups.length ? g.groups.length : 1;   // one call per material group
         const t = o.isLine ? 0 : (g.index ? g.index.count : g.attributes.position.count) / 3;
         triangles += t * n;
         names.push(o.name);

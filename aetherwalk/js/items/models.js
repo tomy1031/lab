@@ -1,10 +1,11 @@
 // js/items/models.js — every item's look, built in code (§7.4 style, premium pass): smooth where light rolls
 // over a surface, crisp facets where an edge should catch it (blades), believable materials through vertex
-// colour (steel, gold, wood grain, leather wraps) and per-vertex AO (colour alpha). Each geometry has up to three
-// groups: matte (wood, leather, cloth, food), steel, gold/brass → a held item draws with those art.material looks
-// (spec/gloss); world pools draw the whole thing with the matte one (one call per kind).
+// colour (steel, gold, wood grain, leather wraps) and per-vertex AO (colour alpha). Each geometry has two groups:
+// matte (wood, leather, cloth, food) and metal (steel, gold, brass) → a held item draws with two art.material
+// looks (spec/gloss; ≤ 2 draw calls); world pools draw the whole thing with the matte one (one call per kind).
+// Gold is a deep albedo (#c0903a) so the polished highlight, not the base colour, carries the shine.
 // Grip space: origin at the fist, -Z along the held rod (blade / shaft / neck), +X back of the right hand,
-// +Y toward the elbow. Weapons ≤ 400 triangles.
+// +Y toward the elbow (handles sit where core/grips.js says the hand closes). Weapons ≤ 400 triangles.
 import * as THREE from 'three';
 import { GeoBuilder, triCount } from '../core/geo.js';
 
@@ -111,15 +112,15 @@ const BUILD = {
     // crossguard ≈ 2.7 × the blade's width, swept slightly toward the blade, ball finials; a round quillon block
     sweep(b, [[0, -0.056, -0.0525], [0, -0.036, -0.0485], [0, -0.013, -0.0465], [0, 0.013, -0.0465], [0, 0.036, -0.0485], [0, 0.056, -0.0525]],
       [[0.0042, 0.0046], [0.0048, 0.0054], [0.0058, 0.0066], [0.0058, 0.0066], [0.0048, 0.0054], [0.0042, 0.0046]], 6, C.gold, { metal: 'gold' });
-    b.sphere(0.0068, 6, 4, C.gold, [0, 0.0605, -0.054], [0, 0, 0], 1, { metal: 'gold', smooth: true });
-    b.sphere(0.0068, 6, 4, C.gold, [0, -0.0605, -0.054], [0, 0, 0], 1, { metal: 'gold', smooth: true });
-    b.lathe([[0.0, -0.0095], [0.0095, -0.0075], [0.0122, 0.0], [0.0095, 0.0075], [0.0, 0.0095]], 8, C.gold, [0, 0, -0.0465], [R90, 0, 0], [0.9, 1, 1.15], { metal: 'gold' });
+    b.sphere(0.0068, 5, 3, C.gold, [0, 0.0605, -0.054], [0, 0, 0], 1, { metal: 'gold', smooth: true });
+    b.sphere(0.0068, 5, 3, C.gold, [0, -0.0605, -0.054], [0, 0, 0], 1, { metal: 'gold', smooth: true });
+    b.lathe([[0.0, -0.0095], [0.0095, -0.0075], [0.0122, 0.0], [0.0095, 0.0075], [0.0, 0.0095]], 6, C.gold, [0, 0, -0.0465], [R90, 0, 0], [0.9, 1, 1.15], { metal: 'gold' });
     // grip: leather wrap with ridges, darker in the grooves (radius ≈ 1.3 cm: the hand closes on 1.38)
-    b.lathe(wrapProfile(0.0126, 0.098, 4, 0.0012), 6, C.leather, [0, 0, 0.004], [R90, 0, 0], 1, {
+    b.lathe(wrapProfile(0.0126, 0.098, 3, 0.0012), 6, C.leather, [0, 0, 0.004], [R90, 0, 0], 1, {
       shade: (x, y, z, c) => { const r = Math.hypot(x, y); if (r < 0.0131) { c.multiplyScalar(0.72); c.ao = 0.7; } else c.lerp(MIXC.setHex(C.leatherHi), 0.4); },
     });
     // pommel: a gold wheel-pear
-    b.lathe([[0.0, 0.0], [0.011, 0.001], [0.0152, 0.009], [0.0142, 0.019], [0.008, 0.026], [0.0, 0.028]], 8, C.gold, [0, 0, 0.05], [R90, 0, 0], 1, { metal: 'gold' });
+    b.lathe([[0.0, 0.0], [0.011, 0.001], [0.0152, 0.009], [0.0142, 0.019], [0.008, 0.026], [0.0, 0.028]], 7, C.gold, [0, 0, 0.05], [R90, 0, 0], 1, { metal: 'gold' });
     b.gem(0.0112, 0, -0.0465, 0.0062);
     b.gem(-0.0112, 0, -0.0465, 0.0062);
   },
@@ -253,7 +254,7 @@ const BUILD = {
     b.torus(0.022, 0.005, 5, 10, Math.PI * 2, C.gold, [0, 0, 0.07], [0, R90, 0], 1, { metal: 'gold', smooth: true });
     b.lathe([[0.0, 0], [0.012, 0.002], [0.022, 0.03], [0.04, 0.062], [0.046, 0.07], [0.0, 0.071]], 8, C.gold, [0, 0, -0.06], [-R90, 0, 0], 1, { metal: 'gold' });
     b.ico(0.012, 1, C.goldHi, [0, 0, -0.13], [0, 0, 0], 1, { metal: 'gold', smooth: true });
-    b.box(0.004, 0.03, 0.1, C.cyan, [0, 0.02, 0.03]);
+    b.box(0.004, 0.03, 0.1, C.cyan, [0, 0.02, 0.03], [0, 0, 0], 1, { metal: true });    // ribbon (metal group: one call)
   },
   apple(b) {
     b.ico(0.046, 1, C.apple, [0, 0, 0], [0, 0, 0], [1, 0.92, 1], { smooth: true, shade: (x, y, z, c) => { c.lerp(MIXC.setHex(0xf2b24a), Math.max(0, 0.5 - y / 0.06) * 0.35 + Math.max(0, x / 0.05) * 0.25); } });
@@ -293,10 +294,10 @@ export const gemGeo = () => _gemGeo || (_gemGeo = new THREE.OctahedronGeometry(1
 
 export function createModels(ctx) {
   const geos = new Map();
-  // matte: wood / leather / cloth / food; steel; gold / brass (polished: deep albedo, warm highlights from spec)
+  // matte: wood / leather / cloth / food; metal: polished steel and gold (one look between steel 0.9 / 80 and
+  // gold 0.7 / 50, so a held item stays at two draw calls)
   const matte = () => ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.1, gloss: 12 });
-  const metal = () => ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.35, spec: 0.9, gloss: 80 });
-  const gold = () => ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.7, gloss: 50 });
+  const metal = () => ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.32, spec: 0.75, gloss: 56 });
 
   function geometry(id) {
     let g = geos.get(id);
@@ -313,12 +314,12 @@ export function createModels(ctx) {
     return g;
   }
   function makeMesh(id) {
-    const m = new THREE.Mesh(geometry(id), [matte(), metal(), gold()]);
+    const m = new THREE.Mesh(geometry(id), [matte(), metal()]);
     m.name = 'item-' + id;
     return m;
   }
   return {
-    geometry, makeMesh, material: matte, metal, gold,
+    geometry, makeMesh, material: matte, metal,
     /** a standalone model (UI icons, chests, enemies holding things) */
     makeModel(id) {
       const g = new THREE.Group();
