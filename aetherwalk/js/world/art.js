@@ -49,26 +49,59 @@ vec4 awFog(vec3 wp) {
   float dy = y1 - y0;
   float hf = exp(-y0) * (abs(dy) < 0.02 ? 1.0 - dy * 0.5 : (1.0 - exp(-dy)) / dy);
   float a = 1.0 - exp(-d * d * uFogP.x * min(hf, 1.5));
+  // 太陽の方角は光が散って早く霞む（空気遠近）
+  float g = max(dot(dir, uGlowDir), 0.0);
+  a = min(1.0, a + g * g * g * g * (1.0 - exp(-d * 0.0035)) * 0.22 * min(hf, 1.0) * (1.0 - uFogP.z));
   return vec4(awFogColorDir(dir), a);
 }
+// 光のモデル：巻きこみ拡散＋半球の環境光＋頂点 AO＋逆光の透け＋安い鏡面（Blinn）と空の照り返し＋縁の光
+vec3 awShade(vec3 n, vec3 albedo, vec3 vd, float rim, float ao, float trans, float spec, float gloss) {
+  float nl = dot(n, uSunDir);
+  float ndl = clamp((nl + 0.3) / 1.3, 0.0, 1.0);
+  ndl *= ndl * (1.6 - 0.6 * ndl);
+  vec3 hemi = mix(uGndCol, uSkyCol, n.y * 0.5 + 0.5) * (0.35 + 0.65 * ao);
+  float f = 1.0 - max(dot(n, vd), 0.0);
+  float f2 = f * f;
+  vec3 l = hemi + uSunCol * (ndl * (0.55 + 0.45 * ao)) + uSkyCol * (rim * f2 * f * (0.5 + 0.5 * n.y));
+  vec3 c = albedo * l;
+  if (trans > 0.0) {
+    float back = max(dot(vd, -uSunDir), 0.0);
+    float t = (back * back * back * 0.9 + max(-nl, 0.0) * 0.35) * trans * (0.4 + 0.6 * ao);
+    c += albedo * vec3(1.15, 1.1, 0.55) * uSunCol * t;
+  }
+  if (spec > 0.0) {
+    vec3 h = normalize(uSunDir + vd);
+    float s = pow(max(dot(n, h), 0.0), gloss) * (gloss + 8.0) * 0.04;
+    c += (uSunCol * s * step(0.0, nl) + uSkyCol * (f2 * f2 * 0.6)) * (spec * ao);
+  }
+  return c;
+}
 vec3 awLight(vec3 n, vec3 albedo, vec3 viewDir, float rim) {
-  float ndl = max((dot(n, uSunDir) + 0.22) / 1.22, 0.0);
-  vec3 hemi = mix(uGndCol, uSkyCol, n.y * 0.5 + 0.5);
-  float f = 1.0 - max(dot(n, viewDir), 0.0);
-  vec3 l = hemi + uSunCol * ndl + uSkyCol * (rim * f * f * f * (0.5 + 0.5 * n.y));
-  return albedo * l;
+  return awShade(n, albedo, viewDir, rim, 1.0, 0.0, 0.0, 16.0);
+}
+`;
+
+// 仕上げ：フィルム調のトーンカーブ（明部をやわらかく丸める）＋わずかな S 字＋彩度。AwMaterial が colorspace の直前に自動で入れる
+export const AW_GRADE = /* glsl */`
+vec3 awGrade(vec3 c) {
+  c *= 1.1;
+  vec3 x = max(c - 0.5, 0.0);
+  c = min(c, 0.5) + x / (1.0 + x * 1.35);
+  c = mix(c, c * c * (3.0 - 2.0 * c), 0.22);
+  float l = dot(c, vec3(0.3, 0.55, 0.15));
+  c = mix(vec3(l), c, 1.12);
+  return max(c, 0.0);
 }
 `;
 
 const LIT_VERT = /* glsl */`
 ${AW_PARS}
 uniform vec3 uColor;
-uniform float uRim, uFogMul;
-varying vec3 vCol;
+uniform float uFogMul;
+varying vec4 vCol;      // rgb: 色 a: AO（頂点色の 4 成分目。なければ 1）
 varying vec4 vFog;
-#ifdef AW_FLAT
 varying vec3 vWp;
-#endif
+varying vec3 vN;
 #ifdef AW_MAP
 varying vec2 vUv;
 #endif
@@ -80,19 +113,17 @@ void main() {
     n = mat3(instanceMatrix) * n;
   #endif
   vec4 wp = modelMatrix * lp;
-  vec3 alb = uColor;
-  #ifdef USE_COLOR
-    alb *= color.rgb;
+  vec4 alb = vec4(uColor, 1.0);
+  #ifdef USE_COLOR_ALPHA
+    alb *= color;
+  #elif defined(USE_COLOR)
+    alb.rgb *= color.rgb;
   #endif
   #ifdef USE_INSTANCING_COLOR
-    alb *= instanceColor.rgb;
+    alb.rgb *= instanceColor.rgb;
   #endif
-  #ifdef AW_FLAT
-    vCol = alb; vWp = wp.xyz;
-  #else
-    n = normalize(mat3(modelMatrix) * n);
-    vCol = awLight(n, alb, normalize(cameraPosition - wp.xyz), uRim);
-  #endif
+  vCol = alb; vWp = wp.xyz;
+  vN = normalize(mat3(modelMatrix) * n);
   #ifdef AW_MAP
     vUv = uv;
   #endif
@@ -103,28 +134,30 @@ void main() {
 const LIT_FRAG = /* glsl */`
 ${AW_PARS}
 uniform vec3 uEmissive;
-uniform float uRim, uOpacity;
-varying vec3 vCol;
+uniform float uRim, uOpacity, uSpec, uGloss, uTrans;
+varying vec4 vCol;
 varying vec4 vFog;
-#ifdef AW_FLAT
 varying vec3 vWp;
-#endif
+varying vec3 vN;
 #ifdef AW_MAP
 uniform sampler2D uMap;
 varying vec2 vUv;
 #endif
 void main() {
-  vec3 c = vCol;
+  vec3 c = vCol.rgb;
   #ifdef AW_MAP
     vec4 tx = texture2D(uMap, vUv);
     c *= tx.rgb;
   #endif
+  vec3 vd = cameraPosition - vWp;
   #ifdef AW_FLAT
-    vec3 vd = cameraPosition - vWp;
     vec3 n = normalize(cross(dFdx(vWp), dFdy(vWp)));
     if (dot(n, vd) < 0.0) n = -n;
-    c = awLight(n, c, normalize(vd), uRim);
+  #else
+    vec3 n = normalize(vN);
+    if (!gl_FrontFacing) n = -n;
   #endif
+  c = awShade(n, c, normalize(vd), uRim, vCol.a, uTrans, uSpec, uGloss);
   c += uEmissive;
   c = mix(c, vFog.rgb, vFog.a);
   gl_FragColor = vec4(c, uOpacity);
@@ -134,6 +167,11 @@ void main() {
 // 共有 uniform を参照のまま持つマテリアル（clone しても時刻の光に従う）
 export class AwMaterial extends THREE.ShaderMaterial {
   constructor(params) {
+    // 仕上げ（awGrade）を colorspace の直前に入れる。加算など重ねる描画には入れない
+    if (params && params.fragmentShader && !params.noGrade && (params.blending === undefined || params.blending === THREE.NormalBlending) && !params.fragmentShader.includes('awGrade(')) {
+      params = Object.assign({}, params, { fragmentShader: AW_GRADE + params.fragmentShader.replace('#include <colorspace_fragment>', 'gl_FragColor.rgb = awGrade(gl_FragColor.rgb);\n#include <colorspace_fragment>') });
+    }
+    if (params && 'noGrade' in params) { params = Object.assign({}, params); delete params.noGrade; }
     super(params);
     this._relink();
   }
@@ -172,8 +210,11 @@ export function createArt() {
   const cache = new Map();
   const hex = (c) => (c && c.isColor ? c.getHex() : (c | 0));
 
-  function material({ color = 0xffffff, vertexColors = false, flat = true, emissive = 0x000000, rim = 0.25, map = null, side = THREE.FrontSide, fogMul = 1 } = {}) {
-    const key = `m|${hex(color)}|${vertexColors}|${flat}|${hex(emissive)}|${rim}|${map ? map.uuid : 0}|${side}|${fogMul}`;
+  // flat: 面で陰影（既定はなめらか）  spec/gloss: 鏡面の強さ 0..1 と鋭さ  translucency: 逆光で透ける量 0..1
+  // 頂点色が 4 成分（RGBA）なら a を AO（1 = 明るい）として使う
+  function material({ color = 0xffffff, vertexColors = false, flat = false, emissive = 0x000000, rim = 0.25, map = null, side = THREE.FrontSide, fogMul = 1,
+    spec = 0, gloss = 24, translucency = 0 } = {}) {
+    const key = `m|${hex(color)}|${vertexColors}|${flat}|${hex(emissive)}|${rim}|${map ? map.uuid : 0}|${side}|${fogMul}|${spec}|${gloss}|${translucency}`;
     let m = cache.get(key);
     if (m) return m;
     const defines = {};
@@ -183,6 +224,7 @@ export function createArt() {
       uniforms: sharedUniforms(FOG_LIGHT_UNIFORMS, {
         uColor: { value: new THREE.Color(color) }, uEmissive: { value: new THREE.Color(emissive) },
         uRim: { value: rim }, uOpacity: { value: 1 }, uFogMul: { value: fogMul }, uMap: { value: map },
+        uSpec: { value: spec }, uGloss: { value: gloss }, uTrans: { value: translucency },
       }),
       defines, vertexShader: LIT_VERT, fragmentShader: LIT_FRAG, vertexColors, side,
     });
@@ -204,10 +246,10 @@ export function createArt() {
           awWp = modelMatrix * awWp;
           vAwFog = awFog(awWp.xyz);`);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying vec4 vAwFog;')
+        .replace('#include <common>', '#include <common>\nvarying vec4 vAwFog;' + (additive ? '' : AW_GRADE))
         .replace('#include <colorspace_fragment>', (useFog
           ? (additive ? 'gl_FragColor.rgb *= (1.0 - vAwFog.a);' : 'gl_FragColor.rgb = mix(gl_FragColor.rgb, vAwFog.rgb, vAwFog.a);')
-          : '') + '\n#include <colorspace_fragment>');
+          : '') + (additive ? '' : '\ngl_FragColor.rgb = awGrade(gl_FragColor.rgb);') + '\n#include <colorspace_fragment>');
     };
     m.customProgramCacheKey = () => `awbasic${additive ? 1 : 0}${useFog ? 1 : 0}`;
     const baseClone = m.clone.bind(m);
@@ -298,5 +340,5 @@ export function createArt() {
     return t;
   }
 
-  return { palette, material, basic, glow, blobShadow, canvasTexture, uniforms: U, glsl: AW_PARS };
+  return { palette, material, basic, glow, blobShadow, canvasTexture, uniforms: U, glsl: AW_PARS, grade: AW_GRADE };
 }
