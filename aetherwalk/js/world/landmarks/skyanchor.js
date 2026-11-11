@@ -63,9 +63,9 @@ export function buildSkyAnchor(env) {
     rings.rotation.y = t * 0.035;
     const pulse = 0.5 + 0.5 * Math.sin(t * 0.6);
     const night = view.st.night;
-    env.fx.glows.set(g1, { intensity: 0.16 + 0.3 * night + 0.06 * pulse });
-    env.fx.glows.set(g2, { intensity: 0.2 + 0.35 * night + 0.1 * pulse });
-    mat.uniforms.uGlowAmt.value = 0.45 + 0.12 * pulse;
+    env.fx.glows.set(g1, { intensity: 0.11 + 0.3 * night + 0.05 * pulse });
+    env.fx.glows.set(g2, { intensity: 0.12 + 0.36 * night + 0.07 * pulse });
+    mat.uniforms.uGlowAmt.value = 0.34 + 0.1 * pulse;
   }
   return { group, update };
 }

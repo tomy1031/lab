@@ -9,7 +9,7 @@ const mix3 = (o, a, b, t) => { o[0] = a[0] + (b[0] - a[0]) * t; o[1] = a[1] + (b
 
 const P = {
   grassA: rgb(0x5fae4a), grassB: rgb(0x78bd4c), grassDry: rgb(0x9cbf55), rockM: rgb(0x9a9484),
-  mossA: rgb(0x2f6b4a), mossB: rgb(0x3e8a55), rockF: rgb(0x55584c),
+  mossA: rgb(0x2f6b3e), mossB: rgb(0x4c9048), rockF: rgb(0x55584c), litter: rgb(0x6a5230), soil: rgb(0x3a3324),
   sandC: rgb(0xe8b27a), sandC2: rgb(0xd99d68), dryC: rgb(0xd9b85a),
   strata: [rgb(0x8f3a34), rgb(0xc8553a), rgb(0xe07a45), rgb(0xf0b070), rgb(0xc8553a), rgb(0xa8443a), rgb(0xe07a45)],
   snow: rgb(0xf4f8ff), snowSh: rgb(0xb9cdea), rockP: rgb(0x5d6a82), rockP2: rgb(0x48536c), alpine: rgb(0x6c9a70),
@@ -45,7 +45,11 @@ export function createBiomes(hf) {
       if (a > 0.003) { const pk = nm.n2(x / 70 + 3.1, z / 70 + 8.2); mix3(cM, cM, pk < 0.36 ? P.flW : pk < 0.56 ? P.flY : pk < 0.8 ? P.flP : P.flB, a); }
     }
     // 森
+    // 苔の緑 → 落ち葉の茶 → 暗い土。大きなむら（n2）と小さなむら（n）で混ぜる
     mix3(cF, P.mossA, P.mossB, smoothstep(0.3, 0.75, n2) * 0.8);
+    const litter = smoothstep(0.52, 0.74, n2 * 0.6 + n * 0.4) * w[1];
+    mix3(cF, cF, P.litter, litter * 0.7);
+    mix3(cF, cF, P.soil, smoothstep(0.7, 0.9, n) * 0.35);
     mix3(cF, cF, P.rockF, steep);
     // 峡谷
     let mesaTop = 0;
@@ -69,7 +73,7 @@ export function createBiomes(hf) {
     out[2] = cM[2] * w[0] + cF[2] * w[1] + cC[2] * w[2] + cP[2] * w[3];
     // 峡谷の谷底にもまばらな枯れ草（かたまりで）
     const dry = w[2] * (mesaTop * 0.4 + (1 - mesaTop) * (0.12 + 0.26 * smoothstep(0.4, 0.6, n2)));
-    dens = (w[0] + w[1] * 0.8 + dry + w[3] * (1 - smoothstep(0.05, 0.3, snow)) * 0.55 * smoothstep(60, 50, h)) * (1 - steep);
+    dens = (w[0] + w[1] * (0.72 - 0.5 * litter) + dry + w[3] * (1 - smoothstep(0.05, 0.3, snow)) * 0.55 * smoothstep(60, 50, h)) * (1 - steep);
     const snowW = w[3] * snow;
 
     // 湖の岸
@@ -110,7 +114,7 @@ export function createBiomes(hf) {
     const cav = (hE + hW + hS + hN) * 0.25 - h;
     const ao = clamp(1 - cav * (far ? 0.05 : 0.28), 0.62, 1.1) * (0.94 + 0.12 * n);
     if (snowW > 0.3) { const d = clamp((1 - ao) * 2.2, 0, 1); mix3(out, out, P.snowSh, d * snowW); } else { out[0] *= ao; out[1] *= ao; out[2] *= ao; }
-    out[3] = strata * (1 - smoothstep(1.5, 4, 4 - pd) * 0) * (pd < 3 ? 0.3 : 1);
+    out[3] = strata > 0.005 ? strata * (pd < 3 ? 0.3 : 1) : -w[1] * (1 - steep) * smoothstep(1.6, 3.6, pd);   // 正 = 地層、負 = 森の床（木漏れ日）
     return dens < 0 ? 0 : dens > 1 ? 1 : dens;
   }
   return { colorAt, P };

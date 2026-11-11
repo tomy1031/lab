@@ -34,14 +34,11 @@ export function createGrass(env) {
   const isQ3 = env.ctx.flags && env.ctx.flags.device === 'quest3';
 
   // ── 草 ──
-  const tiers = [[16, 3600, 1.0], [32, 2500, 1.6], [60, 1400, 2.6]];
+  const tiers = [[14, 3700, 1.0], [30, 2500, 1.7], [58, 1300, 2.8]];
   const total = Math.round(tiers.reduce((s, t) => s + t[1], 0) * (isQ3 ? 1.3 : 1));
   const bg = new THREE.InstancedBufferGeometry();
-  //   4
-  //  2 3
-  //  0 1
-  bg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-0.5, 0, 0, 0.5, 0, 0, -0.36, 0.5, 0, 0.36, 0.5, 0, 0, 1, 0]), 3));
-  bg.setIndex([0, 1, 3, 0, 3, 2, 2, 3, 4]);
+  // 1 株 = 細い葉 3 枚（1 枚 = 三角 1 つ）。z に葉の番号を入れ、シェーダーで扇に開く
+  bg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0, 1, 0, -0.5, 0, 1, 0.5, 0, 1, 0, 1, 1, -0.5, 0, 2, 0.5, 0, 2, 0, 1, 2]), 3));
   const off = new Float32Array(total * 4), tile = new Float32Array(total * 2);
   // 段ごとにまぜて並べる（品質を落とすとき、先頭から数を切っても全段が均等に減る）
   let n = 0;
@@ -63,9 +60,10 @@ export function createGrass(env) {
   bg.setAttribute('aTile', new THREE.InstancedBufferAttribute(tile, 2));
   bg.instanceCount = n;
   const grassMat = new AwMaterial({
-    uniforms: sharedUniforms([...FOG_LIGHT_UNIFORMS, 'uHeightTex', 'uColorTex', 'uNoiseTex', 'uPathTex', 'uWind', 'uCloud']),
+    uniforms: sharedUniforms([...FOG_LIGHT_UNIFORMS, 'uHeightTex', 'uColorTex', 'uNoiseTex', 'uPathTex', 'uWind', 'uCloud'], { uRegionTex: { value: env.regionTex || null } }),
     vertexShader: /* glsl */`
       ${COMMON}
+      uniform sampler2D uRegionTex;
       void main() {
         float dist, fade;
         vec2 w = awWrap(dist, fade);
@@ -73,29 +71,34 @@ export function createGrass(env) {
         vec4 gc = texture2D(uColorTex, (w + 800.0) / 1600.0);
         float pd = texture2D(uPathTex, (w + 801.0) / 1602.0).r * 16.0;
         float keep = step(aOff.z, gc.a * 1.05 - 0.04) * smoothstep(2.0, 3.6, pd + aOff.w * 0.8);
-        float hs = (0.2 + 0.3 * aOff.w) * (0.55 + 0.6 * gc.a) * (0.9 + 0.1 * aTile.y) * keep * fade;
-        float wd = 0.06 * aTile.y * (0.7 + 0.6 * aOff.z);
-        float ang = aOff.w * 31.4;
-        // 見る向きにやや正対させる（細い線にならないように）
+        vec4 nzv = texture2D(uNoiseTex, w * uCloud.x + uCloud.yz);
+        vec4 nzd = texture2D(uNoiseTex, w * 0.131);
+        vec4 rg = texture2D(uRegionTex, (w + 800.0) / 1600.0);
+        float bid = position.z;
+        float patchv = nzd.g * 0.6 + nzv.b * 0.4;                                  // 株ごとの丈と色のむら
+        float hs = (0.26 + 0.36 * aOff.w) * (0.55 + 0.6 * gc.a) * (0.75 + 0.5 * patchv) * (1.0 - 0.24 * bid) * (0.9 + 0.12 * aTile.y) * keep * fade;
+        float wd = 0.044 * aTile.y * (0.75 + 0.5 * aOff.z);
+        float ang = aOff.w * 31.4 + bid * 2.2;
+        vec2 fan = vec2(cos(ang), sin(ang));
+        // 幅は見る向きに正対させる（線にならない）。葉先は扇に開き、風でしなる
         vec2 tc = normalize(cameraPosition.xz - w + vec2(1e-3));
-        vec2 side = normalize(vec2(-tc.y, tc.x) + vec2(cos(ang), sin(ang)) * 0.7);
-        vec2 bend = awBend(w, aOff.w);
+        vec2 side = vec2(-tc.y, tc.x);
+        vec2 bend = awBend(w, aOff.w + bid * 0.37);
         float y = position.y;
         vec3 p;
-        p.xz = w + side * (position.x * wd) + bend * (y * y * hs * 1.1);
-        p.y = hgt - 0.04 + y * hs * (1.0 - 0.25 * dot(bend, bend) * y);
-        vec3 root = gc.rgb * 0.9;
+        p.xz = w + fan * (0.045 * aTile.y * min(bid, 1.0)) + side * (position.x * wd) + (bend * 1.25 + fan * (0.2 + 0.25 * aOff.z)) * (y * hs);
+        p.y = hgt - 0.03 + y * hs * (1.0 - 0.2 * dot(bend, bend));
+        // 色：根もとは地面の色に沈み、葉先は明るく黄みがかる。株ごとに乾いた色・深い色へ振る
         float gness = clamp((gc.g - gc.r) * 6.0, 0.0, 1.0);
-        vec3 tip = mix(gc.rgb * 1.3 + 0.015, gc.rgb * vec3(2.0, 1.5, 1.25) + vec3(0.02, 0.02, 0.0), gness);
-        vec3 alb = mix(root, tip, y * (0.7 + 0.3 * aOff.z));
+        vec3 base = gc.rgb * mix(vec3(1.0), mix(vec3(0.82, 0.96, 0.86), vec3(1.14, 1.08, 0.8), patchv), 0.5 * gness);
+        vec3 tip = mix(base * 1.35 + 0.015, base * vec3(1.55, 1.42, 0.95) + vec3(0.015, 0.025, 0.0), gness);
+        vec3 alb = mix(base * 0.72, tip, y);
         vec3 vd = normalize(cameraPosition - p);
-        vec3 nn = normalize(vec3(-bend.x * 0.6, 1.0, -bend.y * 0.6));
-        vec3 c = awLight(nn, alb, vd, 0.0);
-        // 逆光で透ける
-        float back = max(dot(vd, -uSunDir), 0.0);
-        c += alb * uSunCol * (back * back * y * 0.55);
-        float cl = texture2D(uNoiseTex, w * uCloud.x + uCloud.yz).r;
-        c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
+        vec3 nn = normalize(vec3(-bend.x * 0.5, 1.0, -bend.y * 0.5));
+        vec3 c = awShade(nn, alb, vd, 0.0, 0.55 + 0.45 * y, y * 0.9, 0.0, 16.0);
+        c *= 1.0 - smoothstep(0.42, 0.6, nzv.r) * uCloud.w;
+        // 森の木漏れ日（地面と同じ模様）
+        c *= mix(1.0, mix(0.6, 1.42, smoothstep(0.42, 0.6, nzd.a * 0.6 + nzd.b * 0.4)), rg.g * uCloud.w * 2.2);
         vCol = c;
         vFog = awFog(p);
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
@@ -113,7 +116,7 @@ export function createGrass(env) {
   group.add(grass);
 
   // ── 花（茎 2 + 花びら 4 三角形）──
-  const NF = Math.round(1700 * (isQ3 ? 1.3 : 1));
+  const NF = Math.round(1250 * (isQ3 ? 1.3 : 1));
   const fg = new THREE.InstancedBufferGeometry();
   // 0-2: 茎、3: 花の中心、4-13: 花びら 5 枚（1 枚 = 中心から細い三角 1 つ。すき間があるので紙吹雪に見えない）
   {
@@ -158,9 +161,9 @@ export function createGrass(env) {
         vec4 rg = texture2D(uRegionTex, (w + 800.0) / 1600.0);
         float ptc = texture2D(uNoiseTex, w * 0.011).r;
         float pm = smoothstep(0.36, 0.58, ptc + (rg.g - 0.3) * 0.25 + rg.r * 0.06 - rg.b * 0.2);
-        float keep = step(aOff.z, gc.a * pm * 1.3) * step(0.25, gc.a);
+        float keep = step(aOff.z, gc.a * pm * 1.3 * (1.0 - 0.6 * rg.g)) * step(0.25, gc.a);
         float hs = (0.2 + 0.22 * aOff.w) * (0.7 + 0.3 * aTile.y) * keep * fade;
-        float sz = (0.04 + 0.04 * aOff.z) * (0.6 + 0.4 * aTile.y) * keep * fade;
+        float sz = (0.04 + 0.04 * aOff.z) * (0.6 + 0.4 * aTile.y) * (1.0 - 0.35 * rg.g) * keep * fade;
         vec2 bend = awBend(w, aOff.w) * 0.6;
         int idx = int(mod(aOff.w * 97.0, 4.0));
         vec3 pal = uPalM[idx] * rg.r + uPalF[idx] * rg.g + uPalC[idx] * rg.b + uPalP[idx] * rg.a;

@@ -89,7 +89,7 @@ vec3 awGrade(vec3 c) {
   c = min(c, 0.5) + x / (1.0 + x * 1.35);
   c = mix(c, c * c * (3.0 - 2.0 * c), 0.22);
   float l = dot(c, vec3(0.3, 0.55, 0.15));
-  c = mix(vec3(l), c, 1.12);
+  c = mix(vec3(l), c, 1.07);
   return max(c, 0.0);
 }
 `;

@@ -15,13 +15,23 @@ uniform vec3 uStrata[4];
 uniform vec3 uGlowCol;
 attribute vec4 aInst;     // x, y, z, 大きさ
 attribute vec4 aInst2;    // cos, sin, 色のゆらぎ, フラグ（1 = 地層の色 2 = 雪）
-varying vec3 vCol; varying vec4 vFog;
+varying vec3 vCol; varying vec4 vFog; varying vec3 vNz;
+#ifdef AW_LEAF
+uniform float uLeafGlow;
+varying vec2 vUv;
+#endif
 void main() {
   vec3 p = position * aInst.w;
   p.y *= 1.0 + aInst2.z * 0.12;
   p = vec3(p.x * aInst2.x - p.z * aInst2.y, p.y, p.x * aInst2.y + p.z * aInst2.x);
   vec3 n = vec3(normal.x * aInst2.x - normal.z * aInst2.y, normal.y, normal.x * aInst2.y + normal.z * aInst2.x);
-  float sw = uv.x;
+  #ifdef AW_LEAF
+    float sw = 1.0, glw = uLeafGlow * (0.4 + 0.6 * color.g);
+    vUv = uv;
+  #else
+    float sw = uv.x, glw = uv.y;
+  #endif
+  vNz = vec3(vec2(position.x + position.z, position.y * 0.3) * (0.16 * aInst.w), step(glw, 0.01));
   if (sw > 0.0) {
     float t = uWind.w;
     float g = sin(t * 0.8 + aInst.x * 0.05 + aInst.z * 0.04) * 0.5 + 0.6;
@@ -57,32 +67,143 @@ void main() {
     alb = mix(alb, vec3(0.93, 0.96, 1.0), smoothstep(0.5, 0.78, n.y + patchy) * 0.92);
   }
   vec3 vd = normalize(cameraPosition - wp);
-  vec3 c = awLight(n, alb, vd, 0.3 * sw + 0.12);
-  float back = max(dot(vd, -uSunDir), 0.0);
-  c += alb * uSunCol * (back * back * sw * 0.6);
+  vec3 c = awShade(n, alb, vd, 0.3 * sw + 0.12, 1.0, sw * 0.85 * (1.0 - 0.75 * uFogP.z), 0.0, 16.0);
   float cl = texture2D(uNoiseTex, wp.xz * uCloud.x + uCloud.yz).r;
   c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
-  c += uGlowCol * color.rgb * (uv.y * (0.15 + 2.2 * uFogP.z));
+  c += uGlowCol * color.rgb * (glw * (0.15 + 2.2 * uFogP.z));
   vCol = c;
   vFog = awFog(wp);
   gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
 }`;
 const FRAG = /* glsl */`
-varying vec3 vCol; varying vec4 vFog;
+uniform sampler2D uNoiseTex;
+varying vec3 vCol; varying vec4 vFog; varying vec3 vNz;
+#ifdef AW_LEAF
+uniform sampler2D uLeafTex;
+varying vec2 vUv;
+#endif
 void main() {
-  gl_FragColor = vec4(mix(vCol, vFog.rgb, vFog.a), 1.0);
+  vec3 c = vCol;
+  float al = 1.0;
+  #ifdef AW_LEAF
+    vec4 t = texture2D(uLeafTex, vUv);
+    if (t.a < 0.3) discard;
+    al = clamp((t.a - 0.3) / max(fwidth(t.a), 1e-3) + 0.5, 0.0, 1.0);
+    c *= 0.5 + 0.78 * t.r;
+  #else
+    // 樹皮・岩・葉のかたまりに、筆むらのような明暗をのせる
+    c *= mix(1.0, 0.74 + 0.52 * texture2D(uNoiseTex, vNz.xy).g, vNz.z);
+  #endif
+  gl_FragColor = vec4(mix(c, vFog.rgb, vFog.a), al);
   #include <colorspace_fragment>
 }`;
 
-export function floraMaterial(glowHex = 0x7ff5e1, rock = false) {
+// 葉むらと羊歯の絵（左：葉のかたまり、右：羊歯の葉）。r = 明るさ、a = 形
+let leafTex = null;
+function leafTexture() {
+  if (leafTex) return leafTex;
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256;
+  const c = cv.getContext('2d');
+  const R = makeRng(4711);
+  const leaf = (x, y, len, wid, ang, lum) => {
+    c.save(); c.translate(x, y); c.rotate(ang);
+    const g = c.createLinearGradient(0, -wid, 0, wid);
+    const a = Math.round(lum * 0.72), b = Math.round(lum);
+    g.addColorStop(0, `rgb(${b},${b},${b})`); g.addColorStop(0.5, `rgb(${a},${a},${a})`); g.addColorStop(1, `rgb(${b},${b},${b})`);
+    c.fillStyle = g;
+    c.beginPath(); c.moveTo(-len, 0); c.quadraticCurveTo(0, -wid * 1.5, len, 0); c.quadraticCurveTo(0, wid * 1.5, -len, 0); c.fill();
+    c.restore();
+  };
+  // 葉むら：暗い葉を下に、明るい葉を上に重ねる。まん中ほど濃く、縁はまばら
+  for (let pass = 0; pass < 3; pass++) for (let i = 0; i < 95; i++) {
+    const a = R.range(0, 6.283), d = Math.pow(R.next(), 0.62) * (104 + pass * 8);
+    const x = 128 + Math.cos(a) * d, y = 128 + Math.sin(a) * d * 0.92;
+    leaf(x, y, R.range(13, 21), R.range(5, 8), a + R.range(-0.9, 0.9), 95 + pass * 55 + R.range(0, 50));
+  }
+  // 羊歯：中肋と左右の小葉（根もと = 下、先 = 上）
+  c.strokeStyle = 'rgb(150,150,150)'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(384, 252); c.lineTo(384, 8); c.stroke();
+  for (let i = 0; i < 26; i++) {
+    const t = i / 25, y = 246 - t * 232, len = 16 + 86 * Math.sin(Math.PI * Math.pow(t, 0.75)) * (1 - t * 0.35);
+    for (const sgn of [-1, 1]) leaf(384 + sgn * len * 0.5, y - 6, len * 0.5, 4.6, sgn > 0 ? -0.32 : Math.PI + 0.32, 150 + R.range(0, 100) - Math.abs(t - 0.5) * 40);
+  }
+  leafTex = new THREE.CanvasTexture(cv);
+  leafTex.colorSpace = THREE.NoColorSpace;
+  leafTex.generateMipmaps = true; leafTex.minFilter = THREE.LinearMipmapLinearFilter; leafTex.magFilter = THREE.LinearFilter;
+  leafTex.anisotropy = 2;
+  return leafTex;
+}
+
+// 葉むらの板：かたまり（blob）の表面に、斜めに重なる板を並べる。法線は中心から外向き（球のように陰影がつく）
+// blobs: [{ c: [x, y, z], r: [rx, ry, rz], n, bot, top }]
+export function leafCards(blobs, rng, size = 0.62) {
+  const pos = [], nor = [], col = [], uv = [];
+  const d = new THREE.Vector3(), t1 = new THREE.Vector3(), t2 = new THREE.Vector3(), nn = new THREE.Vector3(), a1 = new THREE.Vector3(), a2 = new THREE.Vector3(), v = new THREE.Vector3(), cc = new THREE.Color(), c2 = new THREE.Color();
+  const UP = new THREE.Vector3(0, 1, 0), corners = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]];
+  const ico1 = new THREE.IcosahedronGeometry(1, 1).getAttribute('position'), ico0 = new THREE.IcosahedronGeometry(1, 0).getAttribute('position');
+  let first = true;
+  for (const b of blobs) {
+    const ico = first ? ico1 : ico0; first = false;      // いちばん大きいかたまりだけ細かく
+    if (b.shell !== false) {
+      // 葉の殻：すき間のあいた内側の層（暗い）。向こうの空がのぞく
+      cc.set(b.bot).multiplyScalar(0.5); c2.set(b.top).multiplyScalar(0.62);
+      for (let t3 = 0; t3 < ico.count; t3 += 3) {
+        const u0 = rng.range(0.03, 0.12), v0 = rng.range(0.06, 0.2), fl = rng.next() < 0.5;
+        const tu = [[u0, v0], [u0 + 0.34, v0 + (fl ? 0.1 : 0)], [u0 + 0.17, v0 + 0.72]];
+        for (let q = 0; q < 3; q++) {
+          const x = ico.getX(t3 + q), y = ico.getY(t3 + q), z = ico.getZ(t3 + q);
+          pos.push(b.c[0] + x * b.r[0] * 0.74, b.c[1] + y * b.r[1] * 0.72, b.c[2] + z * b.r[2] * 0.74);
+          v.set(x, y + 0.5, z).normalize(); nor.push(v.x, v.y, v.z);
+          const t = y * 0.5 + 0.5;
+          col.push(cc.r + (c2.r - cc.r) * t, cc.g + (c2.g - cc.g) * t, cc.b + (c2.b - cc.b) * t);
+          uv.push(tu[q][0], tu[q][1]);
+        }
+      }
+    }
+    for (let i = 0; i < b.n; i++) {
+      do { d.set(rng.range(-1, 1), rng.range(-0.9, 0.9), rng.range(-1, 1)); } while (d.lengthSq() > 1 || d.lengthSq() < 0.1);
+      d.normalize();
+      const k = rng.range(0.74, 1.02);
+      const cx = b.c[0] + d.x * b.r[0] * k, cy = b.c[1] + d.y * b.r[1] * k, cz = b.c[2] + d.z * b.r[2] * k;
+      t1.crossVectors(d, UP); if (t1.lengthSq() < 1e-3) t1.set(1, 0, 0); t1.normalize(); t2.crossVectors(d, t1);
+      nn.copy(d).addScaledVector(t1, rng.range(-0.8, 0.8)).addScaledVector(t2, rng.range(-0.8, 0.8)).normalize();
+      a1.crossVectors(nn, UP); if (a1.lengthSq() < 1e-3) a1.set(1, 0, 0); a1.normalize(); a2.crossVectors(nn, a1);
+      const roll = rng.range(0, 6.283), cr = Math.cos(roll), sr = Math.sin(roll);
+      const s = (b.r[0] + b.r[1] + b.r[2]) / 3 * size * rng.range(0.8, 1.25);
+      const t = Math.min(1, Math.max(0, (d.y + 0.9) / 1.8));
+      cc.set(b.bot).lerp(c2.set(b.top), t * t * 0.4 + t * 0.6);
+      const br = rng.range(0.82, 1.18), warm = rng.next() < 0.18 ? rng.range(0.08, 0.2) : 0;
+      for (const q of corners) {
+        const u = (q[0] * cr - q[1] * sr) * s, w = (q[0] * sr + q[1] * cr) * s;
+        v.set(cx + a1.x * u + a2.x * w, cy + a1.y * u + a2.y * w, cz + a1.z * u + a2.z * w);
+        pos.push(v.x, v.y, v.z);
+        v.set(v.x - b.c[0], (v.y - b.c[1]) + b.r[1] * 0.7, v.z - b.c[2]).normalize();
+        nor.push(v.x, v.y, v.z);
+        col.push(cc.r * br * (1 + warm * 1.6), cc.g * br * (1 + warm * 0.5), cc.b * br * (1 - warm));
+        uv.push((q[0] * 0.5 + 0.5) * 0.5, q[1] * 0.5 + 0.5);
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uv), 2));
+  return g;
+}
+
+export function floraMaterial(glowHex = 0x7ff5e1, rock = false, leaf = false, leafGlow = 0) {
   const C = (h) => new THREE.Color(h);
-  return new AwMaterial({
-    defines: rock ? { AW_ROCK: 1 } : {},
+  const m = new AwMaterial({
+    defines: rock ? { AW_ROCK: 1 } : leaf ? { AW_LEAF: 1 } : {},
     uniforms: sharedUniforms([...FOG_LIGHT_UNIFORMS, 'uNoiseTex', 'uWind', 'uCloud'], {
       uStrata: { value: [C(0x8f3a34), C(0xc8553a), C(0xe07a45), C(0xf0b070)] }, uGlowCol: { value: C(glowHex) },
+      uLeafTex: { value: leaf ? leafTexture() : null }, uLeafGlow: { value: leafGlow },
     }),
-    vertexShader: VERT, fragmentShader: FRAG, vertexColors: true,
+    vertexShader: VERT, fragmentShader: FRAG, vertexColors: true, side: leaf ? THREE.DoubleSide : THREE.FrontSide,
   });
+  if (leaf) m.alphaToCoverage = true;
+  return m;
 }
 
 // 近・遠の 2 段のインスタンス群
@@ -93,6 +214,8 @@ export class Scatter {
     this.nearGeo = nearGeo; this.farGeo = farGeo; this.material = material;
     this.name = opts.name || 'scatter';
     this.baseNear = this.nearDist;
+    this.extraFar = opts.extraFar || null;
+    this.extra = opts.extra || null;      // { geo, material }：近景に重ねるもう 1 枚（葉むらの板）。インスタンスは共有
   }
   add(x, y, z, s, yaw, tint = 0, flag = 0) { this.items.push(x, y, z, s, Math.cos(yaw), Math.sin(yaw), tint, flag); }
   build(group) {
@@ -114,7 +237,27 @@ export class Scatter {
       return { g, a, b, m, cap };
     };
     this.near = mk(this.nearGeo, Math.max(1, Math.min(n, 400)));
+    if (this.extra && this.near) {
+      const g = new THREE.InstancedBufferGeometry();
+      for (const k of ['position', 'normal', 'color', 'uv']) g.setAttribute(k, this.extra.geo.getAttribute(k));
+      g.setAttribute('aInst', this.near.a); g.setAttribute('aInst2', this.near.b);
+      g.instanceCount = 0;
+      const m = new THREE.Mesh(g, this.extra.material);
+      m.frustumCulled = false; m.matrixAutoUpdate = false; m.visible = false; m.name = this.name + '-leaf';
+      group.add(m);
+      this.ex = { g, m };
+    }
     this.far = mk(this.farGeo, Math.max(1, n));
+    if (this.extraFar && this.far) {
+      const g = new THREE.InstancedBufferGeometry();
+      for (const k of ['position', 'normal', 'color', 'uv']) g.setAttribute(k, this.extraFar.geo.getAttribute(k));
+      g.setAttribute('aInst', this.far.a); g.setAttribute('aInst2', this.far.b);
+      g.instanceCount = 0;
+      const m = new THREE.Mesh(g, this.extraFar.material);
+      m.frustumCulled = false; m.matrixAutoUpdate = false; m.visible = false; m.name = this.name + '-leaf-far';
+      group.add(m);
+      this.exF = { g, m };
+    }
   }
   refresh(cx, cz, fx, fz, wide) {
     const d = this.data, n = this.n;
@@ -129,6 +272,8 @@ export class Scatter {
       if (d2 < nd2 && N && nn < N.cap) { T = N; const q = nn++ * 4; T.a.array[q] = d[o]; T.a.array[q + 1] = d[o + 1]; T.a.array[q + 2] = d[o + 2]; T.a.array[q + 3] = d[o + 3]; T.b.array[q] = d[o + 4]; T.b.array[q + 1] = d[o + 5]; T.b.array[q + 2] = d[o + 6]; T.b.array[q + 3] = d[o + 7]; }
       else if (F && nf < F.cap) { T = F; const q = nf++ * 4; T.a.array[q] = d[o]; T.a.array[q + 1] = d[o + 1]; T.a.array[q + 2] = d[o + 2]; T.a.array[q + 3] = d[o + 3]; T.b.array[q] = d[o + 4]; T.b.array[q + 1] = d[o + 5]; T.b.array[q + 2] = d[o + 6]; T.b.array[q + 3] = d[o + 7]; }
     }
+    if (this.ex) { this.ex.g.instanceCount = nn; this.ex.m.visible = nn > 0; }
+    if (this.exF) { this.exF.g.instanceCount = nf; this.exF.m.visible = nf > 0; }
     if (N) { N.g.instanceCount = nn; N.m.visible = nn > 0; if (nn) { N.a.clearUpdateRanges(); N.b.clearUpdateRanges(); N.a.addUpdateRange(0, nn * 4); N.b.addUpdateRange(0, nn * 4); N.a.needsUpdate = true; N.b.needsUpdate = true; } }
     if (F) { F.g.instanceCount = nf; F.m.visible = nf > 0; if (nf) { F.a.clearUpdateRanges(); F.b.clearUpdateRanges(); F.a.addUpdateRange(0, nf * 4); F.b.addUpdateRange(0, nf * 4); F.a.needsUpdate = true; F.b.needsUpdate = true; } }
   }
@@ -139,32 +284,51 @@ function treeGeos() {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   const bark = 0x5a4636, barkD = 0x3d2f26;
   const leafBlob = (r, pos, sc, bot, top, d = 1, c = null) => part(G.ico(r, d), { pos, scale: sc, bottom: bot, top, smooth: c || V(pos[0], pos[1] - r * 0.5, pos[2]), sway: 1, jitter: r * 0.07, topLight: 0.8 });
-  // 1 広葉樹（草原・岸）
+  // 樹皮：縦のすじ、根もとの陰、北側と根に苔
+  const LB = lin(0x7a6450), LM = lin(0x4f7d3c);
+  const barkFn = (mossH) => (p, n) => {
+    const st = 0.8 + 0.2 * Math.sin(Math.atan2(p.z, p.x) * 9 + p.y * 0.7) * Math.sin(p.y * 1.9 + p.x);
+    const ao = 0.5 + 0.5 * Math.min(1, Math.max(0, p.y) / (mossH * 0.6));
+    const moss = Math.min(1, Math.max(0, 1 - p.y / mossH) * (0.55 + 0.45 * Math.max(0, n.y * 1.5 - n.z * 0.6)) + Math.max(0, -n.z) * 0.18);
+    return [(LB[0] * st * (1 - moss) + LM[0] * moss) * ao, (LB[1] * st * (1 - moss) + LM[1] * moss) * ao, (LB[2] * st * (1 - moss) + LM[2] * moss) * ao];
+  };
+  const tube = (pts, ra, sides, fn) => part(tubeGeo(pts.map((q) => V(q[0], q[1], q[2])), ra, ra, sides, V(0, 0, 1)), { color: fn, smooth: true });
+  const core = (bl, bot, top) => part(G.ico(1, 1), { pos: bl.c, scale: [bl.r[0] * 0.66, bl.r[1] * 0.62, bl.r[2] * 0.66], bottom: bot, top, smooth: V(bl.c[0], bl.c[1] - bl.r[1] * 0.6, bl.c[2]), sway: 1 });
+  // 1 広葉樹（草原・岸）：ゆるく曲がった幹が二またに分かれ、葉むらを 3 つのせる
+  const broadBlobs = [
+    { c: [0.1, 6.3, 0], r: [3.1, 2.2, 3.1], n: 24, bot: 0x4a9a3e, top: 0xb9e36e },
+    { c: [1.9, 5.2, 0.6], r: [2.1, 1.5, 2.1], n: 13, bot: 0x448f3a, top: 0xa6d862 },
+    { c: [-1.6, 5.5, -0.9], r: [2.1, 1.5, 2.1], n: 13, bot: 0x448f3a, top: 0xaedd66 },
+  ];
+  const bf = barkFn(1.6);
   const broadNear = merge([
-    part(G.cyl(0.2, 0.42, 4.2, 6, 2), { pos: [0, 2.1, 0], bottom: barkD, top: bark, jitter: 0.05 }),
-    part(G.cyl(0.1, 0.16, 2.2, 4), { pos: [0.7, 4.3, 0.2], rot: [0, 0, -0.75], color: bark }),
-    leafBlob(2.7, [0, 6.3, 0], [1.15, 0.82, 1.15], 0x3f8f3c, 0xa9da66),
-    leafBlob(1.9, [1.7, 5.3, 0.6], [1.1, 0.8, 1.1], 0x3a8538, 0x93cf5c),
-    leafBlob(1.9, [-1.4, 5.6, -0.9], [1.1, 0.8, 1.1], 0x3a8538, 0x9cd460),
+    tube([[0, -0.3, 0], [0.04, 0.5, 0], [0.12, 2.0, 0.05], [0.05, 3.6, 0], [0.1, 5.4, 0]], [0.62, 0.4, 0.3, 0.25, 0.14], 7, bf),
+    tube([[0.08, 3.3, 0], [0.9, 4.3, 0.3], [1.7, 4.9, 0.6]], [0.18, 0.13, 0.06], 4, bf),
+    tube([[0.06, 3.6, 0], [-0.7, 4.6, -0.5], [-1.5, 5.2, -0.9]], [0.17, 0.12, 0.06], 4, bf),
   ]);
   const broadFar = merge([
     part(G.cyl(0.25, 0.42, 4.2, 3), { pos: [0, 2.1, 0], color: 0x4a3a2e }),
-    part(G.ico(3.1, 0), { pos: [0.1, 6.0, 0], scale: [1.25, 0.82, 1.25], bottom: 0x3f8f3c, top: 0xa3d663, smooth: V(0, 5, 0), sway: 1 }),
+    part(G.ico(2.7, 0), { pos: [0.1, 6.0, 0], scale: [1.2, 0.8, 1.2], bottom: 0x2f7532, top: 0x86c452, smooth: V(0, 5, 0), sway: 1 }),
   ]);
-  // 2 森の巨木
-  const giantNear = merge([
-    part(G.cyl(1.0, 1.75, 21, 8, 3), { pos: [0, 10.5, 0], bottom: barkD, top: bark, jitter: 0.16, jitterY: 0.2, vary: 0.12 }),
-    part(G.cyl(1.7, 3.0, 3.2, 8, 1, true), { pos: [0, 1.4, 0], bottom: 0x2c2420, top: barkD, jitter: 0.3, jitterY: 0.1 }),
-    part(G.cyl(0.3, 0.55, 7, 5), { pos: [2.6, 19.5, 0.8], rot: [0, 0, -0.95], color: bark }),
-    part(G.cyl(0.3, 0.55, 7, 5), { pos: [-2.2, 20.5, -1.6], rot: [0.5, 0, 0.9], color: bark }),
-    leafBlob(6.4, [0, 25.5, 0], [1.35, 0.55, 1.35], 0x1f5f48, 0x6fcf96),
-    leafBlob(5.2, [5.6, 22.6, 1.8], [1.25, 0.5, 1.25], 0x1c5743, 0x62c48c),
-    leafBlob(5.0, [-4.8, 23.4, -3.2], [1.25, 0.5, 1.25], 0x1c5743, 0x66c990),
-    leafBlob(4.2, [0.8, 29.2, -0.6], [1.2, 0.6, 1.2], 0x2a7355, 0x86dfa6),
-  ]);
+  // 2 森の巨木：根を張った太い幹、高い枝、傘のように広がる葉むら
+  const giantBlobs = [
+    { c: [0, 25.5, 0], r: [8.6, 3.5, 8.6], n: 30, bot: 0x2a7a55, top: 0x9be8a6 },
+    { c: [5.6, 22.6, 1.8], r: [6.5, 2.6, 6.5], n: 20, bot: 0x26704e, top: 0x8ade9c },
+    { c: [-4.8, 23.4, -3.2], r: [6.2, 2.5, 6.2], n: 20, bot: 0x26704e, top: 0x8fe0a0 },
+    { c: [0.8, 29.2, -0.6], r: [5.0, 2.5, 5.0], n: 15, bot: 0x338a60, top: 0xa9f0b4 },
+  ];
+  const gf = barkFn(5.5);
+  const gParts = [tube([[0, -0.6, 0], [0.05, 1.6, 0], [0.15, 4.5, 0.1], [0.3, 10, -0.1], [0.1, 16.5, 0.2], [-0.1, 23, 0]], [3.0, 1.95, 1.5, 1.3, 1.12, 0.85], 9, gf)];
+  for (let i = 0; i < 4; i++) {
+    const a = i * 1.571 + 0.5, cx = Math.cos(a), sz = Math.sin(a);
+    gParts.push(tube([[cx * 1.1, 2.6, sz * 1.1], [cx * 2.7, 0.6, sz * 2.7], [cx * 4.3, -0.5, sz * 4.3]], [0.7, 0.45, 0.12], 5, gf));
+  }
+  gParts.push(tube([[0.2, 17, 0.1], [2.8, 20, 0.9], [5.2, 21.6, 1.7]], [0.55, 0.38, 0.18], 5, gf));
+  gParts.push(tube([[0, 18.5, 0], [-2.4, 21, -1.6], [-4.4, 22.4, -3.0]], [0.5, 0.36, 0.18], 5, gf));
+  const giantNear = merge(gParts);
   const giantFar = merge([
     part(G.cyl(1.1, 1.9, 22, 3, 1, true), { pos: [0, 11, 0], bottom: 0x2c2420, top: 0x4a3a2e }),
-    part(G.ico(8.2, 0), { pos: [0.6, 24.4, 0], scale: [1.45, 0.55, 1.45], bottom: 0x1f5f48, top: 0x6fcf96, smooth: V(0, 21, 0), sway: 1 }),
+    part(G.ico(7.4, 0), { pos: [0.6, 24.4, 0], scale: [1.4, 0.5, 1.4], bottom: 0x1a5540, top: 0x55b07c, smooth: V(0, 21, 0), sway: 1 }),
     part(G.octa(4.6), { pos: [0.4, 28.8, -0.4], scale: [1.2, 0.62, 1.2], bottom: 0x2a7355, top: 0x86dfa6, smooth: V(0, 26, 0), sway: 1 }),
   ]);
   // 3 針葉樹（峰）
@@ -189,7 +353,7 @@ function treeGeos() {
     leafBlob(0.6, [0.5, 2.4, -0.3], [1.2, 0.65, 1.2], 0x628a62, 0xa8c896, 0),
   ]);
   const shrubFar = merge([part(G.octa(1.2), { pos: [0, 1.7, 0], scale: [1.4, 0.7, 1.3], bottom: 0x587f5a, top: 0x9fbf8c, smooth: V(0, 1, 0) })]);
-  return { broad: [broadNear, broadFar], giant: [giantNear, giantFar], pine: [pineNear, pineFar], shrub: [shrubNear, shrubFar] };
+  return { broad: [broadNear, broadFar], giant: [giantNear, giantFar], pine: [pineNear, pineFar], shrub: [shrubNear, shrubFar], broadBlobs, giantBlobs };
 }
 function rockGeos() {
   const grey = (p, n) => { const k = 0.55 + 0.45 * Math.max(0, n.y) + 0.12 * Math.sin(p.y * 2.1); return [k, k, k]; };
@@ -218,6 +382,52 @@ function rockGeos() {
   const stackFar = merge([part(spire(5, 1), { color: grey }), part(spire(4, 0.5), { pos: [0.62, 0, 0.2], scale: [1, 0.62, 1], color: grey })]);
   return { boulder: [boulderNear, boulderFar], pillar: [pillarNear, pillarFar], stack: [stackNear, stackFar] };
 }
+// 羊歯：弓なりの葉を放射状に（葉むらと同じ絵の右半分）
+function fernGeo(rng) {
+  const pos = [], nor = [], col = [], uv = [];
+  const cb = new THREE.Color(0x2c6a38), ct = new THREE.Color(0x86cc6c), c = new THREE.Color();
+  const N = 7;
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * 6.283 + rng.range(-0.3, 0.3), dx = Math.cos(a), dz = Math.sin(a), sx = -dz, sz = dx;
+    const L = rng.range(0.8, 1.15), lift = rng.range(0.34, 0.5);
+    const ring = [[0.02, 0.02, 0.05, 0], [0.5 * L, lift, 0.24, 0.5], [1.0 * L, lift * 0.35, 0.12, 1]];   // 距離, 高さ, 半幅, v
+    for (let k = 0; k < 2; k++) {
+      const p0 = ring[k], p1 = ring[k + 1];
+      const q = [[p0, -1], [p0, 1], [p1, 1], [p0, -1], [p1, 1], [p1, -1]];
+      for (const [pp, sd] of q) {
+        pos.push(dx * pp[0] + sx * pp[2] * sd, pp[1], dz * pp[0] + sz * pp[2] * sd);
+        nor.push(dx * 0.35, 0.9, dz * 0.35);
+        c.copy(cb).lerp(ct, pp[3] * 0.8 + 0.1);
+        col.push(c.r, c.g, c.b);
+        uv.push(0.75 + sd * 0.25, pp[3]);
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(uv), 2));
+  return g;
+}
+// 倒木：苔むした幹、折れた枝、夜に光る棚きのこ
+function logGeo() {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const LB = lin(0x6e5a48), LMo = lin(0x4a8038), LW = lin(0xc9a877);
+  const fn = (p, n) => {
+    const moss = Math.min(1, Math.max(0, n.y * 2.2 - 1.0)) * (0.7 + 0.3 * Math.sin(p.x * 2.3));
+    const st = 0.8 + 0.2 * Math.sin(p.x * 3.1 + p.z * 5);
+    const ao = 0.55 + 0.45 * Math.min(1, Math.max(0, p.y + 0.15) / 0.5);
+    return [(LB[0] * st * (1 - moss) + LMo[0] * moss) * ao, (LB[1] * st * (1 - moss) + LMo[1] * moss) * ao, (LB[2] * st * (1 - moss) + LMo[2] * moss) * ao];
+  };
+  const parts = [
+    part(tubeGeo([V(-3.2, 0.42, 0), V(-1.2, 0.4, 0.1), V(1.0, 0.36, -0.05), V(3.1, 0.3, 0.1)], [0.52, 0.5, 0.44, 0.36], [0.52, 0.5, 0.44, 0.36], 8, V(0, 1, 0)), { color: fn, smooth: true }),
+    part(G.disc(0.45, 8), { pos: [-3.21, 0.42, 0], rot: [0, 0, Math.PI / 2], color: LW }),
+    part(tubeGeo([V(0.4, 0.6, 0), V(0.7, 1.1, 0.5), V(0.8, 1.5, 1.0)], [0.14, 0.1, 0.03], [0.14, 0.1, 0.03], 4, V(1, 0, 0)), { color: fn, smooth: true }),
+  ];
+  for (const [x, y, z, r] of [[-1.6, 0.5, 0.5, 0.2], [-1.2, 0.62, 0.48, 0.14], [1.6, 0.4, -0.42, 0.17]]) parts.push(part(G.cyl(r, r * 0.6, 0.05, 6), { pos: [x, y, z], color: 0xffd9a8, glow: 0.6 }));
+  return merge(parts);
+}
 function mushroomGeo() {
   const parts = [];
   const one = (x, z, h, r, cap) => {
@@ -242,11 +452,13 @@ export function createFlora(env) {
   const group = new THREE.Group();
   group.name = 'aw-flora';
   const rng = env.fork('flora');
-  const mat = floraMaterial(0x7ff5e1), matLamp = floraMaterial(0xffc46a), matRock = floraMaterial(0x7ff5e1, true);
+  const mat = floraMaterial(0x7ff5e1), matLamp = floraMaterial(0xffc46a), matRock = floraMaterial(0x7ff5e1, true), matLeaf = floraMaterial(0x7ff5e1, false, true);
   const tg = treeGeos(), rg = rockGeos();
   const S = {
-    broad: new Scatter(tg.broad[0], tg.broad[1], mat, { nearDist: 105, farDist: 760, name: 'tree-broad' }),
-    giant: new Scatter(tg.giant[0], tg.giant[1], mat, { nearDist: 100, farDist: 820, name: 'tree-giant', always: 40 }),
+    broad: new Scatter(tg.broad[0], tg.broad[1], mat, { nearDist: 78, farDist: 760, name: 'tree-broad', extra: { geo: leafCards(tg.broadBlobs, makeRng(31), 0.42), material: matLeaf } }),
+    giant: new Scatter(tg.giant[0], tg.giant[1], mat, { nearDist: 88, farDist: 820, name: 'tree-giant', always: 40, extra: { geo: leafCards(tg.giantBlobs, makeRng(32), 0.36), material: matLeaf }, extraFar: { geo: leafCards(tg.giantBlobs.map((b, i) => ({ ...b, n: i ? 1 : 3, shell: false })), makeRng(42), 0.62), material: matLeaf } }),
+    fern: new Scatter(fernGeo(makeRng(33)), null, matLeaf, { nearDist: 44, farDist: 44, name: 'fern', always: 6 }),
+    log: new Scatter(logGeo(), null, mat, { nearDist: 80, farDist: 80, name: 'log' }),
     pine: new Scatter(tg.pine[0], tg.pine[1], mat, { nearDist: 100, farDist: 760, name: 'tree-pine' }),
     shrub: new Scatter(tg.shrub[0], tg.shrub[1], mat, { nearDist: 70, farDist: 420, name: 'tree-shrub' }),
     boulder: new Scatter(rg.boulder[0], rg.boulder[1], matRock, { nearDist: 70, farDist: 520, name: 'rock-boulder' }),
@@ -376,6 +588,27 @@ export function createFlora(env) {
     addRock('stack', x, z, rng.range(1.2, 3.2), 2, 0.4);
   }
 
+  // ── 森の下草：羊歯と倒木 ──
+  for (let i = 0; i < 26000 && S.fern.items.length < 5200 * 8; i++) {
+    const x = rng.range(-720, -150), z = rng.range(-420, 520);
+    hf.weightsAt(x, z, w);
+    if (w[1] < 0.55) continue;
+    const h = hf.heightAt(x, z);
+    if (h < 3 || hf.pathDistAt(x, z) < 3 || hf.normalY(x, z) < 0.86 || nearLandmark(x, z, 1)) continue;
+    if (hf.nm.n2(x / 17 + 3.1, z / 17 + 7.7) < 0.4) continue;                       // かたまって生える
+    S.fern.add(x, h - 0.03, z, rng.range(0.7, 1.7), rng.range(0, 6.28), rng.range(-1, 1), 0);
+  }
+  for (let i = 0; i < 4000 && S.log.items.length < 150 * 8; i++) {
+    const x = rng.range(-700, -180), z = rng.range(-400, 500);
+    hf.weightsAt(x, z, w);
+    if (w[1] < 0.7 || Math.hypot(x - LM.hollow.x, z - LM.hollow.z) < 50) continue;      // くぼ地はきのこの舞台。倒木で眺めをふさがない
+    const h = hf.heightAt(x, z);
+    if (h < 3 || hf.pathDistAt(x, z) < 6 || hf.normalY(x, z) < 0.95 || nearLandmark(x, z, 4) || !farFrom(x, z, 3.5) || !clearOf(x, z)) continue;
+    const sc = rng.range(0.5, 1.0);
+    S.log.add(x, h - 0.1 * sc, z, sc, rng.range(0, 6.28), rng.range(-0.6, 0.6), 0);
+    col.addCollider({ x, z, r: 0.9 * sc, y0: h - 1, y1: h + sc, kind: 'tree' }); taken.push(x, z, 3.2 * sc);
+  }
+
   // ── 光るきのこ（森・くぼ地・採集点）──
   for (let i = 0; i < 130; i++) {
     const a = rng.range(0, 6.28), d = Math.sqrt(rng.next()) * 34;
@@ -433,5 +666,18 @@ export function createFlora(env) {
     for (const k in S) S[k].nearDist = S[k].baseNear * (level === 0 ? 1 : level === 1 ? 0.76 : 0.55);
     lx = 1e9;
   }
-  return { group, update, setQuality, counts, lamps, scatters: S, mat };
+  // 1 本だけの葉むら（大樹など）。置き場所はインスタンス属性で渡す
+  function leafMesh(blobs, x, y, z, yawDeg, glow = 0, size = 0.3) {
+    const g = new THREE.InstancedBufferGeometry(), src = leafCards(blobs, makeRng(77), size);
+    for (const k of ['position', 'normal', 'color', 'uv']) g.setAttribute(k, src.getAttribute(k));
+    const a = yawDeg * Math.PI / 180;
+    g.setAttribute('aInst', new THREE.InstancedBufferAttribute(new Float32Array([x, y, z, 1]), 4));
+    g.setAttribute('aInst2', new THREE.InstancedBufferAttribute(new Float32Array([Math.cos(a), Math.sin(a), 0, 0]), 4));
+    g.instanceCount = 1;
+    const m = new THREE.Mesh(g, floraMaterial(0x7ff5e1, false, true, glow));
+    m.frustumCulled = false; m.matrixAutoUpdate = false; m.name = 'leaf-single';
+    group.add(m);
+    return m;
+  }
+  return { group, update, setQuality, counts, lamps, scatters: S, mat, leafMesh };
 }

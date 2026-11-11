@@ -222,7 +222,7 @@ export function buildElder(env, def) {
   // 幹をのぼる光の筋（昼はかすか、夜は青緑に光る）
   const vein = (p) => { const a = Math.atan2(p.x, p.z); return Math.pow(Math.max(0, Math.sin(a * 5 + p.y * 0.09)), 18) * (p.y > 2 && p.y < 44 ? 0.9 : 0); };
   // 幹：根もとで広がり、上で分かれる
-  P.push(part(tubeGeo([V(0, -1, 0), V(0, 3, 0), V(0.3, 9, 0), V(0.6, 20, -0.2), V(0.2, 32, 0.3), V(-0.4, 42, 0)], [14, 10.6, 9, 7.6, 6.6, 5.2], [14, 10.6, 9, 7.6, 6.6, 5.2], 16, V(0, 0, 1), false), { color: barkC, jitter: 0.5, glow: vein }));
+  P.push(part(tubeGeo([V(0, -1, 0), V(0, 3, 0), V(0.3, 9, 0), V(0.6, 20, -0.2), V(0.2, 32, 0.3), V(-0.4, 42, 0)], [14, 10.6, 9, 7.6, 6.6, 5.2], [14, 10.6, 9, 7.6, 6.6, 5.2], 16, V(0, 0, 1), false), { color: barkC, smooth: true, jitter: 0.5, glow: vein }));
   // 根：幹から下り、地面にもぐる
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2 + rng.range(-0.2, 0.2), len = rng.range(14, 26), sx = Math.sin(a), cz = Math.cos(a), bend = rng.range(-0.25, 0.25);
@@ -232,14 +232,15 @@ export function buildElder(env, def) {
       pts.push(V(sx * d + cz * sway, 7.5 * Math.pow(1 - t, 2.2) - 0.9 * t - 0.2, cz * d - sx * sway));
       r1.push(3.1 * (1 - t) + 0.45); r2.push(2.4 * (1 - t) + 0.4);
     }
-    P.push(part(tubeGeo(pts, r1, r2, 7), { color: barkC, jitter: 0.25 }));
+    P.push(part(tubeGeo(pts, r1, r2, 7), { color: barkC, smooth: true, jitter: 0.25 }));
   }
   // 大枝と葉のかさ（傘のように広がり、縁は垂れる）
-  const leaf = (r, pos, sc) => P.push(part(G.ico(r, 1), { pos, scale: sc, bottom: 0x1c6a52, top: 0x8fe8b4, smooth: V(pos[0] * 0.8, pos[1] - r * 0.7, pos[2] * 0.8), sway: 1, glow: (p) => 0.25 + 0.75 * Math.max(0, Math.sin(p.x * 0.4 + p.z * 0.33 + p.y * 0.2)), jitter: r * 0.07, topLight: 0.8 }));
+  const eBlobs = [];
+  const leaf = (r, pos, sc) => { eBlobs.push({ c: pos, r: [r * sc[0], r * sc[1], r * sc[2]], n: Math.round(r * 3.6), bot: 0x2a8062, top: 0xa6f0c0 }); P.push(part(G.ico(r * 0.6, 1), { pos, scale: sc, bottom: 0x1c6a52, top: 0x8fe8b4, smooth: V(pos[0] * 0.8, pos[1] - r * 0.7, pos[2] * 0.8), sway: 1, glow: (p) => 0.25 + 0.75 * Math.max(0, Math.sin(p.x * 0.4 + p.z * 0.33 + p.y * 0.2)), jitter: r * 0.07, topLight: 0.8 })); };
   for (let i = 0; i < 7; i++) {
     const a = (i / 7) * Math.PI * 2 + 0.3, len = rng.range(27, 35), y0 = 30 + (i % 3) * 4, sx = Math.sin(a), cz = Math.cos(a);
     const pts = [V(sx * 4, y0, cz * 4), V(sx * len * 0.4, y0 + 7, cz * len * 0.4), V(sx * len * 0.75, y0 + 10, cz * len * 0.75), V(sx * len, y0 + 8, cz * len)];
-    P.push(part(tubeGeo(pts, [3.0, 2.0, 1.3, 0.6], [3.0, 2.0, 1.3, 0.6], 6), { color: barkC, jitter: 0.2 }));
+    P.push(part(tubeGeo(pts, [3.0, 2.0, 1.3, 0.6], [3.0, 2.0, 1.3, 0.6], 6), { color: barkC, smooth: true, jitter: 0.2 }));
     leaf(rng.range(13, 15.5), [sx * len * 0.95, y0 + 11.5, cz * len * 0.95], [1.3, 0.48, 1.3]);
     if (i % 2 === 0) leaf(rng.range(9, 11), [sx * (len + 11), y0 + 5.5, cz * (len + 11)], [1.25, 0.5, 1.25]);
   }
@@ -247,13 +248,14 @@ export function buildElder(env, def) {
   leaf(13, [7, 67, -5], [1.3, 0.55, 1.3]);
   leaf(11, [-10, 64, 7], [1.3, 0.55, 1.3]);
   const mesh = new THREE.Mesh(merge(P), structMaterial({ glow: 0x7ff5e1, amt: 0.06, night: 1.25, rim: 0.3, fogMul: 0.75 }));
+  if (env.flora && env.flora.leafMesh) env.flora.leafMesh(eBlobs, def.x, def.y, def.z, def.yaw || 0, 0.55, 0.26);
   env.col.addCollider({ x: def.x, z: def.z, r: 10.5, y0: def.y - 2, y1: def.y + 60, kind: 'tree' });
   // 木漏れ日
   const fx = env.fx;
   for (let i = 0; i < 15; i++) {
     const a = rng.range(0, 6.28), d = rng.range(16, 46);
     const x = def.x + Math.sin(a) * d, z = def.z + Math.cos(a) * d;
-    fx.shafts.add({ from: V(x, env.hf.heightAt(x, z) - 1, z), sun: true, len: rng.range(50, 66), width: rng.range(3.5, 7), color: 0xffeeb0, intensity: rng.range(0.1, 0.17) });
+    fx.shafts.add({ from: V(x, env.hf.heightAt(x, z) - 1, z), sun: true, len: rng.range(50, 66), width: rng.range(3.5, 7), color: 0xffeeb0, intensity: rng.range(0.05, 0.09) });
   }
   for (let i = 0; i < 5; i++) {
     const a = rng.range(0, 6.28), d = rng.range(12, 30);

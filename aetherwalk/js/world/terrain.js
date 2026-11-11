@@ -112,10 +112,20 @@ void main() {
     band *= 0.86 + 0.14 * smoothstep(0.0, 0.12, e);
     alb = mix(alb, band, vSt.x);
   }
+  float dap = 1.0;
+  if (vSt.x < -0.01) {
+    // 森の床：落ち葉と苔のまだら、木漏れ日
+    float fw = -vSt.x;
+    float lit = smoothstep(0.55, 0.72, nz.b * 0.55 + nz.g * 0.45);
+    alb = mix(alb, vec3(0.2, 0.12, 0.045), lit * 0.55 * fw);
+    alb = mix(alb, vec3(0.1, 0.24, 0.06), smoothstep(0.6, 0.75, nz.a) * 0.4 * fw);
+    dap = mix(1.0, mix(0.6, 1.42, smoothstep(0.42, 0.6, nz.a * 0.6 + nz.b * 0.4)), fw * uCloud.w * 2.2);
+  }
   // 粒の模様：雪や白い砂のような明るい地面では弱く（汚れて見えないように）
   float lum = dot(alb, vec3(0.3, 0.55, 0.15));
   vec3 c = alb * vLit * (1.0 + (d - 0.5) * mix(0.4, 0.14, smoothstep(0.45, 0.8, lum)));
   c *= 1.0 - smoothstep(0.42, 0.6, cl) * uCloud.w;
+  c *= dap;
   c = mix(c, vFog.rgb, vFog.a);
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
