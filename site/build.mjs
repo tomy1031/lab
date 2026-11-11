@@ -197,7 +197,9 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
     const src = exportDir(refs.aetherwalk, 'aetherwalk');
     fs.mkdirSync(dest, { recursive: true });
     sh(`node "${path.join(src, 'tools', 'build.mjs')}" "${dest}"`, { stdio: ['ignore', 'inherit', 'inherit'] });
-    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'aetherwalk.jpg'));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'aetherwalk.jpg'));
+    else console.warn('aetherwalk: docs/preview.jpg not found; the lab page card has no picture');
   } catch (e) {
     console.warn(`aetherwalk not found at ${refs.aetherwalk}; publishing a link page instead:`, e.message);
     fs.rmSync(dest, { recursive: true, force: true });
