@@ -25,6 +25,7 @@ export function createBomb(ctx, I) {
   function ensureSpark(inst) {
     if (inst.fx.spark) { inst.fx.spark.visible = true; return; }
     const g = ctx.art.glow({ color: 0xffb347, size: 0.12, opacity: 1 });
+    g.name = 'bomb-spark';
     g.position.set(0, 0, -0.105);
     inst.object3D.add(g);
     inst.fx.spark = g;

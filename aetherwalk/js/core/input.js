@@ -46,6 +46,13 @@ const SWINGS = {
 };
 const REST = { p: [0.2, -0.3, -0.42], d: [0.05, 0.72, -0.7], e: [0.12, -0.6, 0.8] };
 const GUARD = { p: [0.12, -0.2, -0.44], d: [0.0, 1, 0.05], e: [1, -0.25, 0.2] };   // hand raised in front (shield face forward)
+// PC preview rests (ART_REVIEW A-P1-1/A-P1-2; VR never uses these):
+//   empty hand 45.6° below the view → out of frame; holding something 34.7° below → only the item's
+//   far end shows in the lower quarter; a shield turned 35° outward at the lower left.
+const EMPTY_REST = { p: [0.24, -0.47, -0.46], d: [0.05, 0.72, -0.7], e: [0.12, 0.2, 0.9] };
+// (a thumb-up fist puts the cuff ~0.11 m above the grip, so the grip sits just under the frame: y −0.43)
+const HELD_REST = { p: [0.22, -0.49, -0.55], d: [0.03, 0.08, -1], e: [0.0, 1, 0.0] };    // thumb up, tip low and forward
+const SHIELD_REST = { p: [0.34, -0.46, -0.5], d: [0.0, 1, 0.0], e: [0.819, 0, 0.574] };  // face 35° outward (left hand mirrors)
 SWINGS.rest = { keys: [REST, REST, REST] };
 // held poses for desktop (orientation while reaching / resting)
 const POSES = {
@@ -56,6 +63,7 @@ const POSES = {
   eat: { p: [0.05, -0.12, -0.2], d: [-0.2, 0.6, 0.6], e: [0.3, -0.9, 0.3] },
   pour: { p: [0.2, -0.25, -0.45], d: [0.0, -1, -0.15], e: [0.15, 0.2, 0.95] },        // upside down
   draw: { p: [0.1, -0.05, -0.25], d: [0.0, 0.1, -1], e: [0.6, -0.3, 0.7] },           // string hand, arrow forward
+  raise: { p: [0.18, -0.25, -0.6], d: [0.0, 0.75, -0.66], e: [0.0, 0.66, 0.75] },     // torch held up in front, arm's length
 };
 
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -450,13 +458,20 @@ export function createInput(ctx) {
         quatFromBladeElbow(_mirD, _mirE, _qb).premultiply(_q2);
         h.localQuat.slerp(_qb, ema(0.08, dt));
       } else {
-        const key = vh.guard ? GUARD : (POSES[vh.pose] || REST);
+        const held = ctx.items?.held?.[side];
+        let key;
+        if (vh.guard) key = GUARD;
+        else if (vh.pose !== 'rest' && POSES[vh.pose]) key = POSES[vh.pose];
+        else if (!held) key = EMPTY_REST;
+        else if (held.def?.block) key = SHIELD_REST;
+        else key = HELD_REST;
         mirrorKey(key, side);
         _mir[0] += vh.offset.x; _mir[1] += vh.offset.y;
         headSpaceToLocal(_mir, _to);
         quatFromBladeElbow(_mirD, _mirE, _qb).premultiply(head.localQuat);
         if (!vh.init) { h.localPos.copy(_to); h.localQuat.copy(_qb); vh.init = true; }
-        const k = vh.offset.lengthSq() > 0 ? ema(0.03, dt) : ema(0.07, dt);
+        // back out of frame in ≈ 0.3 s; into a holding pose a little quicker
+        const k = vh.offset.lengthSq() > 0 ? ema(0.03, dt) : key === EMPTY_REST ? ema(0.1, dt) : ema(0.07, dt);
         h.localPos.lerp(_to, k);
         h.localQuat.slerp(_qb, k);
       }

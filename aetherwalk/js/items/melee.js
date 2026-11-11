@@ -11,7 +11,8 @@ import { ema, clamp } from '../core/util.js';
 const HANDS = ['left', 'right'];
 
 const MAXP = 12;
-const TRAIL = 14;
+const SEG = 10, HIST = 12;
+const _tb = new THREE.Vector3(), _tt = new THREE.Vector3(), _td = new THREE.Vector3(), _tq = new THREE.Quaternion(), _tq2 = new THREE.Quaternion();
 const _tri = new THREE.Triangle();
 const _cp = new THREE.Vector3(), _bp = new THREE.Vector3(), _v = new THREE.Vector3(), _d = new THREE.Vector3(), _ax = new THREE.Vector3();
 const _rq = new THREE.Quaternion(), _hitDir = new THREE.Vector3(), _hitPt = new THREE.Vector3();
@@ -35,23 +36,26 @@ export function createMelee(ctx, I) {
   const input = ctx.input;
   const H = { left: makeHandState(), right: makeHandState() };
 
-  // ── trails: one strip per hand, world space, alpha fades with age ──
+  // ── A-P2-4 trail: the blade over the last 0.12 s as a thin additive ribbon (10 segments, 20 triangles).
+  // Samples are kept in rig space; the ribbon is resampled evenly in time by interpolating the blade
+  // (base lerp, direction slerp), so it stays a curved band even when frames are far apart.
+  const trailMat = ctx.art.basic({ color: 0xffffff, additive: true, vertexColors: true, side: THREE.DoubleSide });
   function makeTrail() {
-    const pos = new Float32Array(TRAIL * 2 * 3), col = new Float32Array(TRAIL * 2 * 4);
+    const pos = new Float32Array((SEG + 1) * 2 * 3), col = new Float32Array((SEG + 1) * 2 * 3);
     const idx = [];
-    for (let i = 0; i < TRAIL - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    for (let i = 0; i < SEG; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
-    g.setAttribute('color', new THREE.BufferAttribute(col, 4).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3).setUsage(THREE.DynamicDrawUsage));
     g.setIndex(idx);
-    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false,
-      blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
+    const m = new THREE.Mesh(g, trailMat);
     m.frustumCulled = false;
     m.visible = false;
     m.renderOrder = 6;
     m.name = 'swing-trail';
     ctx.scene.add(m);
-    return { mesh: m, pos, col, base: Array.from({ length: TRAIL }, () => new THREE.Vector3()), tip: Array.from({ length: TRAIL }, () => new THREE.Vector3()), head: 0, filled: 0, alpha: 0 };
+    const ring = (n) => Array.from({ length: n }, () => new THREE.Vector3());
+    return { mesh: m, pos, col, t: new Float64Array(HIST), base: ring(HIST), dir: ring(HIST), len: new Float32Array(HIST), head: -1, filled: 0, k: 0 };
   }
 
   /** grip-space sample points of a weapon (base → tip), returns count */
@@ -142,6 +146,13 @@ export function createMelee(ctx, I) {
   }
 
   function haptic(hand, k) { input.haptic(hand, HAPTIC[k][0], HAPTIC[k][1]); }
+  /** ctx.game.inventory.temper[itemId] (0–3); 0 when the game is a stub or has none */
+  function temperOf(id) {
+    const g = ctx.game;
+    if (!g || g.isStub) return 0;
+    const t = Number(g.inventory?.temper?.[id]);
+    return Number.isFinite(t) ? clamp(Math.floor(t), 0, 3) : 0;
+  }
 
   function strike(hand, st, inst, h, now) {
     const m = inst.def.melee;
@@ -165,8 +176,8 @@ export function createMelee(ctx, I) {
     }
     const strong = speed >= m.strongSpeed;
     if (speed >= m.minSpeed) {
-      const temper = (ctx.game?.inventory?.temper?.[inst.id]) | 0;
-      damage = (type === 'thrust' ? m.thrust : m.base) + temper;
+      // §10.19: tempering at a waylight (0–3) adds to the base and the thrust alike
+      damage = (type === 'thrust' ? m.thrust : m.base) + temperOf(inst.id);
       if (strong && type !== 'thrust') damage *= m.strongMul;
       else if (strong) damage *= Math.max(1, m.strongMul * 0.9);
       let element = inst.state.lit ? 'fire' : (inst.def.element === 'wind' ? 'wind' : 'none');
@@ -188,32 +199,59 @@ export function createMelee(ctx, I) {
     }
   }
 
-  function updateTrail(st, inst, show, tier) {
+  function updateTrail(st, inst, show, tier, now) {
     if (!st.trail) { if (!show) return; st.trail = makeTrail(); }
     const T = st.trail;
     const n = st.n;
-    // push the newest blade (world)
-    T.head = (T.head + 1) % TRAIL;
-    T.base[T.head].copy(st.curW[Math.max(0, n > 2 ? 1 : 0)]);
-    T.tip[T.head].copy(st.curW[n - 1]);
-    if (T.filled < TRAIL) T.filled++;
-    const want = show ? 1 : 0;
-    T.alpha += (want - T.alpha) * (show ? 0.5 : 0.18);
-    if (T.alpha < 0.02) { T.mesh.visible = false; T.filled = Math.min(T.filled, 1); return; }
-    T.mesh.visible = true;
-    const c = tier >= 2 ? [0.5, 0.92, 1] : tier >= 1 ? [1, 0.85, 0.42] : [1, 0.98, 0.9];
-    const a0 = (tier >= 1 ? 0.75 : 0.3) * T.alpha;
-    for (let k = 0; k < TRAIL; k++) {
-      const j = (T.head - k + TRAIL * 2) % TRAIL;
-      const use = k < T.filled ? j : T.head;
-      const b = T.base[use], t = T.tip[use];
-      const o = k * 2;
-      T.pos[o * 3] = b.x; T.pos[o * 3 + 1] = b.y; T.pos[o * 3 + 2] = b.z;
-      T.pos[o * 3 + 3] = t.x; T.pos[o * 3 + 4] = t.y; T.pos[o * 3 + 5] = t.z;
-      const a = a0 * (1 - k / (TRAIL - 1));
-      T.col[o * 4] = c[0]; T.col[o * 4 + 1] = c[1]; T.col[o * 4 + 2] = c[2]; T.col[o * 4 + 3] = a * 0.35;
-      T.col[o * 4 + 4] = c[0]; T.col[o * 4 + 5] = c[1]; T.col[o * 4 + 6] = c[2]; T.col[o * 4 + 7] = a;
+    // record this frame's blade (rig space)
+    if (inst && n > 1) {
+      T.head = (T.head + 1) % HIST;
+      T.t[T.head] = now;
+      T.base[T.head].copy(st.curL[0]);
+      T.dir[T.head].copy(st.curL[n - 1]).sub(st.curL[0]);
+      T.len[T.head] = T.dir[T.head].length();
+      T.dir[T.head].multiplyScalar(1 / Math.max(1e-6, T.len[T.head]));
+      if (T.filled < HIST) T.filled++;
     }
+    T.k += ((show ? 1 : 0) - T.k) * (show ? 1 : 0.35);
+    if (T.k < 0.03 || T.filled < 2) { T.mesh.visible = false; return; }
+    // the window: 0.12 s, but at least back to the previous frame
+    const prevT = T.t[(T.head - 1 + HIST) % HIST];
+    const win = Math.max(0.12, Math.min(0.3, now - prevT));
+    const strong = st.speed >= (inst?.def?.melee?.strongSpeed ?? 4.5);
+    const bright = (tier >= 1 ? 0.7 : 0.55) * T.k;
+    const cr = 1, cg = strong ? 0.91 : 0.98, cb = strong ? 0.66 : 0.91;      // #fffbe8, half toward #ffd76a when strong
+    const m = ctx.rig.matrixWorld;
+    let j = 0;                                     // newest-first walk through the samples
+    for (let i = 0; i <= SEG; i++) {
+      const ts = now - win * (1 - i / SEG);        // i = 0 oldest … SEG newest
+      // find samples a (older) and b (newer) bracketing ts
+      let bi = T.head, ai = T.head, k = 0;
+      for (k = 0; k < T.filled - 1; k++) {
+        ai = (T.head - k - 1 + HIST) % HIST;
+        bi = (T.head - k + HIST) % HIST;
+        if (T.t[ai] <= ts) break;
+      }
+      const ta = T.t[ai], tb = T.t[bi];
+      const f = tb > ta ? Math.min(1, Math.max(0, (ts - ta) / (tb - ta))) : 1;
+      _tb.copy(T.base[ai]).lerp(T.base[bi], f);
+      _tq.setFromUnitVectors(T.dir[ai], T.dir[bi]);
+      _tq2.identity().slerp(_tq, f);
+      _td.copy(T.dir[ai]).applyQuaternion(_tq2);
+      const L = T.len[ai] + (T.len[bi] - T.len[ai]) * f;
+      _tt.copy(_tb).addScaledVector(_td, L);
+      _tb.addScaledVector(_td, L * 0.4).applyMatrix4(m);    // the ribbon covers the outer 60 % of the blade
+      _tt.applyMatrix4(m);
+      const o = i * 6;
+      T.pos[o] = _tb.x; T.pos[o + 1] = _tb.y; T.pos[o + 2] = _tb.z;
+      T.pos[o + 3] = _tt.x; T.pos[o + 4] = _tt.y; T.pos[o + 5] = _tt.z;
+      const age = i / SEG;                          // 0 oldest → 1 newest
+      const a = bright * age * age;
+      T.col[o] = 0; T.col[o + 1] = 0; T.col[o + 2] = 0;               // root: ×0
+      T.col[o + 3] = cr * a; T.col[o + 4] = cg * a; T.col[o + 5] = cb * a;   // tip: ×0.55
+      j++;
+    }
+    T.mesh.visible = true;
     T.mesh.geometry.attributes.position.needsUpdate = true;
     T.mesh.geometry.attributes.color.needsUpdate = true;
   }
@@ -230,7 +268,7 @@ export function createMelee(ctx, I) {
       const inst = I.held[hand];
       if (!inst || !inst.def.melee) {
         st.inst = null; st.has = false; st.speed = 0; st.vel.set(0, 0, 0); st.armed = true;
-        if (st.trail && st.trail.mesh.visible) updateTrail(st, inst || { def: {} }, false, tier);
+        if (st.trail && st.trail.mesh.visible) updateTrail(st, null, false, tier, now);
         continue;
       }
       const hd = input.hands[hand];
@@ -288,7 +326,7 @@ export function createMelee(ctx, I) {
           }
         }
       }
-      updateTrail(st, inst, st.speed > 3.2 && dt > 0, tier);
+      updateTrail(st, inst, st.speed >= 2.5 && dt > 0, tier, now);
       for (let i = 0; i < n; i++) st.prevL[i].copy(st.curL[i]);
     }
   }

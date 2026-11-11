@@ -4,6 +4,8 @@ import * as THREE from 'three';
 import { wrapDeg360, DEG } from './util.js';
 import { createDummy } from './stubs.js';
 
+// names of everything OPUS-A draws (hands, items, their effects, comfort aids)
+const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
 const LOGGED = ['step', 'gait', 'hit', 'swing', 'item:grab', 'item:release', 'item:throw', 'item:consume', 'item:use',
   'item:ignite', 'item:extinguish', 'item:cook', 'item:return', 'item:pickup', 'projectile:fire', 'explosion', 'gust',
   'player:duck', 'player:glide', 'player:land', 'player:teleport', 'region:enter', 'pause', 'perf:level', 'xr:start', 'xr:end'];
@@ -94,10 +96,12 @@ export function installDebug(ctx, loop) {
       if (!v) return false;
       pl().teleport(v.x, v.z, v.yaw, ctx.world.groundAt ? ctx.world.groundAt(v.x, v.z, Infinity) + (v.lift || 0) : undefined);
       if (v.time != null) ctx.world.setTimeOfDay(v.time);
+      // the suggested look-up angle (§10.7 vistas[].pitch); desktop / tests only — VR never turns the head
+      if (!ctx.flags.xr) ctx.input.virtual.setLook(v.yaw, v.pitch || 0);
       return true;
     },
     landmarks() { return (ctx.world?.landmarkList || []).map((l) => ({ id: l.id, kind: l.kind, name: l.name, x: l.x, y: l.y, z: l.z })); },
-    vistas() { return (ctx.world?.vistas || []).map((v) => ({ id: v.id, name: v.name, x: v.x, z: v.z, yaw: v.yaw, time: v.time })); },
+    vistas() { return (ctx.world?.vistas || []).map((v) => ({ id: v.id, name: v.name, x: v.x, z: v.z, yaw: v.yaw, time: v.time, pitch: v.pitch || 0 })); },
     heightAt(x, z) { return ctx.world.heightAt(+x, +z); },
     setStage(n) { return ctx.game?.debug?.setStage ? ctx.game.debug.setStage(n) : ctx.game?.quest?.setStage?.(+n); },
     awakenTower(id) {
@@ -157,8 +161,91 @@ export function installDebug(ctx, loop) {
     press(btn, ms = 150) { ctx.input.virtual.press(btn, ms); },
     hold(btn, down = true) { ctx.input.virtual.hold(btn, down); },
     look(yawDeg, pitchDeg = 0) { ctx.input.virtual.setLook(yawDeg, pitchDeg); },
-    budget() { return ctx.items?.budget?.() ?? null; },
+    /** what OPUS-A draws right now (§7.6 budget: ≤ 16 draw calls, ≤ 8k triangles), counted from the scene */
+    budget() {
+      let drawCalls = 0, triangles = 0;
+      const names = [];
+      const vis = (o) => { for (let x = o; x; x = x.parent) { if (!x.visible) return false; if (x === ctx.scene) return true; } return false; };
+      ctx.scene.traverse((o) => {
+        if (!(o.isMesh || o.isLine) || !MINE.test(o.name || '') || !vis(o)) return;
+        const n = o.isInstancedMesh ? o.count : 1;
+        if (n <= 0) return;
+        drawCalls++;
+        const g = o.geometry;
+        const t = o.isLine ? 0 : (g.index ? g.index.count : g.attributes.position.count) / 3;
+        triangles += t * n;
+        names.push(o.name);
+      });
+      return { drawCalls, triangles: Math.round(triangles), names };
+    },
     stats() { return { ...loop.stats }; },
+    /** screen coverage of the meshes whose name matches `pattern` (rendered alone, from the current camera):
+     *  { frac, bottom10, topRow (0 = top, 1 = bottom), bbox, biggestColor (largest single-colour share of the screen) } */
+    coverage(pattern = '^glove-', width = 320, minLum = 1) {
+      const re = new RegExp(pattern);
+      const r = ctx.renderer, scene = ctx.scene, cam = ctx.camera;
+      const size = r.getSize(new THREE.Vector2());
+      const w = width, h = Math.max(1, Math.round(width * size.y / size.x));
+      const hidden = [];
+      scene.traverse((o) => {
+        if (!(o.isMesh || o.isLine || o.isPoints || o.isSprite) || !o.visible) return;
+        if (!re.test(o.name || '')) { o.visible = false; hidden.push(o); }
+      });
+      const bg = scene.background, fog = scene.fog;
+      scene.background = null; scene.fog = null;
+      const cc = r.getClearColor(new THREE.Color()), ca = r.getClearAlpha();
+      const rt = new THREE.WebGLRenderTarget(w, h);
+      r.setRenderTarget(rt);
+      r.setClearColor(0x000000, 0);
+      r.clear();
+      r.render(scene, cam);
+      const px = new Uint8Array(w * h * 4);
+      r.readRenderTargetPixels(rt, 0, 0, w, h, px);
+      r.setRenderTarget(null);
+      r.setClearColor(cc, ca);
+      scene.background = bg; scene.fog = fog;
+      for (const o of hidden) o.visible = true;
+      rt.dispose();
+      let n = 0, bottom = 0, top = h, minX = w, maxX = -1, minY = h, maxY = -1;
+      const hist = new Map();
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        if (px[i + 3] === 0 && px[i] + px[i + 1] + px[i + 2] === 0) continue;
+        if (minLum > 1 && Math.max(px[i], px[i + 1], px[i + 2]) < minLum) continue;
+        n++;
+        const row = h - 1 - y;                       // readPixels is bottom-up
+        if (row >= h * 0.9) bottom++;
+        if (row < top) top = row;
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, row); maxY = Math.max(maxY, row);
+        const key = (px[i] >> 4) << 8 | (px[i + 1] >> 4) << 4 | (px[i + 2] >> 4);
+        hist.set(key, (hist.get(key) || 0) + 1);
+      }
+      let big = 0;
+      for (const v of hist.values()) big = Math.max(big, v);
+      // largest connected patch of one colour (a "single-colour face")
+      const lab = new Int32Array(w * h).fill(-1);
+      const keyAt = (i) => (px[i * 4 + 3] === 0 && px[i * 4] + px[i * 4 + 1] + px[i * 4 + 2] === 0) ? -1 : ((px[i * 4] >> 4) << 8 | (px[i * 4 + 1] >> 4) << 4 | (px[i * 4 + 2] >> 4));
+      let face = 0;
+      const stack = [];
+      for (let i0 = 0; i0 < w * h; i0++) {
+        if (lab[i0] !== -1) continue;
+        const k = keyAt(i0);
+        if (k < 0) { lab[i0] = -2; continue; }
+        let size = 0;
+        stack.push(i0); lab[i0] = i0;
+        while (stack.length) {
+          const i = stack.pop(); size++;
+          const x = i % w, y = (i / w) | 0;
+          const nb = [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
+          for (const j of nb) if (j >= 0 && lab[j] === -1 && keyAt(j) === k) { lab[j] = i0; stack.push(j); }
+        }
+        if (size > face) face = size;
+      }
+      const T = w * h;
+      return { frac: +(n / T).toFixed(4), bottom10: +(bottom / T).toFixed(4), topRow: n ? +(top / h).toFixed(3) : null,
+        bbox: n ? [+(minX / w).toFixed(3), +(minY / h).toFixed(3), +(maxX / w).toFixed(3), +(maxY / h).toFixed(3)] : null,
+        biggestColor: +(big / T).toFixed(4), biggestFace: +(face / T).toFixed(4) };
+    },
   });
   function safe(fn, dflt) { try { return fn(); } catch { return dflt; } }
   return d;

@@ -23,6 +23,45 @@ export function createProjectiles(ctx, I) {
   const galeMat = new THREE.MeshBasicMaterial({ color: 0x7fe9ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide });
   const stuck = [];
 
+  // A-P3-3: a pale 0.4 m streak behind each flying arrow (camera-facing quads, one mesh for all)
+  const STREAK_MAX = 8;
+  const sPos = new Float32Array(STREAK_MAX * 4 * 3), sCol = new Float32Array(STREAK_MAX * 4 * 3);
+  const sIdx = [];
+  for (let i = 0; i < STREAK_MAX; i++) { const a = i * 4; sIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  const sGeo = new THREE.BufferGeometry();
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3).setUsage(THREE.DynamicDrawUsage));
+  sGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 3).setUsage(THREE.DynamicDrawUsage));
+  sGeo.setIndex(sIdx);
+  const streaks = new THREE.Mesh(sGeo, ctx.art.basic({ color: 0xffffff, additive: true, vertexColors: true, side: THREE.DoubleSide }));
+  streaks.name = 'item-streaks'; streaks.frustumCulled = false; streaks.visible = false; streaks.renderOrder = 7;
+  ctx.scene.add(streaks);
+  const _sd = new THREE.Vector3(), _ss = new THREE.Vector3(), _sc = new THREE.Vector3(), _sb = new THREE.Vector3();
+  function updateStreaks() {
+    let n = 0;
+    _sc.setFromMatrixPosition(ctx.camera.matrixWorld);
+    for (const inst of I.world) {
+      if (n >= STREAK_MAX) break;
+      if (!inst.flying || inst.vel.lengthSq() < 4) continue;
+      _sd.copy(inst.vel).normalize();
+      _sb.copy(inst.pos).addScaledVector(_sd, -0.4);
+      _ss.copy(_sc).sub(inst.pos).cross(_sd);
+      if (_ss.lengthSq() < 1e-8) continue;
+      _ss.normalize().multiplyScalar(0.007);
+      const o = n * 12;
+      sPos[o] = inst.pos.x + _ss.x; sPos[o + 1] = inst.pos.y + _ss.y; sPos[o + 2] = inst.pos.z + _ss.z;
+      sPos[o + 3] = inst.pos.x - _ss.x; sPos[o + 4] = inst.pos.y - _ss.y; sPos[o + 5] = inst.pos.z - _ss.z;
+      sPos[o + 6] = _sb.x + _ss.x; sPos[o + 7] = _sb.y + _ss.y; sPos[o + 8] = _sb.z + _ss.z;
+      sPos[o + 9] = _sb.x - _ss.x; sPos[o + 10] = _sb.y - _ss.y; sPos[o + 11] = _sb.z - _ss.z;
+      const a = 0.35;                               // #fffbe8 × 0.35 at the arrow → 0 at the end
+      sCol[o] = a; sCol[o + 1] = a * 0.98; sCol[o + 2] = a * 0.91; sCol[o + 3] = a; sCol[o + 4] = a * 0.98; sCol[o + 5] = a * 0.91;
+      sCol.fill(0, o + 6, o + 12);
+      n++;
+    }
+    if (n < STREAK_MAX) sPos.fill(0, n * 12);
+    streaks.visible = n > 0;
+    if (n) { sGeo.attributes.position.needsUpdate = true; sGeo.attributes.color.needsUpdate = true; }
+  }
+
   const rest = (inst) => (REST[inst.id] ?? inst.radius);
 
   /** lay an item down on the ground under it (and stop it) */
@@ -256,10 +295,11 @@ export function createProjectiles(ctx, I) {
       }
       updateGales(h);
     }
+    updateStreaks();
   }
 
   return {
     update, settle, launchArrow, fireGale, retireOldest,
-    drawCalls() { return gales.filter((g) => g.alive).length; },
+    drawCalls() { let n = streaks.visible ? 1 : 0; for (const g of gales) if (g.alive) n++; return n; },
   };
 }

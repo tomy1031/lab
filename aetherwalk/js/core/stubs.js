@@ -52,13 +52,13 @@ export function createStubArt() {
       }
       return m;
     },
-    basic({ color = 0xffffff, map = null, transparent = false, additive = false, fog = true, depthWrite, side = THREE.FrontSide, opacity = 1 } = {}) {
+    basic({ color = 0xffffff, map = null, transparent = false, additive = false, fog = true, depthWrite, side = THREE.FrontSide, opacity = 1, vertexColors = false } = {}) {
       if (depthWrite === undefined) depthWrite = !(transparent || additive);
-      const key = [color, map && map.uuid, transparent, additive, fog, depthWrite, side, opacity].join('|');
+      const key = [color, map && map.uuid, transparent, additive, fog, depthWrite, side, opacity, vertexColors].join('|');
       let m = basicCache.get(key);
       if (!m) {
         m = new THREE.MeshBasicMaterial({
-          color, map, transparent: transparent || additive, opacity, fog, depthWrite, side,
+          color, map, transparent: transparent || additive, opacity, fog, depthWrite, side, vertexColors,
           blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
         });
         basicCache.set(key, m);

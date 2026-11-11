@@ -30,6 +30,37 @@ export class GeoBuilder {
   dodeca(r, color, pos, rot, scale) { return this.add(new THREE.DodecahedronGeometry(r, 0), color, pos, rot, scale); }
   sphere(r, ws, hs, color, pos, rot, scale) { return this.add(new THREE.SphereGeometry(r, ws, hs), color, pos, rot, scale); }
   torus(r, tube, rs, ts, arc, color, pos, rot, scale) { return this.add(new THREE.TorusGeometry(r, tube, rs, ts, arc), color, pos, rot, scale); }
+  /** a convex polygon in the Y-Z plane ([[y, z], …], any order around), extruded along X from x0 to x1;
+   *  every triangle is wound outward (front faces visible) */
+  prismYZ(pts, x0, x1, color) {
+    const n = pts.length;
+    let cy = 0, cz = 0;
+    for (const [y, z] of pts) { cy += y; cz += z; }
+    cy /= n; cz /= n;
+    const cx = (x0 + x1) / 2;
+    const tri = [];
+    const push = (a, b, c) => {
+      // flip to face away from the centroid
+      const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      const ox = (a[0] + b[0] + c[0]) / 3 - cx, oy = (a[1] + b[1] + c[1]) / 3 - cy, oz = (a[2] + b[2] + c[2]) / 3 - cz;
+      if (nx * ox + ny * oy + nz * oz < 0) tri.push(...a, ...c, ...b); else tri.push(...a, ...b, ...c);
+    };
+    // order the points around the centroid
+    const P = pts.map(([y, z]) => [y, z]).sort((a, b) => Math.atan2(a[1] - cz, a[0] - cy) - Math.atan2(b[1] - cz, b[0] - cy));
+    for (let i = 1; i < n - 1; i++) {
+      push([x1, P[0][0], P[0][1]], [x1, P[i][0], P[i][1]], [x1, P[i + 1][0], P[i + 1][1]]);
+      push([x0, P[0][0], P[0][1]], [x0, P[i][0], P[i][1]], [x0, P[i + 1][0], P[i + 1][1]]);
+    }
+    for (let i = 0; i < n; i++) {
+      const a = P[i], b2 = P[(i + 1) % n];
+      push([x0, a[0], a[1]], [x1, a[0], a[1]], [x1, b2[0], b2[1]]);
+      push([x0, a[0], a[1]], [x1, b2[0], b2[1]], [x0, b2[0], b2[1]]);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(tri, 3));
+    return this.add(g, color);
+  }
   /** a raw triangle list [x,y,z, …] */
   tris(arr, color, pos, rot, scale) {
     const g = new THREE.BufferGeometry();

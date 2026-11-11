@@ -14,13 +14,19 @@ const R90 = Math.PI / 2;
 
 const BUILD = {
   sword(b) {
-    b.cyl(0.017, 0.017, 0.13, 6, C.leather, [0, 0, 0.015], [R90, 0, 0]);          // grip
+    // grip: leather with six slanted wraps (A-P3-2)
+    b.cyl(0.017, 0.017, 0.13, 6, C.leather, [0, 0, 0.015], [R90, 0, 0]);
+    for (let i = 0; i < 6; i++) b.box(0.038, 0.005, 0.007, 0x4a3220, [0, 0, 0.068 - i * 0.021], [0, 0, 0.55], [1, 1, 1]);
     b.oct(0.024, C.gold, [0, 0, 0.095]);                                            // pommel
-    b.box(0.03, 0.16, 0.028, C.gold, [0, 0, -0.06]);                                // guard (across the edge)
+    // guard in three pieces, the ends swept 15° toward the blade
+    const a = 15 * Math.PI / 180, L = 0.055;
+    b.box(0.03, 0.06, 0.028, C.gold, [0, 0, -0.06]);
+    b.box(0.028, L, 0.024, C.gold, [0, 0.03 + (L / 2) * Math.cos(a), -0.06 - (L / 2) * Math.sin(a)], [-a, 0, 0]);
+    b.box(0.028, L, 0.024, C.gold, [0, -0.03 - (L / 2) * Math.cos(a), -0.06 - (L / 2) * Math.sin(a)], [a, 0, 0]);
     b.cyl(0.004, 0.026, 0.68, 4, C.steel, [0, 0, -0.415], [-R90, 0, 0], [0.32, 1, 1]); // blade (diamond section)
     b.cone(0.006, 0.07, 4, C.steel2, [0, 0, -0.79], [-R90, 0, 0], [0.32, 1, 1]);
     b.box(0.006, 0.012, 0.5, C.cyan, [0, 0, -0.36]);                                // wind inlay
-    b.oct(0.012, C.cyan, [0, 0, -0.06], [0, 0, 0], [1.6, 1, 1]);
+    b.gem(0.017, 0.0, -0.06, 0.011);
   },
   spear(b) {
     b.cyl(0.016, 0.018, 1.95, 6, C.wood, [0, 0, -0.425], [R90, 0, 0]);
@@ -37,14 +43,25 @@ const BUILD = {
     b.oct(0.012, C.leather, [0, 0, 0.12]);
   },
   shield(b) {
-    // face normal +X (back of the right hand); the left hand mirrors it (items/index.js)
-    b.cyl(0.28, 0.28, 0.03, 10, C.wood2, [0.065, 0.02, 0], [0, 0, R90]);
-    b.cyl(0.295, 0.295, 0.016, 10, C.gold, [0.05, 0.02, 0], [0, 0, R90]);
-    b.cone(0.07, 0.04, 6, C.gold, [0.1, 0.02, 0], [0, 0, -R90]);
-    b.oct(0.03, C.cyan, [0.122, 0.02, 0]);
-    b.box(0.012, 0.42, 0.04, C.dark, [0.083, 0.02, 0]);                             // planks
-    b.box(0.012, 0.04, 0.42, C.dark, [0.083, 0.02, 0]);
-    b.box(0.02, 0.1, 0.02, C.leather, [0.035, 0.02, 0]);                            // handle
+    // A-P1-2: Ø0.48 decagon, 0.03 thick; face +X = five planks (6 mm grooves) + gold boss + cyan gem,
+    // a gold torus rim, back −X = dark wood with two leather straps and the grip. ≤ 260 triangles.
+    const cx = 0.065, cy = 0.02, R = 0.24, Rp = 0.222, T = 0.026;
+    b.cyl(R, R, T, 10, 0x5a4029, [cx, cy, 0], [0, 0, R90]);                        // core (edge, groove colour)
+    const x0 = cx + T / 2, x1 = x0 + 0.006, xb1 = cx - T / 2, xb0 = xb1 - 0.004;
+    const BACK = [0x6e5034, 0x8f6e48, 0x553b26, 0x8a6a44, 0x664a30];              // back planks alternate light/dark: no big single-colour face
+    const c = (y) => Math.sqrt(Math.max(0, Rp * Rp - y * y));
+    for (let i = 0; i < 5; i++) {
+      const ya = -0.225 + i * 0.09 + 0.003, yb = ya + 0.084;
+      const pts = [[ya, -c(ya)], [ya, c(ya)], [yb, c(yb)], [yb, -c(yb)]];
+      const P = pts.map(([y, z]) => [y + cy, z]);
+      b.prismYZ(P, x0, x1, i % 2 ? 0x946640 : 0xa8794a);                             // face
+      b.prismYZ(P, xb0, xb1, BACK[i]);                                                // back
+    }
+    b.torus(0.235, 0.016, 3, 10, Math.PI * 2, C.gold, [cx, cy, 0], [0, R90, 0]);     // rim (10 sides like the board)
+    b.cone(0.06, 0.035, 8, C.gold, [x1 + 0.0175, cy, 0], [0, 0, -R90]);             // boss
+    b.box(0.006, 0.03, 0.4, C.leather, [xb0 - 0.003, cy - 0.03, 0]);                // straps on the back, crossed:
+    b.box(0.006, 0.4, 0.03, C.leather, [xb0 - 0.003, cy, -0.07]);                   // every plank is split (upper half)
+    b.gem(x1 + 0.03, cy, 0, 0.025);
   },
   bow(b) {
     // limbs in the Y-Z plane, belly toward -Y (forward), tips curving back toward the archer (+Y)
@@ -141,6 +158,9 @@ const BUILD = {
   pearl(b) { b.ico(0.03, 1, C.white, [0, 0, 0]); },
 };
 
+let _gemGeo = null;
+export const gemGeo = () => _gemGeo || (_gemGeo = new THREE.OctahedronGeometry(1, 0));
+
 export function createModels(ctx) {
   const geos = new Map();
   const mat = () => ctx.art.material({ color: 0xffffff, vertexColors: true, flat: true });
@@ -150,8 +170,11 @@ export function createModels(ctx) {
     if (g) return g;
     const fn = BUILD[id];
     const b = new GeoBuilder();
+    const gems = [];
+    b.gem = (x, y, z, size) => gems.push([x, y, z, size]);
     if (fn) fn(b); else b.ico(0.04, 0, 0xff00ff);
     g = b.build();
+    g.userData.gems = gems;
     g.userData.tris = triCount(g);
     geos.set(id, g);
     return g;
@@ -168,8 +191,15 @@ export function createModels(ctx) {
       const g = new THREE.Group();
       g.name = 'model-' + id;
       g.add(makeMesh(id));
+      // standalone models carry their gems as real meshes (UI icons, chests): art.basic cyan
+      for (const [x, y, z, sz] of geometry(id).userData.gems || []) {
+        const m = new THREE.Mesh(gemGeo(), ctx.art.basic({ color: 0x7fe9ff }));
+        m.position.set(x, y, z); m.scale.setScalar(sz); m.name = 'gem';
+        g.add(m);
+      }
       return g;
     },
+    gemsOf(id) { return geometry(id).userData.gems || []; },
     trianglesOf(id) { return geometry(id).userData.tris; },
   };
 }

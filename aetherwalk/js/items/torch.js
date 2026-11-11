@@ -4,14 +4,41 @@
 // 'water' zone (poured flask), in a 'wind' zone (fan gust, wind blade), when stowed or after 180 s
 // (state.burnLimit overrides, e.g. the torch shrine's 45 s).
 import * as THREE from 'three';
-import { billboard } from '../core/stubs.js';
 
 const _h = new THREE.Vector3();
 
+const _iq = new THREE.Quaternion();
+
+/** A-P2-3: two cones in one geometry, vertex coloured: outer r 0.045 h 0.17 #ff6a2b → tip #ffb347,
+ *  inner r 0.025 h 0.11 #fff1c0. Base at y = 0, pointing +Y (the flame is turned to world-up each frame). */
+function flameGeometry() {
+  const parts = [[0.045, 0.17, 0xff6a2b, 0xffb347], [0.025, 0.11, 0xfff1c0, 0xfff1c0]];
+  const pos = [], col = [], fr = [];
+  const ca = new THREE.Color(), cb = new THREE.Color();
+  for (const [r, h, c0, c1] of parts) {
+    const g = new THREE.ConeGeometry(r, h, 7, 1, true).toNonIndexed();
+    g.translate(0, h / 2, 0);
+    ca.setHex(c0); cb.setHex(c1);
+    const a = g.attributes.position;
+    for (let i = 0; i < a.count; i++) {
+      const y = a.getY(i), f = y / h;
+      pos.push(a.getX(i), y, a.getZ(i));
+      col.push(ca.r + (cb.r - ca.r) * f, ca.g + (cb.g - ca.g) * f, ca.b + (cb.b - ca.b) * f);
+      fr.push(f);
+    }
+    g.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.userData.rest = Float32Array.from(pos);
+  geo.userData.f = Float32Array.from(fr);
+  return geo;
+}
+
 export function createTorch(ctx, I) {
-  const flameGeo = new THREE.ConeGeometry(0.045, 0.16, 6, 1);
-  flameGeo.rotateX(-Math.PI / 2);         // tip toward -Z (along the torch)
-  const flameMat = new THREE.MeshBasicMaterial({ color: 0xff8a3a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  // additive, fogged, vertex coloured (the world's basic)
+  const flameMat = ctx.art.basic({ color: 0xffffff, additive: true, vertexColors: true, side: THREE.DoubleSide });
   let t = 0;
 
   const headZ = (inst) => (inst.id === 'torch' ? inst.def.torch.head : -0.8);
@@ -23,19 +50,44 @@ export function createTorch(ctx, I) {
     g.name = 'flame';
     const z = headZ(inst);
     const big = inst.id === 'torch';
-    const glow = ctx.art.glow({ color: 0xffb347, size: big ? 0.42 : 0.18, opacity: 0.9 });
-    glow.position.set(0, 0, z - (big ? 0.06 : 0.0));
+    g.position.set(0, 0, z - (big ? 0.02 : 0));
+    const glow = ctx.art.glow({ color: 0xffb347, size: big ? 0.26 : 0.12, opacity: 0.75 });
+    glow.name = 'torch-glow';
+    glow.position.set(0, big ? 0.07 : 0, 0);
     g.add(glow);
     if (big) {
-      const f = new THREE.Mesh(flameGeo, flameMat);
-      f.position.set(0, 0, z - 0.09);
+      const core = ctx.art.glow({ color: 0xfff1c0, size: 0.1, opacity: 1 });
+      core.name = 'torch-core';
+      core.position.set(0, 0.045, 0);
+      g.add(core);
+      const f = new THREE.Mesh(flameGeometry(), flameMat);
       f.name = 'flame-cone';
+      f.frustumCulled = false;
       g.add(f);
       inst.fx.flameCone = f;
     }
     inst.fx.glow = glow;
+    inst.fx.emberT = 0;
     inst.object3D.add(g);
     inst.fx.flame = g;
+  }
+
+  /** flicker on the CPU: height ±12 % at 7 Hz and 11 Hz, tip sway ±1.5 cm */
+  function flicker(inst, time) {
+    const f = inst.fx.flameCone;
+    if (!f) return;
+    const geo = f.geometry, rest = geo.userData.rest, fr = geo.userData.f, arr = geo.attributes.position.array;
+    const ph = inst.uid * 1.7;
+    const hk = 1 + 0.08 * Math.sin(time * 2 * Math.PI * 7 + ph) + 0.04 * Math.sin(time * 2 * Math.PI * 11 + ph * 2);
+    const sx = 0.012 * Math.sin(time * 2 * Math.PI * 7 + ph * 0.5) + 0.003 * Math.sin(time * 2 * Math.PI * 11 + ph);
+    const sz = 0.012 * Math.cos(time * 2 * Math.PI * 7 * 0.8 + ph) + 0.003 * Math.cos(time * 2 * Math.PI * 11 + ph * 1.3);
+    for (let i = 0, n = fr.length; i < n; i++) {
+      const k = fr[i] * fr[i];
+      arr[i * 3] = rest[i * 3] + sx * k;
+      arr[i * 3 + 1] = rest[i * 3 + 1] * hk;
+      arr[i * 3 + 2] = rest[i * 3 + 2] + sz * k;
+    }
+    geo.attributes.position.needsUpdate = true;
   }
 
   function ignite(inst) {
@@ -77,10 +129,14 @@ export function createTorch(ctx, I) {
         else inst.fireZone.pos.copy(head);
         ensureFlame(inst);
         inst.fx.flame.visible = true;
-        const fl = 0.85 + 0.15 * Math.sin(t * 23 + inst.uid) * Math.sin(t * 9.7 + inst.uid * 2);
-        if (inst.fx.flameCone) inst.fx.flameCone.scale.set(fl, fl, 0.8 + 0.4 * fl);
-        inst.fx.glow.scale.setScalar((inst.id === 'torch' ? 0.42 : 0.18) * (0.9 + 0.2 * fl));
-        if (Math.random() < dt * 4) I.fx('ember', head, { count: 1 });
+        // flames burn upward whatever the torch's tilt: undo the item's world rotation
+        _iq.copy(inst.quat).invert();
+        inst.fx.flame.quaternion.copy(_iq);
+        flicker(inst, t);
+        const fl = 0.93 + 0.07 * Math.sin(t * 2 * Math.PI * 7 + inst.uid);
+        inst.fx.glow.scale.setScalar((inst.id === 'torch' ? 0.26 : 0.12) * fl);
+        inst.fx.emberT -= dt;
+        if (inst.fx.emberT <= 0) { inst.fx.emberT = 0.25; I.fx('ember', head, { count: 1 }); }
       } else {
         if (inst.fireZone) { ctx.zones.remove(inst.fireZone); inst.fireZone = null; }
         if (inst.fx.flame) inst.fx.flame.visible = false;
@@ -96,8 +152,6 @@ export function createTorch(ctx, I) {
 
   return {
     update, ignite, extinguish,
-    drawCalls() { let n = 0; for (const i of I.all) if (i.state.lit && i.fx.flame) n += i.fx.flameCone ? 2 : 1; return n; },
+    drawCalls() { let n = 0; for (const i of I.all) if (i.state.lit && i.fx.flame) n += i.fx.flameCone ? 3 : 1; return n; },
   };
 }
-
-export { billboard };

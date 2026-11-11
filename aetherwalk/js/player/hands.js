@@ -3,28 +3,49 @@
 // (thumb side), +X back of the right hand (-X for the left), +Y toward the elbow.
 import * as THREE from 'three';
 import { GeoBuilder, flatNormals } from '../core/geo.js';
+import { getGems, getSprites } from '../core/gems.js';
 import { ema } from '../core/util.js';
 const HANDS = ['left', 'right'];
 
-const CREAM = 0xf4ecd8, CREAM2 = 0xe2d6b8, GOLD = 0xffd76a, CYAN = 0x7fe9ff;
+const CREAM = 0xf4ecd8, PAD = 0xe2d6b8, SEAM = 0xc9b48a, GOLD = 0xffd76a;
+const R4 = Math.PI / 4;
+// unit square prism along Y (side 1), the far end (−Y) scaled by `tip`
+const sq = (tip = 1) => new THREE.CylinderGeometry(Math.SQRT1_2, Math.SQRT1_2 * tip, 1, 4, 1).rotateY(R4);
 
+/** A-P2-1: chamfered back plate, two finger segments cut by grooves (tips taper to 0.8), a tapered
+ *  six-sided thumb, a flared eight-sided cuff. One geometry (≤ 320 triangles); tags 1/2 = finger joints. */
 function gloveGeometry(s) {
   const b = new GeoBuilder();
   b.tag = 0;
-  b.box(0.03, 0.095, 0.085, CREAM, [s * 0.04, 0.012, 0]);                       // back of the hand
-  b.cyl(0.036, 0.032, 0.05, 8, GOLD, [s * 0.034, 0.083, 0]);                     // cuff
-  b.oct(0.012, CYAN, [s * 0.058, 0.02, 0], [0, 0, 0], [0.6, 1, 1]);             // gem on the back
-  b.box(0.02, 0.05, 0.022, CREAM2, [s * 0.016, -0.004, -0.054], [0.35, 0, s * 0.2]); // thumb
+  // back of the hand: octagon 0.085 (Z) × 0.095 (Y), 0.032 thick in two layers (back cream, palm pad)
+  const h = 0.0475, w = 0.0425, c = 0.012, y0 = 0.012;
+  const oct = [[h, w - c], [h, -(w - c)], [h - c, -w], [-(h - c), -w], [-h, -(w - c)], [-h, w - c], [-(h - c), w], [h - c, w]]
+    .map(([y, z]) => [y + y0, z]);
+  b.prismYZ(oct, s * 0.034, s * 0.056, CREAM);
+  b.prismYZ(oct, s * 0.024, s * 0.034, PAD);
+  b.box(0.003, 0.004, 0.074, SEAM, [s * 0.0565, -0.026, 0]);                       // seam over the knuckles
+  b.box(0.003, 0.05, 0.004, SEAM, [s * 0.0565, 0.02, 0]);                           // seam down the back
+  b.cyl(0.012, 0.009, 0.055, 6, PAD, [s * 0.014, -0.006, -0.052], [0.35, 0, s * 0.2]);   // thumb
+  // cuff: flares toward the elbow (+Y)
+  b.cyl(0.046, 0.036, 0.05, 8, GOLD, [s * 0.034, 0.083, 0], [0, R4 / 2, 0]);
+  // fingers: a pad block (palm side) + four ridges on the back with 4 mm grooves between them
+  const zs = [-0.0285, -0.0095, 0.0095, 0.0285];
   b.tag = 1;
-  b.box(0.024, 0.046, 0.08, CREAM, [s * 0.04, -0.058, 0]);                      // fingers, first segment
+  b.add(sq(), PAD, [s * 0.036, -0.058, 0], [0, 0, 0], [0.016, 0.046, 0.078]);
+  for (const z of zs) b.box(0.006, 0.044, 0.016, CREAM, [s * 0.047, -0.058, z]);
   b.tag = 2;
-  b.box(0.021, 0.04, 0.074, CREAM2, [s * 0.04, -0.1, 0.002]);                    // fingers, tips
+  b.add(sq(0.8), PAD, [s * 0.036, -0.1, 0.001], [0, 0, 0], [0.015, 0.04, 0.074]);
+  for (const z of zs) b.add(sq(0.8), CREAM, [s * 0.046, -0.1, z * 0.94], [0, 0, 0], [0.006, 0.038, 0.015]);
   return b.build({ tags: true });
 }
 
 export function createHands(ctx, P) {
   const input = ctx.input;
-  const mat = ctx.art.material({ color: 0xffffff, vertexColors: true, flat: true });
+  const mat = ctx.art.material({ color: 0xffffff, vertexColors: true, flat: true, rim: 0.35 });
+  const gems = getGems(ctx);
+  const sprites = getSprites(ctx);
+  const GEM_GLOW = new THREE.Color(0x7fe9ff).multiplyScalar(0.6);
+  const _gp = new THREE.Vector3();
   const H = {};
   for (const side of HANDS) {
     const s = side === 'left' ? -1 : 1;
@@ -33,6 +54,8 @@ export function createHands(ctx, P) {
     const mesh = new THREE.Mesh(geo, mat);
     mesh.name = 'glove-' + side;
     input.hands[side].object3D.add(mesh);
+    // cyan gem on the cuff (shared instanced art.basic) + a soft glint at night (shared glow sprites)
+    gems.add(input.hands[side].object3D, s * 0.079, 0.088, 0, 0.011);
     H[side] = { s, mesh, geo, rest, curl: -1, shown: 0.15, k1: [s * 0.04, -0.035], k2: [s * 0.04, -0.081] };
   }
 
@@ -71,6 +94,10 @@ export function createHands(ctx, P) {
       h.shown += (want - h.shown) * ema(0.05, dt > 0 ? dt : (ctx.clock.dt || 0.016));
       if (Math.abs(h.shown - h.curl) > 0.01) { h.curl = h.shown; pose(h, h.curl); }
       h.mesh.visible = hd.tracked;
+      if (hd.tracked && (ctx.world?.nightFactor ?? 0) > 0.5) {
+        _gp.set(h.s * 0.082, 0.088, 0).applyQuaternion(hd.quat).add(hd.pos);
+        sprites.push(_gp, 0.1, GEM_GLOW);                // art.glow size 0.05 = radius → 0.1 across
+      }
     }
   }
   pose(H.left, 0.15); pose(H.right, 0.15);

@@ -17,6 +17,7 @@ import { createFlask } from './flask.js';
 import { createWindfan } from './windfan.js';
 import { createWaybell } from './waybell.js';
 import { PROJECTILE_MAX } from '../core/config.js';
+import { getGems, getSprites } from '../core/gems.js';
 const HANDS = ['left', 'right'];
 
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _s = new THREE.Vector3(1, 1, 1);
@@ -27,6 +28,8 @@ const POOL_DIST2 = 70 * 70;
 export async function createItems(ctx) {
   const defs = ITEM_DEFS;
   const models = createModels(ctx);
+  const gems = getGems(ctx);
+  const sprites = getSprites(ctx);
   const input = ctx.input;
   const scene = ctx.scene;
   let uid = 1;
@@ -60,6 +63,23 @@ export async function createItems(ctx) {
     p.cap = cap;
   }
 
+  // ── A-P2-5: pickups float and glow; arrows and pebbles get a soft ground shadow (instanced, 1 call each) ──
+  const shadowTex = ctx.art.canvasTexture(64, 64, (g) => {
+    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, 'rgba(0,0,0,0.42)'); r.addColorStop(0.55, 'rgba(0,0,0,0.25)'); r.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  });
+  const SHADOW_MAX = 24;
+  const shadowMat = ctx.art.basic({ color: 0x0a0d18, map: shadowTex, transparent: true }).clone();
+  shadowMat.polygonOffset = true; shadowMat.polygonOffsetFactor = -2; shadowMat.polygonOffsetUnits = -2;
+  const shadows = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), shadowMat, SHADOW_MAX);
+  shadows.name = 'item-shadows'; shadows.frustumCulled = false; shadows.count = 0; shadows.renderOrder = 2;
+  scene.add(shadows);
+  const GLOW_GOLD = new THREE.Color(0xffd76a).multiplyScalar(0.8), GLOW_CYAN = new THREE.Color(0x7fe9ff).multiplyScalar(0.8);
+  const FLOATS = { shard: GLOW_GOLD, aetherseed: GLOW_CYAN, pearl: GLOW_GOLD };
+  const SHADOWED = new Set(['arrow', 'rock']);
+  const _fp = new THREE.Vector3(), _fq = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _cq = new THREE.Quaternion(), _cp = new THREE.Vector3(), _cs = new THREE.Vector3();
+
   // ── instances ──
   function makeInstance(id, opts = {}) {
     const def = defs[id];
@@ -81,7 +101,9 @@ export async function createItems(ctx) {
       holdPos: new THREE.Vector3(), holdQuat: new THREE.Quaternion(),
       fx: {},
       bornAt: ctx.clock.time,
+      gems: [],
     };
+    for (const [x, y, z, sz] of models.gemsOf(id)) inst.gems.push(gems.add(object3D, x, y, z, sz));
     all.push(inst);
     return inst;
   }
@@ -186,6 +208,8 @@ export async function createItems(ctx) {
     const ai = all.indexOf(inst);
     if (ai >= 0) all.splice(ai, 1);
     inst.object3D.removeFromParent();
+    for (const g of inst.gems) gems.remove(g);
+    inst.gems.length = 0;
     if (inst.fireZone) { ctx.zones.remove(inst.fireZone); inst.fireZone = null; }
     inst.dead = true;
   }
@@ -217,6 +241,7 @@ export async function createItems(ctx) {
   const items = {
     defs,
     handlesXButton: true,          // the X button rings the waybell here (ui checks this flag)
+    models,                        // shared item geometries (holster marks reuse them)
     held,
     pulling,
     get worldItems() { return world; },
@@ -358,8 +383,9 @@ export async function createItems(ctx) {
       let calls = 0, tris = 0;
       for (const [id, p] of pools) if (p.mesh && p.mesh.count > 0) { calls++; tris += models.trianglesOf(id) * p.mesh.count; }
       for (const h of HANDS) if (held[h]) { calls++; tris += models.trianglesOf(held[h].id); }
-      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls();
-      return { drawCalls: calls + extra + 2 /* hands */, triangles: Math.round(tris + 2 * 220), pools: pools.size };
+      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls()
+        + (sprites.count > 0 ? 1 : 0) + (shadows.visible ? 1 : 0) + (gems.count > 0 ? 1 : 0);
+      return { drawCalls: calls + extra, triangles: Math.round(tris + sprites.count * 2 + shadows.count * 2 + gems.count * 8), pools: pools.size };
     },
     start() {},
     update(dt) {
@@ -417,17 +443,46 @@ export async function createItems(ctx) {
       // world rendering
       for (let i = 0; i < poolList.length; i++) poolList[i].n = 0;
       const pp = ctx.player?.pos || ctx.rig.position;
+      const tnow = ctx.clock.time;
+      ctx.camera.matrixWorld.decompose(_cp, _cq, _cs);
+      let ng = 0, ns = 0;
       for (const inst of world) {
         inst.object3D.position.copy(inst.pos);
         inst.object3D.quaternion.copy(inst.quat);
-        if (inst.pos.distanceToSquared(pp) > POOL_DIST2) continue;
+        const d2 = inst.pos.distanceToSquared(pp);
+        if (d2 > POOL_DIST2) continue;
         const p = pool(inst.id);
         ensureCap(inst.id, p, p.n + 1);
+        const glowCol = FLOATS[inst.id];
+        if (glowCol && inst.sleeping && !inst.pulled) {
+          // float 0.35 m over the ground, bob ±3 cm at 1 Hz, half a turn per second, 1.8× size
+          const ph = inst.uid * 0.37;
+          _fp.copy(inst.pos);
+          _fp.y += 0.35 - inst.radius + 0.03 * Math.sin(tnow * Math.PI * 2 + ph);
+          _fq.setFromAxisAngle(_up, tnow * Math.PI + ph);
+          _s.setScalar(1.8);
+          _m.compose(_fp, _fq, _s);
+          p.mesh.setMatrixAt(p.n++, _m);
+          if (d2 < 1600 && sprites.push(_fp, 0.32, glowCol)) ng++;      // art.glow size 0.16 → 0.32 across
+          continue;
+        }
+        if (SHADOWED.has(inst.id) && inst.sleeping && ns < SHADOW_MAX && d2 < 625) {
+          let gy = inst.pos.y - 0.05;
+          try { gy = ctx.world.groundAt(inst.pos.x, inst.pos.z, inst.pos.y + 0.2); } catch { /* stub */ }
+          if (inst.pos.y - gy < 0.6) {
+            _fp.set(inst.pos.x, gy + 0.015, inst.pos.z);
+            _s.setScalar(0.24);
+            _m.compose(_fp, _fq.identity(), _s);
+            shadows.setMatrixAt(ns++, _m);
+          }
+        }
         const sc = inst.state.bites > 0 ? 0.8 : 1;
         _s.set(sc, sc, sc);
         _m.compose(inst.pos, inst.quat, _s);
         p.mesh.setMatrixAt(p.n++, _m);
       }
+      shadows.count = ns; shadows.visible = ns > 0;
+      shadows.instanceMatrix.needsUpdate = true;
       for (let i = 0; i < poolList.length; i++) {
         const p = poolList[i];
         if (!p.mesh) continue;

@@ -25,7 +25,11 @@ export function createDesktop(ctx, P, holsters) {
   const other = (h) => (h === 'left' ? 'right' : 'left');
 
   // ── frame hook: hand targets that follow moving points, waits ──
+  let lastLock = false;
   ctx.loop?.addHook?.('desktop', () => {
+    // pointerlockchange isn't always delivered (embedded / headless): keep the hint classes in step
+    const lk = enabled && document.pointerLockElement === canvas;
+    if (lk !== lastLock) { lastLock = lk; onLock(); }
     for (const hand of HANDS) if (targetFn[hand]) V.setHandTarget(hand, targetFn[hand]());
     const now = ctx.clock.time;
     for (let i = waits.length - 1; i >= 0; i--) if (now >= waits[i].t && ctx.clock.frame >= waits[i].f) { waits[i].r(); waits.splice(i, 1); }
@@ -256,7 +260,9 @@ export function createDesktop(ctx, P, holsters) {
   function onMouseDown(e) {
     if (!enabled) return;
     if (document.pointerLockElement !== canvas) {
-      canvas.requestPointerLock?.()?.catch?.(() => {});
+      clickedOnce = true;
+      onLock();
+      try { canvas.requestPointerLock?.()?.catch?.(() => {}); } catch { /* not allowed here */ }
       return;
     }
     if (e.button === 0) { mouse.left = true; mouse.moved = 0; mouse.ox = 0; mouse.oy = 0; }
@@ -284,8 +290,14 @@ export function createDesktop(ctx, P, holsters) {
     }
     if (e.button === 2) { mouse.right = false; V.setGuard('left', false); endBow(); }
   }
+  // the big "click to play" hint shows only until the first click; after Esc a small "click to resume"
+  let clickedOnce = false;
   function onLock() {
-    document.body.classList.toggle('unlocked', enabled && document.pointerLockElement !== canvas);
+    const locked = document.pointerLockElement === canvas;
+    const cl = document.body.classList;
+    cl.toggle('locked', enabled && locked);
+    cl.toggle('unlocked', enabled && !locked && !clickedOnce);
+    cl.toggle('relock', enabled && !locked && clickedOnce);
   }
   const onCtx = (e) => { if (enabled) e.preventDefault(); };
   const onBlur = () => { keys.clear(); if (enabled) cadence(); V.setDuck(false); };

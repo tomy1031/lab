@@ -1,12 +1,15 @@
 // js/player/glide.js — arms-spread detection and gliding with the wind cloak (§2.5, §10.8), OPUS-A.
 // Arms spread: both hands at shoulder height ±0.25 m and at least 1.6 × arm length apart.
 // Gliding: in the air, with abilities.glide, arms spread, ≥ 1 m above ground → 1.5 m/s down, 6 m/s forward
-// (body.js), costs 4 tailwind/s (when the gauge is empty the descent is steeper — never a fall into failure).
+// (body.js); game drains 4 tailwind/s (§10.19) — when the gauge is empty the descent is steeper, never a failure.
+import * as THREE from 'three';
 import { ema } from '../core/util.js';
+const HANDS = ['left', 'right'];
+const _gd = new THREE.Vector3();
 
 export function createGlide(ctx, P) {
   const input = ctx.input;
-  let spreadTime = 0, unspreadTime = 0;
+  let spreadTime = 0, unspreadTime = 0, gustT = 0;
 
   function update(dt) {
     const l = input.hands.left, r = input.hands.right, head = input.head;
@@ -30,11 +33,18 @@ export function createGlide(ctx, P) {
       if (!want) P.glideTired = false;
       ctx.events.emit('player:glide', { on: want });
     }
-    if (P.gliding && dt > 0) {
+    // §10.19: game drains the −4/s itself (it watches player.gliding); an empty gauge just means a steeper glide
+    if (P.gliding) {
       const v = ctx.game?.vitals;
-      if (v && typeof v.spendStamina === 'function') {
-        const ok = v.spendStamina(4 * dt);
-        P.glideTired = ok === false;
+      P.glideTired = !!v && !ctx.game.isStub && Number.isFinite(v.stamina) && v.stamina <= 0;
+    }
+    // A-P3-3: wind streams off both hands while gliding (one streak per hand every 0.1 s)
+    if (P.gliding && dt > 0) {
+      gustT -= dt;
+      if (gustT <= 0) {
+        gustT = 0.1;
+        _gd.set(-Math.sin(P.yaw), 0.15, Math.cos(P.yaw));     // the air flows back past the hands
+        for (const h of HANDS) if (input.hands[h].tracked) { try { ctx.world?.fx?.emit?.('gust', input.hands[h].pos, { count: 1, dir: _gd, speed: 4 }); } catch { /* stub */ } }
       }
     }
     P.glideBlend = (P.glideBlend || 0) + ((P.gliding ? 1 : 0) - (P.glideBlend || 0)) * ema(0.3, dt || 0.016);
