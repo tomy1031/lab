@@ -9,7 +9,7 @@ const mix3 = (o, a, b, t) => { o[0] = a[0] + (b[0] - a[0]) * t; o[1] = a[1] + (b
 
 const P = {
   // 草原：彩度を抑えた自然な緑。深い緑（くぼみ・クローバー）→ 日なたの黄緑 → 乾いた丘の頂（麦わら色）
-  grassA: rgb(0x4d8539), grassB: rgb(0x6c9541), grassDeep: rgb(0x3f7536), grassDry: rgb(0x9a9654), rockM: rgb(0x9a9484),
+  grassA: rgb(0x4c8139), grassB: rgb(0x6a8f44), grassDeep: rgb(0x3d7036), grassDry: rgb(0x9a9654), rockM: rgb(0x9a9484),
   mossA: rgb(0x2f6b3e), mossB: rgb(0x4c9048), rockF: rgb(0x55584c), litter: rgb(0x6a5230), soil: rgb(0x3a3324),
   sandC: rgb(0xe8b27a), sandC2: rgb(0xd99d68), dryC: rgb(0xd9b85a),
   strata: [rgb(0x8f3a34), rgb(0xc8553a), rgb(0xe07a45), rgb(0xf0b070), rgb(0xc8553a), rgb(0xa8443a), rgb(0xe07a45)],

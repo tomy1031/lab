@@ -35,7 +35,7 @@ export function createGrass(env) {
 
   // ── 草 ──
   // [タイルの大きさ m, 株の数, 太さ]。大きい段は近くでは消える（足もとは細い葉だけ）。4 段目は 50 m までの毛並み
-  const tiers = [[12, 3000, 1.0], [26, 2300, 1.6], [52, 1400, 2.5], [100, 700, 3.8]];
+  const tiers = [[12, 3000, 1.0], [26, 2200, 1.6], [52, 1300, 2.5], [100, 650, 3.8]];
   const total = Math.round(tiers.reduce((s, t) => s + t[1], 0) * (isQ3 ? 1.3 : 1));
   const bg = new THREE.InstancedBufferGeometry();
   // 1 株 = 細い葉 3 枚（1 枚 = 三角 1 つ）。z に葉の番号を入れ、シェーダーで扇に開く
@@ -131,7 +131,7 @@ export function createGrass(env) {
   group.add(grass);
 
   // ── 野の花：1 株 = 開いた花 2 つ（花びら 5 枚、1 枚 = ひし形の三角 2 つ）＋つぼみ 1 つ、それぞれ細い茎 ──
-  const NF = Math.round(520 * (isQ3 ? 1.3 : 1));
+  const NF = Math.round(400 * (isQ3 ? 1.3 : 1));
   const fg = new THREE.InstancedBufferGeometry();
   {
     const pos = [], part = [], head = [], idx = [];

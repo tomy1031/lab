@@ -86,7 +86,8 @@ export function createLife(env) {
         float hgt = texture2D(uHeightTex, (w + 801.0) / 1602.0).r;
         float y = hgt + 0.5 + aSeed.z * 1.3 + 0.3 * sin(t * 3.1 + aSeed.x * 20.0);
         float flap = sin(uTime * (14.0 + aSeed.w * 6.0) + aSeed.x * 30.0) * 0.9;
-        float sc = 0.09 * (0.7 + 0.6 * aSeed.z) * uAmt * smoothstep(S * 0.5, S * 0.36, dist) * step(0.5, hgt);
+        // 目の前（1.8 m 以内）には来ない（VR で顔をかすめない）
+        float sc = 0.09 * (0.7 + 0.6 * aSeed.z) * uAmt * smoothstep(S * 0.5, S * 0.36, dist) * smoothstep(0.9, 1.8, length(vec3(w.x, y, w.y) - cameraPosition)) * step(0.5, hgt);
         vec3 p = position;
         float ax = abs(p.x);
         p.y = ax * sin(flap + 0.3); p.x = sign(p.x) * ax * cos(flap + 0.3);

@@ -49,11 +49,12 @@ export function buildStart(env, def) {
     const z = -(10.6 + k * 0.8), top = -0.2 - k * 0.25, bot = Math.min(hl(0, z), top) - 0.5;
     // 1 段は 2〜3 個の面取りした石を並べる（1 枚の板に見せない）
     const W = 4.6 - k * 0.3, nB = k === 1 ? 2 : 3;
+    P.push(part(G.box(W - 0.12, Math.max(0.1, top - bot - 0.06), 0.78), { pos: [0, (top + bot) / 2 - 0.02, z], color: 0x262c1a }));   // 目地の下の暗い下地
     for (let q = 0; q < nB; q++) {
       const bw = W / nB - 0.04, bx = -W / 2 + (q + 0.5) * (W / nB);
       const tone = lin3((q + k) % 2 ? 0xb3aa93 : 0xa79e87);
       // 石と石のあいだの面は暗く（すき間の陰）、前の面は少し暗く
-      P.push(part(bevelBox(bw - 0.03, top - bot, 0.84, 0.045), { pos: [bx, (top + bot) / 2 + rngS.range(-0.01, 0.01), z], rot: [0, rngS.range(-0.015, 0.015), 0], color: (p, n) => tone.map((v) => v * (Math.abs(n.x) > 0.6 ? 0.42 : n.y > 0.5 ? 1 : 0.8)), vary: 0.05 }));
+      P.push(part(bevelBox(bw - 0.012, top - bot, 0.84, 0.045), { pos: [bx, (top + bot) / 2 + rngS.range(-0.01, 0.01), z], rot: [0, rngS.range(-0.015, 0.015), 0], color: (p, n) => tone.map((v) => v * (Math.abs(n.x) > 0.6 ? 0.42 : n.y > 0.5 ? 1 : 0.8)), vary: 0.05 }));
     }
   }
   // 灯籠：二段の台石、ふくらみのある竿、中台、火袋（四本柱の中に灯）、反りのある笠、宝珠
@@ -234,7 +235,7 @@ export function buildElder(env, def) {
   // 樹皮の筋：縦に走る畝（ねじれながら）と深い溝。溝は暗く（AO）、北側（ワールドの −Z）と根もとには苔
   const yr = -(def.yaw || 0) * Math.PI / 180, cy = Math.cos(yr), sy = Math.sin(yr);
   const ridgeAt = (a, y) => Math.sin(a * 13 + 0.11 * y + 0.9 * Math.sin(a * 3 + y * 0.05));
-  const BK = [lin3(0x6f5c4a), lin3(0x4a3a2c), lin3(0x231a13)], MO = lin3(0x3f6b2c), MO2 = lin3(0x6f8f3c);
+  const BK = [lin3(0x6f5c4a), lin3(0x4a3a2c), lin3(0x231a13)], MO = lin3(0x3a5528), MO2 = lin3(0x5a7034);
   const barkR = (p, n) => {
     const g = ridgeAt(Math.atan2(p.x, p.z), p.y), groove = Math.min(1, Math.max(0, (0.25 - g) / 0.9));
     const t = Math.min(1, Math.max(0, p.y / 40));
@@ -242,8 +243,8 @@ export function buildElder(env, def) {
     let c = mix3c(base, BK[2], groove * 0.75);
     c = c.map((v) => v * (0.75 + 0.35 * t) * (p.y < 1.2 ? 0.55 + 0.37 * Math.max(0, p.y + 0.3) : 1));
     const nwz = -n.x * sy + n.z * cy;                       // ワールドの法線の z（−z が北）
-    const m = Math.min(1, Math.max(0, -nwz * 1.3 - 0.25) * (p.y < 26 ? 1 : 0.4) + Math.max(0, n.y * 1.2 - 0.8) * 0.6 + Math.max(0, 1.2 - p.y) * 0.3);
-    return mix3c(c, mix3c(MO, MO2, 0.5 + 0.5 * Math.sin(p.x * 1.3 + p.z * 0.9)), Math.min(0.85, m) * (0.75 + 0.25 * (1 - groove)));
+    const m = Math.min(1, Math.max(0, -nwz - 0.45) * 1.1 * (p.y < 22 ? 1 : 0.4) + Math.max(0, n.y * 1.2 - 0.85) * 0.5 + Math.max(0, 0.9 - p.y) * 0.25);
+    return mix3c(c, mix3c(MO, MO2, 0.5 + 0.5 * Math.sin(p.x * 1.3 + p.z * 0.9)), Math.min(0.6, m) * (0.7 + 0.3 * (1 - groove)));
   };
   // 幹：根もとは板根のように張り出し、上で分かれる。縦の畝で半径をふくらませる（頂点を動かす）
   {
@@ -280,7 +281,20 @@ export function buildElder(env, def) {
       pts.push(V(sx * d + cz * sway, 6.2 * Math.pow(1 - t, 1.8) - 1.9 * t * t - 0.1, cz * d - sx * sway));
       r1.push(3.3 * Math.pow(1 - t, 1.25) + 0.3); r2.push(1.35 * (1 - t) + 0.28);
     }
-    P.push(part(tubeGeo(pts, r1, r2, 9), { color: barkR, smooth: true, jitter: 0.12 }));
+    // 根の樹皮：長さ方向の畝（半径をふくらませる）と溝の陰
+    const tg = tubeGeo(pts, r1, r2, 12), tp = tg.getAttribute('position'), grooves = [];
+    for (let k = 0; k < tp.count; k++) {
+      const ring = Math.floor(k / 12), sIdx = k % 12;
+      if (ring >= pts.length) { grooves.push(0); continue; }
+      const c = pts[ring], a = (sIdx / 12) * Math.PI * 2 + ring * 0.35;
+      const g = Math.sin(a * 4 + ring * 0.6 + i), d = 1 + 0.07 * g;
+      tp.setXYZ(k, c.x + (tp.getX(k) - c.x) * d, c.y + (tp.getY(k) - c.y) * d, c.z + (tp.getZ(k) - c.z) * d);
+      grooves.push(Math.max(0, -g));
+    }
+    tg.computeVertexNormals();
+    const idxA = tg.index.array;
+    let gi = 0;
+    P.push(part(tg, { color: (p, n) => { const g = grooves[idxA[gi++]] || 0; return barkR(p, n).map((v) => v * (1 - 0.45 * g)); }, smooth: true }));
   }
   // 大枝と葉のかさ（傘のように広がり、縁は垂れる）
   const eBlobs = [];

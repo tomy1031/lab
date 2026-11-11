@@ -1041,6 +1041,12 @@ art = {
 ```
 
 **光のモデル（FABLE、`AW_PARS` の `awShade`）**：巻きこみ拡散（wrap 0.3）＋空・地の半球環境光（AO を掛ける）＋逆光の透け＋Blinn の鏡面と空の照り返し＋縁の光。`art.material` は画素ごとに計算する。
+
+**世界の内部マテリアル（FABLE。`art` の公開 API は変えていない。ほかの担当は使わない）**
+- `landmarks/common.js` の `stoneMaterial({ glow, amt, night, fogMul, rim, sunRim, moss, grain, spec })`：石と樹皮を画素ごとに塗る（ノイズを面の向きで 2 回だけ引く：風化・雨じみ・地衣類、上を向いた面と陰の苔、夜明けの濡れ＝上を向いた平らな面だけ空を映す）。`grain = [2.6, 0.28]` で縦の繊維（大樹の樹皮）。濡れは時刻から `STONE_WET` が決める。形は `sectorStone`（面取りした扇形の敷石）と `bevelBox`（面取りした箱）。
+- 地形：`biomes.colorAt(x, z, out, far, terrain = true)` は道の色を頂点に混ぜず、`aDet`（草原の細部・道・道の雪）を返す。道の縁の崩れ、小石（12 cm の升ごとに置く）、草原の中くらいのむらと毛並みは地形の画素で塗る（テクスチャは 2 回のまま）。
+- 木：遠景の広葉樹・巨木・針葉樹は「芯（不透明。`uv.x = -1` で絵を使わない）＋葉／針葉の板」を 1 つのジオメトリにまとめ、葉のマテリアルで 1 回で描く。針葉樹の板は専用の針葉の絵（256²）。
+- 野の花：1 株 = 開いた花 2 つ（花びら 5 枚のひし形）＋つぼみ 1 つ。草の 3 枚目の葉は、草原ではときどき穂になる。
 仕上げ（`awGrade`：明部を丸めるフィルム調のカーブ、わずかな S 字、彩度 ×1.07）は `art.material` と加算でない `art.basic` のシェーダーの中で自動で掛かる（ポストプロセスはない）。自前の ShaderMaterial を書くなら `ctx.art.glsl`（光と霧）と `ctx.art.grade`（仕上げ）を入れ、`#include <colorspace_fragment>` の直前で `gl_FragColor.rgb = awGrade(gl_FragColor.rgb)` を呼ぶ。加算の重ね描き（`art.glow`・加算の `art.basic`）には掛けない。
 霧は太陽の方角ほど早く霞む（in-scatter）。葉むら・羊歯は葉の絵（canvas、アルファテスト＋alpha-to-coverage）を貼った板で、法線は葉むらの中心から外向き。
 

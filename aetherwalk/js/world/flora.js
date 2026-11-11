@@ -87,9 +87,11 @@ void main() {
   float al = 1.0;
   #ifdef AW_LEAF
     vec4 t = texture2D(uLeafTex, vUv);
-    if (t.a < 0.3) discard;
-    al = clamp((t.a - 0.3) / max(fwidth(t.a), 1e-3) + 0.5, 0.0, 1.0);
-    c *= 0.5 + 0.78 * t.r;
+    // uv.x < 0：絵を使わない不透明な部品（遠景の木の芯と幹を、葉の板と同じ 1 回の描画にまとめるため）
+    float solid = step(vUv.x, -0.5);
+    if (t.a < 0.3 && solid < 0.5) discard;
+    al = mix(clamp((t.a - 0.3) / max(fwidth(t.a), 1e-3) + 0.5, 0.0, 1.0), 1.0, solid);
+    c *= mix(0.5 + 0.78 * t.r, 1.0, solid);
   #else
     // 樹皮・岩・葉のかたまりに、筆むらのような明暗をのせる
     c *= mix(1.0, 0.74 + 0.52 * texture2D(uNoiseTex, vNz.xy).g, vNz.z);
@@ -283,6 +285,7 @@ export class Scatter {
     this.name = opts.name || 'scatter';
     this.baseNear = this.nearDist;
     this.extraFar = opts.extraFar || null;
+    this.farMaterial = opts.farMaterial || null;   // 遠景を別のマテリアルで（芯と葉の板をまとめた 1 枚）
     this.extra = opts.extra || null;      // { geo, material }：近景に重ねるもう 1 枚（葉むらの板）。インスタンスは共有
   }
   add(x, y, z, s, yaw, tint = 0, flag = 0) { this.items.push(x, y, z, s, Math.cos(yaw), Math.sin(yaw), tint, flag); }
@@ -299,7 +302,7 @@ export class Scatter {
       a.setUsage(THREE.DynamicDrawUsage); b.setUsage(THREE.DynamicDrawUsage);
       g.setAttribute('aInst', a); g.setAttribute('aInst2', b);
       g.instanceCount = 0;
-      const m = new THREE.Mesh(g, this.material);
+      const m = new THREE.Mesh(g, geo === this.farGeo && this.farMaterial ? this.farMaterial : this.material);
       m.frustumCulled = false; m.matrixAutoUpdate = false; m.visible = false; m.name = this.name;
       group.add(m);
       return { g, a, b, m, cap };
@@ -543,12 +546,18 @@ export function createFlora(env) {
   const matNeedle = floraMaterial(0x7ff5e1, false, true);
   matNeedle.uniforms.uLeafTex = { value: needleTexture() };
   const tg = treeGeos(), rg = rockGeos();
+  // 遠景の木：芯（不透明、uv.x = -1）と葉の板を 1 つにまとめる（1 種 1 回の描画）
+  const solidUv = (g) => { const u = g.getAttribute('uv'); for (let i = 0; i < u.count; i++) u.setXY(i, -1, 0); return g; };
+  const farTree = (core, cards) => merge([solidUv(core), cards]);
+  const broadFarG = farTree(tg.broad[1], leafCards(tg.broadBlobs.map((b) => ({ ...b, n: 1, shell: false })), makeRng(43), 0.95));
+  const giantFarG = farTree(tg.giant[1], leafCards(tg.giantBlobs.map((b, i) => ({ ...b, n: i ? 1 : 3, shell: false })), makeRng(42), 0.62));
+  const pineFarG = farTree(tg.pine[1], pineCards([[2.2, 0.8, 5.6]], 4, makeRng(45), true));
   const S = {
-    broad: new Scatter(tg.broad[0], tg.broad[1], mat, { nearDist: 78, farDist: 760, name: 'tree-broad', extra: { geo: leafCards(tg.broadBlobs, makeRng(31), 0.42), material: matLeaf }, extraFar: { geo: leafCards(tg.broadBlobs.map((b) => ({ ...b, n: 1, shell: false })), makeRng(43), 0.95), material: matLeaf } }),
-    giant: new Scatter(tg.giant[0], tg.giant[1], mat, { nearDist: 88, farDist: 820, name: 'tree-giant', always: 40, extra: { geo: leafCards(tg.giantBlobs, makeRng(32), 0.36), material: matLeaf }, extraFar: { geo: leafCards(tg.giantBlobs.map((b, i) => ({ ...b, n: i ? 1 : 3, shell: false })), makeRng(42), 0.62), material: matLeaf } }),
+    broad: new Scatter(tg.broad[0], broadFarG, mat, { nearDist: 78, farDist: 760, name: 'tree-broad', extra: { geo: leafCards(tg.broadBlobs, makeRng(31), 0.42), material: matLeaf }, farMaterial: matLeaf }),
+    giant: new Scatter(tg.giant[0], giantFarG, mat, { nearDist: 88, farDist: 820, name: 'tree-giant', always: 40, extra: { geo: leafCards(tg.giantBlobs, makeRng(32), 0.36), material: matLeaf }, farMaterial: matLeaf }),
     fern: new Scatter(fernGeo(makeRng(33)), null, matLeaf, { nearDist: 44, farDist: 44, name: 'fern', always: 6 }),
     log: new Scatter(logGeo(), null, mat, { nearDist: 80, farDist: 80, name: 'log' }),
-    pine: new Scatter(tg.pine[0], tg.pine[1], mat, { nearDist: 100, farDist: 760, name: 'tree-pine', extra: { geo: pineCards(tg.pineTiers, 10, makeRng(44)), material: matNeedle }, extraFar: { geo: pineCards([[2.2, 0.8, 5.6]], 4, makeRng(45), true), material: matNeedle } }),
+    pine: new Scatter(tg.pine[0], pineFarG, mat, { nearDist: 100, farDist: 760, name: 'tree-pine', extra: { geo: pineCards(tg.pineTiers, 10, makeRng(44)), material: matNeedle }, farMaterial: matNeedle }),
     shrub: new Scatter(tg.shrub[0], tg.shrub[1], mat, { nearDist: 70, farDist: 420, name: 'tree-shrub' }),
     boulder: new Scatter(rg.boulder[0], rg.boulder[1], matRock, { nearDist: 70, farDist: 520, name: 'rock-boulder' }),
     pillar: new Scatter(rg.pillar[0], rg.pillar[1], matRock, { nearDist: 130, farDist: 900, name: 'rock-pillar', always: 40 }),
