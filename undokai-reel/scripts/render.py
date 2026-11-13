@@ -642,11 +642,12 @@ def endcard_shot(t0, t1):
     SPR['cl'] = load_spr('corner_l.png', 820)
     SPR['cr'] = load_spr('corner_r.png', 800)
     logos = Image.open(os.path.join(BUILD, 'logos.png')).convert('RGBA')
-    lw = 820
-    logos = logos.resize((lw, round(logos.height * lw / logos.width)), Image.LANCZOS)
-    plate = Image.new('RGBA', (lw + 80, logos.height + 44), (0, 0, 0, 0))
-    ImageDraw.Draw(plate).rounded_rectangle([0, 0, plate.width - 1, plate.height - 1], 30, fill=(255, 255, 255, 240))
-    plate.alpha_composite(logos, (40, 22))
+    lw = min(logos.width, 1000)                           # logos are laid out at their final size; AUPP's file is used as is
+    if lw != logos.width:
+        logos = logos.resize((lw, round(logos.height * lw / logos.width)), Image.LANCZOS)
+    plate = Image.new('RGBA', (lw + 28, logos.height + 16), (0, 0, 0, 0))
+    ImageDraw.Draw(plate).rounded_rectangle([0, 0, plate.width - 1, plate.height - 1], 28, fill=(255, 255, 255, 255))
+    plate.alpha_composite(logos, (14, 8))
     SPR['logos'] = to_spr(plate)
     SPR['co'] = pill_spr('PLAY WITH STUDENTS FROM JAPAN!', font('Poppins-BlackItalic.ttf', 44), NAVY, WHITE, padx=30, pady=6,
                          outline=5, outline_fill=RED, shadow=6)
@@ -673,9 +674,9 @@ def endcard_shot(t0, t1):
         if t >= hit - .02:
             z = out_back((t - hit) / .35, 3)
             paste(fr, kizuna, 851, 445, s=.977 * (1 + .25 * (1 - z) + .12 * math.exp(-(t - hit) * 6)))
-        items = [('kz', 870, 668, 66, -7), ('co', W / 2, 758, 65, -1.5), ('date', W / 2, 870, 66, 0), ('time', W / 2, 975, 67, 0),
-                 ('supply', W / 2, 1090, 68, -2), ('supply2', W / 2, 1172, 68.5, 0), ('join', W / 2 - 40, 1330, 70, -4),
-                 ('open', 860, 1425, 71, 8), ('logos', W / 2, 1545, 72, 0)]
+        items = [('kz', 870, 655, 66, -7), ('co', W / 2, 733, 65, -1.5), ('date', W / 2, 836, 66, 0), ('time', W / 2, 930, 67, 0),
+                 ('supply', W / 2, 1020, 68, -2), ('supply2', W / 2, 1090, 68.5, 0), ('join', W / 2 - 40, 1212, 70, -4),
+                 ('open', 860, 1300, 71, 8), ('logos', W / 2, 1505, 72, 0)]
         for key, x, y, k, rot in items:
             tk = b(k)
             if t < tk:

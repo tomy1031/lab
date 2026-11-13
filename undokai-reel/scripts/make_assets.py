@@ -149,24 +149,25 @@ def logo(box, src=poster):
     return c, a
 
 
-# AUPP: the seal from the official logo file (assets/logo_aupp.jpg, 1280 px); its wordmark and tagline
-# would be unreadable at logo-row size, so only the seal is used. The others come from the poster.
+# AUPP: the official logo file (assets/logo_aupp.jpg) used as it is — the whole square image, seal, wordmark
+# and tagline, only scaled, laid opaque on the white logo plate. The others come from the poster.
 aupp = np.asarray(Image.open(os.path.join(ROOT, 'assets', 'logo_aupp.jpg')).convert('RGB')).astype(np.float32)
-parts = [logo((212, 57, 1047, 892), aupp)] + \
+parts = [(aupp, np.ones(aupp.shape[:2], np.float32))] + \
         [logo(b) for b in [(325, 1290, 590, 1480), (632, 1288, 785, 1470), (278, 1505, 640, 1570)]]
-hts = [150, 150, 150, 52]
+hts = [270, 150, 150, 52]
 row = []
 for (c, a), h in zip(parts, hts):
     s = h / c.shape[0]
     size = (int(c.shape[1] * s), h)
     row.append((cv2.resize(c, size, interpolation=cv2.INTER_AREA), cv2.resize(a, size, interpolation=cv2.INTER_AREA)))
-gap = 44
+gap = 22
+RH = max(hts)
 w = sum(p[0].shape[1] for p in row) + gap * (len(row) - 1)
-canvas = np.full((150, w, 3), 255, np.float32)
-ca = np.zeros((150, w), np.float32)
+canvas = np.full((RH, w, 3), 255, np.float32)
+ca = np.zeros((RH, w), np.float32)
 x = 0
 for c, a in row:
-    y = (150 - c.shape[0]) // 2
+    y = (RH - c.shape[0]) // 2
     canvas[y:y + c.shape[0], x:x + c.shape[1]] = c * a[..., None] + canvas[y:y + c.shape[0], x:x + c.shape[1]] * (1 - a[..., None])
     ca[y:y + c.shape[0], x:x + c.shape[1]] = np.maximum(ca[y:y + c.shape[0], x:x + c.shape[1]], a)
     x += c.shape[1] + gap
