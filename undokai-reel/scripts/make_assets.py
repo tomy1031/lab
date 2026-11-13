@@ -141,15 +141,19 @@ save('corner_l.png', c, a)
 c, a = corner((3600, 650, W, H), fade_r)
 save('corner_r.png', c, a)
 
-# ---------------------------------------------------------------- logos (poster, white bg)
-def logo(box):
+# ---------------------------------------------------------------- logos (white bg)
+def logo(box, src=poster):
     x0, y0, x1, y1 = box
-    c = poster[y0:y1, x0:x1]
+    c = src[y0:y1, x0:x1]
     a = smooth(255 - c.min(axis=2), 4, 40)
     return c, a
 
 
-parts = [logo(b) for b in [(118, 1285, 300, 1465), (325, 1290, 590, 1480), (632, 1288, 785, 1470), (278, 1505, 640, 1570)]]
+# AUPP: the seal from the official logo file (assets/logo_aupp.jpg, 1280 px); its wordmark and tagline
+# would be unreadable at logo-row size, so only the seal is used. The others come from the poster.
+aupp = np.asarray(Image.open(os.path.join(ROOT, 'assets', 'logo_aupp.jpg')).convert('RGB')).astype(np.float32)
+parts = [logo((212, 57, 1047, 892), aupp)] + \
+        [logo(b) for b in [(325, 1290, 590, 1480), (632, 1288, 785, 1470), (278, 1505, 640, 1570)]]
 hts = [150, 150, 150, 52]
 row = []
 for (c, a), h in zip(parts, hts):

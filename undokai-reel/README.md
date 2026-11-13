@@ -48,7 +48,7 @@ The BGM is the provided "Kusikos Post (TikTok version)". It is cut to 30 s on th
 |---|---|
 | `scripts/fetch_media.py` | Downloads the shared iCloud album (13 videos, 21 photos) into `media_src/icloud/` through iCloud's public link API. No login needed |
 | `scripts/prep_photos.py` | Converts HEIC to JPEG, applies the photo's orientation, and uses the edited version when one exists in the album |
-| `scripts/make_assets.py` | Cuts parts out of the banner: the 運動会 brush lettering, UNDOKAI, the 絆 sun, and the bottom corners. Takes the logos from the poster |
+| `scripts/make_assets.py` | Cuts parts out of the banner: the 運動会 brush lettering, UNDOKAI, the 絆 sun, and the bottom corners. Takes the AUPP seal from `assets/logo_aupp.jpg` and the other logos from the poster |
 | `scripts/music.py` | The 30 s BGM edit described above |
 | `scripts/render.py` | Python compositor (OpenCV + Pillow). Video is decoded through ffmpeg, colour-graded, then cropped to 9:16 and zoom-punched. Adds text stickers, hanko stamps, polaroids and confetti, then encodes with x264 |
 | `build.sh` | Runs everything in order |
@@ -64,6 +64,6 @@ python3 scripts/render.py /tmp/stills --stills 1.0,8.0,26.5   # check single fra
 
 - **Photos and videos**: the Undokai 2025 shared album (iCloud). They show the participants' faces, so the originals are not in git. Get them with `fetch_media.py`.
 - **Osaka Sangyo students' photos**: provided by the organisers. Put them in `media_src/japan/` as `jp_group.jpg` and `jp_flags.jpg` (not in git). The photo of three people in front of the "INDOKAI di Yogyakarta" banner isn't used, because that banner is from a different event.
-- **Banner, poster and logos**: the event's own materials (`assets/banner.png`, `assets/poster.png`).
+- **Banner, poster and logos**: the event's own materials (`assets/banner.png`, `assets/poster.png`). The AUPP seal comes from the official logo file `assets/logo_aupp.jpg` (provided by the organisers); only the seal is used in the logo row, because the wordmark would be too small to read there.
 - **BGM**: the provided mp3. It is not in git because its license is unconfirmed. Kusikos Post itself (Necke, early 1900s) is in the public domain, but this arrangement and recording belong to their creator. Before posting, check that the creator allows its use, or use a version of the song from Instagram's music library.
 - **Fonts**: Poppins, Yuji Syuku (subset to the 8 kanji used) and Permanent Marker are under the SIL Open Font License. Luckiest Guy is under the Apache License 2.0.
