@@ -85,7 +85,7 @@ export default function build({ setup }) {
   g.add(P.box(W, 0.12, 0.34, DARKWOOD, { y: 0, z: z0 - 0.15 }, 'satin'));        // skirting
 
   // ------------------------------------------------------------------ lights: washi pendants, downlights
-  for (const [x, z] of [[-3, -2.5], [1.8, -4.3], [3, -2.5], [-3, 1.2], [3, 1.2]]) {
+  for (const [x, z] of [[-3, -2.5], [1.0, -3.8], [3, -2.5], [-3, 1.2], [3, 1.2]]) {
     g.add(P.cyl(0.005, 0.005, H - 3.4, '#555', { x, y: 3.4, z }, 'metal', 4));
     const lamp = P.mesh(new THREE.SphereGeometry(0.32, 14, 10), '#fff1d6', { x, y: 3.2, z }, 'glow');
     lamp.scale.set(1, 0.85, 1); lamp.castShadow = false; g.add(lamp);
@@ -461,7 +461,7 @@ function drawBanner(g, w, h) {
   g.fillStyle = '#e9d6b4'; g.fillRect(w * 0.08, h * 0.02, w * 0.84, h * 0.006); g.fillRect(w * 0.08, h * 0.972, w * 0.84, h * 0.006);
   txt(g, '特別展', w / 2, h * 0.07, w * 0.2, '#e9d6b4', 700);
   const chars = ['ひ', 'か', 'り', 'の', '風', '景'];
-  chars.forEach((c, i) => txt(g, c, w / 2, h * (0.17 + i * 0.11), w * 0.5, '#fbf8f1', 800));
+  chars.forEach((c, i) => txt(g, c, w / 2, h * (0.18 + i * 0.112), w * 0.4, '#fbf8f1', 800));
   txt(g, '11.3 – 1.31', w / 2, h * 0.9, w * 0.14, '#e9d6b4', 700);
 }
 

@@ -967,7 +967,7 @@ function washitsu(g, A, B, { tatamiMat, beamMat, lightWood, shojiMat, wallMat, s
   // threshold (敷居) and lintel (鴨居) on the open east side, ranma above
   g.add(K.box(0.1, 0.045, d, beamMat, { x: WSX, z: cz, cast: false }));
   g.add(K.box(0.1, 0.08, d, beamMat, { x: WSX, y: 1.8, z: cz }));
-  const ranma = A.draw(128, 32, (c, cw, ch) => { c.fillStyle = '#6b4a32'; c.fillRect(0, 0, cw, ch); c.fillStyle = '#f2e6cf'; for (let i = 0; i < 8; i++) { c.beginPath(); c.ellipse(8 + i * 16, ch / 2, 6, 10, 0, 0, 7); c.fill(); } });
+  const ranma = A.draw(256, 64, (c, cw, ch) => { c.fillStyle = '#efe4cc'; c.fillRect(0, 0, cw, ch); c.strokeStyle = '#6b4a32'; c.lineWidth = 2; for (let x = 0; x <= cw; x += 8) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, ch); c.stroke(); } for (let y = 0; y <= ch; y += 8) { c.beginPath(); c.moveTo(0, y); c.lineTo(cw, y); c.stroke(); } c.lineWidth = 4; c.strokeRect(2, 2, cw - 4, ch - 4); for (let i = 1; i < 4; i++) c.fillRect(i * cw / 4 - 2, 0, 4, ch); });
   g.add(A.box(0.04, H - 1.88, d, { all: '#6b4a32', right: ranma, left: ranma }, { x: WSX, y: 1.88, z: cz, cast: false }));
   // north side: closed fusuma (both faces), lintel, wall above
   const fus = A.draw(160, 128, (c, cw, ch) => {
