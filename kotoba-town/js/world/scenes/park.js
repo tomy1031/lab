@@ -53,7 +53,7 @@ export default function build({ setup }) {
     [-7.5, -9.2, 1.1], [-13.5, -9.6, 1.0], [8.5, -10.6, 1.15], [14.5, -10.2, 1.0], [-21, -8.6, 1.1], [21, -9.2, 1.0],
     [-5.5, 4.0, 1.1], [0.8, 6.8, 1.0], [7.5, 5.0, 1.15], [-11, 3.0, 1.0], [12.5, 2.5, 1.05], [-3.0, 11, 1.0], [9, 12, 1.1],
   ];
-  treeSpots.forEach(([x, z, s], i) => put(cherryTree(P, B, season, 11 + i * 3, { s }), x, 0, z, i));
+  treeSpots.forEach(([x, z, s], i) => { const d = Math.hypot(x, z); put(cherryTree(P, B, season, 11 + i * 3, { s, detail: d < 11 ? 1 : 0, cast: d < 15 }), x, 0, z, i); });
   // far tree belts around the park
   for (let i = 0; i < 26; i++) {
     const a = -Math.PI * 0.95 + i * 0.075 * Math.PI; const r = 34 + (i % 4) * 3;
@@ -71,7 +71,7 @@ export default function build({ setup }) {
   put(bento, -0.62, 0.012, -0.42, 0.25);
   props.bento = K.prop('bento', bento, { labelJa: 'おべんとう', labelEn: 'lunch box' });
   const drinks = drinkSet(P, S);
-  put(drinks, -1.25, 0.012, -0.02, -0.3);
+  put(drinks, -1.12, 0.012, -0.08, -0.3);
   props.drinks = K.prop('drinks', drinks, { labelJa: 'のみもの（おちゃ・ビール）', labelEn: 'drinks (tea, beer)' });
   const cam = camera(P);
   put(cam, -0.36, 0.012, 0.08, -0.6);
@@ -104,10 +104,10 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ main path: lanterns, lamps, bicycle
   // lantern strings (ちょうちん) on both sides of the path, plus one across the lawn in front
   const lanternPoles = [];
-  for (let x = -26; x <= 26; x += 6.5) for (const z of [-5.0, -8.0]) lanternPoles.push([x, z]);
+  for (let x = -19.5; x <= 19.5; x += 6.5) for (const z of [-5.0, -8.0]) lanternPoles.push([x, z]);
   for (const [x, z] of lanternPoles) g.add(P.cyl(0.05, 0.06, 2.9, '#6b5440', { x, z }, 'matte', 8));
   const lantern = lanternMaker(P, lampsOn);
-  for (const z of [-5.0, -8.0]) for (let x = -26; x < 26; x += 6.5) lanternString(P, g, lantern, [x, 2.75, z], [x + 6.5, 2.75, z], 6, 0.35);
+  for (const z of [-5.0, -8.0]) for (let x = -19.5; x < 19.5; x += 6.5) lanternString(P, g, lantern, [x, 2.75, z], [x + 6.5, 2.75, z], 6, 0.35);
   g.add(P.cyl(0.05, 0.06, 2.9, '#6b5440', { x: -3.6, z: -3.9 }, 'matte', 8));
   g.add(P.cyl(0.05, 0.06, 2.9, '#6b5440', { x: 3.4, z: -4.6 }, 'matte', 8));
   lanternString(P, g, lantern, [-3.6, 2.75, -3.9], [3.4, 2.75, -4.6], 7, 0.45);
@@ -271,7 +271,7 @@ function blossomMats(season, night) {
   return { light: mk('#ffffff'), dark: mk(season === 'spring' ? '#e8c4cf' : '#c9c9c9') };
 }
 
-function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7, lush = false } = {}) {
+function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7, lush = false, detail = 1, cast = true } = {}) {
   const t = new THREE.Group();
   const r = K.rng(seed);
   const th = trunkH * s;
@@ -304,21 +304,21 @@ function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7, lu
     const k = (lush ? 2 : 1) + Math.floor(r() * 2);
     for (let j = 0; j < k; j++) {
       const rad = (0.55 + r() * 0.45) * s;
-      const m = K.mesh(new THREE.IcosahedronGeometry(rad, 1), j % 2 ? B.dark : B.light, { x: tip.x + (r() - 0.5) * 0.9 * s, y: tip.y + (r() - 0.3) * 0.5 * s, z: tip.z + (r() - 0.5) * 0.9 * s });
+      const m = K.mesh(new THREE.IcosahedronGeometry(rad, detail), j % 2 ? B.dark : B.light, { x: tip.x + (r() - 0.5) * 0.9 * s, y: tip.y + (r() - 0.3) * 0.5 * s, z: tip.z + (r() - 0.5) * 0.9 * s, cast });
       m.scale.set(1.25, 0.72, 1.25);
       m.rotation.y = r() * 3;
       t.add(m);
     }
   }
   // a crown blob over the trunk
-  const crown = K.mesh(new THREE.IcosahedronGeometry(1.0 * s, 1), B.light, { x: top.x + bias[0] * s, y: top.y + 1.3 * s, z: top.z + bias[1] * s });
+  const crown = K.mesh(new THREE.IcosahedronGeometry(1.0 * s, detail), B.light, { x: top.x + bias[0] * s, y: top.y + 1.3 * s, z: top.z + bias[1] * s, cast });
   crown.scale.set(1.5, 0.7, 1.5);
   t.add(crown);
   return t;
 }
 
 function branch(P, from, dir, len, r0, r1) {
-  const m = P.mesh(new THREE.CylinderGeometry(r1, r0, len, 6), BARK, {}, 'matte');
+  const m = P.mesh(new THREE.CylinderGeometry(r1, r0, len, 5), BARK, {}, 'matte');
   m.position.copy(from).addScaledVector(dir, len / 2);
   m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
   return m;
@@ -504,9 +504,8 @@ function lanternMaker(P, on) {
     const body = P.mesh(new THREE.SphereGeometry(0.13, 8, 6), on ? (red ? '#ff8a6a' : '#ffe2b0') : (red ? '#e2463a' : '#f6efe0'), { x, y, z }, on ? 'glow' : 'satin');
     body.scale.set(1, 1.3, 1); body.castShadow = false;
     parent.add(body);
-    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y + 0.15, z }, 'satin', 6));
-    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y - 0.18, z }, 'satin', 6));
-    if (!red) parent.add(P.cyl(0.132, 0.132, 0.05, '#d8302a', { x, y: y - 0.04, z }, on ? 'glow' : 'satin', 8));
+    for (const yy of [0.15, -0.18]) parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y + yy, z, cast: false }, 'satin', 6));
+    if (!red) parent.add(P.cyl(0.132, 0.132, 0.05, '#d8302a', { x, y: y - 0.04, z, cast: false }, on ? 'glow' : 'satin', 8));
   };
 }
 function lanternString(P, g, lantern, a, b, n, sag) {

@@ -391,13 +391,15 @@ function makeAtlas(size = 1024) {
   };
   A.box = (w, h, d, front, side, o = {}) => K.mesh(A.boxGeo(w, h, d, [side, side, o.top ?? side, side, front, o.back ?? side]), o.glow ? glow : (o.mat ?? material), o);
   A.plane = (w, h, r, o = {}) => K.mesh(A.remap(new THREE.PlaneGeometry(w, h), r), o.glow ? glow : material, { cast: false, ...o });
+  /** Text sign (a plane); goes to A.textAtlas when one is attached (keeps product faces and signs apart). */
   A.text = (lines, w, h, o = {}) => {
+    const T = A.textAtlas || A;
     const ppm = o.ppm ?? 300;
-    const r = A.region(w * ppm, h * ppm, (g, W, Hh) => {
+    const r = T.region(w * ppm, h * ppm, (g, W, Hh) => {
       if (o.mirror) { g.translate(W, 0); g.scale(-1, 1); }
       drawLabel(g, W, Hh, lines, o);
     });
-    return A.plane(w, h, r, o);
+    return T.plane(w, h, r, o);
   };
   return A;
 }

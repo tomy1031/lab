@@ -7,7 +7,9 @@
     "serve": "node tests/serve.mjs 8090",
     "validate": "node tools/validate.mjs",
     "manifest": "node tools/voice_manifest.mjs",
-    "test": "node tools/validate.mjs && node tests/smoke.mjs"
+    "test": "node tools/validate.mjs && node tests/unit.mjs && node tests/smoke.mjs",
+    "test:unit": "node tests/unit.mjs",
+    "test:all": "node tests/smoke.mjs --all"
   },
   "devDependencies": {
     "playwright": "1.63.0"

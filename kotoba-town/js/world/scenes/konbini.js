@@ -20,6 +20,8 @@ export default function build({ setup }) {
   const g = new THREE.Group();
   const props = {};
   const A = makeAtlas(1024);
+  const T = makeAtlas(1024);
+  A.textAtlas = T;
   const add = (o, x = 0, y = 0, z = 0, ry = 0, parent = g) => { o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o; };
 
   const M = {
@@ -112,13 +114,13 @@ export default function build({ setup }) {
   const entrance = K.prop('entrance', ent, { labelJa: 'いりぐち', labelEn: 'entrance' });
   add(entrance, X0 + 0.02, 0, -0.1, Math.PI / 2);
   // entrance mat inside
-  const matReg = A.region(300, 140, (c, w, h) => {
+  const matReg = T.region(300, 140, (c, w, h) => {
     c.fillStyle = '#3b4148'; c.fillRect(0, 0, w, h);
     c.fillStyle = '#2f8a62'; c.fillRect(0, 0, w, 14); c.fillRect(0, h - 14, w, 14);
     c.fillStyle = '#f2c230'; c.font = `800 44px ${K.JP_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('ことばマート', w / 2, h / 2);
   });
-  add(A.plane(1.6, 0.75, matReg, { rx: -Math.PI / 2, receive: true }), X0 + 0.5, 0.006, -0.1, 0).rotation.set(-Math.PI / 2, 0, Math.PI / 2);
+  add(T.plane(1.6, 0.75, matReg, { rx: -Math.PI / 2, receive: true }), X0 + 0.5, 0.006, -0.1, 0).rotation.set(-Math.PI / 2, 0, Math.PI / 2);
 
   const outside = buildOutside({ time, weather, season, A, M, X0 });
   g.add(outside.group);
@@ -175,7 +177,7 @@ export default function build({ setup }) {
   const bc = new THREE.Group();
   bc.add(K.box(3.0, 0.9, 0.5, M.white, { z: 0.25 }));
   bc.add(K.box(3.04, 0.035, 0.54, K.mat('#cfd3d6', { rough: 0.35 }), { y: 0.9, z: 0.27 }));
-  for (const x of [-1.2, -0.65]) bc.add(microwave(M, A), x).position.set(x, 0.935, 0.24);
+  for (const x of [-1.2, -0.65]) { const mw = microwave(M, A); mw.position.set(x, 0.935, 0.24); bc.add(mw); }
   for (let i = 0; i < 4; i++) bc.add(K.cyl(0.045, 0.04, 0.22, K.mat('#f7f7f4', { rough: 0.6 }), { x: 0.05 + i * 0.11, y: 0.935, z: 0.3 }, 10));
   bc.add(K.box(0.32, 0.18, 0.24, K.mat('#e6e6e2', { rough: 0.5 }), { x: 0.8, y: 0.935, z: 0.25 }));
   add(bc, -0.7, 0, ZN);
@@ -217,14 +219,14 @@ export default function build({ setup }) {
   const wc = new THREE.Group();
   wc.add(K.box(0.8, 2.05, 0.04, K.mat('#d9dde0', { rough: 0.4 }), {}));
   wc.add(K.box(0.04, 0.16, 0.04, M.alu, { x: -0.3, y: 0.95, z: 0.03 }));
-  const pict = A.region(120, 120, (c, w, h) => {
+  const pict = T.region(120, 120, (c, w, h) => {
     c.fillStyle = '#2f6db3'; c.fillRect(0, 0, w, h);
     c.fillStyle = '#ffffff';
     c.beginPath(); c.arc(w * 0.3, h * 0.22, 10, 0, Math.PI * 2); c.fill(); c.fillRect(w * 0.22, h * 0.36, 18, 50);
     c.fillStyle = '#e85d5d'; c.beginPath(); c.arc(w * 0.7, h * 0.22, 10, 0, Math.PI * 2); c.fill();
     c.beginPath(); c.moveTo(w * 0.7, h * 0.34); c.lineTo(w * 0.85, h * 0.78); c.lineTo(w * 0.55, h * 0.78); c.fill();
   });
-  const pp = A.plane(0.2, 0.2, pict); pp.position.set(0, 1.5, 0.025); wc.add(pp);
+  const pp = T.plane(0.2, 0.2, pict); pp.position.set(0, 1.5, 0.025); wc.add(pp);
   add(wc, X1 - 0.02, 0, 3.05, -Math.PI / 2);
   const ts = K.prop('toilet_sign', A.text([{ t: 'トイレ', scale: 1 }, { t: 'TOILET', scale: 0.55 }], 0.6, 0.26, { bg: '#2f6db3', fg: '#ffffff', radius: 0.12, glow: true }), { labelJa: 'トイレ', labelEn: 'toilet' });
   add(ts, X1 - 0.03, 2.2, 3.05, -Math.PI / 2);
@@ -285,7 +287,7 @@ function buildOutside({ time, weather, season, A, M, X0 }) {
   grp.add(K.box(1.5, 0.18, 14, K.mat('#e9ebe8', { rough: 0.6 }), { x: X0 - 0.75, y: 2.62, z: 0.75, cast: false }));
   for (const z of [-2.2, -0.1, 2.0, 3.9]) grp.add(K.cyl(0.08, 0.08, 0.02, new THREE.MeshBasicMaterial({ color: '#fffaf0', toneMapped: false }), { x: X0 - 0.75, y: 2.6, z }, 12));
   // the sign band on the façade (seen from the parking lot, and as a glow at the top of the glass)
-  const band = A.region(900, 110, (c, w, h) => {
+  const band = A.textAtlas.region(900, 110, (c, w, h) => {
     c.fillStyle = '#ffffff'; c.fillRect(0, 0, w, h);
     c.fillStyle = '#2f8a62'; c.fillRect(0, 0, w, h * 0.32);
     c.fillStyle = '#f2c230'; c.fillRect(0, h * 0.32, w, h * 0.1);
@@ -293,7 +295,7 @@ function buildOutside({ time, weather, season, A, M, X0 }) {
     c.fillStyle = '#2f8a62'; c.font = `800 ${h * 0.4}px ${K.JP_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
     c.fillText('ことばマート  KOTOBA MART', w / 2, h * 0.74);
   });
-  const bandM = A.plane(8, 0.9, band, { glow: dark });
+  const bandM = A.textAtlas.plane(8, 0.9, band, { glow: dark });
   bandM.position.set(X0 - 1.51, 3.15, 0.6); bandM.rotation.y = -Math.PI / 2;
   grp.add(bandM);
   grp.add(K.box(0.3, 1.1, 14, K.mat('#d9dcda'), { x: X0 - 0.15, y: 2.6, z: 0.75, cast: false }));
@@ -717,12 +719,14 @@ function magazineRack(A, M) {
   const bat = new THREE.Group();
   for (let i = 0; i < 9; i++) {
     const k = i < 4 ? 0 : i < 7 ? 1 : 2;
-    bat.add(A.box(0.08, 0.13, 0.02, P.battery[k], A.solid('#d6dade'), { x: -L / 2 + 0.12 + i * 0.09, y: 0.1, z: 0.04 + (i % 2) * 0.01, rx: -0.1 }));
+    bat.add(A.box(0.08, 0.13, 0.02, P.battery[k], A.solid('#d6dade'), { x: 0.3 + i * 0.09, y: 0.1, z: 0.04 + (i % 2) * 0.01, rx: -0.1 }));
   }
   g.add(bat);
-  for (let i = 0; i < 10; i++) g.add(A.box(0.12, 0.1, 0.06, pick(P.daily, r), A.solid('#f4f4f0'), { x: 0.05 + i * 0.12, y: 0.1, z: 0.02 }));
-  const lab = A.text([{ t: 'でんち・にちようひん  ⬇ いちばん した', scale: 0.8 }], 0.9, 0.05, { bg: '#f2c230', fg: '#333', radius: 0.2 });
-  lab.position.set(-0.6, 0.06, Dp / 2 + 0.003); g.add(lab);
+  for (let i = 0; i < 10; i++) g.add(A.box(0.12, 0.1, 0.06, pick(P.daily, r), A.solid('#f4f4f0'), { x: -1.1 + i * 0.12, y: 0.1, z: 0.02 }));
+  const lab = A.text([{ t: 'でんち', scale: 0.9 }], 0.3, 0.05, { bg: '#f2c230', fg: '#333', radius: 0.2 });
+  lab.position.set(0.66, 0.05, Dp / 2 + 0.003); g.add(lab);
+  const lab2 = A.text([{ t: 'にちようひん', scale: 0.9 }], 0.4, 0.05, { bg: '#ffffff', fg: '#333', radius: 0.2 });
+  lab2.position.set(-0.5, 0.05, Dp / 2 + 0.003); g.add(lab2);
   return { group: g, batteries: bat };
 }
 
@@ -979,7 +983,7 @@ function drinksFridge(A, M, doors) {
       for (let i = 0; i < 6; i++) {
         const x = -W / 2 + d * dw + 0.1 + i * 0.105;
         const can = s === 0 && d >= doors - 2;
-        for (const z of [Dp - 0.15, Dp - 0.32]) {
+        for (const z of [Dp - 0.15]) {
           const b = can ? labelCyl(A, 0.033, 0.033, 0.12, pick(P.can, r), 8, '#c8ccd0') : petBottle(A, i < 3 ? reg : reg2);
           b.position.set(x, y + 0.008, z);
           f.add(b);
@@ -1144,13 +1148,15 @@ function makeAtlas(size = 1024) {
   };
   A.box = (w, h, d, front, side, o = {}) => K.mesh(A.boxGeo(w, h, d, [side, side, o.top ?? side, side, front, o.back ?? side]), o.glow ? glow : (o.mat ?? material), o);
   A.plane = (w, h, r, o = {}) => K.mesh(A.remap(new THREE.PlaneGeometry(w, h), r), o.glow ? glow : material, { cast: false, ...o });
+  /** Text sign (a plane); goes to A.textAtlas when one is attached (keeps product faces and signs apart). */
   A.text = (lines, w, h, o = {}) => {
+    const T = A.textAtlas || A;
     const ppm = o.ppm ?? 300;
-    const r = A.region(w * ppm, h * ppm, (g, W, Hh) => {
+    const r = T.region(w * ppm, h * ppm, (g, W, Hh) => {
       if (o.mirror) { g.translate(W, 0); g.scale(-1, 1); }
       drawLabel(g, W, Hh, lines, o);
     });
-    return A.plane(w, h, r, o);
+    return T.plane(w, h, r, o);
   };
   return A;
 }

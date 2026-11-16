@@ -160,8 +160,9 @@ export function offlineJudge(text, listen) {
   const said = String(text || '').trim();
   const base = { heard: said, score: 2, grammarUsed: listen.grammar || [], correction: said, tipEn: '', source: 'offline' };
   if (!said) return { ...base, branch: 'unclear', score: 0 };
-  if (ASK_AGAIN.test(said)) return { ...base, branch: 'repeat' };
-  if (DONT_KNOW.test(said)) return { ...base, branch: 'dont_know', score: 0 };
+  const tight = said.replace(/\s+/g, '');
+  if (ASK_AGAIN.test(tight)) return { ...base, branch: 'repeat' };
+  if (DONT_KNOW.test(tight)) return { ...base, branch: 'dont_know', score: 0 };
   if (/^[\x00-\x7f]+$/.test(said)) return { ...base, branch: 'english', score: 0 };
   let best = { id: 'unclear', sim: 0, ex: '' };
   for (const b of listen.branches) {

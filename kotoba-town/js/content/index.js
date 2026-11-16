@@ -64,7 +64,7 @@ export function toRomaji(kana) {
         out += b.endsWith('i') ? (/^(shi|chi|ji)$/.test(b) ? b.slice(0, -1) + Y[n].slice(1) : b.slice(0, -1) + Y[n]) : b + Y[n];
         i++; continue;
       }
-      if (c === 'は' && i === w.length - 1 && w.length > 1 && /^(わたし|これ|それ|あれ|ここ|そこ|あそこ|きょう|こんにち|こんばん)/.test(w)) { out += 'wa'; continue; }
+      if (c === 'は' && i === w.length - 1 && w.length > 1 && /^(わたし|これ|それ|あれ|ここ|そこ|あそこ|きょう|こんにち|こんばん)/.test(w)) { out += /^(こんにち|こんばん)/.test(w) ? 'wa' : ' wa'; continue; }
       out += K[c] ?? (/[、]/.test(c) ? ',' : /[。]/.test(c) ? '.' : /[！]/.test(c) ? '!' : /[？]/.test(c) ? '?' : c);
     }
     return out;
