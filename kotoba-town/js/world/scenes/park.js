@@ -11,7 +11,7 @@ import * as K from '../kit.js';
 
 export const meta = { indoor: false, ambience: 'park' };
 
-const BARK = '#4b3b33';
+const BARK = '#6a5347';
 
 export default function build({ setup }) {
   const time = setup.time || 'noon';
@@ -30,7 +30,7 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ ground: lawn, paths, puddles
   const grassTint = { spring: '#a9c98a', summer: '#86b46a', autumn: '#b6b27a', winter: '#a8a487' }[season] || '#9cc27e';
   const grass = new THREE.MeshStandardMaterial({ map: grassTex(), color: grassTint, roughness: rain ? 0.55 : 0.95 });
-  g.add(K.mesh(uvPlane(160, 160, 160 / 4, 160 / 4), grass, { z: -20, rx: -Math.PI / 2, cast: false }));
+  g.add(K.mesh(uvPlane(320, 320, 320 / 4, 320 / 4), grass, { z: -20, rx: -Math.PI / 2, cast: false }));
   const gravel = K.mat('#ffffff', { map: K.noiseTex(rain ? '#a99d84' : '#d3c6a8', 0.22, [1, 1], 'gravel'), rough: rain ? 0.35 : 0.95 });
   g.add(K.mesh(uvPlane(70, 2.6, 70 / 2, 2.6 / 2), gravel, { y: 0.01, z: -6.5, rx: -Math.PI / 2, cast: false }));       // main path (left–right)
   g.add(K.mesh(uvPlane(2.2, 22, 2.2 / 2, 22 / 2), gravel, { x: 3.7, y: 0.012, z: 5.9, rx: -Math.PI / 2, cast: false })); // path from the entrance behind
@@ -45,8 +45,8 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ trees
   const B = blossomMats(season, night);
   // the big cherry tree by the conversation (canopy reaches over the picnic sheet)
-  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [-0.6, 0.5], trunkH: 2.0, lush: true });
-  put(bigTree, -0.55, 0, -2.45);
+  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [0.55, 0.65], trunkH: 2.1, lush: true, detail: 2 });
+  put(bigTree, -1.5, 0, -2.05);
   props.sakura = K.prop('sakura', bigTree, { labelJa: 'さくら', labelEn: 'cherry tree' });
   const treeSpots = [
     [-5.5, -3.2, 1.0], [-10.5, -4.2, 1.15], [-16, -3.6, 1.0], [5.6, -3.4, 1.05], [11, -4.0, 1.1], [17, -3.5, 1.0],
@@ -185,8 +185,16 @@ export default function build({ setup }) {
   const castleG = castle(P, lampsOn);
   put(castleG, -30, 6.5, -98, 0.35);
   props.castle = K.prop('castle', castleG, { labelJa: 'おしろ', labelEn: 'castle' });
-  // distant hills
-  for (const [x, z, sx, sy] of [[60, -140, 70, 24], [-90, -130, 80, 30], [10, -170, 90, 36], [-150, -40, 50, 22], [150, -30, 60, 20]]) {
+  // the town beyond the park (behind and to the sides) and a ring of distant hills
+  const town = K.rng(88);
+  for (let i = 0; i < 26; i++) {
+    const a = Math.PI * 0.32 + i * (Math.PI * 1.36 / 25); const rr = 62 + town() * 18;
+    const w = 8 + town() * 10; const h = 6 + town() * 16;
+    const b = P.box(w, h, 8, ['#d9d4c8', '#cfd3d6', '#e3dccd', '#bfc6cc'][i % 4], { x: Math.sin(a) * rr, z: -Math.cos(a) * rr - 6, ry: -a, cast: false });
+    g.add(b);
+    for (let k = 0; k < Math.floor(h / 3); k++) g.add(P.box(w * 0.8, 0.9, 0.1, time === 'night' || time === 'evening' ? '#ffd890' : '#8ea2ae', { x: Math.sin(a) * (rr - 4.05), y: 1.2 + k * 3, z: -Math.cos(a) * (rr - 4.05) - 6, ry: -a, cast: false }, time === 'night' || time === 'evening' ? 'glow' : 'gloss'));
+  }
+  for (const [x, z, sx, sy] of [[60, -140, 70, 24], [-90, -130, 80, 30], [10, -170, 90, 36], [-150, -40, 50, 22], [150, -30, 60, 20], [-140, 80, 70, 26], [20, 150, 90, 30], [140, 90, 70, 24]]) {
     const h = P.mesh(new THREE.IcosahedronGeometry(1, 2), season === 'winter' ? '#8a8f86' : season === 'autumn' ? '#8f8a5a' : '#6f9172', { x, y: -4, z }, 'matte');
     h.scale.set(sx, sy, sx * 0.5); h.castShadow = false; g.add(h);
   }

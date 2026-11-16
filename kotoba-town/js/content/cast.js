@@ -178,7 +178,7 @@ export const SCENES = {
   },
   home: {
     nameEn: 'Japanese home', slots: ['host', 'host2', 'phone'],
-    props: { genkan: 'near', slippers: 'near', gift: 'near', sofa: 'npc', table: 'near', tea: 'near', cake: 'near', spoon: 'near', tv: 'far', photo: 'npc', clock: 'far', garden: 'far', kitchen: 'far', piano: 'far' },
+    props: { genkan: 'near', slippers: 'near', gift: 'near', sofa: 'npc', table: 'near', tea: 'near', cake: 'near', spoon: 'near', tv: 'far', photo: 'npc', clock: 'far', garden: 'far', kitchen: 'far', piano: 'far', shoes: 'npc' },
   },
   konbini: {
     nameEn: 'Convenience store', slots: ['clerk', 'npc1', 'phone'],

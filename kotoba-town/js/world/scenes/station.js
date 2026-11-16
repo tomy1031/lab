@@ -589,19 +589,21 @@ function tickerStrip(w, h, H) {
 }
 
 function ticketMachine(P, L, i) {
-  const m = new THREE.Group(); // faces +z (rotated into the wall by the caller)
+  const m = new THREE.Group(); // faces +z (rotated into the wall by the caller); front face at z = 0.425
   m.add(P.box(0.8, 1.75, 0.45, '#e8e6e0', { z: 0.2 }, 'satin'));
-  m.add(P.box(0.78, 0.9, 0.12, '#d6d3cb', { y: 0.82, z: 0.45, rx: 0 }, 'satin'));
-  m.add(P.box(0.82, 0.08, 0.5, '#2f9a62', { y: 1.72, z: 0.2 }, 'satin'));
+  m.add(P.box(0.82, 0.08, 0.5, LINE, { y: 1.72, z: 0.2 }, 'satin'));
+  m.add(P.box(0.78, 0.3, 0.22, '#d6d3cb', { y: 0.78, z: 0.53 }, 'satin'));          // console
+  m.add(P.box(0.56, 0.42, 0.04, '#2a2d31', { y: 0.98, z: 0.5, rx: -0.55 }, 'satin')); // screen bezel
   const scr = L.draw(0.5, 0.36, 400, (c, w, h) => drawTicketScreen(c, w, h, i));
-  scr.position.set(0, 1.16, 0.505); scr.rotation.x = -0.35;
+  scr.position.set(0, 1.19, 0.535); scr.rotation.x = -0.55;
   m.add(scr);
-  m.add(P.box(0.56, 0.42, 0.04, '#2a2d31', { y: 0.94, z: 0.48, rx: -0.35 }, 'satin'));
-  m.add(P.box(0.12, 0.04, 0.03, '#888', { x: 0.28, y: 1.32, z: 0.52 }, 'metal'));  // coin slot
-  m.add(P.box(0.16, 0.04, 0.03, '#555', { x: 0.27, y: 1.22, z: 0.52 }, 'metal'));  // bill slot
-  m.add(P.box(0.5, 0.12, 0.06, '#2a2d31', { y: 0.45, z: 0.52 }, 'satin'));        // ticket outlet
-  m.add(P.box(0.12, 0.12, 0.03, '#2f6db3', { x: -0.3, y: 1.3, z: 0.52 }, 'satin')); // IC card slot
-  put2(m, L.sign([{ t: i === 0 ? 'きっぷ・IC チャージ' : i === 1 ? 'きっぷ  Tickets' : 'IC カード', scale: 0.85 }], 0.7, 0.13, { bg: '#2c3e5c', fg: '#fff' }), 0, 1.55, 0.415);
+  m.add(P.box(0.1, 0.03, 0.02, '#8c9196', { x: 0.3, y: 1.38, z: 0.435 }, 'metal'));  // coin slot
+  m.add(P.box(0.16, 0.035, 0.02, '#4a4d52', { x: 0.29, y: 1.3, z: 0.435 }, 'metal')); // bill slot
+  m.add(P.box(0.11, 0.11, 0.02, '#2f6db3', { x: -0.3, y: 1.34, z: 0.435 }, 'satin')); // IC card slot
+  m.add(P.box(0.5, 0.12, 0.05, '#2a2d31', { y: 0.42, z: 0.45 }, 'satin'));          // ticket / change outlet
+  m.add(P.box(0.2, 0.08, 0.05, '#c9ccd0', { x: 0.25, y: 0.62, z: 0.45 }, 'metal'));
+  put2(m, L.sign([{ t: i === 0 ? 'きっぷ・IC チャージ' : i === 1 ? 'きっぷ  Tickets' : 'IC カード  チャージ', scale: 0.85 }], 0.72, 0.14, { bg: '#2c3e5c', fg: '#fff' }), 0, 1.58, 0.43);
+  put2(m, L.sign([{ t: '1000円札', scale: 0.8 }], 0.16, 0.05, { bg: '#ffffff', fg: '#333' }), 0.29, 1.44, 0.43);
   return m;
 }
 function put2(parent, o, x, y, z, ry = 0) { o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o; }
