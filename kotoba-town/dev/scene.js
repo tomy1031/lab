@@ -17,7 +17,9 @@ const castIds = (q.get('cast') || '').split(',').filter(Boolean);
 await document.fonts.load('700 20px "M PLUS Rounded 1c"').catch(() => {});
 
 const app = new App(document.getElementById('stage'));
-const mod = await loadScene(id);
+const mod = id === 'none'
+  ? { meta: { indoor: false }, default: () => { const g = new THREE.Group(); g.add(K.mesh(new THREE.PlaneGeometry(40, 40, 10, 10), K.mat('#ffffff', { map: K.tileTex('#efe7d6', '#e7dcc8', 8, [6, 6], '#d9ccb4') }), { rx: -Math.PI / 2, cast: false })); return { group: g, spawn: K.spot(0, 0, 0), slots: {}, props: {}, center: new THREE.Vector3(0, 0, -3.5), radius: 8 }; } }
+  : await loadScene(id);
 const built = mod.default({ setup });
 app.scene.add(built.group);
 const env = makeEnvironment(app.scene, { ...setup, indoor: mod.meta?.indoor, center: built.center, radius: built.radius });

@@ -1,5 +1,7 @@
 # ことばタウン — Kotoba Town
 
+![お花見の 場面（第6課）：青木さんが「なにを のみますか」と 聞き、カードが「あなたの ばん」に なって いる](docs/preview.jpg)
+
 VR の まちで、日本語を **声に 出して** 練習する アプリです（three.js r186 + WebXR、ビルド不要）。
 『みんなの日本語 初級I』第1課〜第10課の 文法に 合わせた 30 の 場面（各課 3 パターン）が あり、
 まちの 人（NPC）が 話しかけて きます。あなたが 日本語で 答えると、**Gemini Live** が 聞いて 判定し、
@@ -67,7 +69,9 @@ lesson JSON（data/lessons/l01〜l10.json）── Fable が ネットで 調べ
 - **判定は Gemini Live**（関数呼び出し `judge_reply` / `final_report`）。プロンプトと 関数の 定義は `js/talk/judge.js`、つなぎ方は `js/talk/live.js`・`js/talk/brain.js`
 - モデルは `gemini-3.8-live` → `gemini-3.1-flash-live-preview` → `gemini-2.5-flash-native-audio-preview-12-2025` → `gemini-2.5-flash-live` の 順に ためします（せっていで 固定も できます）
 - 同じ ブラウザ用の コード（`js/talk/*.js`）を Node で 動かして、**本物の API で 判定を 確かめました**（nexmax-academy の ワークフローの self-check。学習者の 声を Live TTS で 作り、マイクと 同じ 形で 流して、4 つの 例が すべて 正しい 分岐に なりました）
-- 人物は 手続き的に 作った 3D モデル（骨組み＋GPU スキニング。1 人 約 3 ドローコール）。まばたき・目線・口の 動き（音量から）・おじぎ・うなずき・指さし・手わたし などの しぐさ
+- 人物は 手続き的に 作った 3D モデル（骨組み＋GPU スキニング。1 人 約 3 ドローコール）。まばたき・目線・口の 動き（音量から）・おじぎ・うなずき・指さし・手わたし などの しぐさ。まちの 人は 15 人で、課を こえて 何度も 出て きます（`js/content/cast.js`）
+
+![まちの 人 15 人](docs/cast.jpg)
 - 場面の 文法の 位置関係（これ／それ／あれ、ここ／そこ／あそこ）は 小道具の 置き場所（near／npc／far）で そろえて います
 
 ## 内容（30 場面）
