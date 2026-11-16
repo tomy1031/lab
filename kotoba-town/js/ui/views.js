@@ -280,8 +280,8 @@ export class Board {
       y += 80 + variant.missionsEn.length * 58;
       g.font = font(28, 700); g.fillStyle = THEME.soft;
       g.fillText(`People: ${cast.map((c) => `${c.nameJa}（${c.roleEn}）`).join('、 ')}`.slice(0, 120), 80, y + 4);
-      g.fillStyle = live ? '#e3f1fb' : '#fdf0e2'; rr(g, 70, H - 270, W - 140, 90, 30); g.fill();
-      text(g, note || (live ? '🎙️ Gemini Live is on: speak naturally — the mic stays on and turns green when it is your turn.' : '📝 Offline practice: no API key, so you read an answer aloud and tap it. Add a Gemini key in Settings for real conversation.'), 100, H - 252, W - 200, 28, { color: live ? '#2f6db3' : '#a3622a', maxLines: 2 });
+      g.fillStyle = live ? '#e3f1fb' : '#fdf0e2'; rr(g, 70, H - 280, W - 140, 104, 30); g.fill();
+      text(g, note || (live ? '🎙️ Gemini Live is on: speak naturally — the mic stays on and turns green when it is your turn.' : '📝 Offline practice: no API key, so you read an answer aloud and tap it. Add a Gemini key in Settings for real conversation.'), 100, H - 262, W - 200, 26, { color: live ? '#2f6db3' : '#a3622a', maxLines: 2 });
       p.button('start', W - 520, H - 160, 440, 96, 'はじめる · Start', onStart, { color: THEME.leaf, size: 42 });
       p.button('back', 80, H - 150, 320, 84, '← もどる', onBack, { color: '#e8dccb', fg: THEME.ink });
     });

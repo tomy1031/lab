@@ -32,13 +32,13 @@ page.on('console', (m) => { if (m.type() === 'error' && !/favicon|ERR_|404/.test
 
 await page.goto(url);
 await page.waitForFunction('window.KT && window.KT.ready', null, { timeout: 90000 });
-if (shotsAt) await page.screenshot({ path: path.join(shotsAt, '00-landing.png') });
+if (shotsAt) await page.screenshot({ path: path.join(shotsAt, '00-landing.png'), timeout: 180000 });
 // no speech synthesis in tests: lines play as reading time
 await page.evaluate(() => { window.KT.store.settings.noSynth = true; window.KT.store.settings.rate = 1; });
 await page.click('#play-pc');
 await page.waitForFunction('window.KT.state.where === "town"', null, { timeout: 60000 });
 await page.waitForTimeout(800);
-if (shotsAt) await page.screenshot({ path: path.join(shotsAt, '01-town.png') });
+if (shotsAt) await page.screenshot({ path: path.join(shotsAt, '01-town.png'), timeout: 180000 });
 
 let failed = 0;
 for (const id of ids) {
@@ -47,14 +47,14 @@ for (const id of ids) {
     await page.evaluate((v) => window.KT.open(v), id);
     await page.waitForFunction('window.KT.state.where === "brief"', null, { timeout: 60000 });
     await page.waitForTimeout(700);
-    if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-1-brief.png`) });
+    if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-1-brief.png`), timeout: 180000 });
     await page.evaluate(() => { window.KT.start(); });
     let turns = 0; let shot = false;
     for (let i = 0; i < 400; i++) {
       const st = await page.evaluate(() => ({ where: window.KT.state.where, cur: !!(window.KT.runner && window.KT.runner.cur), busy: window.KT.runner?.npcBusy }));
       if (st.where === 'report') break;
       if (st.cur && !st.busy) {
-        if (shotsAt && !shot) { await page.waitForTimeout(400); await page.screenshot({ path: path.join(shotsAt, `${id}-2-turn.png`) }); shot = true; }
+        if (shotsAt && !shot) { await page.waitForTimeout(400); await page.screenshot({ path: path.join(shotsAt, `${id}-2-turn.png`), timeout: 180000 }); shot = true; }
         await page.evaluate(() => { const r = window.KT.runner; const c = r.cur; if (!c || c.free) { r.endFree?.(); return; } const ch = c.li.branches[Math.floor(Math.random() * c.li.branches.length)]; r.choose(ch.exampleJa); });
         turns++;
       }
@@ -62,7 +62,7 @@ for (const id of ids) {
     }
     await page.waitForFunction('window.KT.state.where === "report"', null, { timeout: 30000 });
     await page.waitForTimeout(600);
-    if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-3-report.png`) });
+    if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-3-report.png`), timeout: 180000 });
     const rep = await page.evaluate(() => window.KT.lastReport);
     console.log(`✓ ${id}: ${turns} answers, ${rep.turns.length} turns recorded, ${rep.report.stars}★, ${((Date.now() - t0) / 1000).toFixed(0)}s`);
   } catch (e) {
