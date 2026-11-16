@@ -40,7 +40,7 @@ export class Stage {
   clear() {
     if (this.built) { this.app.scene.remove(this.built.group); disposeTree(this.built.group); }
     this.env?.dispose();
-    for (const p of this.people.values()) { this.app.scene.remove(p.person.root); p.person.dispose?.(); }
+    for (const p of this.people.values()) { if (p.person) { this.app.scene.remove(p.person.root); p.person.dispose?.(); } } // phone callers have no body
     if (this.phone) { this.phone.parent?.remove(this.phone); this.phone = null; }
     this.people.clear();
     this.sound.clearSpeakers();
