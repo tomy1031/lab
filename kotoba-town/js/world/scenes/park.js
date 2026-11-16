@@ -45,7 +45,7 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ trees
   const B = blossomMats(season, night);
   // the big cherry tree by the conversation (canopy reaches over the picnic sheet)
-  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [-0.6, 0.5], trunkH: 2.0 });
+  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [-0.6, 0.5], trunkH: 2.0, lush: true });
   put(bigTree, -0.55, 0, -2.45);
   props.sakura = K.prop('sakura', bigTree, { labelJa: 'さくら', labelEn: 'cherry tree' });
   const treeSpots = [
@@ -271,7 +271,7 @@ function blossomMats(season, night) {
   return { light: mk('#ffffff'), dark: mk(season === 'spring' ? '#e8c4cf' : '#c9c9c9') };
 }
 
-function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7 } = {}) {
+function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7, lush = false } = {}) {
   const t = new THREE.Group();
   const r = K.rng(seed);
   const th = trunkH * s;
@@ -301,7 +301,7 @@ function cherryTree(P, B, season, seed, { s = 1, bias = [0, 0], trunkH = 1.7 } =
   }
   if (!B) return t;
   for (const tip of tips) {
-    const k = 2 + Math.floor(r() * 2);
+    const k = (lush ? 2 : 1) + Math.floor(r() * 2);
     for (let j = 0; j < k; j++) {
       const rad = (0.55 + r() * 0.45) * s;
       const m = K.mesh(new THREE.IcosahedronGeometry(rad, 1), j % 2 ? B.dark : B.light, { x: tip.x + (r() - 0.5) * 0.9 * s, y: tip.y + (r() - 0.3) * 0.5 * s, z: tip.z + (r() - 0.5) * 0.9 * s });
@@ -336,7 +336,7 @@ function farTree(P, B, season, seed, s = 1.3) {
     return t;
   }
   for (let i = 0; i < 4; i++) {
-    const m = K.mesh(new THREE.IcosahedronGeometry((1.1 + r() * 0.5) * s, 1), i % 2 ? B.dark : B.light, { x: (r() - 0.5) * 1.6 * s, y: (2.6 + r() * 1.2) * s, z: (r() - 0.5) * 1.6 * s, cast: true });
+    const m = K.mesh(new THREE.IcosahedronGeometry((1.1 + r() * 0.5) * s, 0), i % 2 ? B.dark : B.light, { x: (r() - 0.5) * 1.6 * s, y: (2.6 + r() * 1.2) * s, z: (r() - 0.5) * 1.6 * s, cast: false });
     m.scale.set(1.2, 0.85, 1.2);
     t.add(m);
   }
@@ -501,12 +501,12 @@ function parkBench(P) {
 function lanternMaker(P, on) {
   return (parent, x, y, z, i) => {
     const red = i % 3 === 1;
-    const body = P.mesh(new THREE.SphereGeometry(0.13, 10, 8), on ? (red ? '#ff8a6a' : '#ffe2b0') : (red ? '#e2463a' : '#f6efe0'), { x, y, z }, on ? 'glow' : 'satin');
+    const body = P.mesh(new THREE.SphereGeometry(0.13, 8, 6), on ? (red ? '#ff8a6a' : '#ffe2b0') : (red ? '#e2463a' : '#f6efe0'), { x, y, z }, on ? 'glow' : 'satin');
     body.scale.set(1, 1.3, 1); body.castShadow = false;
     parent.add(body);
-    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y + 0.15, z }, 'satin', 8));
-    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y - 0.18, z }, 'satin', 8));
-    if (!red) parent.add(P.cyl(0.132, 0.132, 0.05, '#d8302a', { x, y: y - 0.04, z }, on ? 'glow' : 'satin', 10));
+    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y + 0.15, z }, 'satin', 6));
+    parent.add(P.cyl(0.075, 0.075, 0.03, '#2a2422', { x, y: y - 0.18, z }, 'satin', 6));
+    if (!red) parent.add(P.cyl(0.132, 0.132, 0.05, '#d8302a', { x, y: y - 0.04, z }, on ? 'glow' : 'satin', 8));
   };
 }
 function lanternString(P, g, lantern, a, b, n, sag) {
@@ -561,7 +561,7 @@ function yatai(P, S, L, kind, on) {
     for (let i = 0; i < 9; i++) {
       const x = -0.9 + i * 0.12; const mitarashi = i > 5;
       y.add(P.cyl(0.004, 0.004, 0.2, '#e8d9b0', { x, y: 0.93, z: 0.3, rx: Math.PI / 2 - 0.1 }, 'matte', 4));
-      ['#f4a6be', '#f7f5ee', '#8cc06a'].forEach((c, k) => y.add(P.mesh(new THREE.SphereGeometry(0.022, 8, 6), mitarashi ? '#b8742e' : c, { x, y: 0.955, z: 0.23 + k * 0.045 }, mitarashi ? 'gloss' : 'satin')));
+      ['#f4a6be', '#f7f5ee', '#8cc06a'].forEach((c, k) => y.add(P.mesh(new THREE.SphereGeometry(0.022, 6, 4), mitarashi ? '#b8742e' : c, { x, y: 0.955, z: 0.23 + k * 0.045 }, mitarashi ? 'gloss' : 'satin')));
     }
     y.add(P.box(0.5, 0.03, 0.3, '#2a2422', { x: 0.55, y: 0.92, z: 0.25 }, 'metal'));
   } else if (kind === 'yakisoba') {
@@ -570,7 +570,7 @@ function yatai(P, S, L, kind, on) {
     for (let i = 0; i < 5; i++) y.add(P.box(0.14, 0.05, 0.1, '#f6f4ee', { x: 0.45 + (i % 3) * 0.16, y: 0.93 + Math.floor(i / 3) * 0.05, z: 0.35 }, 'satin'));
   } else if (kind === 'takoyaki') {
     y.add(P.box(0.8, 0.06, 0.45, '#2f2f2f', { x: -0.4, y: 0.92, z: 0.15 }, 'metal'));
-    for (let i = 0; i < 18; i++) y.add(P.mesh(new THREE.SphereGeometry(0.028, 8, 6), '#c98a3a', { x: -0.72 + (i % 6) * 0.12, y: 0.99, z: 0.02 + Math.floor(i / 6) * 0.12 }, 'satin'));
+    for (let i = 0; i < 18; i++) y.add(P.mesh(new THREE.SphereGeometry(0.028, 6, 4), '#c98a3a', { x: -0.72 + (i % 6) * 0.12, y: 0.99, z: 0.02 + Math.floor(i / 6) * 0.12 }, 'satin'));
   } else {
     y.add(P.box(0.9, 0.3, 0.5, '#5aa0d8', { x: -0.35, y: 0.92, z: 0.15 }, 'gloss'));
     for (let i = 0; i < 10; i++) y.add(P.cyl(0.025, 0.03, 0.22, i % 3 ? '#9fd4e8' : '#cfe3c6', { x: -0.7 + (i % 5) * 0.16, y: 1.0, z: 0.05 + Math.floor(i / 5) * 0.2 }, 'gloss', 8));
@@ -924,7 +924,7 @@ function paletteKit() {
       return m;
     },
     box: (w, h, d, color, o = {}, kind) => P.mesh(new THREE.BoxGeometry(w, h, d), color, { ...o, y: (o.y ?? 0) + h / 2 }, kind),
-    rbox: (w, h, d, r, color, o = {}, kind) => P.mesh(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2, h / 2, d / 2)), color, { ...o, y: (o.y ?? 0) + h / 2 }, kind),
+    rbox: (w, h, d, r, color, o = {}, kind, seg = 1) => P.mesh(new RoundedBoxGeometry(w, h, d, seg, Math.min(r, w / 2, h / 2, d / 2)), color, { ...o, y: (o.y ?? 0) + h / 2 }, kind),
     cyl: (rt, rb, h, color, o = {}, kind, seg = 16) => P.mesh(new THREE.CylinderGeometry(rt, rb, h, seg), color, { ...o, y: (o.y ?? 0) + h / 2 }, kind),
     /** Move meshes built with the kit helpers (K.plant, K.chair …) onto the palette. */
     adopt(obj) {

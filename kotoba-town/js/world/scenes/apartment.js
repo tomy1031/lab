@@ -268,27 +268,6 @@ function drawText(c, cw, ch, lines, opts) {
     c.fillText(l.t, x, y);
   });
 }
-function drawText(c, cw, ch, lines, opts) {
-  const r = (opts.radius ?? 0.08) * Math.min(cw, ch);
-  if (opts.bg !== null) {
-    c.fillStyle = opts.bg ?? '#ffffff'; K.roundRect(c, 0, 0, cw, ch, r); c.fill();
-    if (opts.border) { c.strokeStyle = opts.border; c.lineWidth = Math.max(3, ch * 0.04); K.roundRect(c, c.lineWidth / 2, c.lineWidth / 2, cw - c.lineWidth, ch - c.lineWidth, r); c.stroke(); }
-  }
-  const arr = Array.isArray(lines) ? lines : [lines];
-  const size = (opts.size ?? 0.5) * ch / Math.max(1, arr.length * 0.9);
-  c.textBaseline = 'middle'; c.textAlign = opts.align ?? 'center';
-  arr.forEach((line, i) => {
-    const l = typeof line === 'string' ? { t: line } : line;
-    let s = size * (l.scale ?? 1);
-    const wt = l.weight ?? opts.weight ?? 700;
-    c.font = `${wt} ${s}px ${K.JP_FONT}`;
-    c.fillStyle = l.color ?? opts.fg ?? '#333333';
-    const x = c.textAlign === 'left' ? cw * 0.06 : c.textAlign === 'right' ? cw * 0.94 : cw / 2;
-    const y = ch * (i + 0.5) / arr.length;
-    while (c.measureText(l.t).width > cw * 0.92 && s > 6) { s *= 0.92; c.font = `${wt} ${s}px ${K.JP_FONT}`; }
-    c.fillText(l.t, x, y);
-  });
-}
 
 function shadeHex(hex, k) { const c = new THREE.Color(hex); c.multiplyScalar(k); return `#${c.getHexString()}`; }
 
