@@ -1,0 +1,15 @@
+{
+  "name": "kotoba-town",
+  "private": true,
+  "type": "module",
+  "description": "Kotoba Town — WebXR Japanese conversation practice with Gemini Live (three.js, no build step)",
+  "scripts": {
+    "serve": "node tests/serve.mjs 8090",
+    "validate": "node tools/validate.mjs",
+    "manifest": "node tools/voice_manifest.mjs",
+    "test": "node tools/validate.mjs && node tests/smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

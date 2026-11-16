@@ -1,0 +1,1402 @@
+{
+  "lesson": 5,
+  "titleJa": "どこへ いきますか",
+  "titleEn": "Where are you going?",
+  "summaryEn": "Go, come and go home: say where, how (train, bus, on foot), with whom and when — and give dates.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "N(place)へ いきます／きます／かえります",
+      "meaningEn": "go / come / return to a place (direction particle へ, read \"e\")",
+      "exampleJa": "あした きょうとへ いきます。",
+      "exampleEn": "I am going to Kyoto tomorrow."
+    },
+    {
+      "id": "g2",
+      "pattern": "どこ[へ]も いきません／いきませんでした",
+      "meaningEn": "not go anywhere (question word + も + negative)",
+      "exampleJa": "にちようびは どこも いきませんでした。",
+      "exampleEn": "I didn't go anywhere on Sunday."
+    },
+    {
+      "id": "g3",
+      "pattern": "N(vehicle)で いきます／あるいて いきます",
+      "meaningEn": "go by a means of transport (で); on foot is あるいて with no で; なんで = by what",
+      "exampleJa": "バスで いきます。えきから あるいて かえります。",
+      "exampleEn": "I go by bus. I walk home from the station."
+    },
+    {
+      "id": "g4",
+      "pattern": "N(person)と V／ひとりで V",
+      "meaningEn": "do something with someone (と); alone is ひとりで (no と); だれと = with whom",
+      "exampleJa": "ともだちと にほんへ きました。",
+      "exampleEn": "I came to Japan with a friend."
+    },
+    {
+      "id": "g5",
+      "pattern": "いつ V か",
+      "meaningEn": "when? (いつ takes no に; so do きょねん, らいしゅう, あした …)",
+      "exampleJa": "いつ にほんへ きましたか。…きょねん きました。",
+      "exampleEn": "When did you come to Japan? — I came last year."
+    },
+    {
+      "id": "g6",
+      "pattern": "～がつ ～にち／なんがつ なんにち",
+      "meaningEn": "dates: month + day (ついたち, ふつか … はつか have special readings)",
+      "exampleJa": "たんじょうびは 5がつ 15にちです。",
+      "exampleEn": "My birthday is May 15th."
+    },
+    {
+      "id": "g7",
+      "pattern": "S よ",
+      "meaningEn": "sentence-final よ: telling the listener something they don't know",
+      "exampleJa": "その でんしゃは みどりのへ いきませんよ。",
+      "exampleEn": "That train doesn't go to Midorino, you know."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "行きます",
+      "kana": "いきます",
+      "en": "to go"
+    },
+    {
+      "ja": "来ます",
+      "kana": "きます",
+      "en": "to come"
+    },
+    {
+      "ja": "帰ります",
+      "kana": "かえります",
+      "en": "to go home, return"
+    },
+    {
+      "ja": "電車",
+      "kana": "でんしゃ",
+      "en": "train"
+    },
+    {
+      "ja": "バス",
+      "kana": "バス",
+      "en": "bus"
+    },
+    {
+      "ja": "飛行機",
+      "kana": "ひこうき",
+      "en": "airplane"
+    },
+    {
+      "ja": "自転車",
+      "kana": "じてんしゃ",
+      "en": "bicycle"
+    },
+    {
+      "ja": "歩いて",
+      "kana": "あるいて",
+      "en": "on foot"
+    },
+    {
+      "ja": "普通",
+      "kana": "ふつう",
+      "en": "local train"
+    },
+    {
+      "ja": "急行",
+      "kana": "きゅうこう",
+      "en": "express train"
+    },
+    {
+      "ja": "～番線",
+      "kana": "～ばんせん",
+      "en": "platform number ~"
+    },
+    {
+      "ja": "次の",
+      "kana": "つぎの",
+      "en": "next"
+    },
+    {
+      "ja": "友達",
+      "kana": "ともだち",
+      "en": "friend"
+    },
+    {
+      "ja": "家族",
+      "kana": "かぞく",
+      "en": "family"
+    },
+    {
+      "ja": "一人で",
+      "kana": "ひとりで",
+      "en": "alone, by oneself"
+    },
+    {
+      "ja": "いつ",
+      "kana": "いつ",
+      "en": "when"
+    },
+    {
+      "ja": "誕生日",
+      "kana": "たんじょうび",
+      "en": "birthday"
+    },
+    {
+      "ja": "去年",
+      "kana": "きょねん",
+      "en": "last year"
+    },
+    {
+      "ja": "今年",
+      "kana": "ことし",
+      "en": "this year"
+    },
+    {
+      "ja": "来週",
+      "kana": "らいしゅう",
+      "en": "next week"
+    },
+    {
+      "ja": "先週",
+      "kana": "せんしゅう",
+      "en": "last week"
+    },
+    {
+      "ja": "休み",
+      "kana": "やすみ",
+      "en": "holiday, day off"
+    },
+    {
+      "ja": "国",
+      "kana": "くに",
+      "en": "country, home country"
+    },
+    {
+      "ja": "公園",
+      "kana": "こうえん",
+      "en": "park"
+    }
+  ],
+  "tipsEn": [
+    "Station staff answer in very few words: 「2ばんせんです。」 Listen for the number + ばんせん (platform).",
+    "A local train (ふつう) stops everywhere; an express (きゅうこう) skips small stations. Always check which one you are boarding.",
+    "On Monday mornings colleagues often ask where you went at the weekend. 「どこも いきませんでした」 is a perfectly fine answer."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-05/grammar/",
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-5.html",
+      "https://gogonihon.com/en/blog/particles-in-japanese-part-2/"
+    ],
+    "notesEn": "Lesson 5 introduces the motion verbs いきます／きます／かえります with the direction particle へ, means of transport with で (but あるいて without で), company with と (but ひとりで), the question word いつ (no に), question word + も + negative (どこも いきません), sentence-final よ, and dates (months, days of the month, last/this/next week, month, year). Real-life fits: asking station staff which train or platform goes to your stop, small talk about when and with whom you came to Japan, Monday-morning chat about the weekend, birthdays and holiday plans. Typical mistakes: pronouncing へ as \"he\", adding で to あるいて, と after ひとり, に after いつ or らいしゅう, and a positive verb after どこも. The three variants are a station errand, a park-bench chat and a Monday office chat, each written from scratch with the town cast."
+  },
+  "variants": [
+    {
+      "id": "l05a",
+      "titleJa": "この でんしゃは いきますか",
+      "titleEn": "Does this train go there?",
+      "scene": "station",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Saturday morning. You're off to see the cherry blossoms at Sakura Park in Midorino. A train is standing at the platform — is it yours? Ask Okada-san at the gate.",
+      "roleEn": "You are a traveller who is new to this line. You want to get to Midorino, then to Sakura Park.",
+      "missionsEn": [
+        {
+          "text": "Ask whether that train goes to Midorino",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask how to get from Midorino Station to Sakura Park",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Help another passenger: tell her about the train",
+          "grammar": [
+            "g1",
+            "g7"
+          ]
+        },
+        {
+          "text": "Say whether you're going alone or with someone",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "okada",
+        "takeuchi"
+      ],
+      "positions": {
+        "okada": "staff",
+        "takeuchi": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "train",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Good morning.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Point at the train on the platform and ask if it goes to Midorino.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "すみません。あの でんしゃは ＿＿へ いきますか。",
+            "modelAnswers": [
+              "すみません。あの でんしゃは みどりのへ いきますか。"
+            ],
+            "branches": [
+              {
+                "id": "this_train",
+                "whenEn": "Learner asked a yes/no question: does that (or this) train go to Midorino?",
+                "next": "n2_no",
+                "exampleJa": "あの でんしゃは みどりのへ いきますか。"
+              },
+              {
+                "id": "which_platform",
+                "whenEn": "Learner asked which platform or which train goes to Midorino, or only said that they are going to Midorino.",
+                "next": "n2_plat",
+                "exampleJa": "みどりのは なんばんせんですか。"
+              }
+            ],
+            "fallback": "n2_plat"
+          }
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "いいえ、行きません。あれは 急行です。",
+              "kana": "いいえ、いきません。あれは きゅうこうです。",
+              "en": "No, it doesn't. That one is an express.",
+              "gesture": "shake_head"
+            },
+            {
+              "who": "okada",
+              "ja": "みどりのは 2番線の 普通ですよ。",
+              "kana": "みどりのは 2ばんせんの ふつうですよ。",
+              "en": "For Midorino, take the local from platform 2.",
+              "gesture": "point",
+              "target": "platform_sign",
+              "tts": "みどりのは にばんせんの ふつうですよ。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_plat",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "みどりのですか。2番線の 普通ですよ。",
+              "kana": "みどりのですか。2ばんせんの ふつうですよ。",
+              "en": "Midorino? That's the local from platform 2.",
+              "gesture": "point",
+              "target": "platform_sign",
+              "tts": "みどりのですか。にばんせんの ふつうですよ。"
+            },
+            {
+              "who": "okada",
+              "ja": "あの 急行は 行きません。",
+              "kana": "あの きゅうこうは いきません。",
+              "en": "That express doesn't go there."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "次は 9時40分です。",
+              "kana": "つぎは 9じ40ぷんです。",
+              "en": "The next one is at 9:40.",
+              "tts": "つぎは くじ よんじゅっぷんです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "You're going to Sakura Park. Ask how you get there from Midorino Station — by what?",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "みどりのえきから さくらこうえんまで なんで ＿＿か。",
+            "modelAnswers": [
+              "みどりのえきから さくらこうえんまで なんで いきますか。",
+              "えきから さくらこうえんまで バスで いきますか。"
+            ],
+            "branches": [
+              {
+                "id": "how",
+                "whenEn": "Learner asked how / by what to get to Sakura Park, or asked whether a bus, taxi or another vehicle goes there.",
+                "next": "n4_bus",
+                "exampleJa": "えきから さくらこうえんまで なんで いきますか。"
+              },
+              {
+                "id": "walk",
+                "whenEn": "Learner asked whether they can go to the park on foot (あるいて).",
+                "next": "n4_walk",
+                "exampleJa": "えきから あるいて いきますか。"
+              }
+            ],
+            "fallback": "n4_bus"
+          }
+        },
+        {
+          "id": "n4_bus",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "さくらこうえんですか。駅から バスで 行きます。",
+              "kana": "さくらこうえんですか。えきから バスで いきます。",
+              "en": "Sakura Park? You go by bus from the station."
+            },
+            {
+              "who": "okada",
+              "ja": "3番の バスですよ。",
+              "kana": "3ばんの バスですよ。",
+              "en": "It's the number 3 bus.",
+              "tts": "さんばんの バスですよ。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_walk",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "歩いて 40分ですよ。3番の バスで 行きます。",
+              "kana": "あるいて 40ぷんですよ。3ばんの バスで いきます。",
+              "en": "It's 40 minutes on foot! You take the number 3 bus.",
+              "gesture": "laugh",
+              "tts": "あるいて よんじゅっぷんですよ。さんばんの バスで いきます。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "train",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "すみません。あの 電車は みどりのへ 行きますか。",
+              "kana": "すみません。あの でんしゃは みどりのへ いきますか。",
+              "en": "Excuse me. Does that train go to Midorino?",
+              "gesture": "point",
+              "target": "train"
+            }
+          ],
+          "listen": {
+            "promptEn": "Another passenger asks you the same thing! Tell her what you just learned.",
+            "grammar": [
+              "g1",
+              "g7"
+            ],
+            "hintJa": "いいえ、＿＿。2ばんせんの ＿＿ですよ。",
+            "modelAnswers": [
+              "いいえ、いきません。みどりのは 2ばんせんの ふつうですよ。",
+              "いいえ、いきませんよ。2ばんせんです。"
+            ],
+            "branches": [
+              {
+                "id": "right",
+                "whenEn": "Learner said the train does not go to Midorino and/or sent her to platform 2 or the local train.",
+                "next": "n6_right",
+                "exampleJa": "いいえ、いきません。2ばんせんですよ。"
+              },
+              {
+                "id": "wrong",
+                "whenEn": "Learner said yes, that train goes to Midorino.",
+                "next": "n6_wrong",
+                "exampleJa": "はい、いきます。"
+              }
+            ],
+            "fallback": "n6_wrong"
+          }
+        },
+        {
+          "id": "n6_right",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "2番線ですね。ありがとう ございます。",
+              "kana": "2ばんせんですね。ありがとう ございます。",
+              "en": "Platform 2, right. Thank you.",
+              "gesture": "bow_light",
+              "tts": "にばんせんですね。ありがとう ございます。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_wrong",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "お客さん、あれは 急行ですよ。2番線です。",
+              "kana": "おきゃくさん、あれは きゅうこうですよ。2ばんせんです。",
+              "en": "Excuse me — that one's the express. You want platform 2.",
+              "gesture": "point",
+              "target": "platform_sign",
+              "tts": "おきゃくさん、あれは きゅうこうですよ。にばんせんです。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "わたしも さくらこうえんへ 行きます。",
+              "kana": "わたしも さくらこうえんへ いきます。",
+              "en": "I'm going to Sakura Park too."
+            },
+            {
+              "who": "takeuchi",
+              "ja": "一人で 行きますか。",
+              "kana": "ひとりで いきますか。",
+              "en": "Are you going alone?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her whether you're going alone or with someone.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "いいえ、＿＿と いきます。／はい、ひとりで ＿＿。",
+            "modelAnswers": [
+              "いいえ、ともだちと いきます。",
+              "はい、ひとりで いきます。"
+            ],
+            "branches": [
+              {
+                "id": "with_someone",
+                "whenEn": "Learner is going with someone (a friend, family, a colleague …).",
+                "next": "n8_with",
+                "exampleJa": "いいえ、ともだちと いきます。"
+              },
+              {
+                "id": "alone",
+                "whenEn": "Learner is going alone.",
+                "next": "n8_alone",
+                "exampleJa": "はい、ひとりで いきます。"
+              }
+            ],
+            "fallback": "n8_alone"
+          }
+        },
+        {
+          "id": "n8_with",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。わたしは 一人で 行きます。",
+              "kana": "そうですか。わたしは ひとりで いきます。",
+              "en": "I see. I'm going by myself.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_alone",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "わたしも 一人です。",
+              "kana": "わたしも ひとりです。",
+              "en": "I'm on my own too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "focus": "platform_sign",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "9時40分の 普通です。2番線へ どうぞ。",
+              "kana": "9じ40ぷんの ふつうです。2ばんせんへ どうぞ。",
+              "en": "That's the 9:40 local. Platform 2, please.",
+              "gesture": "point",
+              "target": "platform_sign",
+              "tts": "くじ よんじゅっぷんの ふつうです。にばんせんへ どうぞ。"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l05b",
+      "titleJa": "こうえんの ベンチで",
+      "titleEn": "A chat on the park bench",
+      "scene": "park",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Saturday morning under the cherry trees. Hara-san, who walks here every day, sits down on your bench — and she is curious about you.",
+      "roleEn": "You are yourself: answer with your real story (when you came to Japan, with whom, how you got here today).",
+      "missionsEn": [
+        {
+          "text": "Say when and with whom you came to Japan",
+          "grammar": [
+            "g1",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say how you came to the park today",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask Hara-san a question about her walks",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say where you're going tomorrow — or nowhere",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "hara"
+      ],
+      "positions": {
+        "hara": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Good morning.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "hara",
+              "ja": "いつ 日本へ 来ましたか。",
+              "kana": "いつ にほんへ きましたか。",
+              "en": "When did you come to Japan?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her when you came to Japan (last year, this year, a month, a date …).",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "＿＿ にほんへ きました。",
+            "modelAnswers": [
+              "きょねん にほんへ きました。",
+              "ことしの 1がつに きました。"
+            ],
+            "branches": [
+              {
+                "id": "gave_time",
+                "whenEn": "Learner said when they came (a year, month, date, last year, this year, last month …).",
+                "next": "n2",
+                "exampleJa": "きょねん にほんへ きました。"
+              },
+              {
+                "id": "no_time",
+                "whenEn": "Learner answered without any time, e.g. only said which country they came from or just that they came to Japan.",
+                "next": "n1b",
+                "exampleJa": "ベトナムから きました。"
+              }
+            ],
+            "fallback": "n1b"
+          }
+        },
+        {
+          "id": "n1b",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "去年ですか。今年ですか。",
+              "kana": "きょねんですか。ことしですか。",
+              "en": "Was it last year? This year?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Last year? This year? Tell her when you came.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿ きました。",
+            "modelAnswers": [
+              "ことし きました。",
+              "きょねん きました。"
+            ],
+            "branches": [
+              {
+                "id": "this_year",
+                "whenEn": "Learner came this year (or very recently: this month, last month, last week).",
+                "next": "n2",
+                "exampleJa": "ことし きました。"
+              },
+              {
+                "id": "earlier",
+                "whenEn": "Learner came last year or earlier, or gave any other time.",
+                "next": "n2",
+                "exampleJa": "きょねん きました。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。だれと 来ましたか。",
+              "kana": "そうですか。だれと きましたか。",
+              "en": "I see. Who did you come with?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her who you came to Japan with — or that you came alone.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿と きました。／ひとりで きました。",
+            "modelAnswers": [
+              "ひとりで きました。",
+              "かぞくと きました。"
+            ],
+            "branches": [
+              {
+                "id": "alone",
+                "whenEn": "Learner came alone.",
+                "next": "n3_alone",
+                "exampleJa": "ひとりで きました。"
+              },
+              {
+                "id": "with_someone",
+                "whenEn": "Learner came with someone (family, friend, spouse, colleague …).",
+                "next": "n3_with",
+                "exampleJa": "かぞくと きました。"
+              }
+            ],
+            "fallback": "n3_alone"
+          }
+        },
+        {
+          "id": "n3_alone",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "一人で ですか。たいへんですね。",
+              "kana": "ひとりで ですか。たいへんですね。",
+              "en": "All by yourself? That must be hard.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_with",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。一人じゃ ありませんね。",
+              "kana": "そうですか。ひとりじゃ ありませんね。",
+              "en": "I see. So you're not alone here.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "今日は ここへ 何で 来ましたか。",
+              "kana": "きょうは ここへ なんで きましたか。",
+              "en": "How did you get here today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her how you came to the park today (on foot, by bicycle, by bus …).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿で きました。／あるいて きました。",
+            "modelAnswers": [
+              "あるいて きました。",
+              "じてんしゃで きました。"
+            ],
+            "branches": [
+              {
+                "id": "walk",
+                "whenEn": "Learner came on foot.",
+                "next": "n5_walk",
+                "exampleJa": "あるいて きました。"
+              },
+              {
+                "id": "vehicle",
+                "whenEn": "Learner came by a vehicle (bicycle, bus, train, subway, taxi, car …).",
+                "next": "n5_vehicle",
+                "exampleJa": "じてんしゃで きました。"
+              }
+            ],
+            "fallback": "n5_vehicle"
+          }
+        },
+        {
+          "id": "n5_walk",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "歩いて ですか。わたしも 毎日 歩いて 来ますよ。",
+              "kana": "あるいて ですか。わたしも まいにち あるいて きますよ。",
+              "en": "On foot? I walk here every day too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5_vehicle",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。わたしは 毎日 歩いて 来ますよ。",
+              "kana": "そうですか。わたしは まいにち あるいて きますよ。",
+              "en": "I see. I walk here every day."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [],
+          "listen": {
+            "promptEn": "Your turn to ask: who does she come to the park with? Or what time does she come?",
+            "grammar": [
+              "g4",
+              "g5"
+            ],
+            "hintJa": "だれと ここへ ＿＿か。／なんじに ＿＿か。",
+            "modelAnswers": [
+              "だれと ここへ きますか。",
+              "まいにち なんじに きますか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_who",
+                "whenEn": "Learner asked who she comes with, or whether she comes alone.",
+                "next": "n7_who",
+                "exampleJa": "だれと ここへ きますか。"
+              },
+              {
+                "id": "ask_time",
+                "whenEn": "Learner asked when or at what time she comes.",
+                "next": "n7_time",
+                "exampleJa": "まいにち なんじに きますか。"
+              }
+            ],
+            "fallback": "n7_who"
+          }
+        },
+        {
+          "id": "n7_who",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "一人で 来ます。日曜日は 家族と 来ますよ。",
+              "kana": "ひとりで きます。にちようびは かぞくと きますよ。",
+              "en": "I come alone. On Sundays I come with my family."
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_time",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "毎朝 6時半に 来ますよ。",
+              "kana": "まいあさ 6じはんに きますよ。",
+              "en": "I come at 6:30 every morning.",
+              "tts": "まいあさ ろくじはんに きますよ。"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "あしたは 日曜日ですね。どこへ 行きますか。",
+              "kana": "あしたは にちようびですね。どこへ いきますか。",
+              "en": "Tomorrow is Sunday. Where are you going?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her where you're going tomorrow — or that you aren't going anywhere.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "＿＿へ いきます。／どこも ＿＿。",
+            "modelAnswers": [
+              "ともだちと デパートへ いきます。",
+              "どこも いきません。"
+            ],
+            "branches": [
+              {
+                "id": "going",
+                "whenEn": "Learner is going somewhere tomorrow.",
+                "next": "n9_go",
+                "exampleJa": "ともだちと デパートへ いきます。"
+              },
+              {
+                "id": "nowhere",
+                "whenEn": "Learner is not going anywhere / is staying home.",
+                "next": "n9_stay",
+                "exampleJa": "どこも いきません。"
+              }
+            ],
+            "fallback": "n9_stay"
+          }
+        },
+        {
+          "id": "n9_go",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。わたしは どこも 行きません。",
+              "kana": "そうですか。わたしは どこも いきません。",
+              "en": "I see. I'm not going anywhere."
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9_stay",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "わたしも どこも 行きません。",
+              "kana": "わたしも どこも いきません。",
+              "en": "I'm not going anywhere either.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "あしたも ここへ 来ますよ。じゃ、また。",
+              "kana": "あしたも ここへ きますよ。じゃ、また。",
+              "en": "I'll be here again tomorrow. See you.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "お国は どちらですか。",
+        "openerKana": "おくには どちらですか。",
+        "openerEn": "Where are you from?",
+        "topicEn": "Gentle small talk on the bench: the learner's country, when they go home, how they get to school or work, who they go with. Stay within lesson 1–5 grammar (no adjectives, no て-form).",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l05c",
+      "titleJa": "げつようびの あさ",
+      "titleEn": "Monday morning catch-up",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Monday, a few minutes before 9. Aoki-san is by the calendar and wants to hear about your weekend — and your birthday, and your summer plans.",
+      "roleEn": "You are Aoki-san's colleague from abroad. Answer truthfully or make it up — staying home is a fine answer too.",
+      "missionsEn": [
+        {
+          "text": "Say where you went at the weekend — or that you didn't go anywhere",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Talk about who with and how (yours or hers)",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell her the date of your birthday",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Talk about your August holiday",
+          "grammar": [
+            "g1",
+            "g2",
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki"
+      ],
+      "positions": {
+        "aoki": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Good morning!",
+              "gesture": "wave"
+            },
+            {
+              "who": "aoki",
+              "ja": "土曜日と 日曜日、どこへ 行きましたか。",
+              "kana": "どようびと にちようび、どこへ いきましたか。",
+              "en": "Where did you go on Saturday and Sunday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her where you went at the weekend — or that you didn't go anywhere.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "＿＿へ いきました。／どこも ＿＿。",
+            "modelAnswers": [
+              "にちようびに きょうとへ いきました。",
+              "どこも いきませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "went",
+                "whenEn": "Learner went somewhere at the weekend.",
+                "next": "n2_went",
+                "exampleJa": "にちようびに きょうとへ いきました。"
+              },
+              {
+                "id": "nowhere",
+                "whenEn": "Learner didn't go anywhere / stayed home.",
+                "next": "n2_home",
+                "exampleJa": "どこも いきませんでした。"
+              }
+            ],
+            "fallback": "n2_home"
+          }
+        },
+        {
+          "id": "n2_went",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。だれと 行きましたか。",
+              "kana": "そうですか。だれと いきましたか。",
+              "en": "Oh really? Who did you go with?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her who you went with — or that you went alone.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿と いきました。／ひとりで いきました。",
+            "modelAnswers": [
+              "ともだちと いきました。",
+              "ひとりで いきました。"
+            ],
+            "branches": [
+              {
+                "id": "alone",
+                "whenEn": "Learner went alone.",
+                "next": "n3_alone",
+                "exampleJa": "ひとりで いきました。"
+              },
+              {
+                "id": "with_someone",
+                "whenEn": "Learner went with someone.",
+                "next": "n3_with",
+                "exampleJa": "ともだちと いきました。"
+              }
+            ],
+            "fallback": "n3_with"
+          }
+        },
+        {
+          "id": "n3_alone",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "一人で ですか。わたしは 友達と よこはまへ 行きました。",
+              "kana": "ひとりで ですか。わたしは ともだちと よこはまへ いきました。",
+              "en": "By yourself? I went to Yokohama with a friend."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_with",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。わたしも 友達と 行きました。よこはまです。",
+              "kana": "そうですか。わたしも ともだちと いきました。よこはまです。",
+              "en": "I see. I went out with a friend too — to Yokohama.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n2_home",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。わたしは 友達と よこはまへ 行きました。",
+              "kana": "そうですか。わたしは ともだちと よこはまへ いきました。",
+              "en": "I see. I went to Yokohama with a friend."
+            }
+          ],
+          "listen": {
+            "promptEn": "Show some interest: ask her how she went (by what) — or when.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "なんで ＿＿か。／いつ ＿＿か。",
+            "modelAnswers": [
+              "なんで いきましたか。",
+              "いつ いきましたか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_how",
+                "whenEn": "Learner asked how / by what she went (or whether she went by train, bus, car …).",
+                "next": "n2h_how",
+                "exampleJa": "なんで いきましたか。"
+              },
+              {
+                "id": "ask_when",
+                "whenEn": "Learner asked when / which day she went.",
+                "next": "n2h_when",
+                "exampleJa": "いつ いきましたか。"
+              }
+            ],
+            "fallback": "n2h_how"
+          }
+        },
+        {
+          "id": "n2h_how",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "電車で 行きましたよ。",
+              "kana": "でんしゃで いきましたよ。",
+              "en": "I went by train."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n2h_when",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "日曜日に 行きました。電車で 行きましたよ。",
+              "kana": "にちようびに いきました。でんしゃで いきましたよ。",
+              "en": "I went on Sunday. By train."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "focus": "calendar",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、5月15日は わたしの 誕生日ですよ。",
+              "kana": "あ、5がつ 15にちは わたしの たんじょうびですよ。",
+              "en": "Oh — May 15th is my birthday!",
+              "gesture": "point",
+              "target": "calendar",
+              "tts": "あ、ごがつ じゅうごにちは わたしの たんじょうびですよ。"
+            },
+            {
+              "who": "aoki",
+              "ja": "誕生日は いつですか。",
+              "kana": "たんじょうびは いつですか。",
+              "en": "When is your birthday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her your birthday: month and day.",
+            "grammar": [
+              "g5",
+              "g6"
+            ],
+            "hintJa": "わたしの たんじょうびは ＿＿がつ ＿＿にちです。",
+            "modelAnswers": [
+              "わたしの たんじょうびは 9がつ はつかです。",
+              "5がつ ここのかです。"
+            ],
+            "branches": [
+              {
+                "id": "may",
+                "whenEn": "Learner's birthday is in May.",
+                "next": "n5_may",
+                "exampleJa": "わたしの たんじょうびは 5がつ ここのかです。"
+              },
+              {
+                "id": "other_month",
+                "whenEn": "Learner's birthday is in any other month.",
+                "next": "n6",
+                "exampleJa": "わたしの たんじょうびは 9がつ はつかです。"
+              }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n5_may",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "え、5月ですか。わたしも 5月です!",
+              "kana": "え、5がつですか。わたしも 5がつです!",
+              "en": "What, May? Mine's in May too!",
+              "gesture": "surprised",
+              "tts": "え、ごがつですか。わたしも ごがつです!"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "8月の 休みは 国へ 帰りますか。",
+              "kana": "8がつの やすみは くにへ かえりますか。",
+              "en": "Are you going back to your country for the August holiday?",
+              "tts": "はちがつの やすみは くにへ かえりますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her whether you're going home to your country in August.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "はい、＿＿。／いいえ、かえりません。",
+            "modelAnswers": [
+              "はい、かえります。",
+              "いいえ、かえりません。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner will go back to their country.",
+                "next": "n7y",
+                "exampleJa": "はい、かえります。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner will not go back to their country.",
+                "next": "n7n",
+                "exampleJa": "いいえ、かえりません。"
+              }
+            ],
+            "fallback": "n7n"
+          }
+        },
+        {
+          "id": "n7y",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。何で 帰りますか。",
+              "kana": "そうですか。なんで かえりますか。",
+              "en": "I see. How will you travel?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her how you travel home.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿で かえります。",
+            "modelAnswers": [
+              "ひこうきで かえります。"
+            ],
+            "branches": [
+              {
+                "id": "plane",
+                "whenEn": "Learner goes home by airplane.",
+                "next": "e_plane",
+                "exampleJa": "ひこうきで かえります。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner goes home by something else (ship, train, shinkansen, bus, car …).",
+                "next": "e_other",
+                "exampleJa": "ふねで かえります。"
+              }
+            ],
+            "fallback": "e_other"
+          }
+        },
+        {
+          "id": "n7n",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。じゃ、休みは どこへ 行きますか。",
+              "kana": "そうですか。じゃ、やすみは どこへ いきますか。",
+              "en": "I see. So where will you go for the holiday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her where you'll go in the holiday — or that you won't go anywhere.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "＿＿へ いきます。／どこも ＿＿。",
+            "modelAnswers": [
+              "ともだちと おおさかへ いきます。",
+              "どこも いきません。"
+            ],
+            "branches": [
+              {
+                "id": "place",
+                "whenEn": "Learner will go somewhere.",
+                "next": "e_other",
+                "exampleJa": "ともだちと おおさかへ いきます。"
+              },
+              {
+                "id": "nowhere",
+                "whenEn": "Learner won't go anywhere.",
+                "next": "e_nowhere",
+                "exampleJa": "どこも いきません。"
+              }
+            ],
+            "fallback": "e_nowhere"
+          }
+        },
+        {
+          "id": "e_plane",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "飛行機で ですか。わたしも 飛行機で 帰ります。ほっかいどうです。",
+              "kana": "ひこうきで ですか。わたしも ひこうきで かえります。ほっかいどうです。",
+              "en": "By plane? I'm flying home too — to Hokkaido.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "e_other",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。わたしは 飛行機で ほっかいどうへ 帰ります。",
+              "kana": "そうですか。わたしは ひこうきで ほっかいどうへ かえります。",
+              "en": "I see. I'm flying home to Hokkaido."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "e_nowhere",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "どこも 行きませんか。わたしは ほっかいどうへ 帰ります。",
+              "kana": "どこも いきませんか。わたしは ほっかいどうへ かえります。",
+              "en": "Not going anywhere? I'm going home to Hokkaido."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "focus": "clock",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、9時ですよ。じゃ、会議室へ 行きます。",
+              "kana": "あ、9じですよ。じゃ、かいぎしつへ いきます。",
+              "en": "Oh, it's 9 o'clock! Well, I'm off to the meeting room.",
+              "gesture": "point",
+              "target": "clock",
+              "tts": "あ、くじですよ。じゃ、かいぎしつへ いきます。"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
