@@ -408,7 +408,7 @@ export default function build({ setup }) {
   mergeDynamic(pass);
 
   // ------------------------------------------------------------------ animation
-  const PASS_PERIOD = 46; const PASS_START = 9; const PASS_SPEED = 26;
+  const PASS_PERIOD = 75; const PASS_START = 9; const PASS_SPEED = 26;
   let flip = 0;
   return K.finalize({
     group: g,
@@ -429,7 +429,7 @@ export default function build({ setup }) {
       const f = Math.floor(t / 3.5) % 2;
       if (f !== flip) { flip = f; dest.offset.y = f ? -0.5 : 0; passDest.offset.y = f ? -0.5 : 0; }
       ticker.tex.offset.x = (t * 0.035) % 1;
-      // a limited express passes through platform 2 every ~46 s
+      // a limited express passes through platform 2 every 75 s
       const k = t - PASS_START;
       const ph = k < 0 ? -1 : k % PASS_PERIOD;
       const x = 150 - ph * PASS_SPEED;
