@@ -68,7 +68,12 @@ lesson JSON（data/lessons/l01〜l10.json）── Fable が ネットで 調べ
 
 - **判定は Gemini Live**（関数呼び出し `judge_reply` / `final_report`）。プロンプトと 関数の 定義は `js/talk/judge.js`、つなぎ方は `js/talk/live.js`・`js/talk/brain.js`
 - モデルは `gemini-3.8-live` → `gemini-3.1-flash-live-preview` → `gemini-2.5-flash-native-audio-preview-12-2025` → `gemini-2.5-flash-live` の 順に ためします（せっていで 固定も できます）
-- 同じ ブラウザ用の コード（`js/talk/*.js`）を Node で 動かして、**本物の API で 判定を 確かめました**（nexmax-academy の ワークフローの self-check。学習者の 声を Live TTS で 作り、マイクと 同じ 形で 流して、4 つの 例が すべて 正しい 分岐に なりました）
+- **本物の API で 確かめました**（nexmax-academy の ワークフロー `Kotoba Town e2e`）
+  - self-check：ブラウザ用の コード（`js/talk/*.js`）を Node で 動かし、Live TTS で 作った 学習者の 声を マイクと 同じ 形で 流す。
+    自己紹介・名前だけ・「もう いちど おねがいします」・英語・相手への 質問の どれも 正しい 分岐に なり、
+    台本外の 質問には 相手が 短く 答えた（「トイレは どこですか」→「トイレは あちらです。」）
+  - 通し試験：本物の ブラウザ（Chromium）で アプリを 開き、合成した 学習者の 声を 偽マイクに して 第1課の 会社の 場面を 会話。
+    `gemini-3.8-live` が 判定し、「アメリカの かたですか」への「ベトナムから 来ました」を「アメリカ人では ない」の 分岐に 進めた
 - 人物は 手続き的に 作った 3D モデル（骨組み＋GPU スキニング。1 人 約 3 ドローコール）。まばたき・目線・口の 動き（音量から）・おじぎ・うなずき・指さし・手わたし などの しぐさ。まちの 人は 15 人で、課を こえて 何度も 出て きます（`js/content/cast.js`）
 
 ![まちの 人 15 人](docs/cast.jpg)
@@ -97,6 +102,7 @@ lesson JSON（data/lessons/l01〜l10.json）── Fable が ネットで 調べ
 cd kotoba-town
 node tests/serve.mjs 8090          # http://127.0.0.1:8090/ （?play=l01a で その場面から、?debug で ログ）
 node tools/validate.mjs            # 台本の 検査（30 場面）
+node tests/unit.mjs                # 判定・ローマ字・Live の やりとり（にせの Live サーバー）
 node tests/smoke.mjs --all         # 全 30 場面を オフライン練習で 最後まで 通す（Playwright）
 node tools/shot.mjs <dir> "scene=office&view=spawn"   # 場面の 確認用 スクリーンショット（dev/scene.html）
 ```
