@@ -33,6 +33,8 @@ export class LiveBrain {
     this.lastNote = '';
     this.awaitingJudge = false;
     this.judgeAt = 0;
+    this.played = 0;
+    this.maxBytes = Infinity;
   }
 
   setup() {
@@ -67,7 +69,11 @@ export class LiveBrain {
       onAudio: (b64) => {
         this.trace('audio');
         if (this.gate === 'armed') { this.gate = 'play'; clearTimeout(this.armTimer); }
-        if (this.gate === 'play') this.on.npcAudio(b64);
+        if (this.gate === 'play') {
+          this.played += Math.floor(b64.length * 3 / 4);
+          if (this.played > this.maxBytes) { this.gate = 'drop'; this.on.npcDone(false); return; }
+          this.on.npcAudio(b64);
+        }
       },
       onOutputText: (t) => { this.trace(`out:${t}`); if (this.gate === 'play' || this.gate === 'armed') this.on.npcText(t); },
       onInputText: (t) => {
@@ -152,7 +158,15 @@ export class LiveBrain {
         this.gate = say === 'nothing' ? 'drop' : 'armed';
         clearTimeout(this.armTimer);
         if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
-        responses.push({ id: call.id, name: call.name, response: { ok: true, say } });
+        const response = { ok: true, say };
+        if (say === 'react') {
+          response.instruction = `Reply in character to what the learner just said (${result.heard ? `「${result.heard}」` : 'see audio'}): ONE short polite Japanese sentence, at most 15 words, that answers their question or comment directly. Do not greet, do not introduce yourself, do not ask a question, do not continue the script.`;
+        } else if (say === 'chat') {
+          response.instruction = `Reply in character to 「${result.heard}」 with 1–2 short polite Japanese sentences at the learner's level, then ask one simple question back. No greetings.`;
+        }
+        responses.push({ id: call.id, name: call.name, response });
+        this.played = 0;
+        this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8); // hard cap on reply length
         this.heardText = '';
       } else if (call.name === 'final_report') {
         const report = readReport(call.args);

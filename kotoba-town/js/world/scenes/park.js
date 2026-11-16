@@ -45,7 +45,7 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ trees
   const B = blossomMats(season, night);
   // the big cherry tree by the conversation (canopy reaches over the picnic sheet)
-  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [0.55, 0.65], trunkH: 2.1, lush: true, detail: 2 });
+  const bigTree = cherryTree(P, B, season, 7, { s: 1.25, bias: [0.55, 0.65], trunkH: 2.1, lush: true, detail: 1 });
   put(bigTree, -1.5, 0, -2.05);
   props.sakura = K.prop('sakura', bigTree, { labelJa: 'さくら', labelEn: 'cherry tree' });
   const treeSpots = [
@@ -53,7 +53,7 @@ export default function build({ setup }) {
     [-7.5, -9.2, 1.1], [-13.5, -9.6, 1.0], [8.5, -10.6, 1.15], [14.5, -10.2, 1.0], [-21, -8.6, 1.1], [21, -9.2, 1.0],
     [-5.5, 4.0, 1.1], [0.8, 6.8, 1.0], [7.5, 5.0, 1.15], [-11, 3.0, 1.0], [12.5, 2.5, 1.05], [-3.0, 11, 1.0], [9, 12, 1.1],
   ];
-  treeSpots.forEach(([x, z, s], i) => { const d = Math.hypot(x, z); put(cherryTree(P, B, season, 11 + i * 3, { s, detail: d < 11 ? 1 : 0, cast: d < 15 }), x, 0, z, i); });
+  treeSpots.forEach(([x, z, s], i) => { const d = Math.hypot(x, z); put(cherryTree(P, B, season, 11 + i * 3, { s, detail: d < 11 ? 1 : 0, cast: d < 9 }), x, 0, z, i); });
   // far tree belts around the park
   for (let i = 0; i < 26; i++) {
     const a = -Math.PI * 0.95 + i * 0.075 * Math.PI; const r = 34 + (i % 4) * 3;
@@ -137,9 +137,9 @@ export default function build({ setup }) {
     const n = new THREE.Group();
     n.add(P.cyl(0.02, 0.02, 2.6, '#9a8a6a', {}, 'matte', 6));
     const flag = new THREE.Group();
-    const face = S.draw(0.42, 1.7, 220, (cc, w, h) => drawNobori(cc, w, h, c));
+    const face = S.draw(0.42, 1.7, 220, (cc, w, h) => drawNobori(cc, w, h, c, season));
     face.position.set(0.23, 1.62, 0.006); flag.add(face);
-    const back = S.draw(0.42, 1.7, 220, (cc, w, h) => drawNobori(cc, w, h, c));
+    const back = S.draw(0.42, 1.7, 220, (cc, w, h) => drawNobori(cc, w, h, c, season));
     back.position.set(0.23, 1.62, -0.006); back.rotation.y = Math.PI; flag.add(back);
     flag.userData.dynamic = true;
     n.add(flag);
@@ -732,12 +732,12 @@ function txt(g, t, x, y, px, color, weight = 700, align = 'center', maxW = 0) {
 }
 function put2(parent, o, x, y, z, ry = 0) { o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o; }
 
-function drawNobori(g, w, h, col) {
+function drawNobori(g, w, h, col, season) {
   const pink = col !== '#ffffff';
   g.fillStyle = col; g.fillRect(0, 0, w, h);
   g.fillStyle = pink ? '#ffffff' : '#e8507a'; g.fillRect(0, 0, w, h * 0.04); g.fillRect(0, h * 0.96, w, h * 0.04);
-  const chars = ['さ', 'く', 'ら', 'ま', 'つ', 'り'];
-  chars.forEach((ch, i) => txt(g, ch, w / 2, h * (0.12 + i * 0.145), w * 0.62, pink ? '#ffffff' : '#d8306a', 800));
+  const chars = [...({ spring: 'さくら', summer: 'なつ', autumn: 'あき', winter: 'ふゆ' }[season] || 'さくら'), 'ま', 'つ', 'り'];
+  chars.forEach((ch, i) => txt(g, ch, w / 2, h * (0.12 + i * 0.76 / (chars.length - 1)), w * 0.62, pink ? '#ffffff' : '#d8306a', 800));
 }
 
 function drawParkMap(g, w, h) {

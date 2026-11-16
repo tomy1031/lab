@@ -612,14 +612,21 @@ function streetView(A, B, { time, season, rain, lit, night }) {
   for (const [z0, z1] of [[-14, -0.6], [1.6, 10]]) gr.add(A.rbox(0.6, 0.9, z1 - z0, 0.2, season === 'autumn' ? '#5f7a3a' : '#4f7a45', { x: 4.2, y: GY, z: (z0 + z1) / 2 }));
   // the cherry tree in front of the building (its crown is at corridor height)
   const tree = yardTree(A, season, lit);
-  tree.position.set(3.2, GY, -3.8); gr.add(tree);
-  const tree2 = yardTree(A, season, lit, 0.8); tree2.position.set(2.9, GY, 7.5); gr.add(tree2);
+  tree.position.set(3.3, GY, -7.4); gr.add(tree);
+  const tree2 = yardTree(A, season, lit, 0.8); tree2.position.set(3.0, GY, 6.8); gr.add(tree2);
   // houses across the street
+  const winGlow = B.draw(32, 24, (c, w, h) => { const gg = c.createLinearGradient(0, 0, 0, h); gg.addColorStop(0, night ? '#ffd27a' : '#ffe0a0'); gg.addColorStop(1, night ? '#f0b860' : '#f6c888'); c.fillStyle = gg; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(160,90,40,0.45)'; c.fillRect(0, 0, w * 0.22, h); c.fillRect(w * 0.78, 0, w * 0.22, h); c.fillStyle = 'rgba(90,70,50,0.6)'; c.fillRect(w / 2 - 1, 0, 2, h); });
   const houseCols = ['#efe6d6', '#e3d3bd', '#f2ece2', '#d9cdb8', '#e8e0d4', '#d6dccf'];
   const roofCols = ['#5d6f86', '#8a4f3c', '#4f5f50', '#6b5a48', '#45505e', '#7a6a5a'];
   [-21, -13, -5, 3, 11, 19].forEach((z, i) => {
     const w = 6.2 + r() * 1.2; const d = 7.5; const h = 5.6;
     const facade = B.draw(200, 150, (c, cw, ch) => houseFacade(c, cw, ch, houseCols[i], lit, night, i));
+    const hxPre = 12.2 + d / 2 + (i % 2) * 0.8;
+    if (lit) for (const [k, px, py, pw, ph] of HOUSE_WINDOWS) {
+      if ((i * 3 + k) % 4 === 0) continue;
+      const wz = z - w / 2 + (px + pw / 2) / 200 * w; const wy = GY + h * (1 - (py + ph / 2) / 150);
+      gr.add(B.plane(pw / 200 * w, ph / 150 * h, winGlow, { x: hxPre - d / 2 - 0.02, y: wy, z: wz, ry: -Math.PI / 2, mat: B.glow }));
+    }
     const hx = 12.2 + d / 2 + (i % 2) * 0.8;
     gr.add(B.box(d, h, w, { all: houseCols[i], left: facade }, { x: hx, y: GY, z, cast: false }));
     const roof = prism(d + 0.6, 1.9, w + 0.6);
@@ -660,9 +667,9 @@ function streetView(A, B, { time, season, rain, lit, night }) {
   let petals = null;
   if (season === 'spring' || season === 'autumn') {
     const n = 90; const pos = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) pos.set([3.4 + (r() - 0.5) * 4, GY + r() * 6, -3.8 + (r() - 0.5) * 6], i * 3);
+    for (let i = 0; i < n; i++) pos.set([3.3 + (r() - 0.5) * 4, GY + r() * 6, -7.4 + (r() - 0.5) * 5], i * 3);
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    petals = new THREE.Points(geo, new THREE.PointsMaterial({ color: season === 'spring' ? '#f7cdd8' : '#e0903a', size: 0.06, sizeAttenuation: true }));
+    petals = new THREE.Points(geo, new THREE.PointsMaterial({ color: season === 'spring' ? '#e98fae' : '#d0742a', size: 0.03, sizeAttenuation: true }));
     petals.frustumCulled = false; dyn.add(petals);
   }
   const car = mergeParts(carMesh(A, ['#b8433a', '#e8e6e0', '#2f3f5a'][Math.floor(r() * 3)], lit));
@@ -676,7 +683,7 @@ function streetView(A, B, { time, season, rain, lit, night }) {
         const p = petals.geometry.attributes.position.array;
         for (let i = 0; i < p.length; i += 3) {
           p[i + 1] -= dt * (0.35 + (i % 7) * 0.04); p[i] += Math.sin(t * 1.3 + i) * dt * 0.25; p[i + 2] += Math.cos(t * 0.9 + i) * dt * 0.15;
-          if (p[i + 1] < GY) { p[i + 1] = GY + 5.5; p[i] = 3.4 + Math.sin(i * 12.9) * 1.9; p[i + 2] = -3.8 + Math.cos(i * 7.3) * 3; }
+          if (p[i + 1] < GY) { p[i + 1] = GY + 5.5; p[i] = 3.3 + Math.sin(i * 12.9) * 1.9; p[i + 2] = -7.4 + Math.cos(i * 7.3) * 2.5; }
         }
         petals.geometry.attributes.position.needsUpdate = true;
       }
@@ -701,6 +708,7 @@ function prism(w, h, l) {
   return geo;
 }
 
+const HOUSE_WINDOWS = [[0, 18, 22, 46, 34], [1, 130, 22, 50, 34], [2, 18, 92, 60, 40], [3, 140, 98, 26, 30]];
 function houseFacade(c, w, h, col, lit, night, i) {
   c.fillStyle = col; c.fillRect(0, 0, w, h);
   c.fillStyle = 'rgba(0,0,0,0.06)'; for (let y = 0; y < h; y += 6) c.fillRect(0, y, w, 1);
@@ -711,8 +719,7 @@ function houseFacade(c, w, h, col, lit, night, i) {
     c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(x + ww / 2 - 1, y, 2, hh);
   };
   const on = (k) => lit && ((i * 3 + k) % 4 !== 0);
-  win(18, 22, 46, 34, on(0)); win(w - 70, 22, 50, 34, on(1));
-  win(18, 92, 60, 40, on(2)); win(w - 60, 98, 26, 30, on(3));
+  for (const [k, x, y, ww, hh] of HOUSE_WINDOWS) win(x, y, ww, hh, on(k));
   // balcony rail on the 1st floor, door
   c.fillStyle = 'rgba(80,80,80,0.6)'; c.fillRect(10, 58, 64, 4); for (let x = 12; x < 74; x += 6) c.fillRect(x, 58, 2, 16);
   c.fillStyle = '#6b4a32'; c.fillRect(w / 2 - 12, h - 52, 26, 52);
@@ -722,23 +729,28 @@ function houseFacade(c, w, h, col, lit, night, i) {
 }
 
 function yardTree(A, season, lit, scale = 1) {
+  // a cherry tree: trunk, a few limbs, and many small blossom clusters (lighter at the top)
   const gr = new THREE.Group();
-  const s = scale;
-  gr.add(A.cyl(0.14 * s, 0.22 * s, 3.6 * s, '#4f3b2c', {}, 8));
+  const s = scale; const bark = '#4a3828';
+  gr.add(A.cyl(0.13 * s, 0.22 * s, 2.6 * s, bark, {}, 8));
   const r = K.rng(Math.round(scale * 10) + 5);
-  const branches = [[0.6, 0.7], [-0.5, 0.5], [0.2, -0.7], [-0.4, -0.5]];
-  for (const [bx, bz] of branches) {
-    const b = A.cyl(0.05 * s, 0.09 * s, 1.6 * s, '#4f3b2c', { y: 3.0 * s }, 6);
-    b.rotation.set(bz * 0.9, 0, -bx * 0.9); gr.add(b);
+  const limbs = [];
+  for (let i = 0; i < 6; i++) {
+    const a = i / 6 * Math.PI * 2 + 0.4; const len = (1.5 + r() * 0.6) * s; const tilt = 0.9;
+    const b = A.cyl(0.04 * s, 0.09 * s, len, bark, {}, 6);
+    b.position.set(0, 2.4 * s, 0); b.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt); gr.add(b);
+    limbs.push([Math.cos(a) * len * Math.sin(tilt), 2.4 * s + len * Math.cos(tilt), Math.sin(a) * len * Math.sin(tilt)]);
   }
-  const pal = { spring: ['#f7c9d6', '#f1b2c5', '#fbe0e8', '#ecaabd'], summer: ['#4f8a45', '#5f9a50', '#3f7a3a'], autumn: ['#d9772f', '#e8a23a', '#c4452f', '#d9b04a'], winter: [] }[season] || ['#4f8a45'];
-  if (pal.length) for (let i = 0; i < 16; i++) {
-    const a = r() * Math.PI * 2; const rad = (0.5 + r() * 1.2) * s;
-    const y = (3.6 + r() * 1.6) * s;
-    const sp = K.mesh(A.paint(new THREE.IcosahedronGeometry((0.65 + r() * 0.35) * s, 1), pal[i % pal.length]), A.matte, { x: Math.max(-0.45 * s, Math.cos(a) * rad), y, z: Math.sin(a) * rad });
-    sp.scale.y = 0.75; gr.add(sp);
+  const pal = { spring: ['#fbd9e3', '#f6c3d2', '#fde8ef', '#f2b4c7', '#fff2f6'], summer: ['#4f8a45', '#5f9a50', '#3f7a3a', '#6aa85a'], autumn: ['#d9772f', '#e8a23a', '#c4452f', '#d9b04a'], winter: [] }[season] || ['#4f8a45'];
+  if (pal.length) for (let i = 0; i < 64; i++) {
+    const [lx, ly, lz] = limbs[i % limbs.length];
+    const t = r();
+    const x = lx * (0.35 + t * 0.8) + (r() - 0.5) * 0.9 * s; const z = lz * (0.35 + t * 0.8) + (r() - 0.5) * 0.9 * s;
+    const y = ly + (r() - 0.35) * 0.9 * s;
+    const sp = K.mesh(A.paint(new THREE.IcosahedronGeometry((0.26 + r() * 0.2) * s, 1), pal[Math.floor(r() * pal.length)]), A.matte, { x: Math.max(-1.3 * s, x), y, z });
+    sp.scale.y = 0.8; gr.add(sp);
   }
-  else for (let i = 0; i < 10; i++) { const tw = A.cyl(0.015, 0.03, 1.2 * s, '#4f3b2c', { y: (3.4 + r()) * s }, 4); tw.rotation.set((r() - 0.5) * 1.6, 0, (r() - 0.5) * 1.6); gr.add(tw); }
+  else for (let i = 0; i < 14; i++) { const [lx, ly, lz] = limbs[i % limbs.length]; const tw = A.cyl(0.012, 0.03, 0.9 * s, bark, {}, 4); tw.position.set(lx, ly, lz); tw.rotation.set((r() - 0.5) * 1.8, 0, (r() - 0.5) * 1.8); gr.add(tw); }
   return gr;
 }
 

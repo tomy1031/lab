@@ -85,14 +85,14 @@ export default function build({ setup }) {
   g.add(P.box(W, 0.12, 0.34, DARKWOOD, { y: 0, z: z0 - 0.15 }, 'satin'));        // skirting
 
   // ------------------------------------------------------------------ lights: washi pendants, downlights
-  for (const [x, z] of [[-3, -2.5], [0, -3.8], [3, -2.5], [-3, 1.2], [3, 1.2]]) {
+  for (const [x, z] of [[-3, -2.5], [1.8, -4.3], [3, -2.5], [-3, 1.2], [3, 1.2]]) {
     g.add(P.cyl(0.005, 0.005, H - 3.4, '#555', { x, y: 3.4, z }, 'metal', 4));
     const lamp = P.mesh(new THREE.SphereGeometry(0.32, 14, 10), '#fff1d6', { x, y: 3.2, z }, 'glow');
     lamp.scale.set(1, 0.85, 1); lamp.castShadow = false; g.add(lamp);
     for (const yy of [3.05, 3.35]) g.add(P.mesh(new THREE.TorusGeometry(0.3, 0.008, 4, 20), '#d9c8a8', { x, y: yy, z, rx: Math.PI / 2, cast: false }, 'satin'));
   }
   for (let x = -4.5; x <= 4.5; x += 1.5) for (const z of [-5.5, 2.6]) g.add(P.cyl(0.09, 0.09, 0.02, '#fff6e2', { x, y: H - 0.15, z }, 'glow', 12));
-  const l1 = new THREE.PointLight('#ffe2b8', 14, 12, 1.4); l1.position.set(0, 3.0, -2.0); g.add(l1);
+  const l1 = new THREE.PointLight('#ffe2b8', 14, 12, 1.4); l1.position.set(0.2, 2.75, -0.3); g.add(l1);
   const l2 = new THREE.PointLight('#ffe6c4', 8, 10, 1.5); l2.position.set(-1.5, 3.2, -5.2); g.add(l2);
 
   // ------------------------------------------------------------------ ticket counter (受付) with 上田 behind it
@@ -112,7 +112,7 @@ export default function build({ setup }) {
   counter.add(P.box(0.24, 0.12, 0.2, '#e9e7e1', { x: -0.25, y: 1.025, z: -0.15 }, 'satin'));
   counter.add(P.box(0.08, 0.03, 0.15, '#2a2d31', { x: 0.95, y: 1.025, z: 0.08, rx: -0.2 }, 'satin'));
   counter.add(P.box(0.06, 0.012, 0.04, '#7fd0a0', { x: 0.95, y: 1.06, z: 0.06, rx: -0.2 }, 'glow'));
-  put2(counter, ikebana(P, season, 0.45), -1.15, 1.025, -0.12);
+  put2(counter, ikebana(P, season, 0.34), -1.15, 1.025, -0.12);
   put(counter, 0, 0, -1.15);
   // ticket (npc): ticket tray + price stand in front of 上田
   const ticket = new THREE.Group();
@@ -134,10 +134,10 @@ export default function build({ setup }) {
 
   // ------------------------------------------------------------------ opening-hours sign (npc, beside 上田)
   const hours = new THREE.Group();
-  hours.add(P.box(0.06, 0.62, 0.06, DARKWOOD, { x: 0 }, 'satin'));
+  hours.add(P.box(0.06, 0.92, 0.06, DARKWOOD, { x: 0 }, 'satin'));
   hours.add(P.box(0.5, 0.04, 0.4, DARKWOOD, {}, 'satin'));
-  hours.add(P.box(0.9, 1.22, 0.05, DARKWOOD, { y: 0.6 }, 'satin'));
-  put2(hours, S.draw(0.82, 1.14, 420, drawHours), 0, 1.21, 0.028);
+  hours.add(P.box(0.9, 1.22, 0.05, DARKWOOD, { y: 0.9 }, 'satin'));
+  put2(hours, S.draw(0.82, 1.14, 420, drawHours), 0, 1.51, 0.028);
   put(hours, 1.42, 0, -1.95, K.faceYaw({ x: 1.42, z: -1.95 }, { x: 0, z: 0.4 }));
   props.hours_sign = K.prop('hours_sign', hours, { labelJa: 'かいかん じかん', labelEn: 'opening hours sign' });
 
@@ -224,7 +224,6 @@ export default function build({ setup }) {
   const banner = S.draw(0.95, 2.4, 220, drawBanner);
   put(banner, 0.5, 3.55, z0 + 0.02);
   g.add(P.box(1.05, 0.05, 0.05, DARKWOOD, { x: 0.5, y: 4.76, z: z0 + 0.05 }, 'satin'));
-  put(S.sign([{ t: 'みどり美術館', scale: 1 }, { t: 'MIDORI ART MUSEUM', scale: 0.45, weight: 500 }], 2.6, 0.62, { bg: null, fg: GREEN }), 0.5, 1.75, z0 + 0.02);
 
   // ------------------------------------------------------------------ café (far left), closed after 16:30
   const cafe = new THREE.Group();
@@ -274,7 +273,7 @@ export default function build({ setup }) {
   put2(lockers, S.sign([{ t: 'コインロッカー  Lockers', scale: 0.85 }, { t: '100円（あとで もどります）', scale: 0.6, weight: 500 }], 1.6, 0.3, { bg: '#f4efe4', fg: INK }), 0, 2.2, 0.0);
   put(lockers, -W / 2 + 0.26, 0, -2.6, Math.PI / 2);
   props.locker = K.prop('locker', lockers, { labelJa: 'ロッカー', labelEn: 'lockers' });
-  put(S.draw(0.9, 1.2, 300, drawFloorGuide), -W / 2 + 0.02, 1.5, 0.6, Math.PI / 2);
+  put(S.draw(0.9, 1.2, 300, drawFloorGuide), -W / 2 + 0.05, 1.5, 0.6, Math.PI / 2);
   g.add(P.box(0.04, 1.28, 0.98, DARKWOOD, { x: -W / 2 + 0.01, y: 0.86, z: 0.6 }, 'satin'));
   put(S.sign([{ t: 'みどり美術館', scale: 1 }], 3.2, 0.6, { bg: null, fg: GREEN }), -W / 2 + 0.02, 3.6, -1.2, Math.PI / 2);
   const umb = new THREE.Group(); // umbrella stand with locks (傘立て) by the entrance
@@ -437,6 +436,9 @@ function drawLeaflet(g, w, h, k) {
   const pal = [['#3c5a46', '#e9d6b4'], ['#8a2f3b', '#f4efe4'], ['#2f4a6b', '#e9e1cf'], ['#d8b04a', '#3a3a34'], ['#6a5a8a', '#f2ece0'], ['#c97a5d', '#fbf8f1']][k % 6];
   g.fillStyle = pal[0]; g.fillRect(0, 0, w, h);
   g.fillStyle = pal[1]; g.fillRect(w * 0.08, h * 0.08, w * 0.84, h * 0.5);
+  g.fillStyle = pal[0]; g.globalAlpha = 0.6;
+  g.beginPath(); g.moveTo(w * 0.08, h * 0.5); g.lineTo(w * 0.35, h * 0.25 + k * 4); g.lineTo(w * 0.6, h * 0.42); g.lineTo(w * 0.92, h * 0.2); g.lineTo(w * 0.92, h * 0.58); g.lineTo(w * 0.08, h * 0.58); g.fill();
+  g.beginPath(); g.arc(w * 0.7, h * 0.22, w * 0.08, 0, 6.3); g.fill(); g.globalAlpha = 1;
   txt(g, ['ひかりの風景', 'みどり美術館', '日本の版画', 'こども ワークショップ', 'カフェ メニュー', '年間パスポート'][k % 6], w / 2, h * 0.72, h * 0.08, pal[1], 800, 'center', w * 0.9);
 }
 

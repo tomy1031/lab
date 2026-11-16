@@ -239,6 +239,13 @@ export default function build({ setup }) {
   const atm = K.prop('atm', atmMachine(A, M), { labelJa: 'ATM', labelEn: 'ATM' });
   add(atm, -1.6, 0, ZS - 0.35, Math.PI);
   add(iceFreezer(A, M), 0.5, 0, ZS - 0.5, Math.PI);
+  // posters + clock on the back wall
+  const poster = (lines, x, y, w, h, bg, fg, border) => add(A.text(lines, w, h, { bg, fg, border, radius: 0.04 }), x, y, ZS - 0.01, Math.PI);
+  poster(cold ? [{ t: 'ねんがじょう', scale: 0.9, color: '#c0392b' }, { t: 'ごよやく', scale: 0.8 }, { t: 'うけつけちゅう', scale: 0.6 }] : [{ t: 'なつの', scale: 0.7 }, { t: 'アイス フェア', color: '#2f6db3' }], -0.75, 1.55, 0.42, 0.58, '#fffaf0', '#333', '#c0392b');
+  poster([{ t: 'ポイント', scale: 0.8, color: '#2f8a62' }, { t: '2ばい', scale: 1.2, color: '#ef8a2e' }, { t: 'まいしゅう どようび', scale: 0.5 }], 0.15, 1.6, 0.45, 0.6, '#ffffff', '#333', '#2f8a62');
+  poster([{ t: 'Free Wi-Fi', scale: 0.8, color: '#2f6db3' }], 0.95, 1.5, 0.36, 0.16, '#ffffff', '#333', '#2f6db3');
+  const hh = { morning: [7, 40], noon: [12, 15], evening: [18, 30], night: [21, 45] }[time] || [21, 45];
+  add(K.clock(0.17, hh[0], hh[1]), 1.45, 2.0, ZS - 0.03, Math.PI);
   const ws = wallShelf(A, M, 2.4, 11);
   add(ws, 3.1, 0, ZS - 0.22, Math.PI);
   // security mirror + camera dome
@@ -343,7 +350,8 @@ function buildOutside({ time, weather, season, A, M, X0 }) {
   boxG.add(K.box(0.5, 0.012, 0.16, kraftM, { y: 0.33, z: 0.25, rx: 0.5 }));
   const box = K.prop('box', boxG, { labelJa: 'はこ', labelEn: 'cardboard box' });
   add2(grp, box, X0 - 0.55, 0, -1.6, Math.PI / 2 + 0.15);
-  const cat = K.prop('cat', whiteCat(), { labelJa: 'ねこ', labelEn: 'cat (Shiro)' });
+  const catModel = whiteCat(); catModel.scale.setScalar(1.15);
+  const cat = K.prop('cat', catModel, { labelJa: 'ねこ', labelEn: 'cat (Shiro)' });
   add2(grp, cat, X0 - 0.55, 0.33, -1.6, Math.PI / 2 - 0.35);
   // light spilling out of the store onto the pavement and the cat
   const spill = new THREE.PointLight(dark ? '#fff2dc' : '#ffffff', dark ? 3.2 : 1, 4.5, 1.3);
@@ -754,8 +762,8 @@ function posRegister(A, M) {
   const scr = new THREE.Group();
   scr.add(K.box(0.32, 0.22, 0.03, stand, { y: -0.11 }));
   const sc = A.text([{ t: 'ことばマート', scale: 0.6 }, { t: '¥1,284', scale: 1 }], 0.22, 0.14, { bg: '#eaf6ff', fg: '#1e3a5a', radius: 0.05, glow: true });
-  sc.position.z = 0.017; scr.add(sc);
-  scr.position.set(0, 0.42, -0.05); scr.rotation.x = -0.25;
+  sc.position.z = -0.017; sc.rotation.y = Math.PI; scr.add(sc);
+  scr.position.set(0, 0.42, -0.05); scr.rotation.x = 0.25;
   r.add(scr);
   const cd = A.text([{ t: 'ごうけい', scale: 0.6 }, { t: '¥1,284', scale: 1 }], 0.14, 0.09, { bg: '#16202c', fg: '#8af0b0', radius: 0.06, glow: true });
   cd.position.set(0, 0.36, -0.03); cd.rotation.y = 0;
@@ -767,7 +775,7 @@ function posRegister(A, M) {
 
 function odenPot(A, M) {
   const o = new THREE.Group();
-  const steel = K.mat('#b8bcc0', { metal: 0.8, rough: 0.25 });
+  const steel = K.mat('#c8ccd0', { rough: 0.3 });
   o.add(K.box(0.5, 0.14, 0.36, steel, {}));
   o.add(K.box(0.48, 0.005, 0.34, K.mat('#b07a3a', { rough: 0.1 }), { y: 0.12 }));
   o.add(K.box(0.48, 0.03, 0.006, steel, { y: 0.1 }));
@@ -798,9 +806,9 @@ function donutCase(A, M) {
 
 function hotSnackCase(A, M) {
   const h = new THREE.Group();
-  h.add(K.box(0.42, 0.06, 0.34, K.mat('#3a3d42', { rough: 0.4 }), {}));
+  h.add(K.box(0.42, 0.06, 0.34, K.mat('#8a9096', { rough: 0.35 }), {}));
   h.add(K.box(0.4, 0.3, 0.32, K.mat('#fff2d8', { rough: 0.05, opacity: 0.25 }), { y: 0.06, cast: false }));
-  h.add(K.box(0.42, 0.04, 0.34, K.mat('#3a3d42', { rough: 0.4 }), { y: 0.36 }));
+  h.add(K.box(0.42, 0.04, 0.34, K.mat('#8a9096', { rough: 0.35 }), { y: 0.36 }));
   h.add(K.box(0.38, 0.01, 0.02, new THREE.MeshBasicMaterial({ color: '#ffb85a', toneMapped: false }), { y: 0.35, z: 0.1, cast: false }));
   const fry = K.mat('#c47a2c', { rough: 0.8 });
   for (let i = 0; i < 8; i++) { const s = K.mesh(new THREE.SphereGeometry(0.03, 7, 5), fry, { x: -0.13 + (i % 4) * 0.085, y: 0.09, z: -0.06 + Math.floor(i / 4) * 0.1 }); s.scale.set(1.2, 0.8, 1); h.add(s); }
@@ -1018,7 +1026,9 @@ function copyMachine(A, M) {
 
 function atmMachine(A, M) {
   const a = new THREE.Group();
-  a.add(K.rbox(0.56, 1.42, 0.52, 0.03, K.mat('#cfd6dc', { rough: 0.35, metal: 0.3 }), {}));
+  a.add(K.rbox(0.56, 1.42, 0.52, 0.03, K.mat('#dfe4e8', { rough: 0.35 }), {}));
+  a.add(K.box(0.565, 0.1, 0.525, K.mat('#c0392b', { rough: 0.4 }), { y: 1.25 }));
+  a.add(K.box(0.565, 0.03, 0.525, K.mat('#f2c230', { rough: 0.4 }), { y: 1.22 }));
   a.add(K.box(0.5, 0.36, 0.2, K.mat('#2a2d33', { rough: 0.3 }), { y: 0.95, z: 0.16 }));
   const scr = A.text([{ t: 'いらっしゃいませ', scale: 0.6 }, { t: 'おひきだし', scale: 0.8 }, { t: 'おあずけいれ', scale: 0.8 }], 0.3, 0.22, { bg: '#e8f4ff', fg: '#1e3a5a', radius: 0.04, glow: true });
   scr.position.set(0, 1.15, 0.262); scr.rotation.x = -0.2; a.add(scr);

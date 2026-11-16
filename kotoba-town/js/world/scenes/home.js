@@ -130,7 +130,7 @@ export default function build({ setup }) {
   else { chair(-0.78, -1.6, 0.25); chair(0.42, -1.6, -0.2); }
   // pendant lamp
   add(pendant(A, lit), TBL.x, H, TBL.z);
-  const lamp = new THREE.PointLight('#ffd9a8', lit ? 9 : 3, 6, 1.4); lamp.position.set(TBL.x, 1.85, TBL.z); g.add(lamp);
+  const lamp = new THREE.PointLight('#ffd9a8', lit ? 9 : 3, 6, 1.4); lamp.position.set(TBL.x, 1.95, TBL.z); g.add(lamp);
   if (lit) { const l2 = new THREE.PointLight('#ffe2b8', 4, 7, 1.5); l2.position.set(-2.4, 2.2, -2.2); g.add(l2); const l3 = new THREE.PointLight('#ffd9a8', 2.5, 4, 1.6); l3.position.set(1.3, 2.1, 0.6); g.add(l3); }
 
   // ------------------------------------------------------------------ east wall: sideboard + photo, piano
@@ -151,7 +151,7 @@ export default function build({ setup }) {
   const hh = { morning: 8, noon: 12, evening: 18, night: 21 }[time] ?? 12;
   const mm = { morning: 0, noon: 30, evening: 30, night: 0 }[time] ?? 0;
   const clk = K.prop('clock', woodClock(A, hh, mm), { labelJa: 'とけい', labelEn: 'clock' });
-  add(clk, -0.45, 1.9, ZN + 0.04);
+  add(clk, -0.55, 2.08, ZN + 0.04);
   add(cupboard(A, furnMat), 1.82, 0, ZN + 0.22);
   add(B.plane(0.32, 0.46, calendarRegion(B, season), {}), -0.02, 1.25, ZN + 0.01);
 
@@ -593,9 +593,9 @@ function giftBox(A, B) {
 
 function pendant(A, lit) {
   const gr = new THREE.Group();
-  gr.add(A.cyl(0.004, 0.004, 0.6, '#3a3a3a', { y: -0.6, cast: false }, 4));
-  gr.add(K.mesh(A.paint(new THREE.CylinderGeometry(0.07, 0.24, 0.2, 18, 1, true), '#f2e6cf'), A.matte, { y: -0.72, cast: false }));
-  gr.add(K.mesh(A.paint(new THREE.SphereGeometry(0.06, 12, 8), lit ? '#fff1cf' : '#f6f2ea'), lit ? A.glow : A.matte, { y: -0.76, cast: false }));
+  gr.add(A.cyl(0.004, 0.004, 0.32, '#3a3a3a', { y: -0.32, cast: false }, 4));
+  gr.add(K.mesh(A.paint(new THREE.CylinderGeometry(0.07, 0.24, 0.18, 18, 1, true), '#f2e6cf'), A.matte, { y: -0.42, cast: false }));
+  gr.add(K.mesh(A.paint(new THREE.SphereGeometry(0.06, 12, 8), lit ? '#fff1cf' : '#f6f2ea'), lit ? A.glow : A.matte, { y: -0.46, cast: false }));
   return gr;
 }
 
@@ -909,7 +909,7 @@ function sofaMesh(m, A) {
   for (const x of [-0.5, 0.0, 0.5]) gr.add(K.rbox(0.5, 0.1, 0.58, 0.04, m, { x, y: 0.4, z: 0.08 }));
   gr.add(A.rbox(0.4, 0.38, 0.14, 0.07, '#e8b95a', { x: -0.55, y: 0.48, z: -0.12, rx: -0.3 }));
   gr.add(A.rbox(0.38, 0.36, 0.14, 0.07, '#c96a4a', { x: 0.62, y: 0.48, z: -0.12, rx: -0.3, ry: 0.2 }));
-  gr.add(A.box(0.5, 0.04, 0.7, '#e9dcc4', { x: 0.2, y: 0.84, z: -0.32, cast: false })); // throw over the back
+  gr.add(A.rbox(0.45, 0.05, 0.3, 0.02, '#c9b48a', { x: 0.35, y: 0.83, z: -0.3, cast: false })); // folded blanket on the back
   for (const [x, z] of [[-0.85, -0.35], [0.85, -0.35], [-0.85, 0.35], [0.85, 0.35]]) gr.add(A.box(0.05, 0.06, 0.05, '#4a3020', { x, y: -0.06, z, cast: false }));
   gr.position.y = 0.06;
   return gr;
