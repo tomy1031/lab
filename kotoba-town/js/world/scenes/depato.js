@@ -196,10 +196,12 @@ export default function build({ setup }) {
   add(shopFront(A, T, M, 'pastry'), -3.9, 0, ZN);
   add(shopFront(A, T, M, 'wagashi'), 4.1, 0, ZN);
   // deli island behind-left with the evening time sale
-  add(deliIsland(A, T, M, evening), -2.6, 0, 2.6);
+  add(deliIsland(A, T, M, evening), -2.5, 0, 2.95);
+  add(shopFront(A, T, M, 'bakery', 0.95), -4.6, 0, ZS, Math.PI);
+  add(shopFront(A, T, M, 'tea', 0.95), -1.2, 0, ZS, Math.PI);
   // ------------------------------------------------------------------ far left: escalators
   const esc = K.prop('escalator', escalators(T, M), { labelJa: 'エスカレーター', labelEn: 'escalator' });
-  add(esc, -6.4, 0, 1.2);
+  add(esc, X0 + 2.1, 0, 0.9, Math.PI / 2);
   // ------------------------------------------------------------------ far right: elevators + restroom corridor
   const ev = K.prop('elevator', elevators(T, M), { labelJa: 'エレベーター', labelEn: 'elevator' });
   add(ev, X1 - 0.02, 0, -0.8, -Math.PI / 2);
@@ -219,18 +221,18 @@ export default function build({ setup }) {
   const um = K.prop('umbrella_rack', umbrellaRack(T, M), { labelJa: 'かさ', labelEn: 'umbrella rack' });
   add(um, 5.0, 0, 3.5, Math.PI + 0.5);
   const bs = K.prop('bag_shelf', bagShelf(T, M), { labelJa: 'バッグの たな', labelEn: 'bag shelf' });
-  add(bs, 2.7, 0, ZS - 0.25, Math.PI);
+  add(bs, 2.4, 0, ZS - 0.02, Math.PI);
   add(K.plant(1.3, 7), 6.7, 0, 4.8);
-  add(K.plant(1.3, 13), -6.8, 0, 4.8);
-  // big logo on the south wall
-  const logo = T.text([{ t: 'ことば百貨店', scale: 1 }, { t: 'KOTOBA DEPARTMENT STORE', scale: 0.4 }], 2.6, 0.6, { bg: null, fg: '#7a5a3a' });
-  add(logo, -2.2, 2.2, ZS - 0.02, Math.PI);
+  add(K.plant(1.3, 13), X0 + 0.5, 0, 4.9);
+  // big logo on the south wall (above the bag shelf)
+  const logo = T.text([{ t: 'ことば百貨店', scale: 1 }, { t: 'KOTOBA DEPARTMENT STORE', scale: 0.4 }], 2.2, 0.5, { bg: null, fg: '#7a5a3a', ppm: 220 });
+  add(logo, 4.9, 2.45, ZS - 0.02, Math.PI);
   // benches with shopping bags (a rest spot)
   const bench = new THREE.Group();
   bench.add(K.box(1.4, 0.06, 0.45, M.oak, { y: 0.42 }));
   for (const x of [-0.6, 0.6]) bench.add(K.box(0.06, 0.42, 0.4, M.steel, { x }));
-  add(bench, -4.6, 0, ZS - 0.5, Math.PI);
-  add(paperBag(T, 0.85, M), -4.2, 0.48, ZS - 0.5, 0.2);
+  add(bench, X1 - 0.5, 0, 3.6, -Math.PI / 2);
+  add(paperBag(T, 0.85, M), X1 - 0.5, 0.48, 3.2, -1.2);
 
   for (const o of [reg, watch, tieBlue, tieRed, fg, esc, ev, wc, um, bs]) props[o.userData.propId] = o;
   atlasize(g, A);
@@ -402,9 +404,10 @@ function floorGuide(T, M) {
   return f;
 }
 
-function shopFront(A, T, M, kind) {
+function shopFront(A, T, M, kind, depth = 1.35) {
   const s = new THREE.Group();
-  const pastry = kind === 'pastry';
+  const pastry = kind === 'pastry' || kind === 'bakery';
+  const shopName = { pastry: ['パティスリー ことり', '洋菓子'], bakery: ['ベーカリー こむぎ', 'パン'], wagashi: ['和菓子  ことば屋', ''], tea: ['日本茶  みどり園', ''] }[kind];
   const Wd = 3.0;
   // back wall shelves with gift boxes
   s.add(K.box(Wd, 2.2, 0.35, pastry ? K.mat('#f3e6e0', { rough: 0.6 }) : K.mat('#ffffff', { map: K.woodTex('#c9a27a', [2, 1], 6), rough: 0.5 }), { z: 0.175 }));
@@ -412,16 +415,16 @@ function shopFront(A, T, M, kind) {
     c.fillStyle = pastry ? '#f6d8dc' : '#e8e0c8'; c.fillRect(0, 0, w, h);
     c.fillStyle = pastry ? '#b5452c' : '#3f6b4e'; c.fillRect(0, h * 0.4, w, h * 0.2);
     c.fillStyle = pastry ? '#7a2a3a' : '#5a3a22'; c.font = `700 14px ${K.JP_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText(pastry ? 'ことり' : 'ことば屋', w / 2, h * 0.22);
+    c.fillText({ pastry: 'ことり', bakery: 'こむぎ', wagashi: 'ことば屋', tea: 'みどり園' }[kind], w / 2, h * 0.22);
   });
   for (let lv = 0; lv < 3; lv++) for (let i = 0; i < 8; i++) s.add(T.box(0.28, 0.12, 0.2, boxReg, T.solid(pastry ? '#f6d8dc' : '#e8e0c8'), { x: -1.25 + i * 0.36, y: 0.9 + lv * 0.35, z: 0.42 }));
   for (let lv = 0; lv < 3; lv++) s.add(K.box(Wd - 0.1, 0.02, 0.3, pastry ? M.cream : M.oak, { y: 0.88 + lv * 0.35, z: 0.45 }));
   // sign / noren
   if (pastry) {
-    const sg = T.text([{ t: 'パティスリー ことり', scale: 0.9 }, { t: '洋菓子', scale: 0.6 }], 1.8, 0.36, { bg: '#f6d8dc', fg: '#7a2a3a', radius: 0.15, glow: true });
+    const sg = T.text([{ t: shopName[0], scale: 0.9 }, { t: shopName[1], scale: 0.6 }], 1.8, 0.36, { bg: kind === 'bakery' ? '#f2dcb0' : '#f6d8dc', fg: '#7a2a3a', radius: 0.15, glow: true, ppm: 240 });
     sg.position.set(0, 2.55, 0.36); s.add(sg);
   } else {
-    const nr = T.text([{ t: '和菓子  ことば屋', scale: 0.9 }], 2.4, 0.42, { bg: '#2f3a5a', fg: '#f6efe2', radius: 0.02 });
+    const nr = T.text([{ t: shopName[0], scale: 0.9 }], 2.4, 0.42, { bg: kind === 'tea' ? '#3f6b4e' : '#2f3a5a', fg: '#f6efe2', radius: 0.02, ppm: 220 });
     nr.position.set(0, 2.5, 0.38); s.add(nr);
     for (let i = 1; i < 4; i++) s.add(K.box(0.012, 0.3, 0.012, K.mat('#f6efe2'), { x: -1.2 + i * 0.6, y: 2.29, z: 0.39 }));
   }
@@ -435,7 +438,13 @@ function shopFront(A, T, M, kind) {
   const r = K.rng(pastry ? 3 : 8);
   for (let i = 0; i < 16; i++) {
     const x = -1.25 + (i % 8) * 0.36; const z = i < 8 ? 0.1 : -0.12;
-    if (pastry) {
+    if (kind === 'bakery') {
+      const col = ['#d9a050', '#e8c547', '#b5652c', '#e0b070', '#c98a4a'][i % 5];
+      for (let k = 0; k < 3; k++) { const m = K.mesh(new THREE.SphereGeometry(0.045, 8, 6), K.mat(col, { rough: 0.7 }), { x: x - 0.08 + k * 0.08, y: 0.9, z }); m.scale.set(1.2, 0.6, 0.9); sc.add(m); }
+    } else if (kind === 'tea') {
+      const col = ['#3f6b4e', '#5f8f55', '#7a5a3a', '#c9a253', '#2f4a3a'][i % 5];
+      for (let k = 0; k < 2; k++) sc.add(K.cyl(0.04, 0.04, 0.12, K.mat(col, { rough: 0.4 }), { x: x - 0.05 + k * 0.1, y: 0.85, z }, 10));
+    } else if (pastry) {
       const col = ['#fbf6ee', '#4a2a1a', '#f1d9a0', '#c9925a', '#f6c6d3'][i % 5];
       for (let k = 0; k < 3; k++) {
         const slice = K.mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.06, 5, 1, false, 0, Math.PI / 2.5), K.mat(col, { rough: 0.6 }), { x: x - 0.08 + k * 0.08, y: 0.89, z });
@@ -446,11 +455,11 @@ function shopFront(A, T, M, kind) {
       const col = ['#f6c6d3', '#8fbf6a', '#f4f1ea', '#5a3a2a', '#e8c070'][i % 5];
       for (let k = 0; k < 3; k++) { const m = K.mesh(new THREE.SphereGeometry(0.03, 8, 6), K.mat(col, { rough: 0.7 }), { x: x - 0.08 + k * 0.08, y: 0.885, z }); m.scale.set(1, 0.65, 1); sc.add(m); }
     }
-    const tag = T.text([{ t: `${(pastry ? 380 : 220) + Math.floor(r() * 8) * 20}円`, scale: 0.9 }], 0.09, 0.04, { bg: '#ffffff', fg: '#b5302a', radius: 0.2 });
+    const tag = T.text([{ t: `${({ pastry: 380, bakery: 180, wagashi: 220, tea: 980 })[kind] + Math.floor(r() * 8) * 20}円`, scale: 0.9 }], 0.09, 0.04, { bg: '#ffffff', fg: '#b5302a', radius: 0.2, ppm: 400 });
     tag.position.set(x, 0.86, z + 0.1); tag.rotation.x = -0.6; sc.add(tag);
   }
   sc.add(K.box(Wd - 0.2, 0.012, 0.5, M.cream, { y: 0.84 }));
-  sc.position.z = 1.35;
+  sc.position.z = depth;
   s.add(sc);
   return s;
 }
@@ -485,7 +494,7 @@ function deliIsland(A, T, M, evening) {
 
 function escalators(T, M) {
   const e = new THREE.Group();
-  const rise = 3.0; const run = 5.0; const ang = Math.atan2(rise, run); const len = Math.hypot(rise, run);
+  const rise = 3.0; const run = 4.2; const ang = Math.atan2(rise, run); const len = Math.hypot(rise, run);
   const side = K.mat('#d9d4cc', { rough: 0.3, metal: 0.2 });
   const rail = K.mat('#1f1f22', { rough: 0.4 });
   const stepReg = T.region(64, 256, (c, w, h) => {
@@ -510,9 +519,11 @@ function escalators(T, M) {
     band.position.x = x;
     e.add(band);
     const arrow = T.text([{ t: up ? '↑ のぼり' : '↓ くだり', scale: 0.8 }], 0.5, 0.12, { bg: '#2f5a4a', fg: '#ffffff', radius: 0.2 });
-    arrow.position.set(x, 1.2, run / 2 + 1.0); e.add(arrow);
+    arrow.position.set(x, 1.25, run / 2 + 0.06); e.add(arrow);
   }
-  e.add(K.box(2.4, 0.4, run + 1, side, { y: -0.39, z: 0.5 }));
+  // truss under the slope and the ceiling opening edge
+  e.add(K.box(2.3, 0.5, len, side, { y: rise / 2 - 0.62, rx: ang }));
+  e.add(K.box(2.5, 0.25, 0.3, side, { y: rise - 0.25, z: -run / 2 }));
   const sg = T.text([{ t: 'エスカレーター', scale: 0.9 }, { t: '1F〜7F', scale: 0.6 }], 1.3, 0.32, { bg: '#3a2a22', fg: '#ffffff', radius: 0.1, glow: true });
   sg.position.set(0, 2.62, run / 2 + 0.5); e.add(sg);
   e.add(K.box(0.01, 0.4, 0.01, M.steel, { x: -0.5, y: 2.78, z: run / 2 + 0.5 }));
@@ -560,8 +571,10 @@ function umbrellaRack(T, M) {
 
 function bagShelf(T, M) {
   const b = new THREE.Group();
-  b.add(K.box(2.0, 1.9, 0.4, M.cream, { z: -0.0 }));
   b.add(K.box(2.0, 1.9, 0.02, M.walnut, { z: -0.19 }));
+  for (const x of [-1.0, 1.0]) b.add(K.box(0.04, 1.9, 0.4, M.cream, { x }));
+  b.add(K.box(2.04, 0.04, 0.4, M.cream, { y: 1.9 }));
+  b.add(K.box(2.0, 0.08, 0.4, M.dark, {}));
   const cols = ['#7a5a3a', '#2a2a2a', '#a8323a', '#e8dcc6', '#3f6b4e', '#c98a9a', '#2f4f8f', '#b98b5e'];
   for (let lv = 0; lv < 3; lv++) {
     const y = 0.25 + lv * 0.55;

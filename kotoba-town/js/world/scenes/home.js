@@ -821,7 +821,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
   for (const [x, z] of [[-2.3, -6.2], [-1.9, -6.9], [-2.4, -7.6], [-1.8, -8.3]]) gd.add(A.cyl(0.24, 0.26, 0.06, '#9a958a', { x, y: gy, z }, 10));
   // cherry tree (or the season's version of it)
   const tree = gardenTree(A, season);
-  tree.position.set(-2.6, gy - 0.25, -10.0); gd.add(tree);
+  tree.position.set(-4.4, gy - 0.2, -10.2); gd.add(tree);
   // flower beds along the deck
   const fl = { spring: ['#f6c6d3', '#f2d64a', '#ffffff', '#e86a8a', '#9b7fd1'], summer: ['#4a7fd1', '#f2d64a', '#e85a4a'], autumn: ['#e86a8a', '#ffffff', '#c94bd1', '#f0a030'], winter: ['#c8243a', '#ffffff'] }[season] || ['#f6c6d3'];
   for (let i = 0; i < 26; i++) {
@@ -834,9 +834,9 @@ function gardenView(A, B, { time, season, rain, lit }) {
   lan.add(A.cyl(0.18, 0.22, 0.12, '#a39e92', {}, 6)); lan.add(A.cyl(0.06, 0.08, 0.55, '#a39e92', { y: 0.12 }, 8));
   lan.add(A.box(0.3, 0.22, 0.3, { all: '#a39e92', front: night || time === 'evening' ? '#ffd27a' : '#5a564e' }, { y: 0.67, mat: night || time === 'evening' ? A.glow : A.matte }));
   lan.add(K.mesh(A.paint(new THREE.ConeGeometry(0.32, 0.2, 6), '#8f8a80'), A.matte, { y: 0.98 }));
-  lan.position.set(-0.6, gy, -7.0); gd.add(lan);
+  lan.position.set(-1.9, gy, -7.4); gd.add(lan);
   // a small maple / shrub and a hydrangea-ish bush
-  for (const [x, z, s, c] of [[-0.3, -8.6, 0.8, season === 'autumn' ? '#c4452f' : '#5f8f4a'], [-4.2, -6.6, 0.6, '#4f7a45'], [0.6, -6.3, 0.5, '#3f6a3e']]) {
+  for (const [x, z, s, c] of [[-1.2, -9.4, 0.8, season === 'autumn' ? '#c4452f' : '#5f8f4a'], [-3.0, -6.8, 0.55, '#4f7a45'], [0.4, -6.3, 0.5, '#3f6a3e']]) {
     gd.add(K.mesh(A.paint(new THREE.IcosahedronGeometry(s, 1), c), A.matte, { x, y: gy + s * 0.9, z }));
   }
   // wooden board fence (板塀) + neighbours behind (backdrop)
@@ -858,7 +858,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
   let petals = null;
   if (season === 'spring' || season === 'autumn') {
     const n = 60; const pos = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) pos.set([-2.6 + (r() - 0.5) * 4, gy + r() * 4, -9.4 + (r() - 0.5) * 4], i * 3);
+    for (let i = 0; i < n; i++) pos.set([-4.2 + (r() - 0.5) * 4, gy + r() * 4, -9.4 + (r() - 0.5) * 4], i * 3);
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     petals = new THREE.Points(geo, new THREE.PointsMaterial({ color: season === 'spring' ? '#f4b8c8' : '#d9772f', size: 0.035 }));
     petals.frustumCulled = false; dyn.add(petals);
@@ -868,7 +868,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
     const p = petals.geometry.attributes.position.array;
     for (let i = 0; i < p.length; i += 3) {
       p[i + 1] -= dt * (0.3 + (i % 5) * 0.05); p[i] += Math.sin(t + i) * dt * 0.2;
-      if (p[i + 1] < gy) { p[i + 1] = gy + 4; p[i] = -2.6 + Math.sin(i * 9.1) * 2; }
+      if (p[i + 1] < gy) { p[i + 1] = gy + 4; p[i] = -4.2 + Math.sin(i * 9.1) * 2; }
     }
     petals.geometry.attributes.position.needsUpdate = true;
   };

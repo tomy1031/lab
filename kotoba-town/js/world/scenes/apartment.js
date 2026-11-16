@@ -742,12 +742,12 @@ function yardTree(A, season, lit, scale = 1) {
     limbs.push([Math.cos(a) * len * Math.sin(tilt), 2.4 * s + len * Math.cos(tilt), Math.sin(a) * len * Math.sin(tilt)]);
   }
   const pal = { spring: ['#fbd9e3', '#f6c3d2', '#fde8ef', '#f2b4c7', '#fff2f6'], summer: ['#4f8a45', '#5f9a50', '#3f7a3a', '#6aa85a'], autumn: ['#d9772f', '#e8a23a', '#c4452f', '#d9b04a'], winter: [] }[season] || ['#4f8a45'];
-  if (pal.length) for (let i = 0; i < 64; i++) {
+  if (pal.length) for (let i = 0; i < 110; i++) {
     const [lx, ly, lz] = limbs[i % limbs.length];
     const t = r();
-    const x = lx * (0.35 + t * 0.8) + (r() - 0.5) * 0.9 * s; const z = lz * (0.35 + t * 0.8) + (r() - 0.5) * 0.9 * s;
-    const y = ly + (r() - 0.35) * 0.9 * s;
-    const sp = K.mesh(A.paint(new THREE.IcosahedronGeometry((0.26 + r() * 0.2) * s, 1), pal[Math.floor(r() * pal.length)]), A.matte, { x: Math.max(-1.3 * s, x), y, z });
+    const x = lx * (0.3 + t * 0.85) + (r() - 0.5) * 1.0 * s; const z = lz * (0.3 + t * 0.85) + (r() - 0.5) * 1.0 * s;
+    const y = ly + (r() - 0.35) * 1.0 * s;
+    const sp = K.mesh(A.paint(new THREE.IcosahedronGeometry((0.17 + r() * 0.17) * s, 1), pal[Math.floor(r() * pal.length)]), A.matte, { x: Math.max(-1.3 * s, x), y, z });
     sp.scale.y = 0.8; gr.add(sp);
   }
   else for (let i = 0; i < 14; i++) { const [lx, ly, lz] = limbs[i % limbs.length]; const tw = A.cyl(0.012, 0.03, 0.9 * s, bark, {}, 4); tw.position.set(lx, ly, lz); tw.rotation.set((r() - 0.5) * 1.8, 0, (r() - 0.5) * 1.8); gr.add(tw); }

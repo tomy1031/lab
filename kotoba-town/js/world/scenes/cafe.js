@@ -220,6 +220,9 @@ export default function build({ setup }) {
   // pictures / records on the walls
   add(framedPicture(A, 'sea', 0.7, 0.5, M), X0 + 0.02, 1.62, -1.35, Math.PI / 2);
   add(framedPicture(A, 'mountain', 0.6, 0.45, M), X0 + 0.02, 1.62, 0.55, Math.PI / 2);
+  add(framedPicture(A, 'sea', 0.4, 0.3, M), 0.345, 1.7, -2.95, -Math.PI / 2);
+  add(smallPlant(1.3, 9), -0.55, 0.73, -3.27);
+  add(smallPlant(1.1, 4), -2.0, 0.73, -3.27);
   // newspaper rack near the south-west corner
   const np = K.prop('newspaper', newspaperRack(M, A), { labelJa: 'しんぶん', labelEn: 'newspaper' });
   add(np, -3.0, 0, 2.47, Math.PI);
@@ -281,7 +284,7 @@ export default function build({ setup }) {
   for (let i = 0; i < 4; i++) { const b = K.box(0.55, 0.012, 0.12, M.wood, { x: 0.33 }); const piv = new THREE.Group(); piv.rotation.y = i * Math.PI / 2; piv.add(b); blades.add(piv); }
   blades.position.y = -0.1;
   fan.add(blades);
-  add(fan, 1.2, H - 0.32, 0.35);
+  add(fan, 1.2, H - 0.32, 1.25);
 
   for (const o of [windowProp, reg, cake, cdp, menu, tbl, cc, tc, np, poster, clk]) props[o.userData.propId] = o;
   atlasize(g, A);
@@ -795,9 +798,10 @@ function cakeCase(M, A) {
       c.add(K.cyl(0.035, 0.045, 0.05, K.mat('#e8d6b0'), { x, y: 0.096, z: 0.02 }, 10));
       c.add(K.cyl(0.006, 0.042, 0.06, K.mat(body, { rough: 0.7 }), { x, y: 0.146, z: 0.02 }, 10));
     } else {
-      const wedge = new THREE.CylinderGeometry(0.06, 0.06, 0.065, 6, 1, false, 0, Math.PI / 3);
-      c.add(K.mesh(wedge, K.mat(body, { rough: 0.6 }), { x: x - 0.02, y: 0.13, z: 0.0, ry: -Math.PI / 6 + Math.PI / 2 }));
-      c.add(K.mesh(new THREE.SphereGeometry(0.012, 6, 4), K.mat(top, { rough: 0.4 }), { x, y: 0.17, z: 0.03 }));
+      const wedge = new THREE.CylinderGeometry(0.075, 0.075, 0.075, 6, 1, false, 0, Math.PI / 3);
+      c.add(K.mesh(wedge, K.mat(body, { rough: 0.6 }), { x: x - 0.035, y: 0.135, z: -0.03, ry: Math.PI / 3 }));
+      c.add(K.mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.012, 6, 1, false, 0, Math.PI / 3), K.mat(top === '#d93a3a' ? '#fbf6ee' : top, { rough: 0.5 }), { x: x - 0.035, y: 0.176, z: -0.03, ry: Math.PI / 3 }));
+      c.add(K.mesh(new THREE.SphereGeometry(0.016, 8, 6), K.mat(top, { rough: 0.4 }), { x: x - 0.005, y: 0.19, z: 0.0 }));
     }
   });
   const tag = A.text([{ t: 'ケーキ', scale: 0.8, color: '#7a3a2a' }, { t: 'かく 520円', scale: 1 }], 0.18, 0.08, { bg: '#fffaf0', fg: '#3b2a1e', border: '#c9a253', radius: 0.12 });
@@ -973,7 +977,9 @@ function newspaperRack(M, A) {
 
 function bookshelf(A, M) {
   const b = new THREE.Group();
-  b.add(K.box(1.6, 1.7, 0.32, M.dark, { z: -0.02 }));
+  b.add(K.box(1.6, 1.7, 0.03, M.dark, { z: -0.16 }));
+  for (const x of [-0.79, 0.79]) b.add(K.box(0.04, 1.7, 0.32, M.dark, { x, z: -0.02 }));
+  b.add(K.box(1.62, 0.04, 0.34, M.dark, { y: 1.68, z: -0.02 }));
   const cols = ['#7a2a2a', '#2a4a6a', '#3f6b4e', '#8a6a2a', '#e0d6c0', '#5a3a5a', '#b5452c', '#2f2f3a'];
   const spines = cols.map((c) => A.region(24, 96, (g, w, h) => {
     g.fillStyle = c; g.fillRect(0, 0, w, h);
