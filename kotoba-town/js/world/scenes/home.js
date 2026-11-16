@@ -125,8 +125,8 @@ export default function build({ setup }) {
   const chair = (x, z, ry) => add(diningChair(furnMat, A), x, 0, z, ry);
   chair(-0.62, 0.05, Math.PI + 0.35); // pulled out by the learner
   const ayaPos = seated ? { x: -0.4, z: -1.62 } : { x: -0.2, z: -1.76 };
-  const shunPos = seated ? { x: 0.98, z: -0.88 } : { x: 1.0, z: -1.28 };
-  if (seated) { chair(ayaPos.x, ayaPos.z + 0.04, 0); chair(0.32, -1.58, 0.1); chair(shunPos.x + 0.05, shunPos.z, -Math.PI / 2 + 0.25); }
+  const shunPos = seated ? { x: 0.92, z: -1.12 } : { x: 1.0, z: -1.28 };
+  if (seated) { chair(ayaPos.x, ayaPos.z + 0.04, 0); chair(0.32, -1.58, 0.1); chair(shunPos.x + 0.05, shunPos.z + 0.02, -Math.PI / 2 + 0.3); }
   else { chair(-0.78, -1.6, 0.25); chair(0.42, -1.6, -0.2); }
   // pendant lamp
   add(pendant(A, lit), TBL.x, H, TBL.z);
@@ -192,7 +192,7 @@ export default function build({ setup }) {
     spawn: K.spot(0, 0, 0),
     slots: {
       host: seated ? { ...K.spot(ayaPos.x, ayaPos.z, K.faceYaw(ayaPos, { x: 0, z: 0 })), sit: 0.45 } : K.spot(ayaPos.x, ayaPos.z, K.faceYaw(ayaPos, { x: 0, z: 0 })),
-      host2: seated ? { ...K.spot(shunPos.x, shunPos.z, -1.05), sit: 0.45 } : K.spot(shunPos.x, shunPos.z, K.faceYaw(shunPos, { x: 0, z: 0 })),
+      host2: seated ? { ...K.spot(shunPos.x, shunPos.z, -1.2), sit: 0.45 } : K.spot(shunPos.x, shunPos.z, K.faceYaw(shunPos, { x: 0, z: 0 })),
       phone: null,
     },
     props,
@@ -801,7 +801,7 @@ function gardenWindow(A, wood, season, lit, GW) {
   const drape = K.mat(lit ? '#c99a6a' : '#d9b48a', { rough: 0.95 });
   for (const [x, n] of [[GW.x0 + 0.18, 5], [GW.x1 - 0.18, 5]]) for (let i = 0; i < n; i++) { const c = K.mesh(new THREE.CylinderGeometry(0.05, 0.06, h + 0.15, 8, 1, true), drape, { x: x + (i - 2) * 0.07, y: (h + 0.15) / 2 - 0.02, z: ZN + 0.12, cast: false }); c.scale.z = 0.6; gr.add(c); }
   const lace = A.draw(32, 64, (c, cw, ch) => { c.fillStyle = '#fbf8f0'; c.fillRect(0, 0, cw, ch); c.fillStyle = 'rgba(200,190,170,0.6)'; for (let y = 4; y < ch; y += 8) for (let x = (y % 16 ? 2 : 6); x < cw; x += 8) c.fillRect(x, y, 3, 3); });
-  for (let i = 0; i < 6; i++) { const p = A.plane(0.12, h, lace, { x: GW.x1 - 0.42 - i * 0.11, y: h / 2, z: ZN + 0.08 + (i % 2) * 0.02, ry: (i % 2 ? 0.25 : -0.25) }); gr.add(p); }
+  for (let i = 0; i < 3; i++) { const p = A.plane(0.12, h, lace, { x: GW.x1 - 0.36 - i * 0.11, y: h / 2, z: ZN + 0.08 + (i % 2) * 0.02, ry: (i % 2 ? 0.25 : -0.25) }); gr.add(p); }
   gr.add(A.box(w + 0.6, 0.06, 0.06, '#8a6a4a', { x: cx, y: h + 0.1, z: ZN + 0.12, cast: false }));
   return gr;
 }
@@ -821,7 +821,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
   for (const [x, z] of [[-2.3, -6.2], [-1.9, -6.9], [-2.4, -7.6], [-1.8, -8.3]]) gd.add(A.cyl(0.24, 0.26, 0.06, '#9a958a', { x, y: gy, z }, 10));
   // cherry tree (or the season's version of it)
   const tree = gardenTree(A, season);
-  tree.position.set(-3.3, gy, -9.2); gd.add(tree);
+  tree.position.set(-2.6, gy - 0.25, -10.0); gd.add(tree);
   // flower beds along the deck
   const fl = { spring: ['#f6c6d3', '#f2d64a', '#ffffff', '#e86a8a', '#9b7fd1'], summer: ['#4a7fd1', '#f2d64a', '#e85a4a'], autumn: ['#e86a8a', '#ffffff', '#c94bd1', '#f0a030'], winter: ['#c8243a', '#ffffff'] }[season] || ['#f6c6d3'];
   for (let i = 0; i < 26; i++) {
@@ -858,7 +858,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
   let petals = null;
   if (season === 'spring' || season === 'autumn') {
     const n = 60; const pos = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) pos.set([-3.3 + (r() - 0.5) * 4, gy + r() * 4, -8.2 + (r() - 0.5) * 4], i * 3);
+    for (let i = 0; i < n; i++) pos.set([-2.6 + (r() - 0.5) * 4, gy + r() * 4, -9.4 + (r() - 0.5) * 4], i * 3);
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     petals = new THREE.Points(geo, new THREE.PointsMaterial({ color: season === 'spring' ? '#f4b8c8' : '#d9772f', size: 0.035 }));
     petals.frustumCulled = false; dyn.add(petals);
@@ -868,7 +868,7 @@ function gardenView(A, B, { time, season, rain, lit }) {
     const p = petals.geometry.attributes.position.array;
     for (let i = 0; i < p.length; i += 3) {
       p[i + 1] -= dt * (0.3 + (i % 5) * 0.05); p[i] += Math.sin(t + i) * dt * 0.2;
-      if (p[i + 1] < gy) { p[i + 1] = gy + 4; p[i] = -3.3 + Math.sin(i * 9.1) * 2; }
+      if (p[i + 1] < gy) { p[i + 1] = gy + 4; p[i] = -2.6 + Math.sin(i * 9.1) * 2; }
     }
     petals.geometry.attributes.position.needsUpdate = true;
   };
@@ -909,7 +909,8 @@ function sofaMesh(m, A) {
   for (const x of [-0.5, 0.0, 0.5]) gr.add(K.rbox(0.5, 0.1, 0.58, 0.04, m, { x, y: 0.4, z: 0.08 }));
   gr.add(A.rbox(0.4, 0.38, 0.14, 0.07, '#e8b95a', { x: -0.55, y: 0.48, z: -0.12, rx: -0.3 }));
   gr.add(A.rbox(0.38, 0.36, 0.14, 0.07, '#c96a4a', { x: 0.62, y: 0.48, z: -0.12, rx: -0.3, ry: 0.2 }));
-  gr.add(A.rbox(0.45, 0.05, 0.3, 0.02, '#c9b48a', { x: 0.35, y: 0.83, z: -0.3, cast: false })); // folded blanket on the back
+  gr.add(A.rbox(0.42, 0.04, 0.3, 0.02, '#b86a4a', { x: 0.45, y: 0.82, z: -0.33, cast: false })); // knitted throw draped over the back
+  gr.add(A.rbox(0.42, 0.32, 0.04, 0.02, '#b86a4a', { x: 0.45, y: 0.52, z: -0.47, cast: false }));
   for (const [x, z] of [[-0.85, -0.35], [0.85, -0.35], [-0.85, 0.35], [0.85, 0.35]]) gr.add(A.box(0.05, 0.06, 0.05, '#4a3020', { x, y: -0.06, z, cast: false }));
   gr.position.y = 0.06;
   return gr;
