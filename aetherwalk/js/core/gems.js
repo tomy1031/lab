@@ -1,0 +1,103 @@
+// js/core/gems.js — every small cyan gem on the player's things (glove cuffs, shield boss, sword guard) in ONE
+// instanced draw call with art.basic (#7fe9ff, lit-independent, fogged). Each gem follows an Object3D:
+// add(object3D, x, y, z, size) → handle; remove(handle). Matrices are rebuilt once per frame just before
+// rendering (a loop 'post' hook). No allocation per frame.
+import * as THREE from 'three';
+
+const _m = new THREE.Matrix4(), _l = new THREE.Matrix4(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
+const MAX = 32;
+
+/** instances of one geometry that follow Object3Ds (one draw call): add(obj, x, y, z, size | {quat, scale}) */
+export function createAttached(ctx, name, geo, mat, max = 32, maxDist = 60) {
+  const mesh = new THREE.InstancedMesh(geo, mat, max);
+  mesh.name = name;
+  mesh.frustumCulled = false;
+  mesh.count = 0;
+  mesh.renderOrder = 1;
+  ctx.scene.add(mesh);
+  const list = [];
+  const md2 = maxDist * maxDist;
+  function visibleChain(o) {
+    for (let x = o; x; x = x.parent) { if (!x.visible) return false; if (x === ctx.scene) return true; }
+    return false;                                      // not in the scene
+  }
+  function update() {
+    let n = 0;
+    const cam = ctx.camera.matrixWorld.elements;
+    for (let i = 0; i < list.length && n < max; i++) {
+      const h = list[i];
+      if (h.hidden || !visibleChain(h.obj)) continue;
+      h.obj.updateWorldMatrix(true, false);
+      _p.set(h.x, h.y, h.z);
+      if (h.scale) _s.copy(h.scale); else _s.setScalar(h.size);
+      _l.compose(_p, h.quat || _q.identity(), _s);
+      _m.multiplyMatrices(h.obj.matrixWorld, _l);
+      const e = _m.elements;
+      const dx = e[12] - cam[12], dy = e[13] - cam[13], dz = e[14] - cam[14];
+      if (dx * dx + dy * dy + dz * dz > md2) continue;
+      mesh.setMatrixAt(n++, _m);
+    }
+    mesh.count = n;
+    mesh.visible = n > 0;
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  ctx.loop?.addHook?.(name, update, 'post');
+  return {
+    mesh,
+    add(obj, x, y, z, size = 1, opts = {}) { const h = { obj, x, y, z, size, quat: opts.quat || null, scale: opts.scale || null, hidden: false }; list.push(h); return h; },
+    remove(h) { const i = list.indexOf(h); if (i >= 0) list.splice(i, 1); },
+    get count() { return mesh.count; },
+  };
+}
+
+/** every small cyan gem (glove cuffs, shield boss, sword guard): faceted, glinting (spec 1, gloss 120) */
+export function getGems(ctx) {
+  if (ctx._awGems) return ctx._awGems;
+  const mat = ctx.art.material({ color: 0x7fe9ff, emissive: 0x1b5866, flat: true, spec: 1.0, gloss: 120, rim: 0.5 });
+  ctx._awGems = createAttached(ctx, 'gems', new THREE.OctahedronGeometry(1, 0), mat, MAX);
+  return ctx._awGems;
+}
+
+// ── soft glow sprites (pickups, gem glints at night): one instanced additive art.basic quad mesh, facing the
+// camera. Producers call push(pos, size, color) during their update; the mesh is rebuilt right before render.
+const _sp = new THREE.Vector3(), _sq = new THREE.Quaternion(), _ss = new THREE.Vector3(), _sm = new THREE.Matrix4();
+export function getSprites(ctx) {
+  if (ctx._awSprites) return ctx._awSprites;
+  const tex = ctx.art.canvasTexture(64, 64, (g) => {
+    const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.3, 'rgba(255,255,255,0.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  });
+  const MAXS = 32;
+  const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), ctx.art.basic({ color: 0xffffff, map: tex, additive: true }), MAXS);
+  mesh.name = 'glow-sprites';
+  mesh.frustumCulled = false;
+  mesh.count = 0;
+  mesh.renderOrder = 8;
+  mesh.setColorAt(0, new THREE.Color(1, 1, 1));
+  ctx.scene.add(mesh);
+  const P = Array.from({ length: MAXS }, () => ({ p: new THREE.Vector3(), s: 0, c: new THREE.Color() }));
+  let n = 0;
+  ctx.loop?.addHook?.('sprites-reset', () => { n = 0; }, 'pre');
+  ctx.loop?.addHook?.('sprites', () => {
+    ctx.camera.matrixWorld.decompose(_sp, _sq, _ss);
+    for (let i = 0; i < n; i++) {
+      _ss.setScalar(P[i].s);
+      _sm.compose(P[i].p, _sq, _ss);
+      mesh.setMatrixAt(i, _sm);
+      mesh.setColorAt(i, P[i].c);
+    }
+    mesh.count = n;
+    mesh.visible = n > 0;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, 'post');
+  const sprites = {
+    mesh,
+    /** a glow of diameter `size` (m) at world `pos`; `color` a THREE.Color (brightness = strength) */
+    push(pos, size, color) { if (n >= MAXS) return false; const e = P[n++]; e.p.copy(pos); e.s = size; e.c.copy(color); return true; },
+    get count() { return n; },
+  };
+  ctx._awSprites = sprites;
+  return sprites;
+}

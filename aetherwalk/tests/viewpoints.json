@@ -1,0 +1,8 @@
+[
+  { "name": "start-meadow-morning", "x": 0, "z": 540, "yaw": 0, "t": 8.5 },
+  { "name": "north-approach-sunset", "x": -20, "z": 440, "yaw": 330, "t": 17.5 },
+  { "name": "west-edge-morning", "x": -380, "z": 40, "yaw": 250, "t": 10 },
+  { "name": "east-hills-late-afternoon", "x": 400, "z": 60, "yaw": 60, "t": 16.5 },
+  { "name": "south-shore-night", "x": 20, "z": -300, "yaw": 10, "t": 21.5 },
+  { "name": "far-southeast-dawn", "x": 480, "z": 500, "yaw": 90, "t": 6.2 }
+]
