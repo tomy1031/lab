@@ -233,6 +233,10 @@ async function boot() {
   document.body.classList.add('ready');
   KT.ready = true;
 
+  KT.open = (vId) => { const L = lessons.find((x) => x.variants.some((v) => v.id === vId)); return openVariant(L, L.variants.find((v) => v.id === vId)); };
+  KT.start = () => start(state.lesson, state.variant);
+  KT.goTown = goTown;
+
   // test hook: jump straight into a variant (?play=l01a)
   const q = new URLSearchParams(location.search);
   if (q.get('play')) {
@@ -240,9 +244,6 @@ async function boot() {
     const L = lessons.find((x) => x.variants.some((v) => v.id === vId));
     if (L) { landing.classList.add('hide'); document.body.classList.remove('landing'); await openVariant(L, L.variants.find((v) => v.id === vId)); }
   }
-  KT.open = (vId) => { const L = lessons.find((x) => x.variants.some((v) => v.id === vId)); return openVariant(L, L.variants.find((v) => v.id === vId)); };
-  KT.start = () => start(state.lesson, state.variant);
-  KT.goTown = goTown;
 }
 
 function timeOfDay() {

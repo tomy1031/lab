@@ -26,7 +26,6 @@ export default function build({ setup }) {
   const season = setup.season || 'winter';
   const weather = setup.weather || 'clear';
   const rain = weather === 'rain';
-  const dark = time === 'evening' || time === 'night';
   const [hh, mm] = CLOCK[time] || CLOCK.evening;
   const cafeOpen = hh * 60 + mm >= 11 * 60 && hh * 60 + mm < 16 * 60 + 30;
 
@@ -43,7 +42,7 @@ export default function build({ setup }) {
   g.add(K.mesh(uvPlane(W, z1 - z0, W / 2.4, (z1 - z0) / 2.4), floor, { z: (z0 + z1) / 2, rx: -Math.PI / 2, cast: false }));
   const ceil = K.mat('#ffffff', { map: K.woodTex('#b98d62', [1, 1], 12), rough: 0.7 });
   g.add(K.mesh(uvPlane(W, z1 - z0, 3, 3), ceil, { y: H, z: (z0 + z1) / 2, rx: Math.PI / 2, cast: false }));
-  for (let x = -5.5; x <= 5.5; x += 0.5) g.add(P.box(0.06, 0.12, z1 - z0, '#8f6a48', { x, y: H - 0.12, z: (z0 + z1) / 2 }, 'satin')); // ceiling slats
+  for (let x = -5.5; x <= 5.5; x += 0.5) g.add(P.box(0.06, 0.12, z1 - z0, '#8f6a48', { x, y: H - 0.12, z: (z0 + z1) / 2, cast: false }, 'satin')); // ceiling slats
   // left wall (lockers, floor guide) + wood wainscot
   g.add(P.box(0.2, H, z1 - z0, PLASTER, { x: -W / 2 - 0.1, z: (z0 + z1) / 2 }));
   const slat = K.mat('#ffffff', { map: K.woodTex(WOOD, [1, 1], 10), rough: 0.55 });
@@ -231,7 +230,7 @@ export default function build({ setup }) {
   for (const x of [-1.0, -0.2, 1.0]) cafe.add(P.box(0.06, 3.0, 0.08, DARKWOOD, { x }, 'satin'));
   cafe.add(P.box(2.0, 0.08, 0.1, DARKWOOD, { y: 2.96 }, 'satin'));
   cafe.add(P.box(2.0, 0.02, 4.0, '#9a7a5a', { y: 0.001, z: -2.0 }));                                 // café floor
-  cafe.add(P.box(2.0, 3.0, 0.1, '#e8d8c0', { z: -4.0 }, cafeOpen ? 'matte' : 'matte'));
+  cafe.add(P.box(2.0, 3.0, 0.1, '#e8d8c0', { z: -4.0 }));
   cafe.add(P.box(0.1, 3.0, 4.0, '#e8d8c0', { x: -1.0, z: -2.0 }));
   cafe.add(P.box(2.1, 0.1, 4.0, '#6b4a33', { y: 3.0, z: -2.0 }));
   cafe.add(P.box(1.6, 1.0, 0.5, DARKWOOD, { x: 0.1, z: -3.6 }, 'satin'));                            // café counter
@@ -283,6 +282,17 @@ export default function build({ setup }) {
   for (let i = 0; i < umbN; i++) umb.add(P.cyl(0.015, 0.04, 0.9, ['#2f6db3', '#3a3a3a', '#8a2f3b', '#2f7a5b', '#e8a33c'][i], { x: -0.5 + i * 0.2, y: 0.1, z: 0.02, rz: 0.06 * (i % 2 ? 1 : -1) }, 'satin', 8));
   put2(umb, S.sign(['かさ立て  Umbrellas'], 0.6, 0.12, { bg: '#f4efe4', fg: INK }), 0, 0.35, 0.18);
   put(umb, -W / 2 + 0.3, 0, 2.5, Math.PI / 2);
+
+  if (season === 'winter' || season === 'autumn' || rain) { // coat stand by the lockers (coats-and-umbrella weather)
+    const rack = new THREE.Group();
+    rack.add(P.cyl(0.025, 0.025, 1.75, DARKWOOD, {}, 'satin', 8));
+    rack.add(P.cyl(0.22, 0.25, 0.04, DARKWOOD, {}, 'satin', 12));
+    for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2; rack.add(P.box(0.18, 0.025, 0.025, DARKWOOD, { x: Math.cos(a) * 0.09, y: 1.68, z: Math.sin(a) * 0.09, ry: -a }, 'satin')); }
+    rack.add(P.rbox(0.42, 0.95, 0.16, 0.05, '#5a4a42', { x: 0.12, y: 0.75, z: 0.05, ry: 0.3 }, 'matte'));
+    rack.add(P.rbox(0.38, 0.85, 0.15, 0.05, '#2f3a4a', { x: -0.1, y: 0.82, z: -0.1, ry: -0.8 }, 'matte'));
+    rack.add(P.box(0.08, 0.5, 0.05, '#b8322a', { x: 0.2, y: 1.15, z: 0.16, ry: 0.3 }, 'matte')); // scarf
+    put(rack, -5.4, 0, -0.55);
+  }
 
   // ------------------------------------------------------------------ right side: museum shop, long bench, toilet sign
   const shop = new THREE.Group(); // faces -x (rotated)
@@ -418,8 +428,8 @@ function drawHours(g, w, h) {
   ];
   rows.forEach(([k, v, en], i) => {
     const y = h * (0.21 + i * 0.16);
-    txt(g, k, w * 0.07, y, h * 0.045, '#6a5a4a', 800, 'left');
-    txt(g, v, w * 0.93, y, h * 0.06, k === '休館日' ? '#8a2f3b' : INK, 800, 'right');
+    txt(g, k, w * 0.07, y, h * 0.042, '#6a5a4a', 800, 'left');
+    txt(g, v, w * 0.93, y, h * 0.052, k === '休館日' ? '#8a2f3b' : INK, 800, 'right', w * 0.56);
     txt(g, en, w * 0.93, y + h * 0.055, h * 0.03, '#7a7468', 500, 'right');
     g.strokeStyle = '#d8cdb9'; g.lineWidth = 2; g.beginPath(); g.moveTo(w * 0.06, y + h * 0.09); g.lineTo(w * 0.94, y + h * 0.09); g.stroke();
   });

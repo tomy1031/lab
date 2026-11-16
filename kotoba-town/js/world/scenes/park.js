@@ -24,7 +24,6 @@ export default function build({ setup }) {
   const S = signKit(false);
   const L = signKit(true);
   const props = {};
-  const anim = [];
   const put = (o, x = 0, y = 0, z = 0, ry = 0, parent = g) => { o.position.set(x, y, z); o.rotation.y = ry; parent.add(o); return o; };
 
   // ------------------------------------------------------------------ ground: lawn, paths, puddles
@@ -222,6 +221,11 @@ export default function build({ setup }) {
   }
   // pigeons on the path
   for (const [x, z, ry] of [[-1.2, -6.2, 0.4], [-0.6, -6.6, 2.2], [0.3, -6.0, -1]]) put(pigeon(P), x, 0.01, z, ry);
+
+  if (lampsOn) { // warm light from the lanterns and the stalls after dark
+    const l1 = new THREE.PointLight('#ffc89a', night ? 10 : 5, 14, 1.3); l1.position.set(0.2, 2.6, -3.0); g.add(l1);
+    const l2 = new THREE.PointLight('#ffd2a0', night ? 9 : 4, 12, 1.4); l2.position.set(7.5, 2.4, -7.6); g.add(l2);
+  }
 
   // ------------------------------------------------------------------ petals / leaves (dynamic points)
   let fall = null;
