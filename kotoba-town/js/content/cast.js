@@ -40,7 +40,7 @@ export const CAST = {
     voice: 'Aoede', personaJa: '30代なかばの となりの 奥さん。やさしくて 話し好き。花屋で パートを している。',
     styleJa: 'やさしく、あたたかく、少し 話し好きな 感じで。',
     look: { sex: 'f', age: 35, height: 1.6, build: 1.0, skin: SKIN.fair, hair: { style: 'bob', color: '#4a3020' },
-      outfit: { type: 'cardigan', top: '#e9b9a4', bottom: '#5d6b7a', accent: '#fff6e8' }, extras: ['earrings'] },
+      outfit: { type: 'cardigan', top: '#8fb8a3', bottom: '#5d6b7a', accent: '#fff3df' }, extras: ['earrings'] },
   },
   mori_shun: {
     nameJa: '森 しゅん', kana: 'もり しゅん', roleEn: "Aya's husband, bank employee",
