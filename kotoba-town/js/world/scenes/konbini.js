@@ -350,10 +350,10 @@ function buildOutside({ time, weather, season, A, M, X0 }) {
   const kraftM = K.mat(kraft, { rough: 0.9 });
   boxG.add(K.box(0.5, 0.012, 0.16, kraftM, { y: 0.33, z: 0.25, rx: 0.5 }));
   const box = K.prop('box', boxG, { labelJa: 'はこ', labelEn: 'cardboard box' });
-  add2(grp, box, X0 - 0.55, 0, -1.6, Math.PI / 2 + 0.15);
+  add2(grp, box, X0 - 0.55, 0, -1.2, Math.PI / 2 + 0.15);
   const catModel = whiteCat(); catModel.scale.setScalar(1.15);
   const cat = K.prop('cat', catModel, { labelJa: 'ねこ', labelEn: 'cat (Shiro)' });
-  add2(grp, cat, X0 - 0.55, 0.33, -1.6, Math.PI / 2 - 0.35);
+  add2(grp, cat, X0 - 0.55, 0.33, -1.2, Math.PI / 2 - 0.35);
   // light spilling out of the store onto the pavement and the cat
   const spill = new THREE.PointLight(dark ? '#fff2dc' : '#ffffff', dark ? 3.2 : 1, 4.5, 1.3);
   spill.position.set(X0 - 0.9, 1.9, -1.2);
@@ -777,17 +777,18 @@ function posRegister(A, M) {
 function odenPot(A, M) {
   const o = new THREE.Group();
   const steel = K.mat('#c8ccd0', { rough: 0.3 });
-  o.add(K.box(0.5, 0.14, 0.36, steel, {}));
-  o.add(K.box(0.48, 0.005, 0.34, K.mat('#b07a3a', { rough: 0.1 }), { y: 0.12 }));
+  o.add(K.box(0.5, 0.02, 0.36, steel, {}));
+  for (const [x, z, w, d] of [[0, 0.175, 0.5, 0.01], [0, -0.175, 0.5, 0.01], [0.245, 0, 0.01, 0.36], [-0.245, 0, 0.01, 0.36]]) o.add(K.box(w, 0.14, d, steel, { x, z }));
+  o.add(K.box(0.48, 0.005, 0.34, K.mat('#b07a3a', { rough: 0.1 }), { y: 0.095 }));
   o.add(K.box(0.48, 0.03, 0.006, steel, { y: 0.1 }));
   o.add(K.box(0.006, 0.03, 0.34, steel, { y: 0.1 }));
   const r = K.rng(3);
   for (let i = 0; i < 12; i++) {
     const x = -0.2 + (i % 4) * 0.13; const z = -0.12 + Math.floor(i / 4) * 0.12;
     const k = i % 3;
-    if (k === 0) o.add(K.cyl(0.035, 0.035, 0.03, K.mat('#e8d6a8', { rough: 0.5 }), { x, y: 0.105, z }, 12)); // daikon
-    else if (k === 1) { const e = K.mesh(new THREE.SphereGeometry(0.026, 10, 6), K.mat('#c9884a', { rough: 0.4 }), { x, y: 0.125, z }); e.scale.set(1, 0.8, 1.2); o.add(e); } // egg
-    else o.add(K.box(0.05, 0.03, 0.04, K.mat('#5a5048', { rough: 0.7 }), { x, y: 0.105, z, ry: r() })); // konnyaku
+    if (k === 0) o.add(K.cyl(0.035, 0.035, 0.03, K.mat('#e8d6a8', { rough: 0.5 }), { x, y: 0.088, z }, 12)); // daikon
+    else if (k === 1) { const e = K.mesh(new THREE.SphereGeometry(0.026, 10, 6), K.mat('#c9884a', { rough: 0.4 }), { x, y: 0.105, z }); e.scale.set(1, 0.8, 1.2); o.add(e); } // egg
+    else o.add(K.box(0.05, 0.03, 0.04, K.mat('#5a5048', { rough: 0.7 }), { x, y: 0.088, z, ry: r() })); // konnyaku
   }
   const s = A.text([{ t: 'おでん', color: '#b5452c' }], 0.24, 0.08, { bg: '#fff6e0', fg: '#333', border: '#b5452c', radius: 0.2 });
   s.position.set(0, 0.24, 0.12); s.rotation.x = -0.3; o.add(s);

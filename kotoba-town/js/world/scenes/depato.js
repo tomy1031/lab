@@ -12,7 +12,6 @@ export const meta = { indoor: true, ambience: 'depato' };
 
 export default function build({ setup }) {
   const time = setup.time || 'evening';
-  const season = setup.season || 'autumn';
   const evening = time === 'evening' || time === 'night';
   const g = new THREE.Group();
   const props = {};
