@@ -682,6 +682,17 @@ function bicycle(frameMat) {
   return b;
 }
 
+
+/** Closed pie-slice solid (tip at the origin, pointing -z), bottom at y=0. */
+function sliceGeo(r = 0.075, h = 0.07, ang = Math.PI / 3) {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0); s.lineTo(Math.sin(ang / 2) * r, Math.cos(ang / 2) * r); s.lineTo(-Math.sin(ang / 2) * r, Math.cos(ang / 2) * r); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  if (!geo.index) geo.setIndex([...Array(geo.attributes.position.count).keys()]);
+  return geo;
+}
+
 // --------------------------------------------------------------- furniture & small things
 function pedestalTable(w, d, h, topMat, legMat) {
   const t = new THREE.Group();
@@ -798,10 +809,9 @@ function cakeCase(M, A) {
       c.add(K.cyl(0.035, 0.045, 0.05, K.mat('#e8d6b0'), { x, y: 0.096, z: 0.02 }, 10));
       c.add(K.cyl(0.006, 0.042, 0.06, K.mat(body, { rough: 0.7 }), { x, y: 0.146, z: 0.02 }, 10));
     } else {
-      const wedge = new THREE.CylinderGeometry(0.075, 0.075, 0.075, 6, 1, false, 0, Math.PI / 3);
-      c.add(K.mesh(wedge, K.mat(body, { rough: 0.6 }), { x: x - 0.035, y: 0.135, z: -0.03, ry: Math.PI / 3 }));
-      c.add(K.mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.012, 6, 1, false, 0, Math.PI / 3), K.mat(top === '#d93a3a' ? '#fbf6ee' : top, { rough: 0.5 }), { x: x - 0.035, y: 0.176, z: -0.03, ry: Math.PI / 3 }));
-      c.add(K.mesh(new THREE.SphereGeometry(0.016, 8, 6), K.mat(top, { rough: 0.4 }), { x: x - 0.005, y: 0.19, z: 0.0 }));
+      c.add(K.mesh(sliceGeo(0.085, 0.07), K.mat(body, { rough: 0.6 }), { x, y: 0.096, z: 0.06, ry: 0.5 }));
+      c.add(K.mesh(sliceGeo(0.085, 0.012), K.mat(top === '#d93a3a' ? '#fbf6ee' : top, { rough: 0.5 }), { x, y: 0.166, z: 0.06, ry: 0.5 }));
+      c.add(K.mesh(new THREE.SphereGeometry(0.016, 8, 6), K.mat(top, { rough: 0.4 }), { x: x - 0.02, y: 0.19, z: 0.02 }));
     }
   });
   const tag = A.text([{ t: 'ケーキ', scale: 0.8, color: '#7a3a2a' }, { t: 'かく 520円', scale: 1 }], 0.18, 0.08, { bg: '#fffaf0', fg: '#3b2a1e', border: '#c9a253', radius: 0.12 });

@@ -92,7 +92,7 @@ export default function build({ setup }) {
     { id: 'wine_it', x: 0.0, label: 'イタリア', sub: 'ITALIA', flag: ['#2f8a4a', '#ffffff', '#d9333a'], price: '2,500円', name: 'トスカーナ 赤', glass: '#24331f', lab: '#e8dcc0', foil: '#1f3a6a', ja: 'イタリアの ワイン', en: 'Italian wine' },
     { id: 'wine_jp', x: 1.25, label: '日本', sub: 'やまなし', flag: ['#ffffff', '#d9333a', '#ffffff'], price: '1,900円', name: '山梨 白', glass: '#b8c48a', lab: '#fbf8f0', foil: '#c9a253', ja: 'にほんの ワイン', en: 'Japanese wine' },
   ];
-  const featuredX = { wine_fr: -1.0, wine_it: 0.5, wine_jp: 1.2 };
+  const featuredX = { wine_fr: -0.85, wine_it: 0.55, wine_jp: 1.05 };
   for (const s of sections) {
     const grp = new THREE.Group();
     const reg = bottleRegion(A, s);
@@ -148,9 +148,9 @@ export default function build({ setup }) {
     const cp = T.plane(0.17, 0.11, card, { cast: true });
     cp.position.set(0, 0.07, 0.11); cp.rotation.x = -0.35; feat.add(cp);
     feat.add(K.box(0.16, 0.08, 0.01, M.gold, { y: 0.0, z: 0.1, rx: -0.35 }));
-    feat.position.set(featuredX[s.id], CH, -1.0);
-    grp.add(feat);
-    const p = K.prop(s.id, grp, { labelJa: s.ja, labelEn: s.en });
+    feat.position.set(featuredX[s.id], CH, -1.07);
+    g.add(grp);
+    const p = K.prop(s.id, feat, { labelJa: s.ja, labelEn: s.en });
     g.add(p);
     props[s.id] = p;
   }
@@ -161,7 +161,15 @@ export default function build({ setup }) {
   const reg = K.prop('register', posRegister(T, M), { labelJa: 'レジ', labelEn: 'register' });
   add(reg, -1.38, CH, -0.95, 0.15);
   for (let i = 0; i < 3; i++) add(paperBag(T, i === 1 ? 0.75 : 0.85, M), -1.95 - i * 0.03, 0, -1.6 + i * 0.12, 0.3 + i * 0.2);
-  for (let i = 0; i < 6; i++) add(K.box(0.32, 0.006, 0.12, M.cream, {}), -0.95, CH + i * 0.006, -1.03, 0.1); // folded bags
+  for (let i = 0; i < 6; i++) add(K.box(0.32, 0.006, 0.12, M.cream, {}), 1.45, CH + i * 0.006, -0.85, 0.1); // folded bags
+  // tasting tray in front of the clerk
+  const tray = new THREE.Group();
+  tray.add(K.box(0.3, 0.012, 0.14, M.walnut, {}));
+  for (let i = 0; i < 3; i++) { const wg = wineGlass(M); wg.scale.setScalar(0.75); wg.position.set(-0.09 + i * 0.09, 0.012, 0); tray.add(wg); }
+  for (let i = 0; i < 3; i++) tray.add(K.cyl(0.018, 0.018, 0.012, K.mat(['#6a1a2a', '#7a1f2f', '#e8dca0'][i], { rough: 0.1 }), { x: -0.09 + i * 0.09, y: 0.058 }, 8));
+  const tc = T.text([{ t: 'ご試飲 どうぞ', scale: 0.9 }], 0.16, 0.05, { bg: '#fffaf0', fg: '#7a2a3a', border: '#c9a253', radius: 0.15 });
+  const tcg = new THREE.Group(); tc.position.y = 0.03; tc.rotation.x = -0.4; tcg.add(tc); tcg.position.set(0, 0.012, 0.09); tray.add(tcg);
+  add(tray, -0.22, CH, -0.82, 0.05);
   // watch showcase at the right end (clerk side)
   const watch = K.prop('watch_case', watchCase(T, M), { labelJa: 'とけいの ケース', labelEn: 'watch showcase' });
   add(watch, 2.2, 0, -1.1, 0);
@@ -254,6 +262,16 @@ export default function build({ setup }) {
 }
 
 // =================================================================== local props
+/** Closed pie-slice solid (tip at the origin, pointing -z), bottom at y=0. */
+function sliceGeo(r = 0.075, h = 0.07, ang = Math.PI / 3) {
+  const s = new THREE.Shape();
+  s.moveTo(0, 0); s.lineTo(Math.sin(ang / 2) * r, Math.cos(ang / 2) * r); s.lineTo(-Math.sin(ang / 2) * r, Math.cos(ang / 2) * r); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false });
+  geo.rotateX(-Math.PI / 2);
+  if (!geo.index) geo.setIndex([...Array(geo.attributes.position.count).keys()]);
+  return geo;
+}
+
 function bottleRegion(A, s) {
   return A.region(64, 96, (c, w, h) => {
     // v (bottom→top) = profile index / 9; canvas y = (1 - v) * h
@@ -447,7 +465,7 @@ function shopFront(A, T, M, kind, depth = 1.35) {
     } else if (pastry) {
       const col = ['#fbf6ee', '#4a2a1a', '#f1d9a0', '#c9925a', '#f6c6d3'][i % 5];
       for (let k = 0; k < 3; k++) {
-        const slice = K.mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.06, 5, 1, false, 0, Math.PI / 2.5), K.mat(col, { rough: 0.6 }), { x: x - 0.08 + k * 0.08, y: 0.89, z });
+        const slice = K.mesh(sliceGeo(0.06, 0.05, Math.PI / 3), K.mat(col, { rough: 0.6 }), { x: x - 0.08 + k * 0.08, y: 0.86, z: z + 0.03 });
         sc.add(slice);
         sc.add(K.mesh(new THREE.SphereGeometry(0.01, 5, 4), K.mat(k % 2 ? '#d93a3a' : '#f2e6d0'), { x: x - 0.08 + k * 0.08 + 0.02, y: 0.93, z: z + 0.02 }));
       }

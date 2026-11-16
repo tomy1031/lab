@@ -170,7 +170,7 @@ export const SCENES = {
   },
   cafe: {
     nameEn: 'Café', slots: ['counter', 'npc1', 'npc2', 'phone'],
-    props: { menu_board: 'npc', cake_case: 'npc', coffee_cup: 'near', tea_cup: 'near', table: 'near', window: 'far', poster_concert: 'far', newspaper: 'far', register: 'npc' },
+    props: { menu_board: 'npc', cake_case: 'npc', coffee_cup: 'near', tea_cup: 'near', table: 'near', window: 'far', poster_concert: 'far', newspaper: 'far', register: 'npc', cd_player: 'npc', clock: 'far' },
   },
   park: {
     nameEn: 'Park', slots: ['npc1', 'npc2', 'phone'],
@@ -182,7 +182,7 @@ export const SCENES = {
   },
   konbini: {
     nameEn: 'Convenience store', slots: ['clerk', 'npc1', 'phone'],
-    props: { register: 'npc', atm: 'far', copy_machine: 'far', drinks_fridge: 'far', spices: 'far', onigiri: 'near', bento: 'near', bread: 'npc', magazines: 'far', basket: 'near', toilet_sign: 'far', entrance: 'far', box: 'near', cat: 'npc' },
+    props: { register: 'npc', atm: 'far', copy_machine: 'far', drinks_fridge: 'far', spices: 'far', onigiri: 'near', bento: 'near', bread: 'npc', magazines: 'far', basket: 'near', toilet_sign: 'far', entrance: 'far', box: 'far', cat: 'far', umbrella_stand: 'far', batteries: 'far' },
   },
 };
 
