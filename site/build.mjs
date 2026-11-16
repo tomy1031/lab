@@ -11,6 +11,7 @@
 //   STARLIGHT_REF Starlight Lake (starlight-lake/)              default: origin/claude/jolly-faraday-yhmee4 (then FILMS_REF)
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 //   AETHERWALK_REF AETHERWALK (aetherwalk/)                    default: origin/claude/determined-newton-ki8tfm (then FILMS_REF)
+//   KOTOBA_REF    ことばタウン (kotoba-town/)                   default: HEAD if it has kotoba-town/, else origin/claude/vr-japanese-practice-app-qqna1o
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -30,6 +31,7 @@ const refs = {
   starlight: process.env.STARLIGHT_REF || 'origin/claude/jolly-faraday-yhmee4',
   starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
   aetherwalk: process.env.AETHERWALK_REF || 'origin/claude/determined-newton-ki8tfm',
+  kotoba: process.env.KOTOBA_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -37,6 +39,8 @@ if (!process.env.UNDOKAI_REF && !hasRef(refs.undokai)) refs.undokai = refs.films
 if (!process.env.STARLIGHT_REF && !hasRef(refs.starlight)) refs.starlight = refs.films;
 if (!process.env.STARWEAVER_REF && !hasRef(refs.starweaver)) refs.starweaver = refs.films;
 if (!process.env.AETHERWALK_REF && !hasRef(refs.aetherwalk)) refs.aetherwalk = refs.films;
+const hasDir = (ref, dir) => { try { sh(`git -C "${root}" cat-file -e "${ref}:${dir}"`); return true; } catch { return false; } };
+if (!process.env.KOTOBA_REF && !hasDir(refs.kotoba, 'kotoba-town')) refs.kotoba = 'origin/claude/vr-japanese-practice-app-qqna1o';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -210,6 +214,26 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 08 ことばタウン — WebXR Japanese conversation practice with Gemini Live. Static files: the page, ES modules,
+// lesson data and the pre-made voices (three.js comes from the CDN).
+{
+  const dest = path.join(out, 'kotoba-town');
+  try {
+    const src = exportDir(refs.kotoba, 'kotoba-town');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'js', 'data', 'audio']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'kotoba-town.jpg'));
+  } catch (e) {
+    console.warn(`kotoba-town not found at ${refs.kotoba}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ことばタウン</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba}`);

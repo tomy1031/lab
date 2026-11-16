@@ -23,7 +23,7 @@ for (const q of queries) {
   try { await page.waitForFunction('window.__ready === true', null, { timeout: 60000 }); } catch { errors.push(`timeout ${q}`); }
   await page.waitForTimeout(400);
   const file = path.join(outDir, `${name}.png`);
-  await page.screenshot({ path: file });
+  await page.screenshot({ path: file, timeout: 180000 });
   console.log(file);
 }
 if (errors.length) console.log('ERRORS:\n' + [...new Set(errors)].join('\n'));

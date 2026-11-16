@@ -74,6 +74,11 @@ if (view === 'lineup') {
     p.root.position.set((col - 3.5) * 0.85, 0, -3 - row * 1.6);
     app.scene.add(p.root);
     people.push(p);
+    const c = CAST[cid];
+    const tag = K.sign([{ t: c.nameJa, scale: 1 }, { t: c.roleEn.split(',')[0].slice(0, 26), scale: 0.55, weight: 500 }], 0.78, 0.22, { bg: '#fffaf0', fg: '#5b4636', border: '#e9dcc3', emissive: true });
+    tag.position.set(p.root.position.x, 0.12, p.root.position.z + 0.35);
+    tag.rotation.x = -0.5;
+    app.scene.add(tag);
   });
 }
 // camera views
@@ -94,8 +99,8 @@ function setView() {
     people[0].setLookTarget(cam.position.clone());
   } else if (view === 'lineup') {
     app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
-    cam.position.set(0, 1.45, 1.6);
-    cam.lookAt(0, 0.95, -3.6);
+    cam.position.set(0, 1.5, 1.0);
+    cam.lookAt(0, 0.85, -3.7);
   } else if (view === 'people') {
     app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
     const p = people[0].root;

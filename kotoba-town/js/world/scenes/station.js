@@ -232,7 +232,7 @@ export default function build({ setup }) {
 
   // ------------------------------------------------------------------ platform 1 (behind the gates)
   // roof
-  g.add(P.box(52, 0.14, 4.6, '#d6d6d2', { x: 5, y: 3.5, z: -4.3 }));
+  g.add(P.box(52, 0.14, 4.6, '#c4c2bb', { x: 5, y: 3.5, z: -4.3 }, 'glow'));
   g.add(P.box(52, 0.35, 0.1, '#5e6a74', { x: 5, y: 3.35, z: -6.6 }, 'satin'));
   for (const x of [-9, 6.5, 22]) {
     g.add(P.box(0.22, 3.5, 0.22, '#c9c4b6', { x, z: -4.2 }, 'satin'));
@@ -242,13 +242,13 @@ export default function build({ setup }) {
   // departure board (発車標) hanging behind the gates
   const board = new THREE.Group();
   board.add(P.box(2.6, 0.95, 0.14, '#2a2c30', { y: -0.95 }, 'satin'));
-  board.add(P.box(0.04, 0.1, 0.04, '#777', { x: -1.0, y: -0.05 }, 'metal'));
+  board.add(P.box(0.04, 0.3, 0.04, '#777', { x: -1.0, y: -0.05 }, 'metal'));
   put(L.draw(2.48, 0.72, 320, (c, w, h) => drawDepartures(c, w, h, H)), 0, -0.43, 0.075, 0, board);
   const ticker = tickerStrip(2.48, 0.13, H);
   put(ticker.mesh, 0, -0.865, 0.075, 0, board);
   put(L.draw(2.48, 0.72, 320, (c, w, h) => drawDepartures(c, w, h, H)), 0, -0.43, -0.075, Math.PI, board);
-  board.add(P.box(0.04, 0.1, 0.04, '#777', { x: 1.0, y: -0.05 }, 'metal'));
-  put(board, 0.9, 3.42, -3.55);
+  board.add(P.box(0.04, 0.3, 0.04, '#777', { x: 1.0, y: -0.05 }, 'metal'));
+  put(board, 0.9, 3.27, -3.55);
   props.departure_board = K.prop('departure_board', board, { labelJa: 'じこくひょう', labelEn: 'departure board' });
   // station clock (hanging, double-sided)
   const clk = new THREE.Group();
@@ -257,7 +257,7 @@ export default function build({ setup }) {
   put(face(), 0, 0, 0.056, 0, clk);
   put(face(), 0, 0, -0.056, Math.PI, clk);
   clk.add(P.box(0.03, 0.6, 0.03, '#777', { y: 0.27 }, 'metal'));
-  put(clk, -1.15, 2.6, -3.55);
+  put(clk, -1.15, 2.72, -3.55);
   props.clock = K.prop('clock', clk, { labelJa: 'とけい', labelEn: 'clock' });
   // のりば sign for platform 1 (hanging above the express)
   const pSign2 = new THREE.Group();
@@ -299,7 +299,7 @@ export default function build({ setup }) {
   props.train = K.prop('train', trainProp.userData.front, { labelJa: 'でんしゃ（きゅうこう）', labelEn: 'train (express)' });
 
   // ------------------------------------------------------------------ platform 2 (across the tracks)
-  g.add(P.box(48, 0.14, 3.9, '#d6d6d2', { x: 2, y: 3.4, z: -14.9 }));
+  g.add(P.box(48, 0.14, 3.9, '#c4c2bb', { x: 2, y: 3.4, z: -14.9 }, 'glow'));
   g.add(P.box(48, 0.3, 0.1, '#5e6a74', { x: 2, y: 3.28, z: -12.95 }, 'satin'));
   for (const x of [-14, -5.5, 3, 11.5, 20]) {
     g.add(P.box(0.22, 3.4, 0.22, '#c9c4b6', { x, z: -15.6 }, 'satin'));
@@ -501,10 +501,10 @@ function trainCar(P, { len = 20, cab = false, livery = LINE, accent = '#f08c2e',
     if (dest) { // side destination display (behind the cab on the leading car)
       const dx = cab ? 0.85 : (doors[1] + doors[2]) / 2;
       const m = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.24), destMat(dest));
-      m.position.set(dx, 2.25, side * (half + 0.004));
+      m.position.set(dx, 2.25, side * (half + 0.03));
       m.rotation.y = side > 0 ? 0 : Math.PI;
       c.add(m);
-      c.add(P.box(1.05, 0.32, 0.03, '#1f2226', { x: dx, y: 2.09, z: side * (half - 0.005) }, 'satin'));
+      c.add(P.box(1.05, 0.32, 0.03, '#1f2226', { x: dx, y: 2.09, z: side * (half + 0.012) }, 'satin'));
     }
   }
   // interior ceiling + lights + poles
@@ -527,7 +527,7 @@ function trainCar(P, { len = 20, cab = false, livery = LINE, accent = '#f08c2e',
     front.add(P.box(0.4, 0.25, 0.3, '#2a2d31', { x: -0.85, y: -0.75 }));                 // coupler
     if (dest) {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.33), destMat(dest));
-      m.position.set(-0.735, 2.4, 0); m.rotation.y = -Math.PI / 2;
+      m.position.set(-0.752, 2.4, 0); m.rotation.y = -Math.PI / 2;
       front.add(m);
       front.add(P.box(0.03, 0.4, 1.42, '#111316', { x: -0.72, y: 2.2 }, 'satin'));
     }
@@ -1104,6 +1104,7 @@ function paletteKit() {
     glow: new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }),
     glass: std({ roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.3, depthWrite: false }),
   };
+  for (const [k, m] of Object.entries(mats)) m.name = `palette:${k}`;
   const paintGeo = (geo, color) => {
     const [u, v] = uvOf(color);
     const n = geo.attributes.position.count;
@@ -1166,6 +1167,7 @@ function signKit(lit) {
         tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
         const mat = lit ? new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, alphaTest: 0.5 })
           : new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6, alphaTest: 0.5 });
+        mat.name = `atlas:${lit ? 'lit' : 'std'}`;
         page = { g: c.getContext('2d'), tex, mat };
         x = PAD; y = PAD; rowH = 0;
       };

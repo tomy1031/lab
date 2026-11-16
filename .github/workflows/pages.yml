@@ -21,6 +21,11 @@ on:
       - 'aetherwalk/manifest.webmanifest'
       - 'aetherwalk/tools/build.mjs'
       - 'aetherwalk/docs/preview.jpg'
+      - 'kotoba-town/index.html'
+      - 'kotoba-town/js/**'
+      - 'kotoba-town/data/**'
+      - 'kotoba-town/audio/**'
+      - 'kotoba-town/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

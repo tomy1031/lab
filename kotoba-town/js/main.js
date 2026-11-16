@@ -140,14 +140,19 @@ async function boot() {
   keyState();
 
   async function begin(vr) {
+    // Everything that needs the click's user activation starts synchronously here:
+    // the VR session first, then audio, then the microphone (マイクは スタート時に オン —
+    // it opens now and stays on for the whole session; the game only gates what is sent).
+    const xr = vr ? app.enterVR().then(() => null, (e) => e) : Promise.resolve(null);
+    const unlocked = sound.unlock();
+    const micOk = mic.start();
     landing.classList.add('hide');
     document.body.classList.remove('landing');
-    await sound.unlock();
-    // マイクは スタート時に オン — the mic opens here and stays on for the whole session
-    const micOk = await mic.start();
+    await unlocked;
+    const [xrErr, okMic] = await Promise.all([xr, micOk]);
+    if (xrErr) toast.show(`VR: ${xrErr.message}`, 4000);
     log('mic', mic.state);
-    if (!micOk) toast.show(mic.state === 'denied' ? 'マイクが ブロックされています · Mic blocked' : 'マイクが ありません · No microphone', 4000);
-    if (vr) { try { await app.enterVR(); } catch (e) { toast.show(`VR: ${e.message}`, 4000); } }
+    if (!okMic) toast.show(mic.state === 'denied' ? 'マイクが ブロックされています · Mic blocked' : 'マイクが ありません · No microphone', 4000);
     stage.ensureSpeakers();
     await goTown();
   }
@@ -164,11 +169,18 @@ async function boot() {
   $('#hud-settings').addEventListener('click', () => openSettings());
 
   function openMenu() {
-    if (state.where === 'town') return;
+    if (state.where === 'town' || state.where === 'title' || state.menu) return;
+    const prev = { draw: board.panel.drawFn, visible: board.panel.visible, mode: boardMode };
+    state.menu = true;
     boardMode = 'follow'; boardFollow.update(0, true);
-    board.message('メニュー · Menu', 'Pause the conversation? You can go back to the town square, or keep talking.', [
-      { label: 'つづける · Resume', onClick: () => board.hide() },
-      { label: 'まちへ · Town', onClick: () => goTown(), color: '#a9cdf0', fg: '#5b4636' },
+    const resume = () => {
+      state.menu = false;
+      boardMode = prev.mode;
+      if (prev.visible && prev.draw) board.panel.draw(prev.draw); else board.hide();
+    };
+    board.message('メニュー · Menu', 'Go back to the town square, or keep going here.', [
+      { label: 'つづける · Resume', onClick: resume },
+      { label: 'まちへ · Town', onClick: () => { state.menu = false; goTown(); }, color: '#a9cdf0', fg: '#5b4636' },
     ]);
   }
 

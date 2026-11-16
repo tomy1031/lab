@@ -31,7 +31,7 @@ export default function build({ setup }) {
   const wallMat = K.mat('#f4efe4', { rough: 0.95 });
   const wainMat = K.mat('#ffffff', { map: K.woodTex('#b98a5e', [6, 1], 3), rough: 0.6 });
   const trimMat = K.mat('#8c6646', { rough: 0.6 });
-  const ceilMat = K.mat('#ffffff', { map: ceilingTex(), rough: 1, emissive: '#6d6a62', emissiveIntensity: 0.55 });
+  const ceilMat = K.mat('#ffffff', { map: ceilingTex(), rough: 1, emissive: '#7a776e', emissiveIntensity: 0.6 });
   const deskTop = K.mat('#ffffff', { map: K.woodTex('#e3c79c', [1, 1], 4), rough: 0.45 });
   const plyMat = K.mat('#ffffff', { map: K.woodTex('#c9935e', [1, 1], 3), rough: 0.5 });
   const steel = K.mat('#a3aab1', { metal: 0.55, rough: 0.4 });
@@ -69,7 +69,7 @@ export default function build({ setup }) {
   g.add(K.mesh(new THREE.BoxGeometry(0.025, 0.9, ZB - ZF), wainMat, { x: xw + 0.012, y: 0.45, z: (ZF + ZB) / 2, cast: false }));
   g.add(K.mesh(new THREE.BoxGeometry(0.05, 0.05, ZB - ZF), trimMat, { x: xw + 0.02, y: H - 0.05, z: (ZF + ZB) / 2, cast: false }));
   // outside: one painted view far behind the windows (parallax) + frames, glass, sills, curtains
-  const view = new THREE.Mesh(new THREE.PlaneGeometry(16, 7), new THREE.MeshBasicMaterial({ map: outsideTex(time, season, setup.weather), toneMapped: false }));
+  const view = new THREE.Mesh(new THREE.PlaneGeometry(16, 7, 8, 4), new THREE.MeshBasicMaterial({ map: outsideTex(time, season, setup.weather), toneMapped: false }));
   view.position.set(xw - 3.2, 1.9, -0.1); view.rotation.y = Math.PI / 2;
   g.add(view);
   for (const z of winZ) {
@@ -188,8 +188,8 @@ export default function build({ setup }) {
   const minhSlot = { ...K.spot(0.9, -1.1, -1.15), sit: SEAT_H };
   for (const s of [anaSlot, minhSlot]) add(studentChair(plyMat, steel), s.pos.x + Math.sin(s.yaw) * 0.05, 0, s.pos.z + Math.cos(s.yaw) * 0.05, s.yaw);
   // name tents
-  add(nameTent(A, 'アナ'), -0.42, DESK_H, -0.86, Math.PI / 2 + 0.6);
-  add(nameTent(A, 'ミン'), 0.42, DESK_H, -0.86, -Math.PI / 2 - 0.6);
+  add(nameTent(A, 'アナ'), -0.42, DESK_H, -0.86, 0.45);
+  add(nameTent(A, 'ミン'), 0.42, DESK_H, -0.86, -0.45);
 
   // things on the learner's desk (near)
   const Y = DESK_H;
