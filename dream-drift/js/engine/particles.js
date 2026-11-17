@@ -1,5 +1,6 @@
 // engine/particles.js — pooled GPU point sprites (sparks, boost flames, dust, confetti, bubbles)
 import * as THREE from 'three';
+import { linearOut } from './util.js';
 
 const vert = /* glsl */`
 attribute float size;
@@ -46,6 +47,7 @@ export class Particles {
       transparent: true, depthWrite: false,
       blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     });
+    linearOut(this.material);
     this.points = new THREE.Points(g, this.material);
     this.points.frustumCulled = false;
     this.points.renderOrder = 5;

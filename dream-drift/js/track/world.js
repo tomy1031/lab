@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { Track } from './track.js';
 import { makeSky } from './sky.js';
-import { makeRng } from '../engine/util.js';
+import { makeRng, linearOutTree } from '../engine/util.js';
 import * as props from './props.js';
 
 export function buildWorld(course, { shadowSize = 2048 } = {}) {
@@ -35,6 +35,7 @@ export function buildWorld(course, { shadowSize = 2048 } = {}) {
     onUpdate: (fn) => updaters.push(fn),
   };
   course.build(ctx);
+  linearOutTree(scene);
 
   const focus = new THREE.Vector3();
   return {

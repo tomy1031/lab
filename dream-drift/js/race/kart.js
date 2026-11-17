@@ -1,7 +1,7 @@
 // race/kart.js — arcade kart physics on the track frame (speed, steering, drift + mini-turbo, hops and
 // jumps, walls, off-road) and the visual rig (lean, drift angle, spin, wheels, sparks and flames).
 import * as THREE from 'three';
-import { clamp, damp, dampAngle, wrapAngle, hsl } from '../engine/util.js';
+import { clamp, damp, dampAngle, wrapAngle, hsl, linearOut } from '../engine/util.js';
 import { buildKart, statMultipliers } from './characters.js';
 
 export const SPEED_CLASSES = {
@@ -330,6 +330,7 @@ function makeShield(root) {
         gl_FragColor = vec4(c * 1.6, f * 0.85 + 0.06); }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
+  linearOut(mat);
   const m = new THREE.Mesh(new THREE.SphereGeometry(1.75, 24, 16), mat);
   m.position.y = 1.0; m.scale.set(1, 0.85, 1.15);
   root.add(m);

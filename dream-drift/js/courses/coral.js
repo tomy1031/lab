@@ -258,7 +258,7 @@ export default {
     hemi: { sky: '#6fdcf0', ground: '#123f52', intensity: 1.2 },
     sun: { color: '#b4f0ff', intensity: 1.5, dir: [0.25, 0.95, -0.15] },
     envIntensity: 0.45,
-    bloom: { strength: 0.6, radius: 0.6, threshold: 0.8 },
+    bloom: { strength: 0.55, radius: 0.5, threshold: 1.8 },
     dust: '#e0d2a8', mapColor: '#22c7c0',
   },
   road: {

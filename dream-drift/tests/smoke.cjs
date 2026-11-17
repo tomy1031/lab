@@ -35,6 +35,7 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
   // 1. menus and a real race with the keyboard
   {
     const { page, errors } = await open(browser, `${base}?nosound&quality=low`);
+    await page.setViewportSize({ width: 800, height: 450 });
     check((await screen(page)) === 's-title', 'title screen is up');
     await page.keyboard.press('Enter');
     await waitScreen(page, 's-control');
@@ -53,7 +54,8 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     await page.waitForFunction(() => window.DD.debug.state().phase === 'race', null, { timeout: 60000 });
     const d0 = await page.evaluate(() => window.DD.debug.state().me.raceDist);
     await page.keyboard.down('ArrowUp');
-    await page.waitForTimeout(5000);
+    // software rendering is slow: wait for 2 s of game time rather than wall time
+    await page.waitForFunction(() => window.DD.debug.state().raceTime > 2, null, { timeout: 180000 });
     const s1 = await page.evaluate(() => window.DD.debug.state());
     await page.keyboard.up('ArrowUp');
     check(s1.me.raceDist - d0 > 3, `kart drives forward with ↑ (moved ${(s1.me.raceDist - d0).toFixed(1)} samples, speed ${s1.me.speed.toFixed(1)})`);

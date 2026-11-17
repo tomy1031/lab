@@ -176,13 +176,13 @@ export default {
   boosts: [{ at: 0.07, d: -0.38 }, { at: 0.56, d: 0.38 }, { at: 0.94, d: 0 }],
   jumps: [{ at: 0.5 }],
   theme: {
-    sky: { top: '#05021a', horizon: '#1d0d4f', bottom: '#04011a', sunDir: [0.55, 0.22, -0.8], sunColor: '#ffe2a0', sunSize: 0.0028, sunGlow: 0.55,
+    sky: { top: '#05021a', horizon: '#1d0d4f', bottom: '#04011a', sunDir: [0.55, 0.22, -0.8], sunColor: '#ffe2a0', sunSize: 0.0028, sunGlow: 0.28,
       stars: 1.7, nebula: 1.25, nebA: '#6a2cff', nebB: '#1fc8ff', horizonSharp: 0.45 },
     fog: { color: '#120838', near: 280, far: 1150 },
     hemi: { sky: '#9a8aff', ground: '#2a1a5a', intensity: 1.0 },
     sun: { color: '#fff2d8', intensity: 1.9, dir: [0.5, 0.8, -0.4] },
-    envIntensity: 0.5,
-    bloom: { strength: 0.95, radius: 0.6, threshold: 0.7 },
+    envIntensity: 0.3,
+    bloom: { strength: 0.7, radius: 0.5, threshold: 1.7 },
     dust: '#9fd8ff', mapColor: CYAN,
   },
   road: {
@@ -207,7 +207,7 @@ export default {
       ctx.fillRect(s * 0.494, s * 0.08, s * 0.012, s * 0.34);
       ctx.fillRect(s * 0.494, s * 0.58, s * 0.012, s * 0.34);
     },
-    roadRoughness: 0.3, roadMetalness: 0.25,
+    roadRoughness: 0.55, roadMetalness: 0.1,
     roadEmissive: '#ffffff', roadEmissiveIntensity: 1.25,
     curbColors: [CYAN, '#ffffff'], curbEmissive: 0.7, curbLength: 3,
     paintShoulder(ctx, s) {

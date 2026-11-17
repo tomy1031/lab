@@ -128,3 +128,27 @@ export function disposeTree(root) {
     }
   });
 }
+
+// Custom ShaderMaterials output colours as authored for the screen. Rendering straight to the canvas
+// (low quality) and through the bloom composer (whose OutputPass tone-maps and sRGB-encodes the linear
+// buffer) must look the same, so linearise the output and let the standard chunks encode it.
+const LINEAR_OUT = `
+  gl_FragColor.rgb = pow(max(gl_FragColor.rgb, vec3(0.0)), vec3(2.2));
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+`;
+export function linearOut(mat) {
+  if (!mat || !mat.isShaderMaterial || mat.isRawShaderMaterial || mat.userData.linearOut) return mat;
+  const s = mat.fragmentShader, i = s.lastIndexOf('}');
+  if (i < 0) return mat;
+  mat.fragmentShader = s.slice(0, i) + LINEAR_OUT + '}' + s.slice(i + 1);
+  mat.userData.linearOut = true;
+  mat.needsUpdate = true;
+  return mat;
+}
+export function linearOutTree(root) {
+  root.traverse((o) => {
+    if (!o.material) return;
+    for (const m of Array.isArray(o.material) ? o.material : [o.material]) linearOut(m);
+  });
+}

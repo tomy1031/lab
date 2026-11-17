@@ -406,13 +406,14 @@ const humanCtl = new Map();
 
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (now - last) / 1000);
+  const raw = Math.max(0, (now - last) / 1000);
+  const dt = Math.min(0.05, raw);
   last = now;
   elapsed += dt;
-  try { tick(dt); } catch (e) { reportError(e); }
+  try { tick(dt, raw); } catch (e) { reportError(e); }
 }
 
-function tick(dt) {
+function tick(dt, raw = dt) {
   const ctl = input.poll();
   if (hands.ready) hands.poll();
   const race = state.race;
@@ -448,7 +449,7 @@ function tick(dt) {
   if (state.screen !== 'race') nav.updateHand(dt, hands);
   updateHandSetup();
   renderer.render();
-  measure(dt);
+  measure(Math.min(raw, 2));
 }
 
 function measure(dt) {
