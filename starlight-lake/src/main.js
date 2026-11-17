@@ -13,8 +13,10 @@ const _q = new THREE.Quaternion();
 const _v = new THREE.Vector3();
 
 /** Spatial-frequency bands the display can render cleanly (>= 2.5 pixels per cycle). */
+// Finest stripes offered: about 3.3 pixels per cycle. Finer ones were drawn faded or blank by the
+// shader's anti-aliasing, so they could not be seen at any contrast and trained nothing.
 function bandsFor(ppd, kind) {
-  const maxSf = ppd * 0.4;
+  const maxSf = ppd * 0.3;
   if (kind === 'screen') {
     const b = [3, 6, 9, 12, 18, 24].filter((sf) => sf <= Math.min(24, maxSf));
     return b.slice(-4);

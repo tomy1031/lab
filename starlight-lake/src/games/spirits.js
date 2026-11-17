@@ -13,13 +13,17 @@ import { STIM_DIST } from '../config.js';
 // (ULTIMEyes: many frequencies and orientations, visual field positions, sound cues, game
 // rewards), Tan & Fong 2008 and Yan 2015 (contrast training in low myopia), and Sawides 2010
 // (orientation-specific blur adaptation), which is why each orientation is trained separately.
+// One target in five is shown well above threshold and does not move the staircase: seeing the
+// stripes clearly now and then keeps the task meaningful and helps the learning (Ahissar &
+// Hochstein 1997, easy trials). Wisps stay within the sharp middle of the headset's lenses.
 
 export class SpiritsModule extends Module {
   start() {
     super.start();
     const app = this.app, v = app.view;
-    // '-det2': thresholds are kept per pedestal luminance, so the brighter pedestal starts fresh
-    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-det2`, v.sfBands, {
+    // '-det3': the finest stripes used to be drawn faded by the anti-aliasing, so their old
+    // thresholds measured the display, not the eye; start fresh
+    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-det3`, v.sfBands, {
       start: 0.5, min: 0.002, max: 1, steps: [0.2, 0.1, 0.05],
     });
     this.spirits = [];
@@ -41,17 +45,21 @@ export class SpiritsModule extends Module {
     const sf = cell.sf;
     const sigma = clamp(1.3 / sf, this.minSigma, 0.95);   // a few more stripes: easier to spot
     const disc = sigma * 7;
-    // fine gratings stay nearer the centre of gaze, where acuity is highest
-    const maxEcc = sf > 4 ? Math.min(14, v.field.az) : v.field.az;
+    // fine gratings stay nearer the centre of gaze, where acuity is highest; all of them stay in
+    // the sharp middle of the lenses (stripes blurred by the optics train nothing)
+    const maxEcc = Math.min(sf > 4 ? 12 : 24, v.field.az);
+    const maxEl = Math.min(14, v.field.el);
     let az = 0, el = 0, ok = false;
     for (let k = 0; k < 20 && !ok; k++) {
       az = rand(-maxEcc, maxEcc);
-      el = rand(-v.field.el, v.field.el * 0.8);
+      el = rand(-maxEl, maxEl * 0.8);
       ok = this.spirits.every((s) => Math.hypot(s.az - az, s.el - el) > Math.max(s.disc, disc) * 1.2 + 2);
     }
     if (!ok) return;
+    const easy = isTarget && Math.random() < 0.2;
+    const contrast = !isTarget ? 0 : easy ? Math.min(1, cell.st.value * 3) : cell.st.value;
     const g = new GaborPatch();
-    g.set({ sf, contrast: isTarget ? cell.st.value : 0, ori: cell.ori, sigmaDeg: sigma, discDeg: disc, dist: STIM_DIST });
+    g.set({ sf, contrast, ori: cell.ori, sigmaDeg: sigma, discDeg: disc, dist: STIM_DIST });
     g.opacity = 0;
     // golden wisps are worth x3; blanks turn golden just as often, so gold is no hint
     const golden = Math.random() < 0.08;
@@ -61,14 +69,24 @@ export class SpiritsModule extends Module {
     this.root.add(halo.mesh, g.mesh);
     app.eye(g.mesh, 'weak'); app.eye(halo.mesh, 'weak');
     const life = this.life * (app.finale ? 0.85 : 1);
-    const s = { g, halo, golden, cell, isTarget, az, el, disc, age: 0, life, pos: new THREE.Vector3(), state: 'live', hover: 0 };
+    const s = { g, halo, golden, cell, isTarget, easy, az, el, disc, age: 0, life, pos: new THREE.Vector3(), state: 'live', hover: 0 };
     this.place(s);
     this.spirits.push(s);
+    if (golden) {
+      s.label = app.fx.text('×3', this.labelPos(s), { color: '#ffe29a', size: 0.075, life, rise: 0, glow: 'rgba(255,200,90,0.9)' });
+      if (!app.goldHintShown) {
+        app.goldHintShown = true;
+        app.caption('金色は得点3倍のチャンス。やることは同じ：縞があれば触れる、無地なら見送る', 4.5);
+      }
+    }
     app.audio.cue(s.pos, isTarget ? 0 : 0);   // same sound for both: sound says where, not what
   }
 
+  labelPos(s) { return this.at(s.az, s.el + s.age * 0.12 + s.disc * 0.5 + 0.9, STIM_DIST); }
+
   place(s) {
     this.at(s.az, s.el + s.age * 0.12, STIM_DIST, s.pos);
+    s.label?.move(this.labelPos(s));
     s.g.mesh.position.copy(s.pos);
     this.face(s.g.mesh);
     s.halo.mesh.position.copy(s.pos);
@@ -142,7 +160,7 @@ export class SpiritsModule extends Module {
     this.stats.trials++;
     if (s.isTarget) {
       // While the player is tapping blanks too, hits don't make the next ones fainter.
-      if (!this.guessing()) s.cell.st.update(true);
+      if (!s.easy && !this.guessing()) s.cell.st.update(true);
       this.stats.correct++; this.hits++;
       const pts = app.score.reward(60 + Math.round(40 * (1 - Math.log10(s.cell.st.value * 1000) / 3)), s.pos, { golden: s.golden });
       this.stats.score += pts;
@@ -165,18 +183,23 @@ export class SpiritsModule extends Module {
 
   expire(s) {
     if (s.isTarget) {
-      s.cell.st.update(false);
+      if (!s.easy) s.cell.st.update(false);
       this.misses++;
       this.stats.trials++;
       this.app.score.miss(s.pos, false);
     } else {
       this.faHistory.push(0);
-      this.app.score.add(10);
+      if (s.golden) {
+        // letting a golden blank go is the right answer too, and it pays like one
+        const pts = this.app.score.reward(30, s.pos, { golden: true });
+        this.stats.score += pts;
+        this.app.fx.text(`見送りOK  +${pts}`, s.pos.clone().add(new THREE.Vector3(0, 0.1, 0)), { color: '#ffe29a', size: 0.08 });
+      } else this.app.score.add(10);
     }
     this.vanish(s);
   }
 
-  vanish(s) { s.state = 'gone'; s.fade = 0.35; }
+  vanish(s) { s.state = 'gone'; s.fade = 0.35; s.label?.remove(); }
 
   stop() {
     this.grid.save();

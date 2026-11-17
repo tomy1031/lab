@@ -5,11 +5,12 @@ import { noteOf } from './audio.js';
 import { LanternModule } from './games/lantern.js';
 import { SpiritsModule } from './games/spirits.js';
 import { GatesModule } from './games/gates.js';
+import { MatchModule } from './games/match.js';
 import { DepthModule } from './games/depth.js';
 import { CometsModule } from './games/comets.js';
 import { RestModule } from './games/rest.js';
 
-const MODULES = { lantern: LanternModule, spirits: SpiritsModule, gates: GatesModule, depth: DepthModule, comets: CometsModule, rest: RestModule };
+const MODULES = { lantern: LanternModule, spirits: SpiritsModule, gates: GatesModule, match: MatchModule, depth: DepthModule, comets: CometsModule, rest: RestModule };
 
 const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const ORI_LABEL = { 0: '縦', 45: '斜／', 90: '横', 135: '斜＼' };
@@ -412,7 +413,7 @@ export class Director {
   summarize() {
     const by = (id) => this.results.filter((r) => r.id === id);
     const sum = (arr, f) => arr.reduce((a, r) => a + (f(r) || 0), 0);
-    const spirits = by('spirits'), gates = by('gates'), lantern = by('lantern'), depth = by('depth'), comets = by('comets');
+    const spirits = by('spirits'), gates = by('gates'), match = by('match'), lantern = by('lantern'), depth = by('depth'), comets = by('comets');
     const last = (arr) => arr[arr.length - 1];
     const lanternDists = lantern.flatMap((r) => r.metrics.distances || []);
     return {
@@ -431,6 +432,9 @@ export class Director {
       orientation: last(spirits)?.metrics.orientation ?? null,
       gatesAcc: gates.length ? Math.round(100 * sum(gates, (r) => r.correct) / Math.max(1, sum(gates, (r) => r.trials))) : null,
       gatesMs: last(gates) ? Math.round(last(gates).metrics.duration * 1000) : null,
+      matchSets: match.length ? sum(match, (r) => r.metrics.cleared) : null,
+      matchPerfect: match.length ? sum(match, (r) => r.metrics.perfect) : null,
+      matchCs: last(match) ? Math.round(10 ** avgCs(last(match).metrics.sensitivity)) : null,
       stereo: last(depth) ? Math.round(last(depth).metrics.stereoArcsec) : null,
       comet: last(comets) ? Math.round(last(comets).metrics.speed) : null,
     };
@@ -455,6 +459,7 @@ export class Director {
         if (s.lanternDist != null) rows.push([T('lantern'), `${s.lanterns} 個を返した ・ 平均 ${s.lanternDist} m で見抜いた`, prev?.lanternDist != null ? delta(s.lanternDist, prev.lanternDist, 'm', true) : '']);
         if (s.cs) rows.push([T('spirits'), `${s.spirits} 体 ・ コントラスト感度 ${s.cs.map((x) => `${x.sf}cpd:${x.cs}`).join('  ')}`, prev?.cs ? delta(avgCs(s.cs), avgCs(prev.cs), '', true) : '']);
         if (s.gatesAcc != null) rows.push([T('gates'), `正答 ${s.gatesAcc}% ・ 提示 ${s.gatesMs} ms`, prev?.gatesMs ? delta(s.gatesMs, prev.gatesMs, 'ms', false) : '']);
+        if (s.matchSets != null) rows.push([T('match'), `${s.matchSets} 組そろえた（うちノーミス ${s.matchPerfect}）・ 感度 ${s.matchCs}`, prev?.matchCs ? delta(s.matchCs, prev.matchCs, '', true) : '']);
         if (s.stereo != null) rows.push([T('depth'), `立体視 ${s.stereo} 秒角`, prev?.stereo ? delta(s.stereo, prev.stereo, '″', false) : '']);
         if (s.comet != null) rows.push([T('comets'), `${s.comet} °/秒 の星をキャッチ`, prev?.comet ? delta(s.comet, prev.comet, '°/s', true) : '']);
         let y = 250;

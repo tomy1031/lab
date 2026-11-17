@@ -7,7 +7,7 @@ const DEFAULTS = () => ({
   settings: {
     minutes: 15,
     course: 'full',         // 'full' (the research-ordered night) | 'custom' (chosen chapters)
-    chapters: ['lantern', 'spirits', 'gates', 'depth', 'comets'],
+    chapters: ['lantern', 'spirits', 'gates', 'match', 'depth', 'comets'],
     age: 42,
     quality: 'auto',        // 'auto' | 'standard' | 'high'  (WebXR framebuffer scale)
     volume: 0.8,

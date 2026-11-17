@@ -8,6 +8,8 @@ import { rand, clamp, easeOutCubic } from '../../../src/util.js';
 // (pinch or trigger, then swipe) toward the gap of the Landolt C, or push the thumbstick, or
 // press an arrow key. The earlier (farther) you read it, the more it is worth. Board size
 // adapts so most reads happen in the middle distance, keeping the eyes moving near <-> far.
+// No aiming needed: an answer goes to the board nearest the pointer within a wide cone, or else
+// to the one closest to the player; that board glows so it is clear which one it is.
 // Modelled on the Kwansei Gakuin VR game (Kawamori & Imura, Interaction 2025).
 
 const LANES = [-12, 0, 12];
@@ -38,6 +40,7 @@ export class RingRush extends ArcadeGame {
       return l;
     });
     this.held = new Map();
+    this.hovered = new Set();
     this.streak = 0;
   }
 
@@ -62,9 +65,17 @@ export class RingRush extends ArcadeGame {
 
   update(dt) {
     super.update(dt);
+    this.hovered = new Set();
+    for (const p of this.app.input.pointers) {
+      if (p.kind === 'xr' && !p.active) continue;
+      const o = this.held.get(p) || this.target(p.ray);
+      if (o) this.hovered.add(o);
+    }
     for (const o of this.items) {
       o.flash = Math.max(0, o.flash - dt * 3);
       o.d.uniforms.uFlash.value = o.flash;
+      const hov = this.hovered.has(o) ? 1 : 0;
+      o.d.uniforms.uHover.value += (hov - o.d.uniforms.uHover.value) * Math.min(1, dt * 12);
       o.d.uniforms.uTime.value = this.t;
       if (o.state === 'wait') { o.timer -= dt; if (o.timer <= 0) this.launch(o); continue; }
       if (o.state === 'come') {
@@ -89,17 +100,20 @@ export class RingRush extends ArcadeGame {
     }
   }
 
-  pick(ray) {
-    let best = null, bd = Infinity;
+  /** The board nearest the pointer within 22 degrees, else the one closest to the player. */
+  target(ray) {
+    let best = null, ba = 22;
     for (const o of this.items) {
       if (o.state !== 'come') continue;
-      const d = ArcadeGame.raySphere(ray, o.pos, this.hitRadius(o.pos, this.size * 0.36, 2.2));
-      if (d >= 0 && d < bd) { bd = d; best = o; }
+      const a = ArcadeGame.rayAngle(ray, o.pos);
+      if (a < ba) { ba = a; best = o; }
     }
+    if (best) return best;
+    for (const o of this.items) if (o.state === 'come' && (!best || o.dist < best.dist)) best = o;
     return best;
   }
-  pointerTarget(p) { const o = this.pick(p.ray); return o ? { point: o.pos, distance: o.pos.distanceTo(p.ray.origin) } : null; }
-  onSelectStart(p) { const o = this.pick(p.ray); if (o) this.held.set(p, o); }
+  pointerTarget(p) { const o = this.held.get(p) || this.target(p.ray); return o ? { point: o.pos, distance: o.pos.distanceTo(p.ray.origin) } : null; }
+  onSelectStart(p) { const o = this.target(p.ray); if (o) this.held.set(p, o); }
   onSelectEnd(p) {
     const o = this.held.get(p); this.held.delete(p);
     if (!o || o.state !== 'come') return;
@@ -108,8 +122,7 @@ export class RingRush extends ArcadeGame {
     this.answer(o, dir);
   }
   onDirection(dir, p) {
-    let o = p ? this.pick(p.ray) : this.pick(this.app.input.mouse.ray);
-    if (!o) for (const x of this.items) if (x.state === 'come' && (!o || x.dist < o.dist)) o = x;
+    const o = this.target((p || this.app.input.mouse).ray);
     if (o) this.answer(o, dir);
   }
 

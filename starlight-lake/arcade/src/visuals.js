@@ -74,12 +74,12 @@ export class Bubble {
 /** Ring Rush target: a white board with a coloured rim and a dark Landolt C. */
 export class TargetDisc {
   constructor(color) {
-    this.uniforms = { uGap: { value: 0 }, uColor: { value: raw(color) }, uOpacity: { value: 1 }, uFlash: { value: 0 }, uFlashColor: { value: raw(0x7dffb0) }, uTime: { value: 0 }, uGold: { value: 0 } };
+    this.uniforms = { uGap: { value: 0 }, uColor: { value: raw(color) }, uOpacity: { value: 1 }, uFlash: { value: 0 }, uFlashColor: { value: raw(0x7dffb0) }, uTime: { value: 0 }, uGold: { value: 0 }, uHover: { value: 0 } };
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
       uniforms: this.uniforms, transparent: true, depthWrite: false, premultipliedAlpha: true,
       vertexShader: VS,
       fragmentShader: /* glsl */`
-        uniform float uGap, uOpacity, uFlash, uTime, uGold; uniform vec3 uColor, uFlashColor; varying vec2 vUv;
+        uniform float uGap, uOpacity, uFlash, uTime, uGold, uHover; uniform vec3 uColor, uFlashColor; varying vec2 vUv;
         void main(){
           vec2 p = vUv - 0.5; float r = length(p); float px = fwidth(r);
           float face = smoothstep(0.3 + px, 0.3 - px, r);
@@ -92,10 +92,10 @@ export class TargetDisc {
           vec3 rimC = mix(uColor, vec3(1.0, 0.8, 0.3), uGold);
           vec3 col = mix(vec3(1.0), vec3(0.07, 0.09, 0.2), ring * (1.0 - gap));
           col = mix(col, uFlashColor, uFlash * 0.5);
-          float glow = exp(-pow(max(r - 0.36, 0.0) * 14.0, 2.0)) * (1.0 - face - band);
+          float glow = exp(-pow(max(r - 0.36, 0.0) * (14.0 - 6.0 * uHover), 2.0)) * (1.0 - face - band) * (1.0 + 1.5 * uHover);
           float spin = uGold * pow(0.5 + 0.5 * sin(atan(p.y, p.x) * 6.0 - uTime * 6.0), 6.0) * band;
-          vec3 outc = col * face + rimC * band * (1.0 + spin) + vec3(0.1, 0.13, 0.28) * outline;
-          gl_FragColor = vec4(outc, face + band + outline) * uOpacity;
+          vec3 outc = col * face + rimC * band * (1.0 + spin + 0.6 * uHover) + vec3(0.1, 0.13, 0.28) * outline + rimC * glow * 0.8;
+          gl_FragColor = vec4(outc, face + band + outline + glow * 0.6) * uOpacity;
         }`,
     }));
     this.mesh.renderOrder = 15;

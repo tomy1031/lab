@@ -89,6 +89,15 @@ export class Effects {
     t.m.visible = true;
     t.life = t.max = life;
     t.vel.set(0, rise, 0);
+    t.token = (this.textToken = (this.textToken || 0) + 1);
+    // a handle: the caller can move or remove this text while it is still its own
+    const own = () => t.token === handle.token;
+    const handle = {
+      token: t.token,
+      move: (q, sizeM) => { if (own()) { t.m.position.copy(q); if (sizeM) t.m.scale.setScalar(sizeM / 0.25); } },
+      remove: () => { if (own()) { t.life = Math.min(t.life, 0.15); } },
+    };
+    return handle;
   }
 
   /** A glowing mote that flies from `from` along `dir` (unit, world) to the sky. */

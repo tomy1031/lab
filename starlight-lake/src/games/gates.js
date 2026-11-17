@@ -12,6 +12,8 @@ import { noteOf } from '../audio.js';
 // with short and shrinking exposure times, in presbyopes aged ~51 (Sci Rep 2012). The target's
 // contrast follows a per-cell staircase. Exposure time adapts separately; it is floored higher
 // for players over 40, whose processing speed is the thing being trained.
+// Answering is loose: point anywhere on the left or right and pinch, or push the stick. Each
+// chapter opens with one slow, high-contrast demonstration so the "three versus two" is clear.
 
 export class GatesModule extends Module {
   start() {
@@ -19,7 +21,7 @@ export class GatesModule extends Module {
     const app = this.app, v = app.view;
     const bands = v.kind === 'screen' ? v.sfBands.filter((sf) => (1 / sf) * 14 < v.field.el * 2) : v.sfBands;
     this.bands = bands.length ? bands : v.sfBands.slice(-1);
-    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-lm2`, this.bands, { start: 0.5, min: 0.003, max: 1, steps: [0.2, 0.1, 0.05] });
+    this.grid = new CellGrid(app.store, `${v.kind === 'screen' ? 'scr' : 'vr'}-lm3`, this.bands, { start: 0.5, min: 0.003, max: 1, steps: [0.2, 0.1, 0.05] });
     const s = app.store.data;
     this.minDur = app.settings.age >= 40 ? 0.1 : 0.08;
     this.dur = Math.max(this.minDur, s.gatesDuration ?? (app.settings.age >= 40 ? 0.6 : 0.5));
@@ -30,6 +32,7 @@ export class GatesModule extends Module {
     this.root.add(this.fix.mesh);
     this.gates = [0, 1].map(() => this.makeGate());
     this.phase = 'ready'; this.pt = 0;
+    this.demo = true;
     this.newTrial();
   }
 
@@ -53,14 +56,17 @@ export class GatesModule extends Module {
     const sepL = pick(sf >= 4 ? [3, 4, 6] : [3, 4]);
     const sep = sepL * lambda;
     const target = Math.random() < 0.5 ? 0 : 1;
-    this.trial = { cell, sf, sigma, sep, sepL, target, answered: false };
+    const demo = this.demo; this.demo = false;
+    this.trial = { cell, sf, sigma, sep, sepL, target, answered: false, demo };
+    const ct = demo ? Math.max(0.6, cell.st.value) : cell.st.value;
+    if (demo) this.app.caption(`お手本：${target === 0 ? '左' : '右'}の門が当たり（縞が3つ、真ん中にもある）。左右どちらかを指してえらぶ`, 6);
     const H = 2 * sep + 6 * sigma, W = 6 * sigma;
     // gates sit a few degrees either side of fixation; a small screen squeezes them inwards
     const room = this.app.view.field.az * 1.15 - H / 2 - 0.4;
     const gx = Math.max(W / 2 + 0.45, Math.min(Math.max(2.4, W / 2 + 1.6), room));
     this.gates.forEach((g, i) => {
       g.az = i === 0 ? -gx : gx;
-      g.tri.set({ sf, sigma, sep, dist: STIM_DIST, cf: 0.6, ct: i === target ? cell.st.value : 0 });
+      g.tri.set({ sf, sigma, sep, dist: STIM_DIST, cf: 0.6, ct: i === target ? ct : 0 });
       g.tri.mesh.rotation.z = THREE.MathUtils.degToRad(cell.ori);
       g.tri.uniforms.uShow.value = 0;
       const margin = Math.min(0.6, H * 0.12);
@@ -99,7 +105,7 @@ export class GatesModule extends Module {
       }
     } else if (this.phase === 'show') {
       this.fix.opacity = 1;
-      if (this.pt >= this.dur) {
+      if (this.pt >= (this.trial.demo ? 2.5 : this.dur)) {
         for (const g of this.gates) g.tri.uniforms.uShow.value = 0;
         this.phase = 'respond'; this.pt = 0;
       }
@@ -114,13 +120,11 @@ export class GatesModule extends Module {
     }
   }
 
+  /** The gate on the side the pointer is on: anywhere left or right of the star counts. */
   pickGate(ray) {
-    let best = null, ba = Infinity;
-    for (const g of this.gates) {
-      const a = Module.rayAngle(ray, g.pos);
-      if (a < g.radiusDeg * 1.35 + 0.3 && a < ba) { ba = a; best = g; }
-    }
-    return best;
+    const [a0, a1] = this.gates.map((g) => Module.rayAngle(ray, g.pos));
+    if (Math.min(a0, a1) > 45 || Math.abs(a0 - a1) < 0.5) return null;   // pointing away, or dead centre
+    return a0 < a1 ? this.gates[0] : this.gates[1];
   }
 
   pointerTarget(p) {
@@ -143,14 +147,16 @@ export class GatesModule extends Module {
   answer(choice, p) {
     const app = this.app, tr = this.trial;
     const ok = choice === tr.target;
-    tr.cell.st.update(ok);
-    this.stats.trials++;
-    this.recent.push(ok ? 1 : 0);
-    if (this.recent.length > 10) this.recent.shift();
+    if (!tr.demo) {
+      tr.cell.st.update(ok);
+      this.stats.trials++;
+      this.recent.push(ok ? 1 : 0);
+      if (this.recent.length > 10) this.recent.shift();
+    }
     const chosen = this.gates[choice];
     const right = this.gates[tr.target];
     if (ok) {
-      this.stats.correct++;
+      if (!tr.demo) this.stats.correct++;
       const pts = app.score.reward(80, chosen.pos);
       this.stats.score += pts;
       chosen.flash = 1; chosen.good = true;
@@ -173,7 +179,7 @@ export class GatesModule extends Module {
       // show where it was, clearly, for a moment: feedback helps the learning stick
       right.tri.uniforms.uCT.value = Math.max(0.35, tr.cell.st.value);
       right.tri.uniforms.uShow.value = 1;
-      if (choice < 0) app.caption('左右どちらかの門を選んでね（スティック・矢印キーでもOK）', 3);
+      if (choice < 0) app.caption('左右どちらかを指してつまむ（スティック・矢印キーでもOK）', 3);
     }
     // exposure time adapts on a slower loop than contrast
     if (this.recent.length >= 10) {

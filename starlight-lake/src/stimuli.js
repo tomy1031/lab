@@ -3,8 +3,9 @@ import { srgb } from './util.js';
 
 // Visual stimuli. The Gabor shader works in linear luminance and encodes to sRGB itself, so
 // Michelson contrast is what the staircase asks for (within display calibration). Temporal
-// dithering lets 8-bit panels show contrasts below one grey level, and the grating fades out
-// where it would alias instead of turning into moire.
+// dithering lets 8-bit panels show contrasts below one grey level. A grating keeps its full
+// contrast down to about 4 pixels per cycle and fades out only near the pixel limit (under ~2.5),
+// where it would alias into moire; the bands offered never go that fine (main.js bandsFor).
 
 const ENCODE = /* glsl */`
 vec3 encodeSRGB(vec3 c){ c = clamp(c, 0.0, 1.0); return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
@@ -31,7 +32,7 @@ const gaborFS = /* glsl */`
     float s = sin(uOrient), c = cos(uOrient);
     float x = c * p.x + s * p.y;
     float ph = 6.2831853 * uCycles * x + uPhase;
-    float aa = clamp(1.0 - (fwidth(ph) - 1.0) / 1.2, 0.0, 1.0);
+    float aa = smoothstep(2.8, 1.6, fwidth(ph));
     float env = exp(-(r * r) / (2.0 * uSigma * uSigma));
     float L = uMean * (1.0 + uContrast * aa * env * sin(ph));
     vec3 col = encodeSRGB(vec3(L) * uTint);
@@ -109,7 +110,7 @@ export class Triplet {
         void main(){
           vec2 q = (vUv - 0.5) * vec2(uW, uH);
           float ph = 6.2831853 * uSF * q.x;
-          float aa = clamp(1.0 - (fwidth(ph) - 1.0) / 1.2, 0.0, 1.0);
+          float aa = smoothstep(2.8, 1.6, fwidth(ph));
           float carrier = cos(ph) * aa;
           float m = uCF * (gab(q, uSep) + gab(q, -uSep)) + uCT * gab(q, 0.0);
           float L = uMean * (1.0 + uShow * m * carrier);

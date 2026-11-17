@@ -14,17 +14,19 @@ export const APP_NAME = 'Starlight Lake';
 // Chapters are short (~2 min) and alternate, so the night keeps changing pace.
 // Order follows the evidence: warm-up, accommodation/vergence work (KGU 2025), contrast perceptual
 // learning (Polat 2004, Deveau 2014, Tan & Fong 2008, Yan 2015), lateral masking with brief
-// presentation (Polat 2012 for presbyopia), stereo (Vedamurthy 2016), action/periphery (Li 2009).
+// presentation (Polat 2012 for presbyopia), orientation search at low contrast (Deveau 2014),
+// stereo (Vedamurthy 2016), action/periphery (Li 2009).
 export const PLAN_VR = [
   { id: 'rest', dur: 45, variant: 'intro' },
-  { id: 'lantern', dur: 120 },
-  { id: 'spirits', dur: 120 },
-  { id: 'gates', dur: 105 },
+  { id: 'lantern', dur: 110 },
+  { id: 'spirits', dur: 100 },
+  { id: 'gates', dur: 90 },
   { id: 'rest', dur: 32, variant: 'far' },
-  { id: 'comets', dur: 80 },
-  { id: 'spirits', dur: 105, variant: 'high' },
-  { id: 'depth', dur: 95 },
-  { id: 'lantern', dur: 110, variant: 'finale' },
+  { id: 'match', dur: 100 },
+  { id: 'comets', dur: 70 },
+  { id: 'spirits', dur: 75, variant: 'high' },
+  { id: 'depth', dur: 85 },
+  { id: 'lantern', dur: 100, variant: 'finale' },
 ];
 
 // Screen mode: uncorrected, 2.5-4 m from a PC/TV. No stereo, small field: contrast work at high SF.
@@ -41,11 +43,13 @@ export const MODULE_INFO = {
   rest: { title: 'Still Water', sub: '呼吸と遠くを眺める時間',
     how: '光の蓮に合わせて呼吸します。吸うと花が開き、吐くと光が遠くの灯台へ流れていきます。最後は遠くを眺めて、まばたきを。' },
   lantern: { title: 'Lantern Drift', sub: '遠近のピント運動',
-    how: '近づく灯籠の輪の「切れ目」の方向へ、つまんで(トリガーで)はじき返す。遠くで見抜くほど高得点。' },
+    how: '近づく灯籠の輪の「切れ目」の方向へ、つまんで(トリガーで)はじき返す。狙わなくてOK：指した近くの灯籠（なければいちばん手前）に届きます。遠くで見抜くほど高得点。' },
   spirits: { title: 'Wisps', sub: 'コントラスト感度トレーニング',
-    how: '縞模様が見える精にだけ触れよう。無地の精は見送る。縞はだんだん淡くなります。' },
+    how: '縞模様が見える精にだけ触れよう。無地の精は見送る。縞は見えるか見えないかの淡さに合わせて変わります。金色は得点3倍（やることは同じ）。' },
   gates: { title: 'Star Gates', sub: '側方マスキングと瞬間視',
-    how: '中央の星を見つめる。一瞬光る左右の門のうち、真ん中にも縞が宿ったのはどちら？' },
+    how: '中央の星を見つめる。左右の門に縞が一瞬光る。縞が3つ並んだ（真ん中にも淡い縞がある）門はどっち？ 左右どちらかを指してつまむだけ。' },
+  match: { title: 'Star Match', sub: '縞の向き探し（コントラスト）',
+    how: '真ん中の見本の星と同じ向きの縞をもつ星を、まわりから全部見つけて触れよう。だいたい指せばOK。縞は見えるか見えないかの淡さに合わせて変わります。' },
   depth: { title: 'Floating Orbs', sub: '立体視トレーニング',
     how: '三つの珠のうち、いちばん手前に浮いたものを選ぼう。' },
   comets: { title: 'Shooting Stars', sub: '周辺視野と反応速度',
@@ -53,9 +57,9 @@ export const MODULE_INFO = {
 };
 
 // Chapters a player can pick in the Custom course, in the order a night visits them.
-export const CHAPTERS = ['lantern', 'spirits', 'gates', 'depth', 'comets'];
+export const CHAPTERS = ['lantern', 'spirits', 'gates', 'match', 'depth', 'comets'];
 export const CHAPTER_HINT = {
-  lantern: '遠近のピント', spirits: 'コントラスト', gates: '瞬間視', depth: '立体視', comets: '周辺視',
+  lantern: '遠近のピント', spirits: 'コントラスト', gates: '瞬間視', match: '縞の向き探し', depth: '立体視', comets: '周辺視',
 };
 
 // Recommended dose, from the protocols in docs/research.md.

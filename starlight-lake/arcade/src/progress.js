@@ -17,8 +17,8 @@ export const SKILLS = {
 };
 
 export const GAMES = {
-  bubble: { title: 'Bubble Pop', skill: 'contrast', color: '#ff6fa8', icon: '◎', how: 'しま模様のシャボン玉だけ、指でつついて割ろう。無地はスルー！', base: 100 },
-  rings: { title: 'Ring Rush', skill: 'focus', color: '#3fb8ff', icon: 'C', how: '飛んでくるリングの「切れ目」の方向へ、はじき返せ！遠くで返すほど高得点。', base: 150 },
+  bubble: { title: 'Bubble Pop', skill: 'contrast', color: '#ff6fa8', icon: '◎', how: 'しま模様のシャボン玉だけ、指でつついて割ろう。無地はスルー！ 金色は得点3倍（やることは同じ）。', base: 100 },
+  rings: { title: 'Ring Rush', skill: 'focus', color: '#3fb8ff', icon: 'C', how: '飛んでくるリングの「切れ目」の方向へ、はじき返せ！ 狙わなくてOK、光っているリングに届く。遠くで返すほど高得点。金色は3倍。', base: 150 },
   flash: { title: 'Flash Count', skill: 'speed', color: '#ffb52e', icon: '✦', how: '一瞬だけ光る星はいくつ？ 数字のボタンで答えよう。', base: 260 },
   depth: { title: 'Depth Order', skill: 'depth', color: '#4fcf6f', icon: '●', how: 'いちばん手前のボールから順番にタッチ！', base: 320 },
   catch: { title: 'Side Catch', skill: 'field', color: '#9a7bff', icon: '★', how: 'まん中の目を見たまま、まわりに出る星をつかまえよう。目が赤いときはさわらない！', base: 110 },

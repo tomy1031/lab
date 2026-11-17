@@ -11,8 +11,12 @@ import { noteOf } from '../audio.js';
 // "遠近体操法" near-far exercise), and the far beacons ask for sustained far fixation
 // ("遠方凝視法"). The headset's optics have a fixed focal distance, so what really changes
 // here is vergence, plus whatever accommodation follows it; docs/research.md covers this.
+// Aiming is deliberately loose: the task is reading the gap, not pointing. A flick (or stick
+// push, or arrow key) answers for the lantern nearest the pointer within a wide cone, or else
+// for the one closest to the player; that lantern is lit up so it is clear which one it is.
 
 const LANES = [-13, 0, 13];
+const _lp = new THREE.Vector3();
 const FAR = 32;
 
 export class LanternModule extends Module {
@@ -50,10 +54,22 @@ export class LanternModule extends Module {
     o.l.gap = o.gap;
     o.l.mesh.visible = true; o.refl.mesh.visible = true;
     o.l.uniforms.uOpacity.value = 0;
-    o.golden = Math.random() < 0.1;
-    o.l.uniforms.uGold.value = o.golden ? 1 : 0;
+    this.setGolden(o, Math.random() < 0.1);
     o.wrongs = 0;
     this.app.audio.cue(this.at(o.az, -2, 12), -12);
+  }
+
+  /** Golden lanterns are worth x3; a small "x3" floats above them so that is plain to see. */
+  setGolden(o, golden) {
+    o.golden = golden;
+    o.l.uniforms.uGold.value = golden ? 1 : 0;
+    o.label?.remove(); o.label = null;
+    if (!golden) return;
+    o.label = this.app.fx.text('×3', o.pos, { color: '#ffe29a', size: 0.1, life: 60, rise: 0, glow: 'rgba(255,200,90,0.9)' });
+    if (!this.app.goldHintShown) {
+      this.app.goldHintShown = true;
+      this.app.caption('金色の灯籠は得点3倍。やることは同じ：切れ目の方向へはじく', 4);
+    }
   }
 
   place(o) {
@@ -64,6 +80,11 @@ export class LanternModule extends Module {
     o.l.mesh.position.copy(o.pos);
     o.l.mesh.scale.setScalar(this.size);
     this.face(o.l.mesh);
+    if (o.label) {
+      const ls = Math.max(0.08, o.d * 0.035);           // about 2 degrees tall at any distance
+      _lp.copy(o.pos); _lp.y += this.size * 0.6 + ls * 0.45;
+      o.label.move(_lp, ls);
+    }
     o.refl.mesh.position.set(o.pos.x, 2 * WATER_Y - o.pos.y, o.pos.z);
     o.refl.mesh.scale.set(this.size * 0.7, this.size * 2.2, 1);
     o.refl.mesh.lookAt(this.app.head.x, o.refl.mesh.position.y, this.app.head.z);
@@ -95,7 +116,7 @@ export class LanternModule extends Module {
         if (k >= 1) {
           o.state = 'approach'; o.lift = 0;
           o.gap = (o.gap + 1 + Math.floor(Math.random() * 3)) % 4; o.l.gap = o.gap;
-          o.golden = Math.random() < 0.1; o.l.uniforms.uGold.value = o.golden ? 1 : 0;
+          this.setGolden(o, Math.random() < 0.1);
         }
       } else if (o.state === 'sink') {
         o.rt += dt;
@@ -111,7 +132,8 @@ export class LanternModule extends Module {
     this.updateBeacon(dt);
     for (const o of this.lanterns) o.hover = false;
     for (const p of app.input.pointers) {
-      const o = this.pick(p.ray);
+      if (!p.active && p.kind === 'xr') continue;
+      const o = this.held.get(p) || this.target(p.ray);
       if (o) o.hover = true;
     }
   }
@@ -138,27 +160,33 @@ export class LanternModule extends Module {
     }
   }
 
-  pick(ray) {
-    let best = null, bd = Infinity;
+  /**
+   * The lantern an answer goes to: the one nearest the pointer if it is within 22 degrees,
+   * otherwise the one closest to the player (the most urgent).
+   */
+  target(ray) {
+    let best = null, ba = 22;
     for (const o of this.lanterns) {
       if (o.state !== 'approach') continue;
-      const r = this.hitRadius(o.pos, this.size * 0.36, 1.8);
-      const d = Module.raySphere(ray, o.pos, r);
-      if (d >= 0 && d < bd) { bd = d; best = o; }
+      const a = Module.rayAngle(ray, o.pos);
+      if (a < ba) { ba = a; best = o; }
     }
+    if (best) return best;
+    let bd = Infinity;
+    for (const o of this.lanterns) if (o.state === 'approach' && o.d < bd) { bd = o.d; best = o; }
     return best;
   }
 
   pointerTarget(p) {
-    const o = this.pick(p.ray);
+    const o = this.held.get(p) || this.target(p.ray);
     if (o) return { point: o.pos, distance: o.pos.distanceTo(p.ray.origin) };
     if (this.beacon && Module.rayAngle(p.ray, this.beacon.g.mesh.position) < 3) return { point: this.beacon.g.mesh.position, distance: this.beacon.d };
     return null;
   }
 
   onSelectStart(p) {
-    if (this.beacon && Module.rayAngle(p.ray, this.beacon.g.mesh.position) < 3.2) { this.catchBeacon(); return; }
-    const o = this.pick(p.ray);
+    if (this.beacon && Module.rayAngle(p.ray, this.beacon.g.mesh.position) < 5) { this.catchBeacon(); return; }
+    const o = this.target(p.ray);       // pinch anywhere: no need to hit the lantern
     if (o) this.held.set(p, o);
   }
 
@@ -174,17 +202,9 @@ export class LanternModule extends Module {
     this.answer(o, dir);
   }
 
-  /** Thumbstick on a controller pointing at a lantern, or the arrow keys (nearest lantern). */
+  /** Thumbstick or arrow keys: the same loose choice of lantern as a flick. */
   onDirection(dir, p) {
-    let o = p ? this.pick(p.ray) : null;
-    if (!o) {
-      const m = this.app.input.mouse;
-      o = this.pick(m.ray);
-    }
-    if (!o) {
-      let bd = Infinity;
-      for (const x of this.lanterns) if (x.state === 'approach' && x.d < bd) { bd = x.d; o = x; }
-    }
+    const o = this.target((p || this.app.input.mouse).ray);
     if (o) this.answer(o, dir);
   }
 
@@ -200,6 +220,7 @@ export class LanternModule extends Module {
       this.stats.score += pts;
       o.flash = 1;
       o.state = 'return'; o.rt = 0; o.from = d;
+      o.label?.remove(); o.label = null;
       const col = o.golden ? [1.0, 0.88, 0.45] : [1.0, 0.8, 0.5];
       app.fx.burst(o.pos, { count: o.golden ? 60 : 32, color: col, speed: 0.4 + d * 0.03, size: 0.02 + d * 0.004 });
       const labelPos = this.at(o.az * 0.6, 3, Math.min(d, 3.2));
@@ -225,6 +246,7 @@ export class LanternModule extends Module {
     this.size = clamp(this.size * 1.1, 0.08, 0.9);
     this.approach = Math.min(13, this.approach * 1.04);
     o.state = 'sink'; o.rt = 0;
+    o.label?.remove(); o.label = null;
   }
 
   catchBeacon() {
@@ -241,6 +263,7 @@ export class LanternModule extends Module {
   }
 
   stop() {
+    for (const o of this.lanterns) o.label?.remove();
     const s = this.app.store.data;
     s.lanternSize = +this.size.toFixed(3);
     s.lanternApproach = +this.approach.toFixed(2);
