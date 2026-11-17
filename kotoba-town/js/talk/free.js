@@ -59,6 +59,9 @@ export class FreeTalk {
 
   get live() { return !!this.brain?.live; }
 
+  /** Tell the guide (ネクマックス) what is happening. */
+  emit(ev) { try { this.events?.({ free: true, ...ev }); } catch (e) { this.log('navi', String(e)); } }
+
   async begin() {
     this.mic.onChunk = (b64) => { if (this.mic.sending && this.brain?.live) this.brain.audio(b64); };
     this.toast.show('Gemini Live に つないで います… Connecting', 0);
@@ -129,6 +132,7 @@ export class FreeTalk {
 
   // ------------------------------------------------------------------ voice
   partnerSpeaks(note, seconds = 16) {
+    this.emit({ type: 'npc' });
     this.closeMic();
     this.npcBusy = true;
     this.reply = { text: '' };
@@ -173,6 +177,8 @@ export class FreeTalk {
     if (this.stopped) return;
     this.listening = true;
     this.heard = '';
+    this.listens = (this.listens || 0) + 1;
+    this.emit({ type: 'listen', k: this.listens });
     this.brain?.setTurn(`[TURN ${this.turns.length + 1}] Mode: free talk. Topic: ${this.topic.titleEn}. Judge the learner's next utterance with judge_reply (branch "free").`, ['free']);
     this.card();
     this.openMic();
@@ -183,6 +189,7 @@ export class FreeTalk {
       if (this.stopped || !this.listening || this.heard || this.npcBusy) return;
       this.nudges = (this.nudges || 0) + 1;
       this.showIdeas = true;
+      this.emit({ type: 'hint' });
       this.partnerSpeaks('[NUDGE] The learner has been quiet for a while. Help them kindly: ask your last question again in simpler words, or offer two easy choices. One short sentence.', 10);
     }, this.level === 'easy' ? 22000 : 28000);
   }
@@ -213,6 +220,7 @@ export class FreeTalk {
     if (r.branch !== 'repeat') {
       this.turns.push({ heard: r.heard || '', score: r.score ?? 1, correction: r.correction || '', tipEn: r.tipEn || '', branch: r.branch, topic: this.topic.id, promptEn: this.topic.titleEn, grammar: [], grammarUsed: [] });
       this.last = { heard: r.heard, score: r.score, correction: r.correction, tipEn: r.tipEn, source: r.source };
+      this.emit({ type: 'judged', score: r.score ?? 1 });
       this.sound.blip(r.score >= 2 ? 'good' : 'soft');
     }
     this.closeMic();
