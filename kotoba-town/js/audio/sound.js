@@ -93,6 +93,23 @@ export class Sound {
     o.start(t); o.stop(t + spec[2] + 0.02);
   }
 
+  /** A phone ringing (two short trills), for call scenes. Resolves when it stops. */
+  ring(times = 2) {
+    if (!this.ctx) return Promise.resolve();
+    const c = this.ctx;
+    for (let r = 0; r < times; r++) {
+      const t0 = c.currentTime + r * 1.6;
+      for (let k = 0; k < 12; k++) {
+        const t = t0 + k * 0.06;
+        const o = c.createOscillator(); const g = c.createGain();
+        o.type = 'sine'; o.frequency.value = k % 2 ? 1320 : 1660;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
+        o.connect(g).connect(this.uiBus); o.start(t); o.stop(t + 0.06);
+      }
+    }
+    return new Promise((r) => setTimeout(r, times * 1600));
+  }
+
   /** Little three-note fanfare for stars on the report. */
   fanfare(stars = 3) {
     if (!this.ctx) return;

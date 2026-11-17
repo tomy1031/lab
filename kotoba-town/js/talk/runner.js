@@ -62,6 +62,10 @@ export class Runner {
       this.mode = 'practice';
       this.toast.show('ほんばんは Gemini に つながらないので、れんしゅうに します', 4000);
     }
+    if (this.variant.call) {
+      this.toast.show('📞 でんわ です · The phone is ringing', 3000);
+      await this.sound.ring(2);
+    }
     await this.go(this.variant.start);
   }
 
