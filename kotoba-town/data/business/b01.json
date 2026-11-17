@@ -1,0 +1,1071 @@
+{
+  "course": "it",
+  "storyJa": "喫茶さかもとの 予約アプリ",
+  "storyEn": "A booking app for Café Sakamoto",
+  "unit": 1,
+  "episodeJa": "第1話",
+  "episodeEn": "Episode 1",
+  "titleJa": "朝会で 報告する",
+  "titleEn": "Report at the morning stand-up",
+  "summaryEn": "Say what you did, what you'll do and what blocks you — short and in order.",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "previouslyEn": "",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "昨日は 〜しました／〜が 終わりました。今日は 〜する 予定です。",
+      "meaningEn": "Stand-up report: yesterday → today, short and in this order. Say whether a task is finished.",
+      "exampleJa": "昨日は ログイン画面が 終わりました。今日は 予約フォームを 作る 予定です。",
+      "exampleEn": "Yesterday I finished the login screen. Today I plan to build the booking form."
+    },
+    {
+      "id": "g2",
+      "pattern": "困っている ことは 特に ありません。／一つ 困っている ことが あります。",
+      "meaningEn": "The third stand-up item: say clearly that nothing blocks you, or that one thing does. Don't skip it.",
+      "exampleJa": "一つ 困っている ことが あります。予約フォームで エラーが 出て います。",
+      "exampleEn": "There is one thing I'm stuck on. The booking form gives an error."
+    },
+    {
+      "id": "g3",
+      "pattern": "〜までに 終わる 予定です。",
+      "meaningEn": "Give a forecast (見通し) with a concrete time, not just 'I'll do my best'.",
+      "exampleJa": "予約フォームは、明日の 昼までに 終わる 予定です。",
+      "exampleEn": "The booking form should be finished by tomorrow noon."
+    },
+    {
+      "id": "g4",
+      "pattern": "〜ですね。承知しました。〜を 確認します。",
+      "meaningEn": "Receiving a notice (連絡): repeat the point back, acknowledge, say what you will do.",
+      "exampleJa": "ボタンの 色が 変わったんですね。承知しました。届いたら 確認します。",
+      "exampleEn": "So the button colour changed. Understood. I'll check it when it arrives."
+    },
+    {
+      "id": "g5",
+      "pattern": "〜を 〜すると、〜が 出ます。",
+      "meaningEn": "Describe a problem concretely: which screen, which action, what happens.",
+      "exampleJa": "予約フォームで 日付を 選んで 保存すると、エラーが 出ます。",
+      "exampleEn": "On the booking form, when I choose a date and save, an error appears."
+    },
+    {
+      "id": "g6",
+      "pattern": "〜を 試しましたが、直りませんでした。",
+      "meaningEn": "Say what you already tried, so the team doesn't repeat it.",
+      "exampleJa": "1時間ほど 調べて、ライブラリの 設定を 見直しましたが、直りませんでした。",
+      "exampleEn": "I looked into it for about an hour and rechecked the library settings, but it wasn't fixed."
+    },
+    {
+      "id": "g7",
+      "pattern": "朝会の あとで、〜分ほど お時間 いただけますか。",
+      "meaningEn": "Ask a senior for a set amount of time after the meeting instead of solving it in the stand-up.",
+      "exampleJa": "藤田さん、朝会の あとで、15分ほど お時間 いただけますか。",
+      "exampleEn": "Fujita-san, could I have about 15 minutes of your time after the stand-up?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "朝会",
+      "kana": "あさかい",
+      "en": "morning stand-up meeting"
+    },
+    {
+      "ja": "報告",
+      "kana": "ほうこく",
+      "en": "report"
+    },
+    {
+      "ja": "連絡",
+      "kana": "れんらく",
+      "en": "notice, passing on information"
+    },
+    {
+      "ja": "相談",
+      "kana": "そうだん",
+      "en": "consultation, asking for advice"
+    },
+    {
+      "ja": "作業",
+      "kana": "さぎょう",
+      "en": "work, task"
+    },
+    {
+      "ja": "予定",
+      "kana": "よてい",
+      "en": "plan, schedule"
+    },
+    {
+      "ja": "見通し",
+      "kana": "みとおし",
+      "en": "forecast, outlook"
+    },
+    {
+      "ja": "順調",
+      "kana": "じゅんちょう",
+      "en": "on track, going well"
+    },
+    {
+      "ja": "困っている こと",
+      "kana": "こまっている こと",
+      "en": "something you are stuck on, a blocker"
+    },
+    {
+      "ja": "画面",
+      "kana": "がめん",
+      "en": "screen"
+    },
+    {
+      "ja": "ログイン画面",
+      "kana": "ログインがめん",
+      "en": "login screen"
+    },
+    {
+      "ja": "予約フォーム",
+      "kana": "よやくフォーム",
+      "en": "booking form"
+    },
+    {
+      "ja": "日付",
+      "kana": "ひづけ",
+      "en": "date"
+    },
+    {
+      "ja": "保存する",
+      "kana": "ほぞんする",
+      "en": "to save"
+    },
+    {
+      "ja": "エラーが 出る",
+      "kana": "エラーが でる",
+      "en": "an error appears"
+    },
+    {
+      "ja": "操作",
+      "kana": "そうさ",
+      "en": "operation, action on screen"
+    },
+    {
+      "ja": "設定",
+      "kana": "せってい",
+      "en": "settings"
+    },
+    {
+      "ja": "ライブラリ",
+      "kana": "ライブラリ",
+      "en": "(software) library"
+    },
+    {
+      "ja": "試す",
+      "kana": "ためす",
+      "en": "to try"
+    },
+    {
+      "ja": "直る",
+      "kana": "なおる",
+      "en": "to get fixed"
+    },
+    {
+      "ja": "原因",
+      "kana": "げんいん",
+      "en": "cause"
+    },
+    {
+      "ja": "承知しました",
+      "kana": "しょうちしました",
+      "en": "understood (polite)"
+    },
+    {
+      "ja": "確認する",
+      "kana": "かくにんする",
+      "en": "to check, to confirm"
+    },
+    {
+      "ja": "終わる",
+      "kana": "おわる",
+      "en": "to finish"
+    }
+  ],
+  "tipsEn": [
+    "A stand-up is short (about 15 minutes): yesterday → today → blockers. Details are discussed after the meeting.",
+    "悪い 報告ほど 早く — bad news first and early. On a Japanese team, silence is read as a risk, not as 'everything is fine'.",
+    "Say whether a task is 終わりました (done) or 途中です (in progress). 「まだ 途中なんですが」 makes it easy to report unfinished work."
+  ],
+  "research": {
+    "sources": [
+      "https://dev.classmethod.jp/articles/daily-scrum",
+      "https://blogs.itmedia.co.jp/hiranabe/2012/02/daily-scrum-or-standup-meeting.html",
+      "https://scrumguides.org/scrum-guide.html",
+      "https://dev.to/jun_f_kirk/on-a-japanese-dev-team-no-news-is-bad-news-438j",
+      "https://zenn.dev/yumainaura/articles/qiita-2018-03-17t04_25_02-09_00",
+      "https://www.itmedia.co.jp/news/articles/2403/15/news179_2.html"
+    ],
+    "notesEn": "Japanese agile teams run the 朝会 around three items — 昨日やったこと, 今日やること, 困っていること — standing, at a fixed time, in about 15 minutes (the Scrum Guide fixes only the 15 minutes; the three items are a common team convention). Small worries should be raised too; a blocker is either solved by a one-line tip, given an owner and a time after the meeting, or consciously dropped. Writers on Japanese dev teams stress that no news is bad news: report mid-task, early, even unfinished. Foreign engineers say that following fast meeting talk while preparing their own turn is the hard part, so both variants open with a colleague's model report. Variant a trains the clean three-part report plus a forecast and receiving a notice; variant b trains saying the blocker, describing it concretely, saying what was tried and booking time with a senior after the meeting."
+  },
+  "variants": [
+    {
+      "id": "b01a",
+      "titleJa": "朝会で 報告する（順調）",
+      "titleEn": "Stand-up: everything on track",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "9:30 at Midori Design: the daily stand-up (朝会) for さかもと予約, the café booking app. Your facts — Yesterday: you finished the login screen (ログイン画面). Today: you build the booking form (予約フォーム); you expect to finish it by tomorrow noon (明日の 昼まで). Nothing is blocking you.",
+      "roleEn": "You are the new engineer from abroad, two weeks into the job. Report short and in order: yesterday → today → blockers.",
+      "missionsEn": [
+        {
+          "text": "Report yesterday's and today's work",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Give a forecast with a concrete time",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Say clearly whether anything blocks you",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Acknowledge Aoki's notice and repeat it back",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami",
+        "fujita",
+        "aoki"
+      ],
+      "positions": {
+        "murakami": "npc1",
+        "fujita": "npc2",
+        "aoki": "npc3"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "おはよう ございます。では、朝会を 始めましょう。",
+              "kana": "おはよう ございます。では、あさかいを はじめましょう。",
+              "en": "Good morning. Let's start the stand-up.",
+              "gesture": "bow_light",
+              "tts": "おはよう ございます。では、あさかいを 始めましょう。"
+            },
+            {
+              "who": "fujita",
+              "ja": "昨日は 予約データの 保存を 作りました。今日は テストです。困りごとは ありません。",
+              "kana": "きのうは よやくデータの ほぞんを つくりました。きょうは テストです。こまりごとは ありません。",
+              "en": "Yesterday I built the saving of booking data. Today is testing. No blockers."
+            },
+            {
+              "who": "murakami",
+              "ja": "ありがとう ございます。では、次 お願いします。",
+              "kana": "ありがとう ございます。では、つぎ おねがいします。",
+              "en": "Thank you. Next, please.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your turn. Say what you did yesterday and what you will do today.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "昨日は ＿＿が 終わりました。今日は ＿＿を 作る 予定です。",
+            "modelAnswers": [
+              "昨日は ログイン画面が 終わりました。今日は 予約フォームを 作る 予定です。",
+              "昨日は ログイン画面を 作りました。今日は 予約フォームを 作ります。"
+            ],
+            "branches": [
+              {
+                "id": "both",
+                "whenEn": "Learner reported BOTH yesterday's work and today's plan.",
+                "next": "n3",
+                "exampleJa": "昨日は ログイン画面が 終わりました。今日は 予約フォームを 作る 予定です。"
+              },
+              {
+                "id": "yesterday_only",
+                "whenEn": "Learner reported only yesterday's work (no plan for today).",
+                "next": "n2a",
+                "exampleJa": "昨日は ログイン画面を 作りました。"
+              },
+              {
+                "id": "today_only",
+                "whenEn": "Learner reported only today's plan (nothing about yesterday).",
+                "next": "n2b",
+                "exampleJa": "今日は 予約フォームを 作ります。"
+              }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "ログイン画面ですね。今日は 何を する 予定ですか。",
+              "kana": "ログインがめんですね。きょうは なにを する よていですか。",
+              "en": "The login screen, I see. What do you plan to do today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say today's task. If you can, add when you expect to finish it.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "今日は ＿＿を 作る 予定です。",
+            "modelAnswers": [
+              "今日は 予約フォームを 作る 予定です。",
+              "今日は 予約フォームを 作ります。明日の 昼までに 終わる 予定です。"
+            ],
+            "branches": [
+              {
+                "id": "plan_only",
+                "whenEn": "Learner said today's task but gave no finishing time.",
+                "next": "n3",
+                "exampleJa": "今日は 予約フォームを 作る 予定です。"
+              },
+              {
+                "id": "plan_with_forecast",
+                "whenEn": "Learner said today's task AND when it will be finished.",
+                "next": "n3a",
+                "exampleJa": "今日は 予約フォームを 作ります。明日の 昼までに 終わる 予定です。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "予約フォームですね。昨日は 何を しましたか。",
+              "kana": "よやくフォームですね。きのうは なにを しましたか。",
+              "en": "The booking form, I see. What did you do yesterday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you did yesterday — and that it is finished.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "昨日は ＿＿が 終わりました。",
+            "modelAnswers": [
+              "昨日は ログイン画面が 終わりました。"
+            ],
+            "branches": [
+              {
+                "id": "finished",
+                "whenEn": "Learner said the login screen is finished / done.",
+                "next": "n3",
+                "exampleJa": "昨日は ログイン画面が 終わりました。"
+              },
+              {
+                "id": "unclear",
+                "whenEn": "Learner said they worked on the login screen but not whether it is finished.",
+                "next": "n2c",
+                "exampleJa": "昨日は ログイン画面を 作って いました。"
+              }
+            ],
+            "fallback": "n2c"
+          }
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "作業は「終わりました」か「途中です」も 言うと、わかりやすいです。",
+              "kana": "さぎょうは「おわりました」か「とちゅうです」も いうと、わかりやすいです。",
+              "en": "It's clearer if you also say whether a task is 'finished' or 'in progress'."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "予約フォームは、いつごろ 終わりそうですか。",
+              "kana": "よやくフォームは、いつごろ おわりそうですか。",
+              "en": "About when do you think the booking form will be finished?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give your forecast with a concrete time (your plan: by tomorrow noon).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿までに 終わる 予定です。",
+            "modelAnswers": [
+              "明日の 昼までに 終わる 予定です。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner gave a concrete time or day (e.g. by tomorrow noon, tomorrow, today).",
+                "next": "n3a",
+                "exampleJa": "明日の 昼までに 終わる 予定です。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner gave no concrete time (e.g. 'I'll do my best', 'soon', 'I don't know yet').",
+                "next": "n3v",
+                "exampleJa": "まだ わかりませんが、がんばります。"
+              }
+            ],
+            "fallback": "n3v"
+          }
+        },
+        {
+          "id": "n3a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "わかりました。その 予定で お願いします。",
+              "kana": "わかりました。その よていで おねがいします。",
+              "en": "Understood. Please go ahead with that plan.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3v",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、今日の 夕方に、もう一度 見通しを 教えて ください。",
+              "kana": "では、きょうの ゆうがたに、もういちど みとおしを おしえて ください。",
+              "en": "Then please tell me your forecast again this evening."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "困っている ことは ありますか。",
+              "kana": "こまっている ことは ありますか。",
+              "en": "Is anything blocking you?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Nothing blocks you — say so clearly. (If you like, ask Aoki to look at your form's design later.)",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "困っている ことは 特に ありません。",
+            "modelAnswers": [
+              "困っている ことは 特に ありません。",
+              "特に ありませんが、あとで 青木さんに デザインを 見て ほしいです。"
+            ],
+            "branches": [
+              {
+                "id": "none",
+                "whenEn": "Learner said there is nothing in particular blocking them.",
+                "next": "n5a",
+                "exampleJa": "困っている ことは 特に ありません。"
+              },
+              {
+                "id": "ask_design",
+                "whenEn": "Learner asked for someone (Aoki) to look at or check the design / screen later, or raised a small question.",
+                "next": "n5b",
+                "exampleJa": "特に ありませんが、あとで デザインを 見て いただけますか。"
+              }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "順調ですね。よかったです。",
+              "kana": "じゅんちょうですね。よかったです。",
+              "en": "So you're on track. Good.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですよ。朝会の あとで 一緒に 見ましょう。",
+              "kana": "いいですよ。あさかいの あとで いっしょに みましょう。",
+              "en": "Sure. Let's look at it together after the stand-up.",
+              "gesture": "nod",
+              "tts": "いいですよ。あさかいの あとで 一緒に 見ましょう。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "一つ 連絡です。予約フォームの ボタンの 色を 変えました。",
+              "kana": "ひとつ れんらくです。よやくフォームの ボタンの いろを かえました。",
+              "en": "One notice: I changed the button colour on the booking form."
+            },
+            {
+              "who": "aoki",
+              "ja": "新しい デザインは、あとで 送りますね。",
+              "kana": "あたらしい デザインは、あとで おくりますね。",
+              "en": "I'll send you the new design later."
+            }
+          ],
+          "listen": {
+            "promptEn": "This change affects your work today. Show you got it: repeat the point back and say what you'll do — or ask when it will arrive.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "ボタンの 色が ＿＿ですね。承知しました。届いたら 確認します。",
+            "modelAnswers": [
+              "ボタンの 色が 変わったんですね。承知しました。届いたら 確認します。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_back",
+                "whenEn": "Learner repeated the point back (button colour / new design) and/or said they will check or use the new design.",
+                "next": "n6a",
+                "exampleJa": "ボタンの 色ですね。承知しました。届いたら 確認します。"
+              },
+              {
+                "id": "ok_only",
+                "whenEn": "Learner only acknowledged (はい / わかりました / 承知しました) without repeating the content or saying what they will do.",
+                "next": "n6b",
+                "exampleJa": "はい、わかりました。"
+              },
+              {
+                "id": "asked_when",
+                "whenEn": "Learner asked when the new design will be sent / arrive.",
+                "next": "n6c",
+                "exampleJa": "承知しました。いつごろ 送って いただけますか。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、お願いします！",
+              "kana": "はい、おねがいします！",
+              "en": "Yes, please!",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "届いたら、ボタンの 色を 見て くださいね。",
+              "kana": "とどいたら、ボタンの いろを みて くださいね。",
+              "en": "When it arrives, please look at the button colour."
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "午前中に 送ります。少し 待って ください。",
+              "kana": "ごぜんちゅうに おくります。すこし まって ください。",
+              "en": "I'll send it this morning. Please wait a little."
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、朝会を 終わります。今日も よろしく お願いします。",
+              "kana": "では、あさかいを おわります。きょうも よろしく おねがいします。",
+              "en": "That's the end of the stand-up. Have a good day's work, everyone.",
+              "gesture": "bow_light",
+              "tts": "では、あさかいを 終わります。今日も よろしく お願いします。"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "ところで、仕事には もう 慣れましたか。",
+        "openerKana": "ところで、しごとには もう なれましたか。",
+        "openerEn": "By the way, have you got used to the job yet?",
+        "topicEn": "After the stand-up Murakami chats with the new engineer: how the first two weeks went, what is fun or hard, the さかもと予約 app (login screen done, booking form next). Polite です・ます at N4–N3; she encourages short clear answers and asking questions back.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "b01b",
+      "titleJa": "朝会で 報告する（エラー）",
+      "titleEn": "Stand-up: you are blocked by an error",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "The daily stand-up (朝会) for さかもと予約. Your facts — Yesterday: you finished the login screen (ログイン画面) and started the booking form (予約フォーム). Today: you continue the booking form. Problem: on the form, when you choose a date (日付) and save (保存する), an error appears (エラーが 出る). You looked into it for about an hour and rechecked the calendar library's settings (ライブラリの 設定), but it is not fixed.",
+      "roleEn": "You are the new engineer from abroad. It feels bad to say you're stuck — say it anyway, early and concretely, then ask Fujita for time after the meeting.",
+      "missionsEn": [
+        {
+          "text": "Report yesterday, today — and your blocker",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Describe the error: which action, what happens",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Say what you already tried",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Ask Fujita for about 15 minutes after the meeting",
+          "grammar": [
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami",
+        "fujita",
+        "aoki"
+      ],
+      "positions": {
+        "murakami": "npc1",
+        "fujita": "npc2",
+        "aoki": "npc3"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "おはよう ございます。朝会を 始めます。青木さんから どうぞ。",
+              "kana": "おはよう ございます。あさかいを はじめます。あおきさんから どうぞ。",
+              "en": "Good morning. Let's start the stand-up. Aoki-san, please go first.",
+              "gesture": "bow_light",
+              "tts": "おはよう ございます。あさかいを 始めます。青木さんから どうぞ。"
+            },
+            {
+              "who": "aoki",
+              "ja": "昨日は 予約画面の デザインを 直しました。今日は メニュー画面を 作ります。",
+              "kana": "きのうは よやくがめんの デザインを なおしました。きょうは メニューがめんを つくります。",
+              "en": "Yesterday I revised the booking screen design. Today I'll make the menu screen."
+            },
+            {
+              "who": "murakami",
+              "ja": "ありがとう ございます。では、次 お願いします。",
+              "kana": "ありがとう ございます。では、つぎ おねがいします。",
+              "en": "Thank you. Next, please.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your turn: yesterday and today. You have a blocker — the best moment to say it is now.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "昨日は ＿＿。今日は ＿＿。一つ 困っている ことが あります。",
+            "modelAnswers": [
+              "昨日は ログイン画面が 終わって、予約フォームを 始めました。今日も 予約フォームを 作ります。一つ 困っている ことが あります。予約フォームで エラーが 出て います。"
+            ],
+            "branches": [
+              {
+                "id": "with_blocker",
+                "whenEn": "Learner mentioned the error / that they are stuck (with or without yesterday and today).",
+                "next": "n3",
+                "exampleJa": "昨日は ログイン画面が 終わりました。今日は 予約フォームを 作ります。一つ 困っている ことが あります。エラーが 出て います。"
+              },
+              {
+                "id": "no_blocker",
+                "whenEn": "Learner reported yesterday and/or today but did NOT mention any problem.",
+                "next": "n2",
+                "exampleJa": "昨日は ログイン画面が 終わりました。今日は 予約フォームを 作ります。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "困っている ことは ありませんか。",
+              "kana": "こまっている ことは ありませんか。",
+              "en": "Is there anything you're stuck on?"
+            }
+          ],
+          "listen": {
+            "promptEn": "You are stuck. Say so: the booking form gives an error.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "一つ 困っている ことが あります。＿＿で エラーが 出て います。",
+            "modelAnswers": [
+              "一つ 困っている ことが あります。予約フォームで エラーが 出て います。"
+            ],
+            "branches": [
+              {
+                "id": "reported",
+                "whenEn": "Learner said they have a problem / an error.",
+                "next": "n3",
+                "exampleJa": "一つ 困っている ことが あります。予約フォームで エラーが 出て います。"
+              },
+              {
+                "id": "hid",
+                "whenEn": "Learner said there is no problem / everything is fine.",
+                "next": "n2h",
+                "exampleJa": "特に ありません。大丈夫です。"
+              }
+            ],
+            "fallback": "n2h"
+          }
+        },
+        {
+          "id": "n2h",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "予約フォームの 保存は、もう 動いて いますか。",
+              "kana": "よやくフォームの ほぞんは、もう うごいて いますか。",
+              "en": "Is saving on the booking form working already?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita asks directly. Be honest: saving gives an error.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "いいえ、保存すると、エラーが 出ます。",
+            "modelAnswers": [
+              "いいえ、まだです。保存すると、エラーが 出ます。"
+            ],
+            "branches": [
+              {
+                "id": "admit",
+                "whenEn": "Learner admitted it does not work yet / there is an error.",
+                "next": "n3",
+                "exampleJa": "いいえ、まだです。保存すると、エラーが 出ます。"
+              },
+              {
+                "id": "says_fine",
+                "whenEn": "Learner said it works / no problem.",
+                "next": "n2z",
+                "exampleJa": "はい、大丈夫です。"
+              }
+            ],
+            "fallback": "n2z"
+          }
+        },
+        {
+          "id": "n2z",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "そうですか。小さな ことでも、早めに 教えて くださいね。",
+              "kana": "そうですか。ちいさな ことでも、はやめに おしえて くださいね。",
+              "en": "I see. Even if it's something small, please tell us early."
+            },
+            {
+              "who": "murakami",
+              "ja": "では、朝会を 終わります。",
+              "kana": "では、あさかいを おわります。",
+              "en": "That's the end of the stand-up.",
+              "tts": "では、あさかいを 終わります。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "エラーですね。どんな とき、出ますか。",
+              "kana": "エラーですね。どんな とき、でますか。",
+              "en": "An error, I see. When does it appear?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Describe it concretely: which screen, which action, what happens.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿で ＿＿を 選んで 保存すると、エラーが 出ます。",
+            "modelAnswers": [
+              "予約フォームで 日付を 選んで 保存すると、エラーが 出ます。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner said the action that causes it: choosing a date and/or saving on the booking form.",
+                "next": "n4",
+                "exampleJa": "予約フォームで 日付を 選んで 保存すると、エラーが 出ます。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only said that there is an error or that it doesn't work, without the action.",
+                "next": "n3v",
+                "exampleJa": "予約フォームが 動きません。"
+              }
+            ],
+            "fallback": "n3v"
+          }
+        },
+        {
+          "id": "n3v",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "どの 操作で 出ますか。日付を 選んだ あとですか。",
+              "kana": "どの そうさで でますか。ひづけを えらんだ あとですか。",
+              "en": "Which action causes it? Is it after you choose a date?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Confirm and add the detail: after choosing a date, when you save.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "はい、日付を 選んで 保存すると、出ます。",
+            "modelAnswers": [
+              "はい、日付を 選んで 保存すると、出ます。"
+            ],
+            "branches": [
+              {
+                "id": "confirmed_detail",
+                "whenEn": "Learner confirmed and mentioned saving and/or the date.",
+                "next": "n4",
+                "exampleJa": "はい、日付を 選んで 保存すると、出ます。"
+              },
+              {
+                "id": "not_sure",
+                "whenEn": "Learner was not sure or only said they will check.",
+                "next": "n4n",
+                "exampleJa": "すみません、もう一度 確認します。"
+              }
+            ],
+            "fallback": "n4n"
+          }
+        },
+        {
+          "id": "n4n",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わかりました。あとで 画面を 見せて ください。",
+              "kana": "わかりました。あとで がめんを みせて ください。",
+              "en": "OK. Show me the screen later."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "保存の ときですね。自分では 何を 試しましたか。",
+              "kana": "ほぞんの ときですね。じぶんでは なにを ためしましたか。",
+              "en": "When saving, I see. What have you tried yourself?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you tried: about an hour of looking, rechecked the library settings — not fixed.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "＿＿を 見直しましたが、直りませんでした。",
+            "modelAnswers": [
+              "1時間ほど 調べて、ライブラリの 設定を 見直しましたが、直りませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "tried_specific",
+                "whenEn": "Learner named something specific they tried (checked the library settings, searched for an hour, etc.).",
+                "next": "n5a",
+                "exampleJa": "1時間ほど 調べて、ライブラリの 設定を 見直しましたが、直りませんでした。"
+              },
+              {
+                "id": "nothing_specific",
+                "whenEn": "Learner said nothing specific (e.g. 'various things', 'I don't know', nothing yet).",
+                "next": "n5b",
+                "exampleJa": "いろいろ 試しましたが、わかりませんでした。"
+              }
+            ],
+            "fallback": "n5b"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "設定は もう 見たんですね。それなら、ほかの 原因ですね。",
+              "kana": "せっていは もう みたんですね。それなら、ほかの げんいんですね。",
+              "en": "So you've already checked the settings. Then the cause is something else.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わかりました。一緒に 見た ほうが 早そうですね。",
+              "kana": "わかりました。いっしょに みた ほうが はやそうですね。",
+              "en": "OK. It looks faster to look at it together."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "くわしい 話は、朝会の あとに しましょう。",
+              "kana": "くわしい はなしは、あさかいの あとに しましょう。",
+              "en": "Let's talk about the details after the stand-up.",
+              "tts": "くわしい 話は、あさかいの あとに しましょう。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask Fujita for a little of his time after the meeting — say how long (about 15 minutes).",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "藤田さん、朝会の あとで、＿＿分ほど お時間 いただけますか。",
+            "modelAnswers": [
+              "藤田さん、朝会の あとで、15分ほど お時間 いただけますか。"
+            ],
+            "branches": [
+              {
+                "id": "asks_with_time",
+                "whenEn": "Learner asked Fujita for time and said how long (e.g. 15 minutes).",
+                "next": "n6a",
+                "exampleJa": "藤田さん、朝会の あとで、15分ほど お時間 いただけますか。"
+              },
+              {
+                "id": "asks_vague",
+                "whenEn": "Learner asked for help or time without saying how long.",
+                "next": "n6b",
+                "exampleJa": "藤田さん、あとで 見て いただけますか。"
+              },
+              {
+                "id": "alone",
+                "whenEn": "Learner said they will keep trying alone / did not ask for help.",
+                "next": "n6c",
+                "exampleJa": "もう少し 自分で 調べて みます。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですよ。朝会の あとで、席に 来て ください。",
+              "kana": "いいですよ。あさかいの あとで、せきに きて ください。",
+              "en": "Sure. Come to my desk after the stand-up.",
+              "gesture": "nod",
+              "tts": "いいですよ。あさかいの あとで、席に 来て ください。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですよ。15分ぐらいで いいですか。あとで 席に 来て ください。",
+              "kana": "いいですよ。じゅうごふんぐらいで いいですか。あとで せきに きて ください。",
+              "en": "Sure. Is about 15 minutes OK? Come to my desk later.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "1時間 調べたなら、もう 聞いて いいですよ。藤田さん、お願いします。",
+              "kana": "いちじかん しらべたなら、もう きいて いいですよ。ふじたさん、おねがいします。",
+              "en": "If you've looked for an hour, it's fine to ask now. Fujita-san, please help."
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "早く 言って くれて、助かります。では、今日も お願いします。",
+              "kana": "はやく いって くれて、たすかります。では、きょうも おねがいします。",
+              "en": "Thank you for telling us early — it helps. Have a good day's work.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

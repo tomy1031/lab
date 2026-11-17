@@ -1,0 +1,782 @@
+{
+  "lesson": 7,
+  "titleJa": "おみやげを どうぞ",
+  "titleEn": "A little something for you",
+  "summaryEn": "Give and receive, lend and borrow, say what you do things with, ask how to say a word — and visit a Japanese home politely.",
+  "grammar": [
+    { "id": "g1", "pattern": "N(どうぐ・ことば)で V", "meaningEn": "do something with a tool / by a means / in a language (particle で)",
+      "exampleJa": "はしで ごはんを 食べます。", "exampleEn": "I eat with chopsticks." },
+    { "id": "g2", "pattern": "「ことば」は ～ごで なんですか", "meaningEn": "How do you say \"…\" in (language)? / What is this called in (language)?",
+      "exampleJa": "これは 日本語で なんですか。", "exampleEn": "What is this called in Japanese?" },
+    { "id": "g3", "pattern": "N(ひと)に あげます／かします／おしえます／でんわを かけます", "meaningEn": "give / lend / teach / phone TO a person (に marks the receiver)",
+      "exampleJa": "母に 花を あげます。", "exampleEn": "I give flowers to my mother." },
+    { "id": "g4", "pattern": "N(ひと)に（から）もらいます／かります／ならいます", "meaningEn": "receive / borrow / learn FROM a person (に or から marks the source)",
+      "exampleJa": "友だちに 時計を もらいました。", "exampleEn": "I got a watch from a friend." },
+    { "id": "g5", "pattern": "もう Vました／いいえ、まだです", "meaningEn": "have already done … / no, not yet",
+      "exampleJa": "もう ばんごはんを 食べましたか。…いいえ、まだです。", "exampleEn": "Have you had dinner yet? — No, not yet." },
+    { "id": "g6", "pattern": "ほうもんの あいさつ（しつれいします／いただきます／どうぞ）", "meaningEn": "set phrases for visiting: handing over a gift (これ、～です。どうぞ), stepping in (しつれいします), accepting food or drink (いただきます)",
+      "exampleJa": "ありがとう ございます。いただきます。", "exampleEn": "Thank you. I'll have some." }
+  ],
+  "vocab": [
+    { "ja": "あげます", "kana": "あげます", "en": "give" },
+    { "ja": "もらいます", "kana": "もらいます", "en": "receive, get" },
+    { "ja": "貸します", "kana": "かします", "en": "lend" },
+    { "ja": "借ります", "kana": "かります", "en": "borrow" },
+    { "ja": "教えます", "kana": "おしえます", "en": "teach, tell" },
+    { "ja": "習います", "kana": "ならいます", "en": "learn (from someone)" },
+    { "ja": "電話を かけます", "kana": "でんわを かけます", "en": "make a phone call" },
+    { "ja": "おみやげ", "kana": "おみやげ", "en": "souvenir, gift from a trip" },
+    { "ja": "プレゼント", "kana": "プレゼント", "en": "present" },
+    { "ja": "誕生日", "kana": "たんじょうび", "en": "birthday" },
+    { "ja": "家族", "kana": "かぞく", "en": "family" },
+    { "ja": "父", "kana": "ちち", "en": "(my) father" },
+    { "ja": "母", "kana": "はは", "en": "(my) mother" },
+    { "ja": "花", "kana": "はな", "en": "flower" },
+    { "ja": "はし", "kana": "はし", "en": "chopsticks" },
+    { "ja": "スプーン", "kana": "スプーン", "en": "spoon" },
+    { "ja": "手", "kana": "て", "en": "hand" },
+    { "ja": "パソコン", "kana": "パソコン", "en": "computer" },
+    { "ja": "鉛筆", "kana": "えんぴつ", "en": "pencil" },
+    { "ja": "消しゴム", "kana": "けしゴム", "en": "eraser" },
+    { "ja": "レポート", "kana": "レポート", "en": "report, paper" },
+    { "ja": "辞書", "kana": "じしょ", "en": "dictionary" },
+    { "ja": "ゆのみ", "kana": "ゆのみ", "en": "Japanese teacup" },
+    { "ja": "もう", "kana": "もう", "en": "already" },
+    { "ja": "まだ", "kana": "まだ", "en": "not yet" }
+  ],
+  "tipsEn": [
+    "At someone's door, call ごめんください. When they say どうぞ おあがり ください, answer しつれいします, step out of your shoes and up into the house.",
+    "Hand a gift over with これ、～です。どうぞ. Don't say あげます to the person you are giving it to — it sounds like you are doing them a favour.",
+    "\"Not yet\" is いいえ、まだです. Answering もう…か with ～ませんでした sounds like you never did it at all."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-07/grammar/",
+      "https://bagustris.github.io/minna-no-nihongo/mnn_sho_1/minna_no_nihongo_sho_1_07.html",
+      "https://www.fun-japan.jp/en/articles/8450",
+      "https://wasabi-jpn.com/magazine/japanese-grammar/receiving-and-giving/"
+    ],
+    "notesEn": "Lesson 7 adds で for tools, means and languages (はしで 食べます, 日本語で 書きます), the question 「…」は ～語で なんですか, the giving group あげます／かします／おしえます／でんわを かけます with the receiver marked by に, the receiving group もらいます／かります／ならいます with the source marked by に or から, and もう Vました with the answer いいえ、まだです. Its conversation is a first visit to a Japanese home, so it also brings the visiting phrases ごめんください, いらっしゃい, どうぞ おあがり ください, しつれいします, ～は いかがですか and いただきます. Real situations that fit: dropping off a souvenir at a neighbour's, talking about birthday presents at work, and lending or borrowing things in class. The scenes avoid adjectives (lesson 8) except the chunk すてきですね, which this lesson introduces."
+  },
+  "variants": [
+    {
+      "id": "l07a",
+      "titleJa": "もりさんの うちで",
+      "titleEn": "A souvenir for the neighbours",
+      "scene": "home",
+      "setup": { "time": "evening", "season": "autumn", "weather": "clear" },
+      "briefEn": "You are just back from a trip to your home country and you've brought a souvenir for your neighbours, the Moris. You called ごめんください at their door — and Aya is coming.",
+      "roleEn": "You are the Moris' neighbour from abroad. You are holding a wrapped souvenir from your country (you decide what it is).",
+      "missionsEn": [
+        { "text": "Hand over your souvenir and step inside politely", "grammar": ["g6"] },
+        { "text": "Say whether you've already had dinner", "grammar": ["g5"] },
+        { "text": "Tell them what people eat with in your country", "grammar": ["g1"] },
+        { "text": "Say what you gave your family", "grammar": ["g3"] }
+      ],
+      "characters": ["mori_aya", "mori_shun"],
+      "positions": { "mori_aya": "host", "mori_shun": "host2" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "mori_aya", "ja": "はーい。あ、こんばんは。いらっしゃい。", "kana": "はーい。あ、こんばんは。いらっしゃい。",
+              "en": "Coming! Oh, good evening. Welcome.", "gesture": "wave" }
+          ],
+          "focus": "gift",
+          "listen": {
+            "promptEn": "Greet her and hand over your souvenir. Say what it is.",
+            "grammar": ["g6"],
+            "hintJa": "こんばんは。これ、＿＿の おみやげです。どうぞ。",
+            "modelAnswers": [
+              "こんばんは。これ、わたしの くにの おみやげです。どうぞ。",
+              "こんばんは。これ、ブラジルの コーヒーです。どうぞ。",
+              "こんばんは。これ、くにの おかしです。どうぞ。"
+            ],
+            "branches": [
+              { "id": "food", "whenEn": "The souvenir is something to eat (sweets, chocolate, cookies, other food).", "next": "n2_food",
+                "exampleJa": "こんばんは。これ、くにの おかしです。どうぞ。" },
+              { "id": "drink", "whenEn": "The souvenir is something to drink (coffee, tea, wine, etc.).", "next": "n2_drink",
+                "exampleJa": "こんばんは。これ、くにの コーヒーです。どうぞ。" },
+              { "id": "other", "whenEn": "The souvenir is some other object, or the learner only says it is a souvenir/present without saying what.", "next": "n2_other",
+                "exampleJa": "こんばんは。これ、くにの おみやげです。どうぞ。" }
+            ],
+            "fallback": "n2_other"
+          }
+        },
+        {
+          "id": "n2_food",
+          "say": [
+            { "who": "mori_aya", "ja": "わあ、おかしですか。ありがとう ございます。", "kana": "わあ、おかしですか。ありがとう ございます。",
+              "en": "Oh, sweets? Thank you so much.", "gesture": "receive" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_drink",
+          "say": [
+            { "who": "mori_aya", "ja": "わあ、いいですね。こんばん しゅんさんと 飲みます。", "kana": "わあ、いいですね。こんばん しゅんさんと のみます。",
+              "en": "Oh, lovely. I'll drink it with Shun tonight.", "gesture": "receive" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            { "who": "mori_aya", "ja": "わあ、すてきですね。ありがとう ございます。", "kana": "わあ、すてきですね。ありがとう ございます。",
+              "en": "Oh, how nice. Thank you so much.", "gesture": "receive" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            { "who": "mori_aya", "ja": "どうぞ おあがり ください。", "kana": "どうぞ おあがり ください。",
+              "en": "Please, come on in.", "gesture": "beckon" }
+          ],
+          "focus": "genkan",
+          "listen": {
+            "promptEn": "She invites you in. Step up into the house with the polite phrase.",
+            "grammar": ["g6"],
+            "hintJa": "ありがとう ございます。＿＿します。",
+            "modelAnswers": [
+              "ありがとう ございます。しつれいします。",
+              "しつれいします。"
+            ],
+            "branches": [
+              { "id": "enter", "whenEn": "Learner accepts and comes in (しつれいします, おじゃまします, or a clear thank-you/yes).", "next": "n4",
+                "exampleJa": "ありがとう ございます。しつれいします。" },
+              { "id": "hesitate", "whenEn": "Learner politely holds back or declines to come in (e.g. いいえ、けっこうです, it's late, just the souvenir).", "next": "n3b",
+                "exampleJa": "すみません。きょうは ちょっと……。" }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n3b",
+          "say": [
+            { "who": "mori_shun", "ja": "どうぞ、どうぞ。いっしょに お茶を 飲みましょう。", "kana": "どうぞ、どうぞ。いっしょに おちゃを のみましょう。",
+              "en": "Please, please. Let's have some tea together.", "gesture": "beckon" }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            { "who": "mori_shun", "ja": "いらっしゃい。もう ばんごはんを 食べましたか。", "kana": "いらっしゃい。もう ばんごはんを たべましたか。",
+              "en": "Welcome. Have you had dinner yet?", "gesture": "bow_light" }
+          ],
+          "listen": {
+            "promptEn": "Have you already eaten dinner? Answer either way.",
+            "grammar": ["g5"],
+            "hintJa": "はい、もう ＿＿ました。／いいえ、＿＿です。",
+            "modelAnswers": [
+              "はい、もう 食べました。",
+              "いいえ、まだです。"
+            ],
+            "branches": [
+              { "id": "already", "whenEn": "Learner has already eaten dinner.", "next": "n5_tea",
+                "exampleJa": "はい、もう たべました。" },
+              { "id": "not_yet", "whenEn": "Learner has not eaten dinner yet.", "next": "n5_dinner",
+                "exampleJa": "いいえ、まだです。" }
+            ],
+            "fallback": "n5_tea"
+          }
+        },
+        {
+          "id": "n5_tea",
+          "say": [
+            { "who": "mori_aya", "ja": "じゃ、お茶と ケーキは いかがですか。", "kana": "じゃ、おちゃと ケーキは いかがですか。",
+              "en": "Then how about some tea and cake?", "gesture": "offer" }
+          ],
+          "focus": "cake",
+          "listen": {
+            "promptEn": "She offers tea and cake. Accept politely (or politely say no).",
+            "grammar": ["g6"],
+            "hintJa": "ありがとう ございます。＿＿ます。",
+            "modelAnswers": [
+              "ありがとう ございます。いただきます。",
+              "いいえ、けっこうです。"
+            ],
+            "branches": [
+              { "id": "accept", "whenEn": "Learner accepts the tea and cake (いただきます, thank you, yes please).", "next": "n6",
+                "exampleJa": "ありがとう ございます。いただきます。" },
+              { "id": "decline", "whenEn": "Learner declines, or accepts only part of it.", "next": "n5_tea_only",
+                "exampleJa": "いいえ、けっこうです。" }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n5_dinner",
+          "say": [
+            { "who": "mori_shun", "ja": "じゃ、いっしょに 食べませんか。カレーです。", "kana": "じゃ、いっしょに たべませんか。カレーです。",
+              "en": "Then won't you eat with us? It's curry.", "gesture": "offer" }
+          ],
+          "focus": "table",
+          "listen": {
+            "promptEn": "He invites you to dinner. Accept politely (or politely say no).",
+            "grammar": ["g6"],
+            "hintJa": "ありがとう ございます。＿＿ます。",
+            "modelAnswers": [
+              "ありがとう ございます。いただきます。",
+              "すみません。きょうは ちょっと……。"
+            ],
+            "branches": [
+              { "id": "accept", "whenEn": "Learner accepts the dinner invitation (いただきます, thank you, yes, let's eat).", "next": "n6",
+                "exampleJa": "ありがとう ございます。いただきます。" },
+              { "id": "decline", "whenEn": "Learner politely declines dinner.", "next": "n5_tea_only",
+                "exampleJa": "すみません。きょうは ちょっと……。" }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n5_tea_only",
+          "say": [
+            { "who": "mori_aya", "ja": "そうですか。じゃ、お茶を どうぞ。", "kana": "そうですか。じゃ、おちゃを どうぞ。",
+              "en": "I see. Then please have some tea.", "gesture": "offer" }
+          ],
+          "focus": "tea",
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            { "who": "mori_shun", "ja": "あなたの 国では なんで 食べますか。はしですか。", "kana": "あなたの くにでは なんで たべますか。はしですか。",
+              "en": "What do people eat with in your country? Chopsticks?", "gesture": "think" }
+          ],
+          "listen": {
+            "promptEn": "What do people eat with in your country? Chopsticks, spoon and fork, hands…?",
+            "grammar": ["g1"],
+            "hintJa": "＿＿で 食べます。",
+            "modelAnswers": [
+              "いいえ、スプーンと フォークで 食べます。",
+              "はい、はしで 食べます。",
+              "手で 食べます。"
+            ],
+            "branches": [
+              { "id": "chopsticks", "whenEn": "People eat with chopsticks.", "next": "n7a",
+                "exampleJa": "はい、はしで たべます。" },
+              { "id": "other_tool", "whenEn": "People eat with something else: spoon, fork, knife, hands, etc.", "next": "n7b",
+                "exampleJa": "いいえ、スプーンと フォークで たべます。" }
+            ],
+            "fallback": "n7b"
+          }
+        },
+        {
+          "id": "n7a",
+          "say": [
+            { "who": "mori_shun", "ja": "そうですか。日本も はしで 食べます。", "kana": "そうですか。にほんも はしで たべます。",
+              "en": "I see. In Japan we eat with chopsticks too.", "gesture": "nod" }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7b",
+          "say": [
+            { "who": "mori_shun", "ja": "そうですか。日本でも カレーは スプーンで 食べます。", "kana": "そうですか。にほんでも カレーは スプーンで たべます。",
+              "en": "I see. In Japan, too, we eat curry with a spoon.", "gesture": "nod" }
+          ],
+          "focus": "spoon",
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            { "who": "mori_aya", "ja": "ご家族にも 日本の おみやげを あげましたか。", "kana": "ごかぞくにも にほんの おみやげを あげましたか。",
+              "en": "Did you give your family souvenirs from Japan, too?" }
+          ],
+          "listen": {
+            "promptEn": "Did you give your family something from Japan? Say what, and to whom.",
+            "grammar": ["g3"],
+            "hintJa": "はい、＿＿に ＿＿を あげました。",
+            "modelAnswers": [
+              "はい、母に 日本の お茶を あげました。",
+              "はい、父に はしを あげました。",
+              "いいえ、あげませんでした。"
+            ],
+            "branches": [
+              { "id": "gave", "whenEn": "Learner gave something to a family member.", "next": "end_gave",
+                "exampleJa": "はい、ははに にほんの おちゃを あげました。" },
+              { "id": "did_not", "whenEn": "Learner did not give anything.", "next": "end_no",
+                "exampleJa": "いいえ、あげませんでした。" }
+            ],
+            "fallback": "end_gave"
+          }
+        },
+        {
+          "id": "end_gave",
+          "say": [
+            { "who": "mori_aya", "ja": "わあ、いいですね。じゃ、いただきましょう。", "kana": "わあ、いいですね。じゃ、いただきましょう。",
+              "en": "Oh, that's nice. Well then, let's dig in.", "gesture": "nod" }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            { "who": "mori_aya", "ja": "そうですか。じゃ、つぎですね。さあ、いただきましょう。", "kana": "そうですか。じゃ、つぎですね。さあ、いただきましょう。",
+              "en": "I see. Next time, then. Now, let's dig in.", "gesture": "laugh" }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "国で なにを しましたか。",
+        "openerKana": "くにで なにを しましたか。",
+        "openerEn": "What did you do back home?",
+        "topicEn": "Chat about the learner's trip home: where they went, who they met, what they ate, what they gave and received. Stay within lesson 1–7 grammar (no adjectives except すてきですね / いいですね).",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l07b",
+      "titleJa": "たんじょうびの つぎの ひ",
+      "titleEn": "The day after your birthday",
+      "scene": "office",
+      "setup": { "time": "noon", "season": "summer", "weather": "clear" },
+      "briefEn": "Yesterday was your birthday. Just before lunch, Aoki stops by your desk — and Fujita is on his way over with something behind his back.",
+      "roleEn": "You work at the design company. Decide what presents you got yesterday (or none!) and use your own language for the word question.",
+      "missionsEn": [
+        { "text": "Say what you got and who it was from", "grammar": ["g4"] },
+        { "text": "Say what you give your family on their birthdays", "grammar": ["g3"] },
+        { "text": "Ask what the present is called in Japanese, and teach a word of yours", "grammar": ["g2"] },
+        { "text": "Say whether you've had lunch yet", "grammar": ["g5"] }
+      ],
+      "characters": ["aoki", "fujita"],
+      "positions": { "aoki": "npc1", "fujita": "npc2" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "aoki", "ja": "きのうは 誕生日でしたね。おめでとう ございます。", "kana": "きのうは たんじょうびでしたね。おめでとう ございます。",
+              "en": "Yesterday was your birthday, wasn't it? Congratulations!", "gesture": "wave" },
+            { "who": "aoki", "ja": "プレゼントを もらいましたか。", "kana": "プレゼントを もらいましたか。",
+              "en": "Did you get any presents?" }
+          ],
+          "listen": {
+            "promptEn": "Tell her what you got and who gave it to you — or that you got nothing.",
+            "grammar": ["g4"],
+            "hintJa": "はい、＿＿に ＿＿を もらいました。",
+            "modelAnswers": [
+              "はい、母に 時計を もらいました。",
+              "はい、友だちから 本を もらいました。",
+              "いいえ、もらいませんでした。"
+            ],
+            "branches": [
+              { "id": "got", "whenEn": "Learner received a present (says what and/or from whom).", "next": "n2_got",
+                "exampleJa": "はい、ははに とけいを もらいました。" },
+              { "id": "nothing", "whenEn": "Learner did not receive any present.", "next": "n2_none",
+                "exampleJa": "いいえ、もらいませんでした。" }
+            ],
+            "fallback": "n2_got"
+          }
+        },
+        {
+          "id": "n2_got",
+          "say": [
+            { "who": "aoki", "ja": "わあ、すてきですね。", "kana": "わあ、すてきですね。", "en": "Wow, how nice!", "gesture": "surprised" }
+          ],
+          "next": "n2q"
+        },
+        {
+          "id": "n2_none",
+          "say": [
+            { "who": "aoki", "ja": "えっ、そうですか。じゃ、これ、どうぞ。チョコレートです。", "kana": "えっ、そうですか。じゃ、これ、どうぞ。チョコレートです。",
+              "en": "What, really? Then here, have this. It's chocolate.", "gesture": "offer" }
+          ],
+          "next": "n2q"
+        },
+        {
+          "id": "n2q",
+          "say": [
+            { "who": "aoki", "ja": "あなたは ご家族の 誕生日に なにを あげますか。", "kana": "あなたは ごかぞくの たんじょうびに なにを あげますか。",
+              "en": "What do you give your family on their birthdays?" }
+          ],
+          "listen": {
+            "promptEn": "What do you give your family on their birthdays? Say who gets what.",
+            "grammar": ["g3"],
+            "hintJa": "＿＿に ＿＿を あげます。",
+            "modelAnswers": [
+              "母に 花を あげます。",
+              "父に ネクタイを あげます。",
+              "なにも あげません。電話を かけます。"
+            ],
+            "branches": [
+              { "id": "gift", "whenEn": "Learner names a thing they give (flowers, a book, a tie …).", "next": "n3",
+                "exampleJa": "ははに はなを あげます。" },
+              { "id": "no_gift", "whenEn": "Learner gives no object — gives nothing, or phones / writes instead.", "next": "n2r",
+                "exampleJa": "なにも あげません。でんわを かけます。" }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n2r",
+          "say": [
+            { "who": "aoki", "ja": "そうですか。じゃ、ことしは 花は いかがですか。", "kana": "そうですか。じゃ、ことしは はなは いかがですか。",
+              "en": "I see. Then how about flowers this year?", "gesture": "think" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            { "who": "fujita", "ja": "おめでとう ございます。これ、わたしたちの プレゼントです。", "kana": "おめでとう ございます。これ、わたしたちの プレゼントです。",
+              "en": "Happy birthday! This is a present from us.", "gesture": "offer" }
+          ],
+          "listen": {
+            "promptEn": "It's a small cup with no handle. Thank him, then ask what this is called in Japanese.",
+            "grammar": ["g2"],
+            "hintJa": "ありがとう ございます。これは ＿＿ごで なんですか。",
+            "modelAnswers": [
+              "ありがとう ございます。これは 日本語で なんですか。",
+              "わあ、ありがとう ございます。「cup」は 日本語で なんですか。"
+            ],
+            "branches": [
+              { "id": "ask_word", "whenEn": "Learner asks what the thing (or a word) is called in Japanese.", "next": "n4",
+                "exampleJa": "ありがとう ございます。これは にほんごで なんですか。" },
+              { "id": "thanks_only", "whenEn": "Learner only thanks him or comments, without asking for the Japanese word.", "next": "n4b",
+                "exampleJa": "わあ、ありがとう ございます。" }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            { "who": "fujita", "ja": "「ゆのみ」です。これで お茶を 飲みます。", "kana": "「ゆのみ」です。これで おちゃを のみます。",
+              "en": "It's a \"yunomi\". You drink tea with it.", "gesture": "nod" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            { "who": "fujita", "ja": "いいえ。それは 「ゆのみ」です。それで お茶を 飲みます。", "kana": "いいえ。それは 「ゆのみ」です。それで おちゃを のみます。",
+              "en": "Not at all. That's a \"yunomi\". You drink tea with it.", "gesture": "nod" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            { "who": "aoki", "ja": "「ありがとう」は あなたの 国の ことばで なんですか。", "kana": "「ありがとう」は あなたの くにの ことばで なんですか。",
+              "en": "How do you say \"arigatō\" in your country's language?" }
+          ],
+          "listen": {
+            "promptEn": "Teach her how to say \"thank you\" in your own language.",
+            "grammar": ["g2"],
+            "hintJa": "＿＿ごで 「＿＿」です。",
+            "modelAnswers": [
+              "えいごで 「サンキュー」です。",
+              "ポルトガルごで 「オブリガード」です。",
+              "「グラシアス」です。スペインごです。"
+            ],
+            "branches": [
+              { "id": "english", "whenEn": "The word is English (thank you / thanks).", "next": "n6a",
+                "exampleJa": "えいごで 「サンキュー」です。" },
+              { "id": "other_lang", "whenEn": "The word is in any language other than English.", "next": "n6b",
+                "exampleJa": "ポルトガルごで 「オブリガード」です。" }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            { "who": "aoki", "ja": "あ、えいごですね。「サンキュー」！", "kana": "あ、えいごですね。「サンキュー」！",
+              "en": "Oh, English! \"Thank you\"!", "gesture": "laugh" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            { "who": "aoki", "ja": "へえ、そうですか。わたしも べんきょうします。", "kana": "へえ、そうですか。わたしも べんきょうします。",
+              "en": "Oh, really? I'll study it too.", "gesture": "surprised" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            { "who": "fujita", "ja": "あ、12時です。もう ひるごはんを 食べましたか。", "kana": "あ、じゅうにじです。もう ひるごはんを たべましたか。",
+              "en": "Oh, it's twelve. Have you had lunch yet?", "tts": "あ、じゅうにじです。もう ひるごはんを たべましたか。" }
+          ],
+          "focus": "clock",
+          "listen": {
+            "promptEn": "Have you already had lunch? Answer either way.",
+            "grammar": ["g5"],
+            "hintJa": "いいえ、＿＿です。／はい、もう ＿＿ました。",
+            "modelAnswers": [
+              "いいえ、まだです。",
+              "はい、もう 食べました。"
+            ],
+            "branches": [
+              { "id": "not_yet", "whenEn": "Learner has not had lunch yet.", "next": "end_ramen",
+                "exampleJa": "いいえ、まだです。" },
+              { "id": "already", "whenEn": "Learner has already had lunch.", "next": "end_coffee",
+                "exampleJa": "はい、もう たべました。" }
+            ],
+            "fallback": "end_ramen"
+          }
+        },
+        {
+          "id": "end_ramen",
+          "say": [
+            { "who": "fujita", "ja": "じゃ、いっしょに ラーメンを 食べましょう。プレゼントです。", "kana": "じゃ、いっしょに ラーメンを たべましょう。プレゼントです。",
+              "en": "Then let's go and eat ramen together. My treat — it's a present.", "gesture": "beckon" }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_coffee",
+          "say": [
+            { "who": "fujita", "ja": "そうですか。じゃ、コーヒーは いかがですか。", "kana": "そうですか。じゃ、コーヒーは いかがですか。",
+              "en": "I see. Then how about a coffee?", "gesture": "point", "target": "coffee_machine" },
+            { "who": "aoki", "ja": "いいですね。その ゆのみで 飲みましょう。", "kana": "いいですね。その ゆのみで のみましょう。",
+              "en": "Good idea. Let's drink it from that yunomi!", "gesture": "laugh" }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "きのう 誕生日に なにを しましたか。",
+        "openerKana": "きのう たんじょうびに なにを しましたか。",
+        "openerEn": "What did you do for your birthday yesterday?",
+        "topicEn": "Chat about the learner's birthday: what they did, where they went, who phoned them, what they received. Stay within lesson 1–7 grammar.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l07c",
+      "titleJa": "テストの あさ",
+      "titleEn": "Test morning in class",
+      "scene": "classroom",
+      "setup": { "time": "morning", "season": "winter", "weather": "cloudy" },
+      "briefEn": "It's the morning of a kanji test at the language school. Hayakawa-sensei checks on your report, Ana has forgotten something, and Minh keeps looking at the dictionary on your desk…",
+      "roleEn": "You are a student in Hayakawa-sensei's class. The dictionary on your desk is Minh's — you borrowed it last week. You have a pencil and a pen.",
+      "missionsEn": [
+        { "text": "Say whether you've written your report, and what you write with", "grammar": ["g5", "g1"] },
+        { "text": "Lend Ana a pencil", "grammar": ["g3"] },
+        { "text": "Help with the word for \"eraser\"", "grammar": ["g2"] },
+        { "text": "Explain who you borrowed the dictionary from", "grammar": ["g4"] }
+      ],
+      "characters": ["hayakawa", "ana", "minh"],
+      "positions": { "hayakawa": "teacher", "ana": "npc1", "minh": "npc2" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "hayakawa", "ja": "みなさん、おはよう ございます。", "kana": "みなさん、おはよう ございます。",
+              "en": "Good morning, everyone.", "gesture": "bow_light" },
+            { "who": "hayakawa", "ja": "もう レポートを 書きましたか。", "kana": "もう レポートを かきましたか。",
+              "en": "Have you written your report yet?" }
+          ],
+          "listen": {
+            "promptEn": "She is looking at you. Have you already written your report?",
+            "grammar": ["g5"],
+            "hintJa": "はい、もう ＿＿ました。／いいえ、＿＿です。",
+            "modelAnswers": [
+              "はい、もう 書きました。",
+              "いいえ、まだです。こんばん 書きます。"
+            ],
+            "branches": [
+              { "id": "done", "whenEn": "Learner has already written the report.", "next": "n2a",
+                "exampleJa": "はい、もう かきました。" },
+              { "id": "not_yet", "whenEn": "Learner has not written it yet.", "next": "n2b",
+                "exampleJa": "いいえ、まだです。こんばん かきます。" }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            { "who": "hayakawa", "ja": "もう 書きましたか。いいですね。", "kana": "もう かきましたか。いいですね。",
+              "en": "You've already written it? Very good.", "gesture": "nod" }
+          ],
+          "next": "n2q"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            { "who": "hayakawa", "ja": "まだですか。レポートは あしたまでですよ。", "kana": "まだですか。レポートは あしたまでですよ。",
+              "en": "Not yet? The report is due tomorrow, you know." }
+          ],
+          "next": "n2q"
+        },
+        {
+          "id": "n2q",
+          "say": [
+            { "who": "hayakawa", "ja": "レポートは なんで 書きますか。パソコンですか。", "kana": "レポートは なんで かきますか。パソコンですか。",
+              "en": "What do you write your reports with? A computer?" }
+          ],
+          "listen": {
+            "promptEn": "What do you write your reports with — a computer, a pen, a pencil?",
+            "grammar": ["g1"],
+            "hintJa": "＿＿で 書きます。",
+            "modelAnswers": [
+              "はい、パソコンで 書きます。",
+              "いいえ、ペンで 書きます。"
+            ],
+            "branches": [
+              { "id": "computer", "whenEn": "Learner writes with a computer (or phone / other device).", "next": "n3a",
+                "exampleJa": "はい、パソコンで かきます。" },
+              { "id": "by_hand", "whenEn": "Learner writes by hand: pen, pencil, etc.", "next": "n3b",
+                "exampleJa": "いいえ、ペンで かきます。" }
+            ],
+            "fallback": "n3a"
+          }
+        },
+        {
+          "id": "n3a",
+          "say": [
+            { "who": "hayakawa", "ja": "そうですか。きょうの テストは えんぴつで 書きますよ。", "kana": "そうですか。きょうの テストは えんぴつで かきますよ。",
+              "en": "I see. Today's test, though, we write in pencil.", "gesture": "point", "target": "pencil" }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3b",
+          "say": [
+            { "who": "hayakawa", "ja": "手で 書きますか。きょうの テストも えんぴつで 書きます。", "kana": "てで かきますか。きょうの テストも えんぴつで かきます。",
+              "en": "You write by hand? We write today's test in pencil, too.", "gesture": "nod" }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            { "who": "ana", "ja": "あっ、えんぴつ……。すみません、えんぴつを おねがいします。", "kana": "あっ、えんぴつ……。すみません、えんぴつを おねがいします。",
+              "en": "Oh no, my pencil… Excuse me, a pencil, please?", "gesture": "surprised" }
+          ],
+          "focus": "pencil",
+          "listen": {
+            "promptEn": "Ana has no pencil. Tell her you'll lend her yours.",
+            "grammar": ["g3"],
+            "hintJa": "はい、＿＿を かします。どうぞ。",
+            "modelAnswers": [
+              "はい、えんぴつを かします。どうぞ。",
+              "はい、どうぞ。この えんぴつを かします。"
+            ],
+            "branches": [
+              { "id": "lend", "whenEn": "Learner lends or hands her a pencil (かします, どうぞ, yes).", "next": "n5",
+                "exampleJa": "はい、えんぴつを かします。どうぞ。" },
+              { "id": "cannot", "whenEn": "Learner refuses, can't lend it, or offers something that isn't a pencil.", "next": "n5c",
+                "exampleJa": "すみません。えんぴつは ちょっと……。" }
+            ],
+            "fallback": "n5c"
+          }
+        },
+        {
+          "id": "n5c",
+          "say": [
+            { "who": "minh", "ja": "アナさん、わたしの えんぴつを かします。どうぞ。", "kana": "アナさん、わたしの えんぴつを かします。どうぞ。",
+              "en": "Ana, I'll lend you my pencil. Here.", "gesture": "offer" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            { "who": "ana", "ja": "ありがとう ございます。「eraser」は 日本語で なんですか。", "kana": "ありがとう ございます。「イレイサー」は にほんごで なんですか。",
+              "en": "Thank you. How do you say \"eraser\" in Japanese?", "gesture": "receive",
+              "tts": "ありがとう ございます。イレイサーは にほんごで なんですか。" }
+          ],
+          "listen": {
+            "promptEn": "Tell Ana the Japanese word — or, if you're not sure, ask Hayakawa-sensei the same question.",
+            "grammar": ["g2"],
+            "hintJa": "「＿＿」です。／せんせい、「eraser」は ＿＿ごで なんですか。",
+            "modelAnswers": [
+              "「けしゴム」です。",
+              "せんせい、「eraser」は 日本語で なんですか。"
+            ],
+            "branches": [
+              { "id": "answers", "whenEn": "Learner tells Ana a Japanese word for it (けしゴム or an attempt).", "next": "n6a",
+                "exampleJa": "「けしゴム」です。" },
+              { "id": "asks_teacher", "whenEn": "Learner asks the teacher (or anyone) how to say it in Japanese.", "next": "n6b",
+                "exampleJa": "せんせい、「eraser」は にほんごで なんですか。" }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            { "who": "ana", "ja": "あ、「けしゴム」ですね。わかりました。", "kana": "あ、「けしゴム」ですね。わかりました。",
+              "en": "Ah, \"keshigomu\". Got it.", "gesture": "nod" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            { "who": "hayakawa", "ja": "「けしゴム」です。アナさん、けしゴムですよ。", "kana": "「けしゴム」です。アナさん、けしゴムですよ。",
+              "en": "It's \"keshigomu\". Ana, it's keshigomu.", "gesture": "nod" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            { "who": "hayakawa", "ja": "あれ、その 辞書は だれのですか。", "kana": "あれ、その じしょは だれのですか。",
+              "en": "Oh? Whose dictionary is that?", "gesture": "point", "target": "dictionary" }
+          ],
+          "focus": "dictionary",
+          "listen": {
+            "promptEn": "The dictionary on your desk is Minh's. Say whose it is and that you borrowed it from him.",
+            "grammar": ["g4"],
+            "hintJa": "＿＿さんのです。＿＿さんに かりました。",
+            "modelAnswers": [
+              "ミンさんのです。ミンさんに かりました。",
+              "ミンさんから かりました。"
+            ],
+            "branches": [
+              { "id": "borrowed", "whenEn": "Learner says it is Minh's and/or that they borrowed it from Minh.", "next": "n8a",
+                "exampleJa": "ミンさんのです。ミンさんに かりました。" },
+              { "id": "not_minh", "whenEn": "Learner says it is their own, or names someone other than Minh.", "next": "n8b",
+                "exampleJa": "わたしのです。" }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            { "who": "minh", "ja": "はい、せんしゅう かしました。", "kana": "はい、せんしゅう かしました。",
+              "en": "Yes, I lent it last week.", "gesture": "nod" }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            { "who": "minh", "ja": "あのう、それは わたしの 辞書です。せんしゅう かしました。", "kana": "あのう、それは わたしの じしょです。せんしゅう かしました。",
+              "en": "Um, that's my dictionary. I lent it last week.", "gesture": "laugh" }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            { "who": "hayakawa", "ja": "そうですか。じゃ、テストを はじめましょう。", "kana": "そうですか。じゃ、テストを はじめましょう。",
+              "en": "I see. Well then, let's begin the test.", "gesture": "nod" }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "国では だれに 日本語を 習いましたか。",
+        "openerKana": "くにでは だれに にほんごを ならいましたか。",
+        "openerEn": "Who did you learn Japanese from back home?",
+        "topicEn": "Chat about how the learner studied Japanese before: who taught them (～に ならいました), what they wrote and read with, whether they teach anyone their own language (～に おしえます). Stay within lesson 1–7 grammar.",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

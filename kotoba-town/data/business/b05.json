@@ -1,0 +1,1024 @@
+{
+  "course": "it",
+  "storyJa": "喫茶さかもとの 予約アプリ",
+  "storyEn": "A booking app for Café Sakamoto",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "unit": 5,
+  "episodeJa": "第5話",
+  "episodeEn": "Episode 5",
+  "titleJa": "遅れを 報告する",
+  "titleEn": "Report a delay",
+  "summaryEn": "Bad news early: conclusion → reason → countermeasure → new outlook, and bring options when the release is at risk.",
+  "previouslyEn": "You joined the development team of みどりデザイン two weeks ago. The team is building さかもと予約, a smartphone booking app for 喫茶さかもと: 4 tables of up to 4 people, bookings 10:00–17:00, up to 2 weeks ahead, cancel in the app until the day before, release on 12月1日. The booking form gave an error when saving a date; you consulted 藤田さん and fixed it by aligning the date format. Now the calendar part turns out to need more time.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "結論：〜の 件で ご報告です。〜が 〜遅れそうです",
+      "meaningEn": "Conclusion first: what is late and by how much",
+      "exampleJa": "カレンダーの 画面の 件で ご報告です。完成が 3日 遅れそうです。",
+      "exampleEn": "I have a report about the calendar screen. It will be three days late."
+    },
+    {
+      "id": "g2",
+      "pattern": "理由：理由は、〜ためです",
+      "meaningEn": "Reason, in one sentence (a fact, not an excuse)",
+      "exampleJa": "理由は、カレンダーの 画面でも 同じ 問題が 見つかった ためです。",
+      "exampleEn": "The reason is that the same problem was found on the calendar screen too."
+    },
+    {
+      "id": "g3",
+      "pattern": "対策：対策と して、〜ます",
+      "meaningEn": "Countermeasure / next action: what you will concretely do",
+      "exampleJa": "対策と して、毎日 夕方に 進み具合を 報告します。",
+      "exampleEn": "As a countermeasure, I will report progress every evening."
+    },
+    {
+      "id": "g4",
+      "pattern": "見通し：〜は 〜月〜日に なる 見込みです",
+      "meaningEn": "New outlook: always as a date",
+      "exampleJa": "リリースは 12月4日に なる 見込みです。",
+      "exampleEn": "The release is expected to be December 4th."
+    },
+    {
+      "id": "g5",
+      "pattern": "影響：このままだと、〜に 間に合いません",
+      "meaningEn": "Impact: say honestly what will not be met",
+      "exampleJa": "このままだと、12月1日の リリースに 間に合いません。",
+      "exampleEn": "As things are, we won't make the December 1st release."
+    },
+    {
+      "id": "g6",
+      "pattern": "案は 二つ あります。一つ目は〜。二つ目は〜",
+      "meaningEn": "Bring options so the boss can decide",
+      "exampleJa": "案は 二つ あります。一つ目は、予約だけ 先に 出す 案です。",
+      "exampleEn": "There are two options. The first is to release booking first."
+    },
+    {
+      "id": "g7",
+      "pattern": "私は 〜が いいと 思います。〜からです",
+      "meaningEn": "Your recommendation and the reason",
+      "exampleJa": "私は 一つ目の 案が いいと 思います。坂本さんが 12月1日に 始めたいからです。",
+      "exampleEn": "I think the first option is better, because Sakamoto-san wants to start on December 1st."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "報告",
+      "kana": "ほうこく",
+      "en": "report"
+    },
+    {
+      "ja": "遅れ",
+      "kana": "おくれ",
+      "en": "delay"
+    },
+    {
+      "ja": "遅れます",
+      "kana": "おくれます",
+      "en": "to be late"
+    },
+    {
+      "ja": "結論",
+      "kana": "けつろん",
+      "en": "conclusion"
+    },
+    {
+      "ja": "理由",
+      "kana": "りゆう",
+      "en": "reason"
+    },
+    {
+      "ja": "対策",
+      "kana": "たいさく",
+      "en": "countermeasure"
+    },
+    {
+      "ja": "見通し",
+      "kana": "みとおし",
+      "en": "outlook, forecast"
+    },
+    {
+      "ja": "見込み",
+      "kana": "みこみ",
+      "en": "expectation"
+    },
+    {
+      "ja": "間に合います",
+      "kana": "まにあいます",
+      "en": "to be in time"
+    },
+    {
+      "ja": "影響",
+      "kana": "えいきょう",
+      "en": "impact"
+    },
+    {
+      "ja": "案",
+      "kana": "あん",
+      "en": "option, plan"
+    },
+    {
+      "ja": "判断",
+      "kana": "はんだん",
+      "en": "decision, judgement"
+    },
+    {
+      "ja": "日程",
+      "kana": "にってい",
+      "en": "schedule"
+    },
+    {
+      "ja": "進み具合",
+      "kana": "すすみぐあい",
+      "en": "progress"
+    },
+    {
+      "ja": "機能",
+      "kana": "きのう",
+      "en": "function, feature"
+    },
+    {
+      "ja": "品質",
+      "kana": "ひんしつ",
+      "en": "quality"
+    },
+    {
+      "ja": "補足",
+      "kana": "ほそく",
+      "en": "supplement, adding a point"
+    },
+    {
+      "ja": "部長",
+      "kana": "ぶちょう",
+      "en": "department manager"
+    },
+    {
+      "ja": "リリース",
+      "kana": "リリース",
+      "en": "release"
+    },
+    {
+      "ja": "今日中",
+      "kana": "きょうじゅう",
+      "en": "by the end of today"
+    },
+    {
+      "ja": "約束",
+      "kana": "やくそく",
+      "en": "promise"
+    }
+  ],
+  "tipsEn": [
+    "Bad news first and early — 悪い 報告ほど 早く. The earlier the team knows, the more options it has.",
+    "Start with the conclusion and a number: 「3日 遅れそうです」. A long reason first sounds like an excuse.",
+    "「少し 遅れます」 cannot be planned around. Give days and a new date: 「12月4日に なる 見込みです」.",
+    "When the release date is at risk, bring two options and your recommendation — the manager decides, you make it easy."
+  ],
+  "research": {
+    "sources": [
+      "https://zenn.dev/gachigachi/articles/996839cdbed815",
+      "https://dime.jp/genre/1820424/2",
+      "https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/roudoukijun/shigoto/it/point9.html"
+    ],
+    "notesEn": "A Japanese engineering article on reporting delays recommends the order Fact → Cause → Action → Impact and stresses that what damages trust is a late report rather than the delay itself. A business-magazine guide to progress reports says to state the current status, add the reason for a delay, name a concrete new date when asking to move a deadline, and add how you will prevent it next time. The Ministry of Health, Labour and Welfare's guidance for IT projects says extra work must first be made visible and shared with the people concerned so that someone with authority can decide. The variants follow this: a = a small delay reported as 結論 → 理由 → 対策 → 見通し to the project leader; b = a delay that hits the release date, reported to the department manager with two options and a recommendation."
+  },
+  "variants": [
+    {
+      "id": "b05a",
+      "titleJa": "3日の 遅れを 報告する",
+      "titleEn": "Report a three-day delay",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "You fixed the save error on the booking form. But this morning you found the same date-format problem on the calendar screen. Result: the calendar screen will be 3 days late, and the release moves from 12月1日 to 12月4日. Your countermeasure: you already agreed the fix with 藤田さん, and you will report progress to 村上さん every evening. You asked 村上さん for a few minutes right away.",
+      "roleEn": "You are the new engineer. Report the delay early and in order: conclusion → reason → countermeasure → new outlook.",
+      "missionsEn": [
+        {
+          "text": "Start with the conclusion: the calendar screen will be 3 days late",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Give the reason: the same date problem was found on the calendar screen",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say your countermeasure",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Give the new outlook: release on 12月4日",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami"
+      ],
+      "positions": {
+        "murakami": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "お疲れさまです。報告が あるそうですね。どう しました？",
+              "kana": "おつかれさまです。ほうこくが あるそうですね。どう しました？",
+              "en": "Hello. I hear you have something to report. What happened?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Start with the conclusion: what will be late, and by how many days.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿の 件で ご報告です。＿＿が ＿＿日 遅れそうです。",
+            "modelAnswers": [
+              "カレンダーの 画面の 件で ご報告です。完成が 3日 遅れそうです。申し訳 ありません。"
+            ],
+            "branches": [
+              {
+                "id": "conclusion",
+                "whenEn": "Learner said clearly that the calendar screen (or the work) will be late AND by how much (3 days) or the new date.",
+                "next": "n2a",
+                "exampleJa": "カレンダーの 画面が 3日 遅れそうです。申し訳 ありません。"
+              },
+              {
+                "id": "no_conclusion",
+                "whenEn": "Learner only apologised, said there is a problem, or began with background, without saying what is late and by how much.",
+                "next": "n2b",
+                "exampleJa": "申し訳 ありません。問題が あります。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "3日ですね。早く 言って くれて 助かります。",
+              "kana": "みっかですね。はやく いって くれて たすかります。",
+              "en": "Three days. Thank you for telling me early.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "まず 結論から 教えて ください。何が、どのくらい 遅れますか。",
+              "kana": "まず けつろんから おしえて ください。なにが、どのくらい おくれますか。",
+              "en": "Conclusion first, please. What is late, and by how much?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say it plainly: the calendar screen, 3 days late.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿が ＿＿日 遅れそうです。",
+            "modelAnswers": [
+              "カレンダーの 画面が 3日 遅れそうです。"
+            ],
+            "branches": [
+              {
+                "id": "with_days",
+                "whenEn": "Learner said what is late and the number of days.",
+                "next": "n2c",
+                "exampleJa": "カレンダーの 画面が 3日 遅れそうです。"
+              },
+              {
+                "id": "no_days",
+                "whenEn": "Learner said what is late but gave no number of days.",
+                "next": "n2d",
+                "exampleJa": "カレンダーの 画面が 少し 遅れそうです。"
+              }
+            ],
+            "fallback": "n2d"
+          }
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "カレンダーが 3日ですね。わかりました。",
+              "kana": "カレンダーが みっかですね。わかりました。",
+              "en": "The calendar, three days. Understood.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2d",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "「少し」だと 判断が できません。日数は あとで 必ず 聞きますね。",
+              "kana": "「すこし」だと はんだんが できません。にっすうは あとで かならず ききますね。",
+              "en": "With \"a little\" I can't decide. I'll ask you the number of days later."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "理由を 教えて ください。",
+              "kana": "りゆうを おしえて ください。",
+              "en": "Please tell me the reason."
+            }
+          ],
+          "listen": {
+            "promptEn": "Give the reason: the same date-format problem was found on the calendar screen too.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "理由は、＿＿でも 同じ ＿＿が 見つかった ためです。",
+            "modelAnswers": [
+              "理由は、カレンダーの 画面でも 同じ 日付の 問題が 見つかった ためです。"
+            ],
+            "branches": [
+              {
+                "id": "reason_clear",
+                "whenEn": "Learner gave the concrete reason: the same date / date-format problem was also found on the calendar screen.",
+                "next": "n4a",
+                "exampleJa": "カレンダーの 画面でも 同じ 日付の 問題が 見つかった ためです。"
+              },
+              {
+                "id": "reason_vague",
+                "whenEn": "Learner blamed themselves or gave no concrete reason (e.g. 'my mistake', 'it is difficult').",
+                "next": "n4b",
+                "exampleJa": "私の 力が 足りない ためです。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "なるほど、同じ 問題が カレンダーにも あったんですね。",
+              "kana": "なるほど、おなじ もんだいが カレンダーにも あったんですね。",
+              "en": "I see, the same problem was in the calendar too.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "自分を 責めなくて いいですよ。日付の 形式の 件ですね。",
+              "kana": "じぶんを せめなくて いいですよ。ひづけの けいしきの けんですね。",
+              "en": "You don't need to blame yourself. It's the date-format issue, isn't it?",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "それで、対策は どう 考えて いますか。",
+              "kana": "それで、たいさくは どう かんがえて いますか。",
+              "en": "So, what countermeasure are you thinking of?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say your countermeasure: the fix is agreed with Fujita-san, and you'll report progress every evening.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "対策と して、＿＿ます。毎日 夕方に ＿＿を 報告します。",
+            "modelAnswers": [
+              "直し方は 藤田さんと 決めました。対策と して、毎日 夕方に 進み具合を 報告します。"
+            ],
+            "branches": [
+              {
+                "id": "has_plan",
+                "whenEn": "Learner stated a concrete countermeasure (fix agreed with Fujita, daily progress report, etc.).",
+                "next": "n6a",
+                "exampleJa": "直し方は 藤田さんと 決めました。毎日 夕方に 進み具合を 報告します。"
+              },
+              {
+                "id": "asks_help",
+                "whenEn": "Learner asked for help or support (e.g. someone to test or review).",
+                "next": "n6b",
+                "exampleJa": "テストを 手伝って いただけませんか。"
+              },
+              {
+                "id": "no_plan",
+                "whenEn": "Learner only said they will work hard, with nothing concrete.",
+                "next": "n6c",
+                "exampleJa": "がんばります。"
+              }
+            ],
+            "fallback": "n6c"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "いいですね。直し方が 決まって いるなら 安心です。",
+              "kana": "いいですね。なおしかたが きまって いるなら あんしんです。",
+              "en": "Good. If the fix is decided, I feel safe.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "わかりました。テストは 青木さんにも お願いしましょう。",
+              "kana": "わかりました。テストは あおきさんにも おねがいしましょう。",
+              "en": "All right. Let's ask Aoki-san to help with testing too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "気持ちは うれしいです。では、毎日 夕方に 報告を お願いします。",
+              "kana": "きもちは うれしいです。では、まいにち ゆうがたに ほうこくを おねがいします。",
+              "en": "I appreciate the spirit. Then please report to me every evening."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "新しい 見通しを 教えて ください。リリースは いつに なりますか。",
+              "kana": "あたらしい みとおしを おしえて ください。リリースは いつに なりますか。",
+              "en": "Tell me the new outlook. When will the release be?"
+            }
+          ],
+          "focus": "calendar",
+          "listen": {
+            "promptEn": "Give the new date: release on 12月4日 (three days after 12月1日).",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "リリースは ＿＿月＿＿日に なる 見込みです。",
+            "modelAnswers": [
+              "リリースは 12月4日に なる 見込みです。"
+            ],
+            "branches": [
+              {
+                "id": "new_date",
+                "whenEn": "Learner gave the new release date, 12月4日.",
+                "next": "n8a",
+                "exampleJa": "リリースは 12月4日に なる 見込みです。"
+              },
+              {
+                "id": "no_date",
+                "whenEn": "Learner could not give a date or said they don't know.",
+                "next": "n8b",
+                "exampleJa": "まだ はっきり わかりません。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "12月1日から 3日 遅れると、何日に なりますか。",
+              "kana": "じゅうにがつ ついたちから みっか おくれると、なんにちに なりますか。",
+              "en": "Three days after December 1st — what date is that?",
+              "gesture": "point",
+              "target": "calendar"
+            }
+          ],
+          "listen": {
+            "promptEn": "Work it out and say it: 12月4日.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿月＿＿日に なる 見込みです。",
+            "modelAnswers": [
+              "12月4日に なる 見込みです。"
+            ],
+            "branches": [
+              {
+                "id": "says_date",
+                "whenEn": "Learner said 12月4日.",
+                "next": "n8a",
+                "exampleJa": "12月4日に なる 見込みです。"
+              },
+              {
+                "id": "still_unsure",
+                "whenEn": "Learner still gave no date or a different date.",
+                "next": "n8c",
+                "exampleJa": "すみません、わかりません。"
+              }
+            ],
+            "fallback": "n8c"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "12月4日ですね。坂本さんには、私から 連絡します。",
+              "kana": "じゅうにがつ よっかですね。さかもとさんには、わたしから れんらくします。",
+              "en": "December 4th. I'll contact Sakamoto-san myself.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "12月4日ですね。見通しは いつも 日付で 言いましょう。",
+              "kana": "じゅうにがつ よっかですね。みとおしは いつも ひづけで いいましょう。",
+              "en": "It's December 4th. Always give the outlook as a date."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "悪い 報告を 早く して くれて、ありがとう ございます。",
+              "kana": "わるい ほうこくを はやく して くれて、ありがとう ございます。",
+              "en": "Thank you for bringing bad news early.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b05b",
+      "titleJa": "リリースに ひびく 遅れ",
+      "titleEn": "A delay that hits the release",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "Bigger trouble: testing showed that the calendar library does not work properly on smartphones, so it must be replaced. That takes 1 week, so the full app cannot make the 12月1日 release. You have two options. Option 1: release only the booking function on 12月1日 and add the calendar later. Option 2: release everything on 12月8日. 坂本さん wants to start taking bookings on 12月1日. 村上さん has called 小川部長 into the meeting.",
+      "roleEn": "You are the new engineer. Explain honestly, bring options, and say which one you recommend and why.",
+      "missionsEn": [
+        {
+          "text": "Conclusion and impact: 1 week late, 12月1日 is not possible as planned",
+          "grammar": [
+            "g1",
+            "g5"
+          ]
+        },
+        {
+          "text": "Give the reason: the calendar library doesn't work properly on smartphones",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Offer the two options",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Say which option you recommend and why, then your next step",
+          "grammar": [
+            "g7",
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami",
+        "ogawa"
+      ],
+      "positions": {
+        "murakami": "npc1",
+        "ogawa": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "小川部長にも 来て いただきました。状況を 報告して ください。",
+              "kana": "おがわぶちょうにも きて いただきました。じょうきょうを ほうこくして ください。",
+              "en": "I've asked Ogawa-buchō to join us. Please report the situation."
+            }
+          ],
+          "listen": {
+            "promptEn": "Conclusion first, with the impact: the calendar is 1 week late, so the 12月1日 release won't be met as it is.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "＿＿が 1週間 遅れそうです。このままだと、＿＿に 間に合いません。",
+            "modelAnswers": [
+              "ご報告です。カレンダーの 機能が 1週間 遅れそうです。このままだと、12月1日の リリースに 間に合いません。"
+            ],
+            "branches": [
+              {
+                "id": "conclusion_impact",
+                "whenEn": "Learner said the calendar is about one week late AND that the 12月1日 release is affected / will not be met.",
+                "next": "n2a",
+                "exampleJa": "カレンダーが 1週間 遅れそうです。このままだと、12月1日の リリースに 間に合いません。"
+              },
+              {
+                "id": "delay_only",
+                "whenEn": "Learner mentioned a delay or apologised but did not say that the release date is affected.",
+                "next": "n2b",
+                "exampleJa": "申し訳 ありません。カレンダーが 遅れて います。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "1週間ですか。リリースにも 影響が あるのですね。",
+              "kana": "いっしゅうかんですか。リリースにも えいきょうが あるのですね。",
+              "en": "One week. So it affects the release as well.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "少し 補足します。このままだと、12月1日に 間に合わない 見込みです。",
+              "kana": "すこし ほそくします。このままだと、じゅうにがつ ついたちに まにあわない みこみです。",
+              "en": "Let me add: as things are, we won't make December 1st."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "理由を 聞かせて ください。",
+              "kana": "りゆうを きかせて ください。",
+              "en": "Please tell me the reason."
+            }
+          ],
+          "listen": {
+            "promptEn": "Give the reason: the calendar library doesn't work properly on smartphones and must be replaced (1 week).",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "理由は、＿＿が スマホで 正しく 動かない ことが わかった ためです。",
+            "modelAnswers": [
+              "理由は、カレンダーの ライブラリが スマホで 正しく 動かない ことが わかった ためです。入れかえに 1週間 かかります。"
+            ],
+            "branches": [
+              {
+                "id": "reason_clear",
+                "whenEn": "Learner explained that the calendar library does not work properly on smartphones (and/or must be replaced, taking a week).",
+                "next": "n4a",
+                "exampleJa": "カレンダーの ライブラリが スマホで 正しく 動かない ことが わかった ためです。"
+              },
+              {
+                "id": "reason_vague",
+                "whenEn": "Learner gave no concrete reason or only apologised.",
+                "next": "n4b",
+                "exampleJa": "むずかしい 問題が あった ためです。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "なるほど。テストで 早く 見つかったのは、よかったですね。",
+              "kana": "なるほど。テストで はやく みつかったのは、よかったですね。",
+              "en": "I see. It's good that testing found it early.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "補足します。カレンダーの ライブラリが、スマホで 正しく 動かないんです。",
+              "kana": "ほそくします。カレンダーの ライブラリが、スマホで ただしく うごかないんです。",
+              "en": "Let me add: the calendar library doesn't work properly on smartphones."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "それで、どう したいと 考えて いますか。",
+              "kana": "それで、どう したいと かんがえて いますか。",
+              "en": "So, what do you think we should do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Offer the two options: (1) release only booking on 12月1日, calendar later; (2) release everything on 12月8日.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "案は 二つ あります。一つ目は ＿＿。二つ目は ＿＿。",
+            "modelAnswers": [
+              "案は 二つ あります。一つ目は、予約だけ 12月1日に 出して、カレンダーは あとで 出す 案です。二つ目は、全部 12月8日に 出す 案です。"
+            ],
+            "branches": [
+              {
+                "id": "two_options",
+                "whenEn": "Learner presented both options (booking first on 12/1 with calendar later, and everything on 12/8).",
+                "next": "n6a",
+                "exampleJa": "案は 二つ あります。予約だけ 先に 出す 案と、全部 12月8日に 出す 案です。"
+              },
+              {
+                "id": "one_option",
+                "whenEn": "Learner presented only one of the options.",
+                "next": "n6b",
+                "exampleJa": "予約だけ 12月1日に 出して、カレンダーは あとで 出したいです。"
+              },
+              {
+                "id": "no_option",
+                "whenEn": "Learner offered no option: asked the manager to decide, or only apologised.",
+                "next": "n6c",
+                "exampleJa": "どう すれば いいでしょうか。"
+              }
+            ],
+            "fallback": "n6c"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "案が 二つ あると、判断しやすいですね。",
+              "kana": "あんが ふたつ あると、はんだんしやすいですね。",
+              "en": "Two options make it easy to decide.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "整理すると、予約だけ 先に 出すか、全部 12月8日に 出すか、ですね。",
+              "kana": "せいりすると、よやくだけ さきに だすか、ぜんぶ じゅうにがつ ようかに だすか、ですね。",
+              "en": "To sum up: release booking first, or everything on December 8th."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "判断の ために、まず 案を 聞かせて ください。何が できますか。",
+              "kana": "はんだんの ために、まず あんを きかせて ください。なにが できますか。",
+              "en": "To decide, I need options first. What can we do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give at least one option: booking only on 12月1日, or everything on 12月8日.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "一つ目は ＿＿。二つ目は ＿＿。",
+            "modelAnswers": [
+              "予約だけ 12月1日に 出す 案と、全部 12月8日に 出す 案が あります。"
+            ],
+            "branches": [
+              {
+                "id": "gives_options",
+                "whenEn": "Learner gave both options.",
+                "next": "n6a",
+                "exampleJa": "予約だけ 先に 出す 案と、全部 12月8日に 出す 案が あります。"
+              },
+              {
+                "id": "gives_one",
+                "whenEn": "Learner gave one option or an incomplete answer.",
+                "next": "n6b",
+                "exampleJa": "予約だけ 先に 出す ことが できます。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "あなたは、どちらが いいと 思いますか。",
+              "kana": "あなたは、どちらが いいと おもいますか。",
+              "en": "Which do you think is better?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Recommend one option and give a reason (e.g. Sakamoto-san wants to start bookings on 12月1日).",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "私は ＿＿の 案が いいと 思います。＿＿からです。",
+            "modelAnswers": [
+              "私は 一つ目の 案が いいと 思います。坂本さんが 12月1日に 予約を 始めたいからです。",
+              "私は 二つ目の 案が いいと 思います。全部 いっしょに テストできるからです。"
+            ],
+            "branches": [
+              {
+                "id": "split",
+                "whenEn": "Learner recommended releasing booking first on 12/1 and the calendar later.",
+                "next": "n8a",
+                "exampleJa": "私は 一つ目の 案が いいと 思います。坂本さんが 12月1日に 始めたいからです。"
+              },
+              {
+                "id": "all_dec8",
+                "whenEn": "Learner recommended releasing everything on 12/8.",
+                "next": "n8b",
+                "exampleJa": "私は 二つ目の 案が いいと 思います。全部 いっしょに テストできるからです。"
+              },
+              {
+                "id": "cannot_choose",
+                "whenEn": "Learner could not choose or left the decision to the others.",
+                "next": "n8c",
+                "exampleJa": "すみません、私には 決められません。"
+              }
+            ],
+            "fallback": "n8c"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "お客さまとの 約束を 守れますね。その 案で 坂本さんに 相談しましょう。",
+              "kana": "おきゃくさまとの やくそくを まもれますね。その あんで さかもとさんに そうだんしましょう。",
+              "en": "That keeps our promise to the client. Let's propose it to Sakamoto-san.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "品質を 大事に する 考えですね。日程は 坂本さんに 確認が 必要です。",
+              "kana": "ひんしつを だいじに する かんがえですね。にっていは さかもとさんに かくにんが ひつようです。",
+              "en": "You put quality first. We need to check the date with Sakamoto-san.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8c",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "では、両方の 案を 坂本さんに 見せて、選んで いただきましょう。",
+              "kana": "では、りょうほうの あんを さかもとさんに みせて、えらんで いただきましょう。",
+              "en": "Then let's show both options to Sakamoto-san and let him choose."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "坂本さんへは、私と いっしょに 説明しましょう。次に 何を しますか。",
+              "kana": "さかもとさんへは、わたしと いっしょに せつめいしましょう。つぎに なにを しますか。",
+              "en": "Let's explain to Sakamoto-san together. What will you do next?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say your next step concretely (e.g. put the two options on one page today; report progress every day).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "今日中に ＿＿を まとめます。毎日 ＿＿を 報告します。",
+            "modelAnswers": [
+              "今日中に 二つの 案を 1枚に まとめます。それから、毎日 進み具合を 報告します。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner named a concrete next action (summarise the options, prepare the explanation, daily reports, start replacing the library).",
+                "next": "n10a",
+                "exampleJa": "今日中に 二つの 案を 1枚に まとめます。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only said they will do their best or was not concrete.",
+                "next": "n10b",
+                "exampleJa": "がんばります。"
+              }
+            ],
+            "fallback": "n10b"
+          }
+        },
+        {
+          "id": "n10a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "お願いします。早い 報告と 案が あって、助かりました。",
+              "kana": "おねがいします。はやい ほうこくと あんが あって、たすかりました。",
+              "en": "Please do. The early report and the options really helped.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n10b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では 今日中に、二つの 案を 1枚に まとめて ください。お願いします。",
+              "kana": "では きょうじゅうに、ふたつの あんを いちまいに まとめて ください。おねがいします。",
+              "en": "Then please put the two options on one page today. Thank you.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

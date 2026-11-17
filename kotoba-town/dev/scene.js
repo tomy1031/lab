@@ -1,0 +1,154 @@
+// Scene preview for development and screenshots:
+//   dev/scene.html?scene=office&time=noon&season=spring&weather=clear&view=spawn&cast=aoki,ogawa&labels=1
+// views: spawn | left | right | back | overview | face (close-up of the first person) | people
+//        | seat (the learner seated at built.spots.seat, eyes at 1.15 m, looking at npc1)
+// &room=midori|grey picks the room look (interview); &cam=x,y,z&at=x,y,z overrides the camera (any view).
+import * as THREE from 'three';
+import { App } from '../js/core/app.js';
+import { makeEnvironment } from '../js/world/environment.js';
+import { loadScene } from '../js/world/scenes/index.js';
+import { CAST } from '../js/content/cast.js';
+import * as K from '../js/world/kit.js';
+
+const q = new URLSearchParams(location.search);
+const { Person } = await import('../js/people/person.js');
+const id = q.get('scene') || 'office';
+const setup = { time: q.get('time') || 'noon', season: q.get('season') || 'spring', weather: q.get('weather') || 'clear', room: q.get('room') || undefined };
+const view = q.get('view') || 'spawn';
+const castIds = (q.get('cast') || '').split(',').filter(Boolean);
+await document.fonts.load('700 20px "M PLUS Rounded 1c"').catch(() => {});
+
+const app = new App(document.getElementById('stage'));
+const mod = id === 'none'
+  ? { meta: { indoor: false }, default: () => { const g = new THREE.Group(); g.add(K.mesh(new THREE.PlaneGeometry(40, 40, 10, 10), K.mat('#ffffff', { map: K.tileTex('#efe7d6', '#e7dcc8', 8, [6, 6], '#d9ccb4') }), { rx: -Math.PI / 2, cast: false })); return { group: g, spawn: K.spot(0, 0, 0), slots: {}, props: {}, center: new THREE.Vector3(0, 0, -3.5), radius: 8 }; } }
+  : await loadScene(id);
+const built = mod.default({ setup });
+app.scene.add(built.group);
+const env = makeEnvironment(app.scene, { ...setup, indoor: mod.meta?.indoor, center: built.center, radius: built.radius });
+app.renderer.toneMappingExposure = env.exposure;
+const spawn = built.spawn;
+app.placeRig(spawn.pos, spawn.yaw);
+
+const people = [];
+const slotNames = Object.keys(built.slots).filter((s) => built.slots[s]);
+const pool = castIds.length ? castIds : Object.keys(CAST);
+slotNames.forEach((slot, i) => {
+  const cid = pool[i % pool.length];
+  const sp = built.slots[slot];
+  const p = new Person(CAST[cid].look, { name: cid });
+  p.root.position.copy(sp.pos);
+  p.root.rotation.y = sp.yaw;
+  if (sp.sit) p.setSitting(true, sp.sit);
+  app.scene.add(p.root);
+  people.push(p);
+  if (q.get('labels')) {
+    const tag = K.sign([`${slot}: ${cid}`], 0.9, 0.16, { bg: 'rgba(0,0,0,0.6)', fg: '#ffe08a', emissive: true });
+    tag.position.copy(sp.pos).add(new THREE.Vector3(0, 2.05, 0));
+    app.scene.add(tag);
+    app.onUpdate(() => tag.quaternion.copy(app.camera.getWorldQuaternion(new THREE.Quaternion())));
+  }
+});
+if (q.get('labels')) {
+  for (const [pid, obj] of Object.entries(built.props)) {
+    const w = new THREE.Vector3();
+    obj.getWorldPosition(w);
+    const tag = K.sign([pid], 0.6, 0.12, { bg: 'rgba(30,60,120,0.75)', fg: '#ffffff', emissive: true });
+    tag.position.copy(w).add(new THREE.Vector3(0, 0.35, 0));
+    app.scene.add(tag);
+    app.onUpdate(() => tag.quaternion.copy(app.camera.getWorldQuaternion(new THREE.Quaternion())));
+  }
+}
+const head = new THREE.Vector3();
+app.onUpdate((dt, t) => {
+  app.headPosition(head);
+  people.forEach((p, i) => { p.setLookTarget(head); p.update(dt, q.get('talk') && i === 0 ? 0.4 + 0.3 * Math.sin(t * 9) : 0); });
+  built.update?.(dt, t);
+  env.update(dt);
+});
+if (q.get('gesture') && people[0]) setTimeout(() => people[0].gesture(q.get('gesture'), { target: built.props[q.get('target')]?.getWorldPosition(new THREE.Vector3()) }), 300);
+
+// lineup: every cast member in a row (for checking the characters)
+if (view === 'lineup') {
+  for (const p of people) app.scene.remove(p.root);
+  people.length = 0;
+  // &per=4&row=1 → only that row, framed close (for comparing characters)
+  const per = Number(q.get('per') || 8);
+  const onlyRow = q.get('row') === null ? null : Number(q.get('row'));
+  let ids = castIds.length ? castIds : Object.keys(CAST);
+  if (onlyRow !== null) ids = ids.slice(onlyRow * per, onlyRow * per + per);
+  ids.forEach((cid, i) => {
+    const p = new Person(CAST[cid].look, { name: cid });
+    const col = i % per; const row = Math.floor(i / per);
+    p.root.position.set((col - (per - 1) / 2) * 0.85, 0, -3 - row * 1.6);
+    app.scene.add(p.root);
+    people.push(p);
+    const c = CAST[cid];
+    const tag = K.sign([{ t: c.nameJa, scale: 1 }, { t: c.roleEn.split(',')[0].slice(0, 26), scale: 0.55, weight: 500 }], 0.78, 0.22, { bg: '#fffaf0', fg: '#5b4636', border: '#e9dcc3', emissive: true });
+    tag.position.set(p.root.position.x, 0.12, p.root.position.z + 0.35);
+    tag.rotation.x = -0.5;
+    app.scene.add(tag);
+  });
+}
+// camera views
+const cam = app.camera;
+function setView() {
+  if (view === 'overview') {
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
+    const c = built.center || new THREE.Vector3();
+    cam.position.set(c.x + 7, 9, c.z + 9);
+    cam.lookAt(c.x, 0, c.z);
+  } else if (view === 'face' && people[0]) {
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
+    const p = people[0].root;
+    const fwd = new THREE.Vector3(Math.sin(p.rotation.y), 0, Math.cos(p.rotation.y));
+    p.updateMatrixWorld(true);
+    const hc = people[0].head.localToWorld(people[0].headCentre.clone());
+    const dist = Number(q.get('dist') || 0.62);
+    const side = Number(q.get('side') || 0);
+    cam.position.copy(hc).addScaledVector(fwd, dist).add(new THREE.Vector3(Math.cos(p.rotation.y) * side, 0.02, -Math.sin(p.rotation.y) * side)); cam.fov = 35; cam.updateProjectionMatrix();
+    cam.lookAt(hc);
+    people[0].setLookTarget(cam.position.clone());
+  } else if (view === 'lineup') {
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
+    if (q.get('row') !== null) {
+      const per = Number(q.get('per') || 8);
+      const d = per * 0.85 * 0.75 + 0.8;
+      cam.position.set(0, 1.05, -3 + d); cam.fov = 45; cam.updateProjectionMatrix();
+      cam.lookAt(0, 0.92, -3);
+    } else {
+      cam.position.set(0, 1.5, 1.0);
+      cam.lookAt(0, 0.85, -3.7);
+    }
+  } else if (view === 'people') {
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
+    const p = people[0].root;
+    const fwd = new THREE.Vector3(Math.sin(p.rotation.y), 0, Math.cos(p.rotation.y));
+    cam.position.copy(p.position).addScaledVector(fwd, 2.4).add(new THREE.Vector3(0, 1.3, 0));
+    cam.lookAt(p.position.clone().add(new THREE.Vector3(0, 0.95, 0)));
+  } else if (view === 'seat' && built.spots?.seat) {
+    const s = built.spots.seat;
+    app.rig.position.copy(s.pos); app.rig.rotation.set(0, s.yaw, 0);
+    cam.position.set(0, 1.15, 0);
+    const npc = built.slots.npc1?.pos;
+    app.rig.updateMatrixWorld(true);
+    if (npc) cam.lookAt(npc.x, 1.15, npc.z);
+    else cam.lookAt(app.rig.localToWorld(new THREE.Vector3(0, 1.15, -2)));
+  } else {
+    const yaw = { spawn: 0, left: Math.PI / 2, right: -Math.PI / 2, back: Math.PI }[view] ?? 0;
+    app.yaw = yaw; app.pitch = -0.08; app._applyLook();
+  }
+  const camQ = q.get('cam'); const atQ = q.get('at');
+  if (camQ) {
+    const [x, y, z] = camQ.split(',').map(Number);
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0); app.rig.updateMatrixWorld(true);
+    cam.position.set(x, y, z);
+    const [ax, ay, az] = (atQ || '0,1,-2').split(',').map(Number);
+    cam.lookAt(ax, ay, az);
+  }
+}
+setView();
+const infoLine = () => `${id}${setup.room ? `(${setup.room})` : ''} ${setup.time}/${setup.season}/${setup.weather} view=${view} · ${app.renderer.info.render.triangles} tris · ${app.renderer.info.render.calls} calls`;
+document.getElementById('info').textContent = infoLine();
+let frames = 0;
+app.onUpdate(() => { if (++frames === 20) { document.getElementById('info').textContent = infoLine(); window.__ready = true; } });
+window.__built = built;
