@@ -54,7 +54,7 @@ for (const id of ids) {
     if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-1-brief.png`), timeout: 180000 });
     await page.evaluate(() => { window.KT.start(); });
     let turns = 0; let shot = false;
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 1600; i++) { // up to ~7 min (interviews are long)
       const st = await page.evaluate(() => ({ where: window.KT.state.where, cur: !!(window.KT.runner && window.KT.runner.cur), busy: window.KT.runner?.npcBusy }));
       if (st.where === 'report') break;
       if (st.cur && !st.busy) {
@@ -64,7 +64,7 @@ for (const id of ids) {
       }
       await page.waitForTimeout(250);
     }
-    await page.waitForFunction('window.KT.state.where === "report"', null, { timeout: 30000 });
+    await page.waitForFunction('window.KT.state.where === "report"', null, { timeout: 90000 });
     await page.waitForTimeout(600);
     if (shotsAt) await page.screenshot({ path: path.join(shotsAt, `${id}-3-report.png`), timeout: 180000 });
     const rep = await page.evaluate(() => window.KT.lastReport);

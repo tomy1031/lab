@@ -2,11 +2,13 @@
 import { resolveCharacter, audioPath } from './lines.js';
 
 export const LESSON_COUNT = 10;
+/** ITビジネス編: 10 project episodes + 2 interviews. */
+export const BUSINESS_COUNT = 12;
 const base = new URL('../../', import.meta.url);
 
-async function loadSeries(dir, prefix) {
+async function loadSeries(dir, prefix, count = LESSON_COUNT) {
   const out = [];
-  for (let n = 1; n <= LESSON_COUNT; n++) {
+  for (let n = 1; n <= count; n++) {
     const id = `${prefix}${String(n).padStart(2, '0')}`;
     try {
       const r = await fetch(new URL(`data/${dir}/${id}.json`, base));
@@ -23,7 +25,7 @@ export async function loadLessons() {
 
 /** ITビジネス編 (episodes in story order). storyKey = A, B … in order of appearance. */
 export async function loadBusiness() {
-  const units = await loadSeries('business', 'b');
+  const units = await loadSeries('business', 'b', BUSINESS_COUNT);
   const stories = [...new Set(units.map((u) => u.storyJa))];
   return units.map((u) => ({ ...u, course: 'it', no: u.unit, storyKey: String.fromCharCode(65 + stories.indexOf(u.storyJa)) }));
 }

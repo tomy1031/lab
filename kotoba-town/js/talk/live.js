@@ -99,12 +99,17 @@ export class LiveSession {
     let msg;
     try { msg = JSON.parse(await frameText(raw)); } catch { return; }
     const h = this.handlers;
+    h.onRaw?.(msg);
     const sc = msg.serverContent;
     if (sc) {
+      const inline = [];
       for (const part of sc.modelTurn?.parts || []) {
         if (part.inlineData?.data) h.onAudio?.(part.inlineData.data, part.inlineData.mimeType);
-        if (part.text) h.onModelText?.(part.text);
+        if (part.text && !part.thought) h.onModelText?.(part.text);
+        // some models put function calls inside the turn instead of a toolCall message
+        if (part.functionCall?.name) inline.push({ id: part.functionCall.id || `inline-${Date.now()}-${inline.length}`, name: part.functionCall.name, args: part.functionCall.args || {} });
       }
+      if (inline.length) h.onToolCall?.(inline);
       if (sc.inputTranscription?.text) h.onInputText?.(sc.inputTranscription.text);
       if (sc.outputTranscription?.text) h.onOutputText?.(sc.outputTranscription.text);
       if (sc.interrupted) h.onInterrupted?.();

@@ -125,6 +125,14 @@ export class LiveBrain {
         if (!this.closed) this.reconnect(reason === 'badKey' ? 'closed' : reason);
       },
       onToolCancel: (ids) => { this.trace(`toolCancel ${ids.join(',')}`); for (const id of ids) this.cancelled.add(id); },
+      // debugging aid (self-checks): which message types arrive, without the audio payloads
+      onRaw: this.o.traceRaw ? (msg) => {
+        const sc = msg.serverContent;
+        const parts = (sc?.modelTurn?.parts || []).map((p) => Object.keys(p).filter((k) => k !== 'inlineData' || !p.inlineData?.data).join('+') || 'audio');
+        const keys = Object.keys(msg).filter((k) => k !== 'serverContent');
+        const scKeys = sc ? Object.keys(sc).filter((k) => k !== 'modelTurn') : [];
+        if (!parts.every((p) => p === 'audio') || keys.length || scKeys.length) this.trace(`raw ${keys.join(',')}${sc ? ` sc{${[...scKeys, parts.length ? `parts:${[...new Set(parts)].join('|')}` : ''].filter(Boolean).join(',')}}` : ''}${msg.toolCall ? ` ${JSON.stringify(msg.toolCall).slice(0, 90)}` : ''}`);
+      } : undefined,
       onInteraction: (st) => {
         this.trace(`status:${st}`);
         this.idle = /IDLE/i.test(st);

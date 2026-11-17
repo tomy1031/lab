@@ -311,7 +311,9 @@ export function offlineInterviewReport(turns, rubric) {
   const scored = turns.filter((t) => typeof t.score === 'number');
   const avg = scored.length ? scored.reduce((s2, t) => s2 + t.score, 0) / scored.length : 0;
   const verdict = avg >= 2.3 ? 'pass' : avg >= 1.6 ? 'borderline' : 'not_yet';
-  const weakest = [...scored].sort((a, b) => a.score - b.score);
+  // the weakest answers first; on a tie, real questions before the door/greeting manners
+  const mannersOnly = (t) => (t.criteria || []).every((c) => c === 'manners');
+  const weakest = [...scored].sort((a, b) => a.score - b.score || mannersOnly(a) - mannersOnly(b));
   const improvements = [...new Set(weakest.filter((t) => t.score <= 2).map((t) => t.improveEn || t.pitfallsEn).filter(Boolean))].slice(0, 3);
   const w = weakest[0];
   return {

@@ -1,6 +1,8 @@
 // Scene preview for development and screenshots:
 //   dev/scene.html?scene=office&time=noon&season=spring&weather=clear&view=spawn&cast=aoki,ogawa&labels=1
 // views: spawn | left | right | back | overview | face (close-up of the first person) | people
+//        | seat (the learner seated at built.spots.seat, eyes at 1.15 m, looking at npc1)
+// &room=midori|grey picks the room look (interview); &cam=x,y,z&at=x,y,z overrides the camera (any view).
 import * as THREE from 'three';
 import { App } from '../js/core/app.js';
 import { makeEnvironment } from '../js/world/environment.js';
@@ -11,7 +13,7 @@ import * as K from '../js/world/kit.js';
 const q = new URLSearchParams(location.search);
 const { Person } = await import('../js/people/person.js');
 const id = q.get('scene') || 'office';
-const setup = { time: q.get('time') || 'noon', season: q.get('season') || 'spring', weather: q.get('weather') || 'clear' };
+const setup = { time: q.get('time') || 'noon', season: q.get('season') || 'spring', weather: q.get('weather') || 'clear', room: q.get('room') || undefined };
 const view = q.get('view') || 'spawn';
 const castIds = (q.get('cast') || '').split(',').filter(Boolean);
 await document.fonts.load('700 20px "M PLUS Rounded 1c"').catch(() => {});
@@ -123,13 +125,30 @@ function setView() {
     const fwd = new THREE.Vector3(Math.sin(p.rotation.y), 0, Math.cos(p.rotation.y));
     cam.position.copy(p.position).addScaledVector(fwd, 2.4).add(new THREE.Vector3(0, 1.3, 0));
     cam.lookAt(p.position.clone().add(new THREE.Vector3(0, 0.95, 0)));
+  } else if (view === 'seat' && built.spots?.seat) {
+    const s = built.spots.seat;
+    app.rig.position.copy(s.pos); app.rig.rotation.set(0, s.yaw, 0);
+    cam.position.set(0, 1.15, 0);
+    const npc = built.slots.npc1?.pos;
+    app.rig.updateMatrixWorld(true);
+    if (npc) cam.lookAt(npc.x, 1.15, npc.z);
+    else cam.lookAt(app.rig.localToWorld(new THREE.Vector3(0, 1.15, -2)));
   } else {
     const yaw = { spawn: 0, left: Math.PI / 2, right: -Math.PI / 2, back: Math.PI }[view] ?? 0;
     app.yaw = yaw; app.pitch = -0.08; app._applyLook();
   }
+  const camQ = q.get('cam'); const atQ = q.get('at');
+  if (camQ) {
+    const [x, y, z] = camQ.split(',').map(Number);
+    app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0); app.rig.updateMatrixWorld(true);
+    cam.position.set(x, y, z);
+    const [ax, ay, az] = (atQ || '0,1,-2').split(',').map(Number);
+    cam.lookAt(ax, ay, az);
+  }
 }
 setView();
-document.getElementById('info').textContent = `${id} ${setup.time}/${setup.season}/${setup.weather} view=${view} · ${app.renderer.info.render.triangles} tris · ${app.renderer.info.render.calls} calls`;
+const infoLine = () => `${id}${setup.room ? `(${setup.room})` : ''} ${setup.time}/${setup.season}/${setup.weather} view=${view} · ${app.renderer.info.render.triangles} tris · ${app.renderer.info.render.calls} calls`;
+document.getElementById('info').textContent = infoLine();
 let frames = 0;
-app.onUpdate(() => { if (++frames === 20) { document.getElementById('info').textContent = `${id} ${setup.time}/${setup.season}/${setup.weather} view=${view} · ${app.renderer.info.render.triangles} tris · ${app.renderer.info.render.calls} calls`; window.__ready = true; } });
+app.onUpdate(() => { if (++frames === 20) { document.getElementById('info').textContent = infoLine(); window.__ready = true; } });
 window.__built = built;

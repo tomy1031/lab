@@ -10,6 +10,7 @@ export const SCENE_MODULES = {
   park: () => import('./park.js'),
   home: () => import('./home.js'),
   konbini: () => import('./konbini.js'),
+  interview: () => import('./interview.js'),
   hub: () => import('./hub.js'),
 };
 
