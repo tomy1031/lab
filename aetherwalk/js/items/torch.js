@@ -1,11 +1,15 @@
 // js/items/torch.js — fire on items (§4.2), OPUS-A: the torch head and arrow tips catch fire inside any
 // 'fire' zone (campfires, braziers, another torch, burning enemies…), carry their own 'fire' zone while lit
 // (so a lit torch lights the next torch / an arrow / a bomb fuse / a campfire), and go out in water, in a
-// 'water' zone (poured flask), in a 'wind' zone (fan gust, wind blade), when stowed or after 180 s
-// (state.burnLimit overrides, e.g. the torch shrine's 45 s).
+// 'water' zone (poured flask), in a 'wind' zone (fan gust, wind blade) or after 180 s (state.burnLimit
+// overrides, e.g. the torch shrine's 45 s). A lit torch put in a holster keeps burning with its timer paused (an
+// ember glows at the slot; it goes out there only if the slot goes under water); in its last 30 s the flame
+// shrinks and gutters. item:extinguish { uid, itemId, why: 'burnout'|'water'|'wind'|'stowed'|'return' }.
 import * as THREE from 'three';
+import { getSprites } from '../core/gems.js';
 
-const _h = new THREE.Vector3();
+const _h = new THREE.Vector3(), _hp = new THREE.Vector3();
+const EMBER = new THREE.Color(1.0, 0.55, 0.18), EMBER_CORE = new THREE.Color(1.0, 0.85, 0.5), _ec = new THREE.Color();
 
 const _iq = new THREE.Quaternion();
 
@@ -39,6 +43,7 @@ function flameGeometry() {
 export function createTorch(ctx, I) {
   // additive, fogged, vertex coloured (the world's basic)
   const flameMat = ctx.art.basic({ color: 0xffffff, additive: true, vertexColors: true, side: THREE.DoubleSide });
+  const sprites = getSprites(ctx);
   let t = 0;
 
   const headZ = (inst) => (inst.id === 'torch' ? inst.def.torch.head : -0.8);
@@ -121,6 +126,13 @@ export function createTorch(ctx, I) {
         let wl = -Infinity;
         try { wl = w.waterLevelAt(head.x, head.z); } catch { /* stub */ }
         if (inst.state.litTime > limit) { extinguish(inst, 'burnout'); continue; }
+        // the last 30 s: the flame shrinks to a third and gutters (irregular dips)
+        const remain = limit - inst.state.litTime;
+        let gut = 1;
+        if (remain < 30) {
+          gut = 0.35 + 0.65 * (remain / 30);
+          gut *= 0.78 + 0.22 * Math.abs(Math.sin(t * 13.1 + inst.uid) * Math.sin(t * 4.7));
+        }
         if (head.y < wl) { extinguish(inst, 'water'); I.fx('splash', head, { count: 4 }); continue; }
         if (ctx.zones.any('water', head, 0.05)) { extinguish(inst, 'water'); continue; }
         const wind = ctx.zones.any('wind', head, 0.05);
@@ -135,6 +147,7 @@ export function createTorch(ctx, I) {
         flicker(inst, t);
         const fl = 0.93 + 0.07 * Math.sin(t * 2 * Math.PI * 7 + inst.uid);
         inst.fx.glow.scale.setScalar((inst.id === 'torch' ? 0.26 : 0.12) * fl);
+        inst.fx.flame.scale.setScalar(gut);
         inst.fx.emberT -= dt;
         if (inst.fx.emberT <= 0) { inst.fx.emberT = 0.25; I.fx('ember', head, { count: 1 }); }
       } else {
@@ -150,8 +163,31 @@ export function createTorch(ctx, I) {
     }
   }
 
+  /** a lit torch resting in its holster: an ember glow at the slot (shared glow sprites, no extra mesh) */
+  function holstered() {
+    const gs = I.gearState.torch;
+    if (!gs || !gs.lit || !gs.slot) return;
+    for (const inst of I.all) if (inst.id === 'torch') return;          // drawn: it burns in the hand
+    const H = ctx.player?.holsters;
+    if (!H?.slotPos) return;
+    H.slotPos(gs.slot, _hp);
+    _hp.y += gs.slot === 'backR' || gs.slot === 'backL' ? 0.26 : 0.16;   // the head of the torch, above the slot
+    let wl = -Infinity;
+    try { wl = ctx.world.waterLevelAt(_hp.x, _hp.z); } catch { /* stub */ }
+    if (_hp.y < wl) {
+      gs.lit = false; gs.litTime = 0;
+      ctx.events.emit('item:extinguish', { uid: null, itemId: 'torch', why: 'water' });
+      I.fx('smoke', _hp, { count: 6 });
+      return;
+    }
+    const remain = (gs.burnLimit ?? I.defs.torch.torch.burnTime) - (gs.litTime || 0);
+    const k = (0.75 + 0.25 * Math.sin(t * 9.1) * Math.sin(t * 3.7)) * (remain < 30 ? 0.6 : 1);
+    sprites.push(_hp, 0.05 * k, _ec.copy(EMBER_CORE).multiplyScalar(0.9 * k));
+    sprites.push(_hp, 0.16 * k, _ec.copy(EMBER).multiplyScalar(0.45 * k));
+  }
+
   return {
-    update, ignite, extinguish,
+    update(dt) { update(dt); holstered(); }, ignite, extinguish,
     drawCalls() { let n = 0; for (const i of I.all) if (i.state.lit && i.fx.flame) n += i.fx.flameCone ? 3 : 1; return n; },
   };
 }

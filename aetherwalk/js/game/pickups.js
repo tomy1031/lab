@@ -24,7 +24,13 @@ export function createPickups(ctx, G) {
   let chestT = 0, gatherT = 0, pendingShard = 0, shardToastT = 0;
   // the Wayfarer Blade on the camp pedestal: a real world item you grip (spawned when you come within 3 m)
   const ped = { inst: null, failed: false };
-  const _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), _yAxis = new THREE.Vector3(0, 1, 0), _xAxis = new THREE.Vector3(1, 0, 0);
+  const _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), _yAxis = new THREE.Vector3(0, 1, 0), _zAxis = new THREE.Vector3(0, 0, 1);
+  // the prop sword's mesh frame (+Y up the blade, guard across X, flats facing Z) → the item's frame
+  // (blade toward −Z, guard across Y, flats facing X): item x→z, y→x, z→y
+  const PED_PERM = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0)));
+  const PED_GRIP_Y = 1.45;    // prop sword guard at 1.40 in its mesh frame; the item's guard sits 0.05 below its grip origin
+  const PED_TILT = 0.12;      // the prop sword's lean (rotation.z about the pedestal base)
+  const PED_SPAWN = 6.0, PED_DROP = 25;
   const itemsReal = () => { const it = ctx.items; return !!(it && !it.isStub && typeof it.spawn === 'function'); };
 
   const chests = [];
@@ -221,38 +227,57 @@ export function createPickups(ctx, G) {
     // already carried one (debug, a skipped stage): the pedestal is simply empty
     if (G.inventory.has('sword')) { if (!ped.inst || !ped.inst.heldBy) P.openChest(c, true); return; }
     if (itemsReal() && !ped.failed) {
-      if (!ped.inst && d < 3.0) spawnPedestalSword(c);
-      else if (ped.inst && !ped.inst.heldBy && d > 25) dropPedestalSword(c, true);
+      if (!ped.inst && d < PED_SPAWN) spawnPedestalSword(c);
+      else if (ped.inst && !ped.inst.heldBy && d > PED_DROP) dropPedestalSword(c, true);
       return;
     }
     // hand-less / stub items: walk up to it
     if (d <= 1.5) P.openChest(c);
   }
+  /** the prop's own sword mesh (the tall one in the pedestal group), or null */
+  function propSword(prop) {
+    const kids = prop && prop.object3D && prop.object3D.children;
+    if (!kids) return null;
+    for (const k of kids) {
+      if (!k.isMesh || !k.geometry) continue;
+      if (!k.geometry.boundingBox) k.geometry.computeBoundingBox();
+      if (k.geometry.boundingBox.max.y > 1.2) return k;
+    }
+    return null;
+  }
+  /** show / hide only the prop's sword mesh: no shard burst, the pedestal glow stays (the real sword stands there) */
+  function showPropSword(prop, v) {
+    const sw = propSword(prop);
+    if (sw) sw.visible = v;
+    else setPropState(prop, 'taken', !v);
+  }
+  /** the real sword standing point-down exactly where the prop sword stands (guards aligned) */
   function pedestalPose(c, outPos, outQuat) {
-    const prop = c.prop;
-    anchorOf(prop, 'item', _a);
-    const y = prop && prop.anchors && prop.anchors.item ? _a.y : heightAt(ctx, c.x, c.z) + 1.5;
-    outPos.set(prop ? prop.x : c.x, y, prop ? prop.z : c.z);
-    // blade (model −Z) points down into the stone; the guard faces the way the pedestal faces
-    const yaw = prop && Number.isFinite(prop.yaw) ? prop.yaw : 0;
-    _q2.setFromAxisAngle(_yAxis, -yaw);
-    _q3.setFromAxisAngle(_xAxis, -Math.PI / 2);
-    outQuat.copy(_q2).multiply(_q3);
+    const prop = c.prop, sw = propSword(prop);
+    if (sw) {
+      sw.updateWorldMatrix(true, false);
+      sw.matrixWorld.decompose(_p, _q2, _a);
+      outQuat.copy(_q2).multiply(PED_PERM);
+      outPos.set(0, PED_GRIP_Y, 0).applyMatrix4(sw.matrixWorld);
+      return;
+    }
+    // no prop mesh (stub world): the same pose from the prop's data (prop yaw is in degrees, rotation.y = −yaw)
+    const yawR = -((prop && Number.isFinite(prop.yaw) ? prop.yaw : 0) * Math.PI / 180);
+    _q2.setFromAxisAngle(_yAxis, yawR).multiply(_q3.setFromAxisAngle(_zAxis, PED_TILT));
+    const by = prop && Number.isFinite(prop.y) ? prop.y : heightAt(ctx, c.x, c.z);
+    outPos.set(0, PED_GRIP_Y, 0).applyQuaternion(_q2).add(_p.set(prop ? prop.x : c.x, by, prop ? prop.z : c.z));
+    outQuat.copy(_q2).multiply(PED_PERM);
   }
   function spawnPedestalSword(c) {
     let inst = null;
     try {
       pedestalPose(c, _a, _q);
-      inst = ctx.items.spawn('sword', { pos: _a.clone(), owned: true });
+      // a given quat = a "placed" item: it keeps this exact pose until a hand takes it
+      inst = ctx.items.spawn('sword', { pos: _a.clone(), quat: _q.clone(), owned: true });
     } catch (e) { inst = null; }
     if (!inst) { ped.failed = true; return; }
-    // stand it in the stone the way the prop sword stood (spawn lays long items flat)
-    inst.pos.copy(_a); inst.quat.copy(_q);
-    inst.vel.set(0, 0, 0);
-    inst.sleeping = true;
-    if (inst.object3D) { inst.object3D.position.copy(inst.pos); inst.object3D.quaternion.copy(inst.quat); }
     ped.inst = inst;
-    setPropState(c.prop, 'taken', true);        // hide the prop's own sword (the real one takes its place)
+    showPropSword(c.prop, false);               // the real one takes its place, same pose: no visible change
   }
   /** take the real sword away again (you walked off) and show the prop sword */
   function dropPedestalSword(c, restoreProp) {
@@ -260,7 +285,7 @@ export function createPickups(ctx, G) {
     if (!inst) return;
     ped.inst = null;
     if (!inst.heldBy) { try { ctx.items.despawn(inst); } catch (e) { /* ignore */ } }
-    if (restoreProp) setPropState(c.prop, 'taken', false);
+    if (restoreProp) showPropSword(c.prop, true);
   }
   function celebrateSword() {
     const c = P.pedestalChest();
@@ -279,6 +304,7 @@ export function createPickups(ctx, G) {
     const Q = G.quest;
     if (!Q.chests.includes(c.id)) Q.chests.push(c.id);
     if (c.prop) Q.props[c.prop.id] = { taken: true };
+    setPropState(c.prop, 'taken', true);        // pulled out: the pedestal glow goes out with a burst of shards
     emit(ctx, 'chest:open', { id: c.id, loot: [{ itemId: 'sword', count: 1 }] });
     celebrateSword();
     G.requestSave && G.requestSave(true);

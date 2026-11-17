@@ -130,11 +130,13 @@ export function createRadiance(ctx, I) {
     const desk = (ctx.flags.xr ? 1 : 1.25) * R.gain;       // the PC preview sees the blade small: a little more
     _ch.copy(CYAN).lerp(GOLD, gold);                       // sheath
     _cr.copy(WHITE).lerp(GOLD, gold * 0.6);                // runes
-    const halo = (0.012 + 0.07 * night) * lift * desk * (ctx.flags.xr ? 1 : 1.6);   // PC: the blade is small on screen
-    const rune = (0.3 + 0.42 * night) * (1 + 0.6 * fx.flare + 0.8 * fx.hitK) * desk;
-    // a glint sweeping up the blade every 4.5 s (and at the start of a swing)
-    const cyc = (t + inst.uid * 1.7) % 4.5;
+    // daylight levels ≈ 1.45 × the first pass (the fuller line reads as glowing cyan at 1 m in full sun); night unchanged
+    const halo = (0.0175 + 0.0645 * night) * lift * desk * (ctx.flags.xr ? 1 : 1.6);   // PC: the blade is small on screen
+    const rune = (0.435 + 0.285 * night) * (1 + 0.6 * fx.flare + 0.8 * fx.hitK) * desk;
+    // a glint sweeping up the blade every 3 s (a little brighter by day)
+    const cyc = (t + inst.uid * 1.7) % 3;
     const sweepZ = cyc < 0.7 ? B.z0 + (B.tipZ - 0.04 - B.z0) * (cyc / 0.7) : 9;
+    const sweepHalo = (0.06 + 0.045 * (1 - night)) * R.gain;
     const g = m.geometry, U = g.userData, col = g.attributes.color.array;
     for (let i = 0; i < U.kind.length; i++) {
       const z = U.z[i];
@@ -142,7 +144,7 @@ export function createRadiance(ctx, I) {
       const sweep = sweepZ < 1 ? Math.max(0, 1 - Math.abs(z - sweepZ) / 0.09) : 0;
       let k, c;
       if (U.kind[i] >= K_STAR) continue;
-      if (U.kind[i] === K_HALO) { k = halo * U.w[i] * pulse + 0.06 * sweep * U.w[i]; c = _ch; }
+      if (U.kind[i] === K_HALO) { k = halo * U.w[i] * pulse + sweepHalo * sweep * U.w[i]; c = _ch; }
       else { k = rune * U.w[i] * (U.kind[i] === K_GLYPH ? 1.15 : 1) * pulse + 0.35 * sweep; c = _cr; }
       col[i * 3] = c.r * k; col[i * 3 + 1] = c.g * k; col[i * 3 + 2] = c.b * k;
     }

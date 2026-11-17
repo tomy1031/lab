@@ -201,6 +201,12 @@ export async function createItems(ctx) {
     flash(pos, opts) { try { ctx.world?.fx?.flash?.(pos, opts); } catch { /* stub */ } },
   };
 
+  /** the holster slot an item sits in after a stow (null = the bag) */
+  function holsterOf(id, inv, slot) {
+    if (inv && inv.slots) { for (const s of Object.keys(inv.slots)) if (inv.slots[s] === id) return s; return null; }
+    return slot && slot !== 'quiver' ? slot : null;
+  }
+
   function despawn(inst) {
     if (!inst) return;
     if (inst.heldBy && held[inst.heldBy] === inst) held[inst.heldBy] = null;
@@ -384,8 +390,14 @@ export async function createItems(ctx) {
         try { ok = inv.stow(slot || null, inst.id, { ...inst.state }) !== false; } catch (e) { ok = false; ctx.report?.(`inventory.stow: ${e.message}`); }
       }
       if (!ok) return false;
-      if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1, draw: 0 };
-      if (inst.state.lit) { inst.state.lit = false; ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id }); }
+      // a lit torch put in a holster keeps burning there (its timer paused, an ember glows at the slot) and is
+      // still lit when drawn again; anything else lit (or a torch put in the bag) goes out
+      const keepIn = inst.id === 'torch' && inst.state.lit ? holsterOf(inst.id, inv, slot) : null;
+      if (inst.def.stack === 1) {
+        gearState[inst.id] = keepIn ? { ...inst.state, fuse: -1, draw: 0, slot: keepIn }
+          : { ...inst.state, lit: false, litTime: 0, fuse: -1, draw: 0, slot: null };
+      }
+      if (inst.state.lit && !keepIn) { inst.state.lit = false; ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id, why: 'stowed' }); }
       const to = slot === 'quiver' ? 'holster' : !slot ? 'bag' : !inv ? 'holster' : inv.slots?.[slot] === inst.id ? 'holster' : 'bag';
       despawn(inst);
       ctx.events.emit('item:release', { uid: inst.uid, itemId: inst.id, hand, to, slot: slot || null, speed: 0 });
@@ -449,7 +461,8 @@ export async function createItems(ctx) {
             const far = inst.pos.distanceTo(pp) > 25;
             if ((now - inst.droppedAt > 8 && !inst.thrown) || far) {
               const inv = I.inv;
-              if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1 };
+              if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1, slot: null };
+              if (inst.state.lit) ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id, why: 'return' });
               despawn(inst);
               inv?.markIn?.(inst.id);
               ctx.events.emit('item:return', { itemId: inst.id });
