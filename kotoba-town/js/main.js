@@ -224,7 +224,8 @@ async function boot() {
   }
 
   async function openVariant(L, v) {
-    state.lesson = L; state.variant = v; state.where = 'brief';
+    // 'loading' until the briefing is on screen, so nothing can start the talk underneath it
+    state.lesson = L; state.variant = v; state.where = 'loading';
     board.hide();
     await stage.fade(1, 350);
     const cast = charactersOf(v).map((char) => ({ char, slot: v.positions?.[char.id] || null }));
@@ -240,6 +241,7 @@ async function boot() {
       note: mic.state !== 'on' && live ? '🎙️ The microphone is not available — allow it in the browser to talk with Gemini Live.' : null,
       onPractice: () => start(L, v, 'practice'), onReal: () => start(L, v, 'real'), onBack: () => goTown(),
     });
+    state.where = 'brief';
     await stage.fade(0, 450);
   }
 
