@@ -26,6 +26,10 @@ on:
       - 'kotoba-town/data/**'
       - 'kotoba-town/audio/**'
       - 'kotoba-town/docs/preview.jpg'
+      - 'dream-drift/index.html'
+      - 'dream-drift/js/**'
+      - 'dream-drift/img/**'
+      - 'dream-drift/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

@@ -12,6 +12,7 @@
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 //   AETHERWALK_REF AETHERWALK (aetherwalk/)                    default: origin/claude/determined-newton-ki8tfm (then FILMS_REF)
 //   KOTOBA_REF    ことばタウン (kotoba-town/)                   default: HEAD if it has kotoba-town/, else origin/claude/vr-japanese-practice-app-qqna1o
+//   DREAMDRIFT_REF DREAM DRIFT (dream-drift/)                  default: HEAD if it has dream-drift/, else origin/claude/happy-turing-uknqds
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -32,6 +33,7 @@ const refs = {
   starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
   aetherwalk: process.env.AETHERWALK_REF || 'origin/claude/determined-newton-ki8tfm',
   kotoba: process.env.KOTOBA_REF || 'HEAD',
+  dreamdrift: process.env.DREAMDRIFT_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -41,6 +43,7 @@ if (!process.env.STARWEAVER_REF && !hasRef(refs.starweaver)) refs.starweaver = r
 if (!process.env.AETHERWALK_REF && !hasRef(refs.aetherwalk)) refs.aetherwalk = refs.films;
 const hasDir = (ref, dir) => { try { sh(`git -C "${root}" cat-file -e "${ref}:${dir}"`); return true; } catch { return false; } };
 if (!process.env.KOTOBA_REF && !hasDir(refs.kotoba, 'kotoba-town')) refs.kotoba = 'origin/claude/vr-japanese-practice-app-qqna1o';
+if (!process.env.DREAMDRIFT_REF && !hasDir(refs.dreamdrift, 'dream-drift')) refs.dreamdrift = 'origin/claude/happy-turing-uknqds';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -234,6 +237,26 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 09 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Static files: the page, ES modules
+// and images (three.js and MediaPipe come from the CDN).
+{
+  const dest = path.join(out, 'dream-drift');
+  try {
+    const src = exportDir(refs.dreamdrift, 'dream-drift');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'js', 'img']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'dream-drift.jpg'));
+  } catch (e) {
+    console.warn(`dream-drift not found at ${refs.dreamdrift}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DREAM DRIFT</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} dreamdrift=${refs.dreamdrift}`);
