@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ことばタウン — Kotoba Town</title>
+<meta name="description" content="VRの まちで 日本語を 話して 練習しよう。みんなの日本語 第1課〜第10課の 場面で、Gemini Live の 相手と 会話します。">
+<meta name="theme-color" content="#7cc5a0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%237cc5a0'/%3E%3Cpath d='M14 20h36a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H30l-10 8v-8h-6a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z' fill='%23fffaf0'/%3E%3Ctext x='32' y='38' font-size='15' text-anchor='middle' fill='%233f9a73' font-weight='800'%3Eあ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<script>window.KT = window.KT || { ready: false, errors: [], log: [] }; window.addEventListener('error', (e) => window.KT.errors.push(String(e.message)));</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+  }
+}
+</script>
+<style>
+  :root {
+    --cream: #fffaf0; --paper: #fdf6e3; --ink: #5b4636; --soft: #8c7a68; --line: #e9dcc3;
+    --leaf: #7cc5a0; --leaf-d: #3f9a73; --sun: #ffd36b; --sky: #8fd0ef; --pink: #f6a6a6; --red: #e86f5c;
+    --font: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe9f3; color: var(--ink); font-family: var(--font); }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  #landing { position: fixed; inset: 0; z-index: 10; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center; padding: 16px;
+    background: radial-gradient(circle at 20% 10%, rgba(255,250,240,0.55), rgba(255,250,240,0.2) 60%), linear-gradient(180deg, rgba(143,208,239,0.25), rgba(124,197,160,0.25)); }
+  #landing.hide { display: none; }
+  .wrap { width: min(960px, 100%); margin: clamp(8px, 4vh, 48px) auto; }
+  .sheet { background: var(--cream); border-radius: 36px; padding: clamp(20px, 4vw, 40px); box-shadow: 0 14px 0 rgba(91,70,54,0.12), 0 30px 60px rgba(40,60,50,0.18); position: relative; }
+  .sheet::after { content: ''; position: absolute; inset: 12px; border-radius: 28px; border: 3px dotted var(--line); pointer-events: none; }
+  .title { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .logo { width: 84px; height: 84px; border-radius: 26px; background: var(--leaf); display: grid; place-items: center; box-shadow: 0 6px 0 var(--leaf-d); flex: none; }
+  .logo span { background: var(--cream); color: var(--leaf-d); font-weight: 800; font-size: 34px; border-radius: 18px; padding: 2px 12px; }
+  h1 { margin: 0; font-size: clamp(36px, 7vw, 60px); letter-spacing: 0.06em; color: var(--leaf-d); line-height: 1.1; }
+  h1 small { display: block; font-size: 0.36em; letter-spacing: 0.12em; color: var(--soft); font-weight: 700; }
+  .bubble { margin: 22px 0 6px; background: #fff; border-radius: 26px; padding: 16px 22px; position: relative; font-size: 17px; line-height: 1.75; box-shadow: 0 5px 0 rgba(91,70,54,0.08); }
+  .bubble::before { content: ''; position: absolute; left: 44px; top: -14px; border: 14px solid transparent; border-top: 0; border-bottom-color: #fff; }
+  .bubble b { color: var(--leaf-d); }
+  .actions { display: flex; gap: 14px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .btn { font: inherit; font-weight: 800; border: 0; border-radius: 999px; padding: 16px 30px; font-size: 19px; cursor: pointer; color: #fff; background: var(--leaf); box-shadow: 0 6px 0 var(--leaf-d); transition: transform 0.08s; }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--leaf-d); }
+  .btn.sub { background: #fff; color: var(--ink); box-shadow: 0 6px 0 var(--line); }
+  .btn.sun { background: var(--sun); color: var(--ink); box-shadow: 0 6px 0 #e0a62c; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .pill { display: inline-block; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 800; }
+  .pill.ok { background: #e3f4ea; color: var(--leaf-d); }
+  .pill.off { background: #fdf0e2; color: #a3622a; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 20px; }
+  .step { background: #fff; border-radius: 24px; padding: 16px 18px; font-size: 14px; line-height: 1.7; }
+  .step h3 { margin: 0 0 4px; font-size: 16px; color: var(--leaf-d); }
+  .step .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--sun); margin-right: 6px; font-weight: 800; color: var(--ink); }
+  .foot { margin-top: 18px; font-size: 12px; color: var(--soft); line-height: 1.7; }
+  #boot-error { color: var(--red); font-weight: 700; }
+  body.ready #loading { display: none; }
+  #loading { font-size: 14px; color: var(--soft); }
+
+  dialog { border: 0; border-radius: 30px; padding: 0; width: min(560px, calc(100% - 32px)); background: var(--cream); color: var(--ink); font-family: var(--font); box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+  dialog::backdrop { background: rgba(60,80,70,0.35); backdrop-filter: blur(3px); }
+  dialog form { padding: 26px; display: grid; gap: 14px; }
+  dialog h2 { margin: 0; color: var(--leaf-d); }
+  label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+  label.row { grid-template-columns: auto 1fr; align-items: center; gap: 10px; }
+  input[type=text], input[type=password], select { font: inherit; border: 3px solid var(--line); border-radius: 16px; padding: 10px 14px; background: #fff; color: var(--ink); width: 100%; }
+  input:focus, select:focus { outline: none; border-color: var(--leaf); }
+  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--leaf-d); }
+  .hint { font-size: 12px; color: var(--soft); font-weight: 500; line-height: 1.6; }
+  .hint a { color: var(--leaf-d); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dlg-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+  #key-result { font-size: 13px; font-weight: 700; color: var(--soft); min-height: 1.2em; word-break: break-all; }
+
+  #pc-hud { position: fixed; right: 14px; top: 14px; z-index: 6; display: none; gap: 10px; }
+  body:not(.landing):not(.xr) #pc-hud { display: flex; }
+  #pc-hud button { font: inherit; font-weight: 800; border: 0; border-radius: 999px; padding: 10px 18px; background: var(--cream); color: var(--ink); box-shadow: 0 4px 0 var(--line); cursor: pointer; }
+  #pc-tip { position: fixed; left: 14px; bottom: 14px; z-index: 6; background: rgba(255,250,240,0.9); border-radius: 18px; padding: 8px 14px; font-size: 12px; display: none; }
+  body:not(.landing):not(.xr) #pc-tip { display: block; }
+  @media (max-width: 520px) { .grid2 { grid-template-columns: 1fr; } .btn { width: 100%; } }
+</style>
+</head>
+<body class="landing">
+<div id="stage"></div>
+
+<div id="landing">
+  <div class="wrap">
+    <div class="sheet">
+      <div class="title">
+        <div class="logo"><span>あ</span></div>
+        <h1>ことばタウン<small>KOTOBA TOWN · VR にほんご かいわ</small></h1>
+      </div>
+      <div class="bubble">
+        ようこそ！ ここは <b>ことばタウン</b>。<br>
+        会社、駅、デパート、カフェ、となりの 森さんの いえ…… まちの 人と <b>日本語で 話して</b> みましょう。<br>
+        <span style="color:var(--soft);font-size:14px">Welcome! Step into real Japanese situations from <i>Minna no Nihongo I</i>, lessons 1–10, or join the team at an IT company in the <b>IT business</b> course, and talk with the townspeople out loud. Gemini Live listens, answers in character and gives you feedback.</span>
+      </div>
+      <div class="actions">
+        <button id="enter-vr" class="btn">VRで はじめる · Enter VR</button>
+        <button id="play-pc" class="btn sub">PCで はじめる · Play on PC</button>
+        <button id="open-settings" class="btn sun">せってい · Settings</button>
+      </div>
+      <span id="key-state" class="pill off">…</span>
+      <span id="loading">よみこみ中… loading the town</span>
+      <div id="boot-error"></div>
+      <div class="steps">
+        <div class="step"><h3><span class="n">1</span>えらぶ · Choose</h3>Pick a course on the town board — <b>みんなの日本語編</b> (lessons 1–10) or <b>ITビジネス編</b> (10 episodes of IT work) — then a situation, and <b>れんしゅう</b> (with examples) or <b>ほんばん</b> (no help).</div>
+        <div class="step"><h3><span class="n">2</span>はなす · Talk</h3>The mic turns on when you start. When the card says <b>あなたの ばん</b>, just answer in Japanese.</div>
+        <div class="step"><h3><span class="n">3</span>ふりかえる · Review</h3>Get stars, a corrected sentence and tips after every answer, and a report at the end.</div>
+      </div>
+      <div class="foot">
+        PC: drag to look around, click the cards · Esc = menu. VR (Meta Quest): point and pull the trigger · A/X = menu · stick = turn.<br>
+        Without a Gemini API key you can still practise: read an answer aloud and tap it. Your key stays in this browser and is sent only to Google's Gemini Live API.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pc-hud"><button id="hud-town">まちへ · Town</button><button id="hud-settings">せってい</button></div>
+<div id="pc-tip">ドラッグで みまわす · drag to look · Esc = menu</div>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h2>せってい · Settings</h2>
+    <label>Gemini API key
+      <input id="set-key" type="password" autocomplete="off" placeholder="AIza…">
+      <span class="hint">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. It is saved only in this browser (on Quest, enter it in the Quest browser once).</span>
+    </label>
+    <div class="dlg-actions" style="justify-content:flex-start"><button id="key-test" class="btn sub" style="padding:8px 18px;font-size:14px">つながるか テスト · Test key</button><span id="key-result"></span></div>
+    <label>Your name (in katakana is nice) <input id="set-name" type="text" placeholder="リン"></label>
+    <div class="grid2">
+      <label>Japanese text <select id="set-display"><option value="kana">ひらがな · kana</option><option value="kanji">漢字 · kanji</option></select></label>
+      <label>Voice speed <select id="set-rate"><option value="0.85">ゆっくり · slow</option><option value="1">ふつう · normal</option></select></label>
+    </div>
+    <label class="row"><input id="set-english" type="checkbox"> English translation under each line</label>
+    <label class="row"><input id="set-romaji" type="checkbox"> Romaji</label>
+    <label class="row"><input id="set-slow" type="checkbox"> I pause a lot when I speak (wait longer before judging)</label>
+    <label class="row"><input id="set-music" type="checkbox"> Town square music</label>
+    <label>Gemini Live model <select id="set-model"></select></label>
+    <div class="dlg-actions"><button id="set-cancel" class="btn sub">キャンセル</button><button id="set-save" class="btn">ほぞん · Save</button></div>
+  </form>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

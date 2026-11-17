@@ -1,0 +1,1486 @@
+{
+  "lesson": 9,
+  "titleJa": "すきですか、ちょっと……",
+  "titleEn": "Likes, skills and polite excuses",
+  "summaryEn": "Talk about what you like, what you are good at and how much you understand. Give reasons with ～から, and turn down an invitation the gentle Japanese way.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Nが あります",
+      "meaningEn": "to have N (time, an appointment, an errand, tickets)",
+      "exampleJa": "どようびは やくそくが あります。",
+      "exampleEn": "I have an appointment on Saturday."
+    },
+    {
+      "id": "g2",
+      "pattern": "Nが わかります",
+      "meaningEn": "to understand N (the object takes が)",
+      "exampleJa": "かんじが すこし わかります。",
+      "exampleEn": "I understand kanji a little."
+    },
+    {
+      "id": "g3",
+      "pattern": "Nが すきです／きらいです",
+      "meaningEn": "to like / dislike N (な-adjectives; the object takes が)",
+      "exampleJa": "ジャズが すきです。",
+      "exampleEn": "I like jazz."
+    },
+    {
+      "id": "g4",
+      "pattern": "Nが じょうずです／へたです",
+      "meaningEn": "to be good / bad at N",
+      "exampleJa": "りょうりが あまり じょうずじゃ ありません。",
+      "exampleEn": "I'm not very good at cooking."
+    },
+    {
+      "id": "g5",
+      "pattern": "どんな N",
+      "meaningEn": "what kind of N (asking to name one from a category)",
+      "exampleJa": "どんな スポーツが すきですか。",
+      "exampleEn": "What kind of sports do you like?"
+    },
+    {
+      "id": "g6",
+      "pattern": "よく／だいたい／たくさん／すこし／あまり／ぜんぜん",
+      "meaningEn": "degree and amount adverbs (あまり and ぜんぜん need a negative)",
+      "exampleJa": "えいごが ぜんぜん わかりません。",
+      "exampleEn": "I don't understand English at all."
+    },
+    {
+      "id": "g7",
+      "pattern": "S1から、S2",
+      "meaningEn": "because S1, S2 (から follows the reason; the reason can also come alone)",
+      "exampleJa": "じかんが ありませんから、いきません。",
+      "exampleEn": "I won't go because I don't have time."
+    },
+    {
+      "id": "g8",
+      "pattern": "どうして",
+      "meaningEn": "why? (answer with ～から)",
+      "exampleJa": "どうして にほんごを べんきょうしますか。",
+      "exampleEn": "Why do you study Japanese?"
+    },
+    {
+      "id": "g9",
+      "pattern": "ちょっと……／また こんど おねがいします",
+      "meaningEn": "soft refusal: \"it's a bit…\" / \"please ask me again another time\"",
+      "exampleJa": "すみません。どようびは ちょっと……。",
+      "exampleEn": "Sorry, Saturday is a bit…"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "好き[な]",
+      "kana": "すき[な]",
+      "en": "like"
+    },
+    {
+      "ja": "きらい[な]",
+      "kana": "きらい[な]",
+      "en": "dislike"
+    },
+    {
+      "ja": "上手[な]",
+      "kana": "じょうず[な]",
+      "en": "good at"
+    },
+    {
+      "ja": "下手[な]",
+      "kana": "へた[な]",
+      "en": "bad at"
+    },
+    {
+      "ja": "わかります",
+      "kana": "わかります",
+      "en": "understand"
+    },
+    {
+      "ja": "あります",
+      "kana": "あります",
+      "en": "have"
+    },
+    {
+      "ja": "音楽",
+      "kana": "おんがく",
+      "en": "music"
+    },
+    {
+      "ja": "歌",
+      "kana": "うた",
+      "en": "song"
+    },
+    {
+      "ja": "料理",
+      "kana": "りょうり",
+      "en": "cooking, dish"
+    },
+    {
+      "ja": "スポーツ",
+      "kana": "スポーツ",
+      "en": "sports"
+    },
+    {
+      "ja": "漢字",
+      "kana": "かんじ",
+      "en": "kanji"
+    },
+    {
+      "ja": "コンサート",
+      "kana": "コンサート",
+      "en": "concert"
+    },
+    {
+      "ja": "カラオケ",
+      "kana": "カラオケ",
+      "en": "karaoke"
+    },
+    {
+      "ja": "チケット",
+      "kana": "チケット",
+      "en": "ticket"
+    },
+    {
+      "ja": "時間",
+      "kana": "じかん",
+      "en": "time"
+    },
+    {
+      "ja": "約束",
+      "kana": "やくそく",
+      "en": "appointment, promise"
+    },
+    {
+      "ja": "用事",
+      "kana": "ようじ",
+      "en": "errand, something to do"
+    },
+    {
+      "ja": "どうして",
+      "kana": "どうして",
+      "en": "why"
+    },
+    {
+      "ja": "よく",
+      "kana": "よく",
+      "en": "well, often"
+    },
+    {
+      "ja": "だいたい",
+      "kana": "だいたい",
+      "en": "mostly"
+    },
+    {
+      "ja": "少し",
+      "kana": "すこし",
+      "en": "a little"
+    },
+    {
+      "ja": "あまり",
+      "kana": "あまり",
+      "en": "not very (with negative)"
+    },
+    {
+      "ja": "全然",
+      "kana": "ぜんぜん",
+      "en": "not at all (with negative)"
+    },
+    {
+      "ja": "残念です[ね]",
+      "kana": "ざんねんです[ね]",
+      "en": "that's a pity"
+    },
+    {
+      "ja": "また 今度",
+      "kana": "また こんど",
+      "en": "another time"
+    }
+  ],
+  "tipsEn": [
+    "A flat いいえ、行きません sounds harsh. Trail off with ちょっと…… and add a reason — the other person will understand it as a no.",
+    "Finish a refusal with また こんど おねがいします so the invitation stays open for next time.",
+    "じょうずです is for praising others. About yourself, stay modest: すきですが、あまり じょうずじゃ ありません."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-09/grammar/",
+      "https://www.brainscape.com/flashcards/until-lesson-9-mnn-book-1-n5-10158414/packs/18128145",
+      "https://jepang.org/en/grammar/common-beginner-mistakes",
+      "https://gljapanese.mit.edu/making-appointment-inviting"
+    ],
+    "notesEn": "Lesson 9 introduces predicates whose object takes が: あります (have), わかります, すき／きらい, じょうず／へた. It adds どんな N for picking one item from a category, the degree/amount adverbs よく, だいたい, たくさん, すこし, あまり, ぜんぜん (the last two with negatives), reasons with S1から S2 and the question どうして. Its real-life core is being invited somewhere and declining indirectly (ちょっと……, a reason, また こんど おねがいします) with ざんねんですね as the reply. Typical mistakes are を instead of が with すき/わかります, あまり/ぜんぜん with an affirmative verb, putting から on the result instead of the reason, and refusing too directly. The three scenes are original: a concert invitation at the office, menu planning for a dinner with colleagues, and a conversation class with a karaoke plan."
+  },
+  "variants": [
+    {
+      "id": "l09a",
+      "titleJa": "どようびの コンサート",
+      "titleEn": "Two tickets for Saturday",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "It's the end of the day at the office. Fujita, who loves music, comes over to your desk with something on his mind.",
+      "roleEn": "You are his colleague. Decide for yourself: are you free on Saturday night, or do you already have plans?",
+      "missionsEn": [
+        {
+          "text": "Say what kind of music you like",
+          "grammar": [
+            "g3",
+            "g5"
+          ]
+        },
+        {
+          "text": "Accept, or decline softly with ちょっと…… and a reason (～から)",
+          "grammar": [
+            "g7",
+            "g9",
+            "g1"
+          ]
+        },
+        {
+          "text": "Keep the friendship warm: answer his follow-up question",
+          "grammar": [
+            "g2",
+            "g6",
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita"
+      ],
+      "positions": {
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あのう、ちょっと すみません。どんな 音楽が 好きですか。",
+              "kana": "あのう、ちょっと すみません。どんな おんがくが すきですか。",
+              "en": "Um, sorry, do you have a second? What kind of music do you like?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what kind of music you like — or that music is not really your thing.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "＿＿が すきです。／おんがくは あまり すきじゃ ありません。",
+            "modelAnswers": [
+              "ロックが すきです。",
+              "ジャズが すきです。よく ききます。",
+              "おんがくは あまり すきじゃ ありません。"
+            ],
+            "branches": [
+              {
+                "id": "likes_music",
+                "whenEn": "Learner names a kind of music, a singer or a band they like (or says they like music).",
+                "next": "n2a",
+                "exampleJa": "ジャズが すきです。"
+              },
+              {
+                "id": "not_much",
+                "whenEn": "Learner says they don't like music much, rarely listen to it, or don't know much about it.",
+                "next": "n2b",
+                "exampleJa": "おんがくは あまり すきじゃ ありません。"
+              }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。わたしは ロックが とても 好きです。",
+              "kana": "いいですね。わたしは ロックが とても すきです。",
+              "en": "Nice. Me, I really like rock.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、そうですか。ロックは とても おもしろいですよ。",
+              "kana": "えっ、そうですか。ロックは とても おもしろいですよ。",
+              "en": "Oh, really? Rock is a lot of fun, you know.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "calendar",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "土曜日の 晩、ロックの コンサートが あります。",
+              "kana": "どようびの ばん、ロックの コンサートが あります。",
+              "en": "There's a rock concert on Saturday night.",
+              "gesture": "point",
+              "target": "calendar"
+            },
+            {
+              "who": "fujita",
+              "ja": "チケットが あります。いっしょに 行きませんか。",
+              "kana": "チケットが あります。いっしょに いきませんか。",
+              "en": "I've got tickets. Won't you come with me?",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept happily — or decline politely. If you decline, soften it with ちょっと…… and give a reason with ～から.",
+            "grammar": [
+              "g7",
+              "g9",
+              "g1"
+            ],
+            "hintJa": "いいですね。いきましょう。／すみません、どようびは ちょっと……。＿＿から。",
+            "modelAnswers": [
+              "いいですね。いきましょう。",
+              "すみません。どようびは ちょっと……。やくそくが ありますから。",
+              "すみません。しごとが ありますから、ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts the invitation.",
+                "next": "n4_yes",
+                "exampleJa": "いいですね。いきましょう。"
+              },
+              {
+                "id": "decline_reason",
+                "whenEn": "Learner declines AND gives a reason (an appointment, work, an errand, no time, etc.).",
+                "next": "n5_no",
+                "exampleJa": "すみません。やくそくが ありますから、ちょっと……。"
+              },
+              {
+                "id": "decline_vague",
+                "whenEn": "Learner declines or hesitates (ちょっと……, だめです, いきません) WITHOUT giving any reason.",
+                "next": "n4_why",
+                "exampleJa": "すみません。どようびは ちょっと……。"
+              }
+            ],
+            "fallback": "n4_why"
+          }
+        },
+        {
+          "id": "n4_why",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、だめですか。どうしてですか。",
+              "kana": "えっ、だめですか。どうしてですか。",
+              "en": "Oh, you can't? Why not?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "He asks why. Give your reason, ending with ～から — or change your mind and say yes.",
+            "grammar": [
+              "g7",
+              "g8",
+              "g1"
+            ],
+            "hintJa": "＿＿が ありますから。",
+            "modelAnswers": [
+              "どようびは やくそくが ありますから。",
+              "じかんが ありませんから。",
+              "ロックが あまり すきじゃ ありませんから。"
+            ],
+            "branches": [
+              {
+                "id": "gives_reason",
+                "whenEn": "Learner gives a reason for not going (appointment, work, no time, no money, does not like rock, etc.).",
+                "next": "n5_no",
+                "exampleJa": "ともだちと やくそくが ありますから。"
+              },
+              {
+                "id": "changes_mind",
+                "whenEn": "Learner changes their mind and accepts the invitation after all.",
+                "next": "n4_yes",
+                "exampleJa": "じゃ、いきます。おねがいします。"
+              }
+            ],
+            "fallback": "n5_no"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ありがとう ございます！日本語の 歌が わかりますか。",
+              "kana": "ありがとう ございます！にほんごの うたが わかりますか。",
+              "en": "Thank you! Do you understand songs in Japanese?",
+              "gesture": "laugh"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him how well you understand Japanese songs: well, mostly, a little, not much, or not at all.",
+            "grammar": [
+              "g2",
+              "g6"
+            ],
+            "hintJa": "＿＿ わかります。／＿＿ わかりません。",
+            "modelAnswers": [
+              "すこし わかります。",
+              "だいたい わかります。",
+              "いいえ、ぜんぜん わかりません。"
+            ],
+            "branches": [
+              {
+                "id": "well",
+                "whenEn": "Learner says they understand well or mostly (よく, だいたい).",
+                "next": "n6a",
+                "exampleJa": "だいたい わかります。"
+              },
+              {
+                "id": "little_or_none",
+                "whenEn": "Learner says they understand only a little, not much, or not at all (すこし, あまり, ぜんぜん).",
+                "next": "n6b",
+                "exampleJa": "あまり わかりません。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "すごいですね！日本語が 上手ですね。",
+              "kana": "すごいですね！にほんごが じょうずですね。",
+              "en": "Wow! You're good at Japanese.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしも 英語の 歌が あまり わかりません。",
+              "kana": "わたしも えいごの うたが あまり わかりません。",
+              "en": "I don't understand English songs very well either.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "6時に 晩ごはんを 食べませんか。どんな 料理が 好きですか。",
+              "kana": "6じに ばんごはんを たべませんか。どんな りょうりが すきですか。",
+              "en": "Shall we have dinner at six? What kind of food do you like?",
+              "tts": "ろくじに ばんごはんを たべませんか。どんな りょうりが すきですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Dinner before the concert! Tell him what kind of food you like.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "＿＿が すきです。",
+            "modelAnswers": [
+              "ラーメンが すきです。",
+              "にほんりょうりが すきです。",
+              "イタリアりょうりが すきです。"
+            ],
+            "branches": [
+              {
+                "id": "japanese",
+                "whenEn": "Learner names ramen, Japanese food or a Japanese dish (sushi, tempura, soba…).",
+                "next": "end_ramen",
+                "exampleJa": "ラーメンが すきです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner names any other cuisine or dish, or says anything is fine.",
+                "next": "end_other",
+                "exampleJa": "イタリアりょうりが すきです。"
+              }
+            ],
+            "fallback": "end_other"
+          }
+        },
+        {
+          "id": "end_ramen",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしも とても 好きです！じゃ、土曜日 6時に 駅で 会いましょう。",
+              "kana": "わたしも とても すきです！じゃ、どようび 6じに えきで あいましょう。",
+              "en": "I love it too! OK, let's meet at the station at six on Saturday.",
+              "gesture": "laugh",
+              "tts": "わたしも とても すきです！じゃ、どようび ろくじに えきで あいましょう。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_other",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。わたしは ラーメンが 好きですが……。じゃ、土曜日に！",
+              "kana": "そうですか。わたしは ラーメンが すきですが……。じゃ、どようびに！",
+              "en": "I see. I do like ramen, but… Well, see you Saturday!",
+              "gesture": "think"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n5_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。残念ですね。",
+              "kana": "そうですか。ざんねんですね。",
+              "en": "I see. That's a pity.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "He's disappointed. Keep the door open: ask him to invite you again another time.",
+            "grammar": [
+              "g9"
+            ],
+            "hintJa": "すみません。また こんど ＿＿。",
+            "modelAnswers": [
+              "すみません。また こんど おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "next_time",
+                "whenEn": "Learner asks to be invited another time (また こんど おねがいします or similar).",
+                "next": "n6_next",
+                "exampleJa": "また こんど おねがいします。"
+              },
+              {
+                "id": "sorry_only",
+                "whenEn": "Learner only apologises or repeats the reason, without mentioning another time.",
+                "next": "n6_sorry",
+                "exampleJa": "すみません。"
+              }
+            ],
+            "fallback": "n6_sorry"
+          }
+        },
+        {
+          "id": "n6_next",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ええ、また 今度 行きましょう。",
+              "kana": "ええ、また こんど いきましょう。",
+              "en": "Sure, let's go another time.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6q"
+        },
+        {
+          "id": "n6_sorry",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいえ、いいえ。じゃ、また 今度。",
+              "kana": "いいえ、いいえ。じゃ、また こんど。",
+              "en": "No, no, not at all. Another time, then.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n6q"
+        },
+        {
+          "id": "n6q",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "来月も コンサートが あります。来月は 時間が ありますか。",
+              "kana": "らいげつも コンサートが あります。らいげつは じかんが ありますか。",
+              "en": "There's another concert next month. Do you have time next month?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Do you have time next month? Tell him — yes, plenty, or you are not sure yet.",
+            "grammar": [
+              "g1",
+              "g6"
+            ],
+            "hintJa": "はい、じかんが ＿＿。／まだ わかりません。",
+            "modelAnswers": [
+              "はい、あります。",
+              "らいげつは じかんが たくさん あります。",
+              "すみません、まだ わかりません。"
+            ],
+            "branches": [
+              {
+                "id": "has_time",
+                "whenEn": "Learner says they have time next month / can go.",
+                "next": "end_next_yes",
+                "exampleJa": "はい、じかんが あります。"
+              },
+              {
+                "id": "unsure_or_no",
+                "whenEn": "Learner says they don't know yet, are busy, or have no time next month.",
+                "next": "end_next_no",
+                "exampleJa": "まだ わかりません。"
+              }
+            ],
+            "fallback": "end_next_no"
+          }
+        },
+        {
+          "id": "end_next_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。じゃ、来月 いっしょに 行きましょう。",
+              "kana": "いいですね。じゃ、らいげつ いっしょに いきましょう。",
+              "en": "Great. Then let's go together next month.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_next_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わかりました。じゃ、来月 また 電話を かけます。",
+              "kana": "わかりました。じゃ、らいげつ また でんわを かけます。",
+              "en": "Got it. I'll give you a call again next month, then.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l09b",
+      "titleJa": "にちようびの ばんごはん",
+      "titleEn": "Planning Sunday dinner",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Lunch break at Sakamoto's café. On Sunday you are having dinner at Aoki's place with Fujita, and the two of them are planning the menu.",
+      "roleEn": "You are their colleague and Sunday's guest. Answer honestly about your own tastes and skills.",
+      "missionsEn": [
+        {
+          "text": "Say what food you like — and anything you dislike",
+          "grammar": [
+            "g3",
+            "g5",
+            "g1"
+          ]
+        },
+        {
+          "text": "Say how good (or bad) you are at cooking",
+          "grammar": [
+            "g4",
+            "g6"
+          ]
+        },
+        {
+          "text": "Say how well you understand kanji",
+          "grammar": [
+            "g2",
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "fujita"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "fujita": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "日曜日は わたしの うちで 晩ごはんですね。",
+              "kana": "にちようびは わたしの うちで ばんごはんですね。",
+              "en": "So, Sunday is dinner at my place, right?",
+              "gesture": "nod"
+            },
+            {
+              "who": "aoki",
+              "ja": "どんな 料理が 好きですか。",
+              "kana": "どんな りょうりが すきですか。",
+              "en": "What kind of food do you like?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aoki what kind of food you like.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "＿＿が すきです。",
+            "modelAnswers": [
+              "にほんりょうりが すきです。",
+              "カレーが すきです。",
+              "さかなの りょうりが すきです。"
+            ],
+            "branches": [
+              {
+                "id": "japanese",
+                "whenEn": "Learner names Japanese food or a Japanese dish (sushi, tempura, ramen…).",
+                "next": "n2a",
+                "exampleJa": "にほんりょうりが すきです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner names any other cuisine or dish, or says they like everything.",
+                "next": "n2b",
+                "exampleJa": "カレーが すきです。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！わたしも 日本料理が 好きです。",
+              "kana": "いいですね！わたしも にほんりょうりが すきです。",
+              "en": "Nice! I like Japanese food too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "へえ、いいですね。わたしは 毎日 ラーメンです。",
+              "kana": "へえ、いいですね。わたしは まいにち ラーメンです。",
+              "en": "Oh, nice. For me it's ramen every day.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "きらいな 食べ物が ありますか。",
+              "kana": "きらいな たべものが ありますか。",
+              "en": "Is there any food you don't like?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Is there a food you dislike? Name it — or say there isn't one.",
+            "grammar": [
+              "g3",
+              "g1",
+              "g6"
+            ],
+            "hintJa": "はい、＿＿が きらいです。／いいえ、ありません。",
+            "modelAnswers": [
+              "はい、あります。さかなが きらいです。",
+              "からい りょうりは あまり すきじゃ ありません。",
+              "いいえ、ありません。"
+            ],
+            "branches": [
+              {
+                "id": "has_dislike",
+                "whenEn": "Learner names a food or drink they dislike or don't like much.",
+                "next": "n4_has",
+                "exampleJa": "さかなが きらいです。"
+              },
+              {
+                "id": "none",
+                "whenEn": "Learner says there is nothing they dislike.",
+                "next": "n4_none",
+                "exampleJa": "いいえ、ありません。"
+              }
+            ],
+            "fallback": "n4_none"
+          }
+        },
+        {
+          "id": "n4_has",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わかりました。じゃ、それは 買いません。",
+              "kana": "わかりました。じゃ、それは かいません。",
+              "en": "Got it. We won't buy that, then.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_none",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね。藤田さんは 野菜が きらいですよ。",
+              "kana": "いいですね。ふじたさんは やさいが きらいですよ。",
+              "en": "That's great. Fujita here hates vegetables, you know.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ええと……料理が 上手ですか。",
+              "kana": "ええと……りょうりが じょうずですか。",
+              "en": "Um… are you good at cooking?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Are you good at cooking? Answer honestly (Japanese speakers usually stay modest here).",
+            "grammar": [
+              "g4",
+              "g6"
+            ],
+            "hintJa": "りょうりは すきですが、＿＿。／いいえ、＿＿です。",
+            "modelAnswers": [
+              "りょうりは すきですが、あまり じょうずじゃ ありません。",
+              "いいえ、へたです。",
+              "はい、りょうりが すきです。まいばん します。"
+            ],
+            "branches": [
+              {
+                "id": "can_cook",
+                "whenEn": "Learner says they are good at cooking, like cooking, or cook often.",
+                "next": "n6_good",
+                "exampleJa": "はい、りょうりが すきです。まいばん します。"
+              },
+              {
+                "id": "not_good",
+                "whenEn": "Learner says they are bad at cooking, not very good, or never cook.",
+                "next": "n6_bad",
+                "exampleJa": "いいえ、あまり じょうずじゃ ありません。"
+              }
+            ],
+            "fallback": "n6_bad"
+          }
+        },
+        {
+          "id": "n6_good",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！じゃ、日曜日は 先生ですね。",
+              "kana": "いいですね！じゃ、にちようびは せんせいですね。",
+              "en": "Great! Then on Sunday you're the teacher.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_bad",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしも 下手です。藤田さんは 上手ですよ。",
+              "kana": "わたしも へたです。ふじたさんは じょうずですよ。",
+              "en": "I'm bad at it too. Fujita is good, though.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "menu_board",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あの メニューは 漢字が たくさん ありますね。",
+              "kana": "あの メニューは かんじが たくさん ありますね。",
+              "en": "That menu has a lot of kanji, doesn't it?",
+              "gesture": "point",
+              "target": "menu_board"
+            },
+            {
+              "who": "aoki",
+              "ja": "漢字が わかりますか。",
+              "kana": "かんじが わかりますか。",
+              "en": "Do you understand kanji?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the menu board. Say how well you understand kanji: well, mostly, a little, not much, not at all.",
+            "grammar": [
+              "g2",
+              "g6"
+            ],
+            "hintJa": "かんじが ＿＿ わかります。／＿＿ わかりません。",
+            "modelAnswers": [
+              "すこし わかります。",
+              "だいたい わかります。",
+              "いいえ、ぜんぜん わかりません。"
+            ],
+            "branches": [
+              {
+                "id": "reads_kanji",
+                "whenEn": "Learner says they understand kanji well or mostly (よく, だいたい).",
+                "next": "end_a",
+                "exampleJa": "だいたい わかります。"
+              },
+              {
+                "id": "little_or_none",
+                "whenEn": "Learner says they understand only a little, not much, or not at all (すこし, あまり, ぜんぜん).",
+                "next": "end_b",
+                "exampleJa": "ぜんぜん わかりません。"
+              }
+            ],
+            "fallback": "end_b"
+          }
+        },
+        {
+          "id": "end_a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "すごい！じゃ、料理の 本は お願いします。",
+              "kana": "すごい！じゃ、りょうりの ほんは おねがいします。",
+              "en": "Amazing! Then the cookbook is your job.",
+              "gesture": "surprised"
+            },
+            {
+              "who": "fujita",
+              "ja": "わたしは ビールを 買います！",
+              "kana": "わたしは ビールを かいます！",
+              "en": "And I'll buy the beer!",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "じゃ、いっしょに スーパーへ 行きましょう。わたしが 読みますから。",
+              "kana": "じゃ、いっしょに スーパーへ いきましょう。わたしが よみますから。",
+              "en": "Then let's go to the supermarket together. I'll do the reading.",
+              "gesture": "nod"
+            },
+            {
+              "who": "fujita",
+              "ja": "わたしは ビールを 買います！",
+              "kana": "わたしは ビールを かいます！",
+              "en": "And I'll buy the beer!",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "どんな スポーツが 好きですか。",
+        "openerKana": "どんな スポーツが すきですか。",
+        "openerEn": "What kind of sports do you like?",
+        "topicEn": "Chat about likes and dislikes (sports, music, drinks) and what you are good or bad at. Stay within lesson 9 grammar: Nが すき／きらい／じょうず／へた, わかります, degree adverbs, ～から.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l09c",
+      "titleJa": "どうして にほんごを？",
+      "titleEn": "Why Japanese?",
+      "scene": "classroom",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Conversation practice at the language school. Hayakawa-sensei and your classmates Ana and Minh want to get to know you — and there is a class plan for Friday.",
+      "roleEn": "You are a student in the class. Give your own real reasons and tastes.",
+      "missionsEn": [
+        {
+          "text": "Explain why you study Japanese (～から)",
+          "grammar": [
+            "g7",
+            "g8"
+          ]
+        },
+        {
+          "text": "Talk about what you like or are good at",
+          "grammar": [
+            "g3",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say how well you understand kanji",
+          "grammar": [
+            "g2",
+            "g6"
+          ]
+        },
+        {
+          "text": "Answer the Friday invitation — yes, or a polite no with a reason",
+          "grammar": [
+            "g9",
+            "g7",
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana",
+        "minh"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "会話の 練習です。どうして 日本語を 勉強しますか。",
+              "kana": "かいわの れんしゅうです。どうして にほんごを べんきょうしますか。",
+              "en": "Conversation practice. Why do you study Japanese?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the teacher why you study Japanese. End your reason with ～から.",
+            "grammar": [
+              "g7",
+              "g8"
+            ],
+            "hintJa": "＿＿から。",
+            "modelAnswers": [
+              "にほんの かいしゃで はたらきますから。",
+              "にほんの アニメが すきですから。",
+              "かぞくが にほんじんですから。"
+            ],
+            "branches": [
+              {
+                "id": "practical",
+                "whenEn": "Learner gives a practical reason: work, study, living in Japan, family or a partner.",
+                "next": "n2_work",
+                "exampleJa": "にほんの かいしゃで はたらきますから。"
+              },
+              {
+                "id": "interest",
+                "whenEn": "Learner gives an interest reason: likes Japan, anime, music, food, culture, travel, or finds Japanese interesting.",
+                "next": "n2_like",
+                "exampleJa": "にほんの アニメが すきですから。"
+              }
+            ],
+            "fallback": "n2_like"
+          }
+        },
+        {
+          "id": "n2_work",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。毎日 たいへんですね。",
+              "kana": "そうですか。まいにち たいへんですね。",
+              "en": "I see. That must be hard work every day.",
+              "gesture": "nod"
+            }
+          ],
+          "nextRandom": [
+            "n3_ana",
+            "n3_minh"
+          ]
+        },
+        {
+          "id": "n2_like",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしも！日本の アニメが とても 好きですから。",
+              "kana": "わたしも！にほんの アニメが とても すきですから。",
+              "en": "Me too! Because I really love Japanese anime.",
+              "gesture": "laugh"
+            }
+          ],
+          "nextRandom": [
+            "n3_ana",
+            "n3_minh"
+          ]
+        },
+        {
+          "id": "n3_ana",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "はい、はい！どんな スポーツが 好きですか。",
+              "kana": "はい、はい！どんな スポーツが すきですか。",
+              "en": "Me, me! What kind of sports do you like?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Ana what sport you like — or that sports aren't your thing.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "＿＿が すきです。／スポーツは あまり すきじゃ ありません。",
+            "modelAnswers": [
+              "サッカーが すきです。",
+              "テニスが すきです。",
+              "スポーツは あまり すきじゃ ありません。"
+            ],
+            "branches": [
+              {
+                "id": "soccer",
+                "whenEn": "Learner says they like soccer / football.",
+                "next": "n3a_soccer",
+                "exampleJa": "サッカーが すきです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner names any other sport, or says they don't like sports much.",
+                "next": "n3a_other",
+                "exampleJa": "テニスが すきです。"
+              }
+            ],
+            "fallback": "n3a_other"
+          }
+        },
+        {
+          "id": "n3a_soccer",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしも サッカーが 好きです！ブラジル人ですから。",
+              "kana": "わたしも サッカーが すきです！ブラジルじんですから。",
+              "en": "I like soccer too! I'm Brazilian, after all.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3a_other",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "そうですか。わたしは サッカーが 好きです。ブラジル人ですから。",
+              "kana": "そうですか。わたしは サッカーが すきです。ブラジルじんですから。",
+              "en": "I see. I like soccer. I'm Brazilian, after all.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_minh",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "ええと……歌が 上手ですか。",
+              "kana": "ええと……うたが じょうずですか。",
+              "en": "Um… are you good at singing?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Are you good at singing? Tell Minh honestly.",
+            "grammar": [
+              "g4",
+              "g6"
+            ],
+            "hintJa": "はい、すこし……。／いいえ、＿＿です。",
+            "modelAnswers": [
+              "いいえ、へたです。",
+              "うたは すきですが、あまり じょうずじゃ ありません。",
+              "はい、うたが すきです。"
+            ],
+            "branches": [
+              {
+                "id": "sings_well",
+                "whenEn": "Learner says they are good at singing, or like singing and sing a lot.",
+                "next": "n3m_good",
+                "exampleJa": "はい、うたが すきです。"
+              },
+              {
+                "id": "sings_badly",
+                "whenEn": "Learner says they are bad or not very good at singing.",
+                "next": "n3m_bad",
+                "exampleJa": "いいえ、へたです。"
+              }
+            ],
+            "fallback": "n3m_bad"
+          }
+        },
+        {
+          "id": "n3m_good",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "すごいですね！わたしは とても 下手です。",
+              "kana": "すごいですね！わたしは とても へたです。",
+              "en": "Wow! I'm really bad at it.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3m_bad",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしもです！下手ですが、歌は 好きです。",
+              "kana": "わたしもです！へたですが、うたは すきです。",
+              "en": "Me too! I'm bad at it, but I like singing.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "focus": "whiteboard",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "じゃ、次です。漢字が わかりますか。",
+              "kana": "じゃ、つぎです。かんじが わかりますか。",
+              "en": "OK, next. Do you understand kanji?",
+              "gesture": "point",
+              "target": "whiteboard"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the teacher how well you understand kanji: well, mostly, a little, not much, not at all.",
+            "grammar": [
+              "g2",
+              "g6"
+            ],
+            "hintJa": "かんじが ＿＿ わかります。／＿＿ わかりません。",
+            "modelAnswers": [
+              "すこし わかります。",
+              "だいたい わかります。",
+              "あまり わかりません。"
+            ],
+            "branches": [
+              {
+                "id": "well",
+                "whenEn": "Learner says they understand kanji well or mostly (よく, だいたい).",
+                "next": "n4_good",
+                "exampleJa": "だいたい わかります。"
+              },
+              {
+                "id": "little_or_none",
+                "whenEn": "Learner says they understand only a little, not much, or not at all (すこし, あまり, ぜんぜん).",
+                "next": "n4_low",
+                "exampleJa": "すこし わかります。"
+              }
+            ],
+            "fallback": "n4_low"
+          }
+        },
+        {
+          "id": "n4_good",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "すごいですね。わたしは ぜんぜん わかりません。",
+              "kana": "すごいですね。わたしは ぜんぜん わかりません。",
+              "en": "That's amazing. I don't understand any at all.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_low",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "じゃ、毎日 少し 勉強しましょう。",
+              "kana": "じゃ、まいにち すこし べんきょうしましょう。",
+              "en": "Then let's study a little every day.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "金曜日の 晩、クラスで カラオケに 行きます。",
+              "kana": "きんようびの ばん、クラスで カラオケに いきます。",
+              "en": "On Friday night the class is going to karaoke.",
+              "gesture": "wave"
+            },
+            {
+              "who": "ana",
+              "ja": "いっしょに 行きませんか。",
+              "kana": "いっしょに いきませんか。",
+              "en": "Won't you come with us?",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept — or decline politely with ちょっと…… and a reason (～から).",
+            "grammar": [
+              "g9",
+              "g7",
+              "g1"
+            ],
+            "hintJa": "いいですね。いきましょう。／すみません、きんようびは ちょっと……。＿＿から。",
+            "modelAnswers": [
+              "いいですね。いきましょう。",
+              "すみません。きんようびは ちょっと……。アルバイトが ありますから。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts the invitation.",
+                "next": "end_yes",
+                "exampleJa": "いいですね。いきましょう。"
+              },
+              {
+                "id": "decline_reason",
+                "whenEn": "Learner declines AND gives a reason (work, an appointment, an errand, bad at singing, etc.).",
+                "next": "end_no",
+                "exampleJa": "すみません。ようじが ありますから、ちょっと……。"
+              },
+              {
+                "id": "decline_vague",
+                "whenEn": "Learner declines or hesitates WITHOUT giving any reason.",
+                "next": "n5_why",
+                "exampleJa": "きんようびは ちょっと……。"
+              }
+            ],
+            "fallback": "n5_why"
+          }
+        },
+        {
+          "id": "n5_why",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "えー、どうしてですか。",
+              "kana": "えー、どうしてですか。",
+              "en": "Aww, why not?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ana asks why. Give your reason with ～から — or change your mind and join.",
+            "grammar": [
+              "g7",
+              "g8",
+              "g1"
+            ],
+            "hintJa": "＿＿から。",
+            "modelAnswers": [
+              "きんようびは やくそくが ありますから。",
+              "うたが へたですから。"
+            ],
+            "branches": [
+              {
+                "id": "gives_reason",
+                "whenEn": "Learner gives a reason for not going.",
+                "next": "end_no",
+                "exampleJa": "やくそくが ありますから。"
+              },
+              {
+                "id": "changes_mind",
+                "whenEn": "Learner changes their mind and accepts.",
+                "next": "end_yes",
+                "exampleJa": "じゃ、いきます。"
+              }
+            ],
+            "fallback": "end_no"
+          }
+        },
+        {
+          "id": "end_yes",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。じゃ、金曜日 6時に ここで 会いましょう。",
+              "kana": "いいですね。じゃ、きんようび 6じに ここで あいましょう。",
+              "en": "Wonderful. Then let's meet here at six on Friday.",
+              "gesture": "nod",
+              "tts": "いいですね。じゃ、きんようび ろくじに ここで あいましょう。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "そうですか。残念ですね。じゃ、また 今度！",
+              "kana": "そうですか。ざんねんですね。じゃ、また こんど！",
+              "en": "I see. That's a pity. Next time, then!",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

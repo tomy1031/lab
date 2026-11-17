@@ -1,0 +1,1539 @@
+{
+  "lesson": 6,
+  "titleJa": "いっしょに たべませんか",
+  "titleEn": "Shall we? — eating, drinking and invitations",
+  "summaryEn": "Say what you eat, drink, read, watch and do, and where. Invite people, accept warmly, and decline softly.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "N を V",
+      "meaningEn": "object marker を with たべます, のみます, よみます, みます, ききます, かいます, とります …",
+      "exampleJa": "まいあさ コーヒーを のみます。",
+      "exampleEn": "I drink coffee every morning."
+    },
+    {
+      "id": "g2",
+      "pattern": "N を します",
+      "meaningEn": "do / play N (テニス, サッカー, しゅくだい, おはなみ, コンサート …)",
+      "exampleJa": "にちようびに テニスを します。",
+      "exampleEn": "I play tennis on Sunday."
+    },
+    {
+      "id": "g3",
+      "pattern": "なにを しますか／なにを V か",
+      "meaningEn": "what will you do / what do you (eat, drink …)? なにも + negative = nothing",
+      "exampleJa": "やすみは なにを しますか。",
+      "exampleEn": "What do you do on your days off?"
+    },
+    {
+      "id": "g4",
+      "pattern": "N(place)で V",
+      "meaningEn": "the place where an action happens takes で (not に / へ)",
+      "exampleJa": "えきで しんぶんを かいます。",
+      "exampleEn": "I buy a newspaper at the station."
+    },
+    {
+      "id": "g5",
+      "pattern": "V ませんか",
+      "meaningEn": "won't you … (with me)? — a polite invitation",
+      "exampleJa": "いっしょに ひるごはんを たべませんか。",
+      "exampleEn": "Won't you have lunch with me?"
+    },
+    {
+      "id": "g6",
+      "pattern": "V ましょう",
+      "meaningEn": "let's … — proposing or agreeing to do something together",
+      "exampleJa": "12じに ロビーで あいましょう。",
+      "exampleEn": "Let's meet in the lobby at 12."
+    },
+    {
+      "id": "g7",
+      "pattern": "ええ、いいですね。／すみません、～は ちょっと……。",
+      "meaningEn": "accepting an invitation warmly / declining softly by trailing off",
+      "exampleJa": "すみません。きょうは ちょっと……。",
+      "exampleEn": "Sorry, today is a bit …"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "食べます",
+      "kana": "たべます",
+      "en": "to eat"
+    },
+    {
+      "ja": "飲みます",
+      "kana": "のみます",
+      "en": "to drink"
+    },
+    {
+      "ja": "読みます",
+      "kana": "よみます",
+      "en": "to read"
+    },
+    {
+      "ja": "見ます",
+      "kana": "みます",
+      "en": "to see, watch"
+    },
+    {
+      "ja": "聞きます",
+      "kana": "ききます",
+      "en": "to listen"
+    },
+    {
+      "ja": "買います",
+      "kana": "かいます",
+      "en": "to buy"
+    },
+    {
+      "ja": "撮ります",
+      "kana": "とります",
+      "en": "to take (a photo)"
+    },
+    {
+      "ja": "会います",
+      "kana": "あいます",
+      "en": "to meet"
+    },
+    {
+      "ja": "します",
+      "kana": "します",
+      "en": "to do, to play"
+    },
+    {
+      "ja": "昼ごはん",
+      "kana": "ひるごはん",
+      "en": "lunch"
+    },
+    {
+      "ja": "朝ごはん",
+      "kana": "あさごはん",
+      "en": "breakfast"
+    },
+    {
+      "ja": "晩ごはん",
+      "kana": "ばんごはん",
+      "en": "dinner"
+    },
+    {
+      "ja": "ラーメン",
+      "kana": "ラーメン",
+      "en": "ramen"
+    },
+    {
+      "ja": "お茶",
+      "kana": "おちゃ",
+      "en": "tea"
+    },
+    {
+      "ja": "ビール",
+      "kana": "ビール",
+      "en": "beer"
+    },
+    {
+      "ja": "卵",
+      "kana": "たまご",
+      "en": "egg"
+    },
+    {
+      "ja": "写真",
+      "kana": "しゃしん",
+      "en": "photograph"
+    },
+    {
+      "ja": "映画",
+      "kana": "えいが",
+      "en": "movie"
+    },
+    {
+      "ja": "お花見",
+      "kana": "おはなみ",
+      "en": "cherry-blossom viewing"
+    },
+    {
+      "ja": "店",
+      "kana": "みせ",
+      "en": "shop, restaurant"
+    },
+    {
+      "ja": "いっしょに",
+      "kana": "いっしょに",
+      "en": "together"
+    },
+    {
+      "ja": "ちょっと",
+      "kana": "ちょっと",
+      "en": "a little; (declining) \"it's a bit …\""
+    },
+    {
+      "ja": "いつも",
+      "kana": "いつも",
+      "en": "always, usually"
+    },
+    {
+      "ja": "時々",
+      "kana": "ときどき",
+      "en": "sometimes"
+    },
+    {
+      "ja": "それから",
+      "kana": "それから",
+      "en": "and then, after that"
+    }
+  ],
+  "tipsEn": [
+    "To turn down an invitation, Japanese speakers rarely say \"no\". 「きょうは ちょっと……」 and a small apologetic smile is enough — do not finish the sentence.",
+    "お花見 (ohanami): in spring, friends and colleagues spread a sheet under the cherry trees to eat, drink and take photos together.",
+    "～ませんか asks what the other person wants; ～ましょう assumes they agree. Invite with ませんか, answer with ましょう."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-06/grammar/",
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-6.html",
+      "https://gogonihon.com/en/blog/particles-in-japanese-part-2/"
+    ],
+    "notesEn": "Lesson 6 introduces transitive verbs with the object particle を (eat, drink, read, watch, listen, buy, take photos), N を します for activities, the question なにを しますか (and なに vs なん), the place of an action with で, invitations with Vませんか and proposals/acceptance with Vましょう, plus the set replies ええ、いいですね and the soft refusal ちょっと……. Real-life fits: being invited to lunch by a colleague, a cherry-blossom picnic, and a café owner chatting about daily habits and inviting you to an event. Typical mistakes: に or へ instead of で for where you do something, dropping を, using ましょう to invite a stranger (too pushy), and refusing with a flat いいえ. The three variants are a ramen lunch invitation at the office, an ohanami picnic in the park and a morning at the café counter — all original scenes with the town cast."
+  },
+  "variants": [
+    {
+      "id": "l06a",
+      "titleJa": "ラーメン、たべませんか",
+      "titleEn": "Ramen for lunch?",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Mid-morning at the office. Fujita-san has been thinking about ramen since he woke up, and he stops by your desk with an invitation.",
+      "roleEn": "You are Fujita-san's colleague. Accept, decline softly or suggest something else — every answer leads somewhere.",
+      "missionsEn": [
+        {
+          "text": "Accept his invitation — or decline it softly",
+          "grammar": [
+            "g5",
+            "g7"
+          ]
+        },
+        {
+          "text": "Talk about where and what you'll eat",
+          "grammar": [
+            "g1",
+            "g4"
+          ]
+        },
+        {
+          "text": "Agree on when and where to meet",
+          "grammar": [
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita"
+      ],
+      "positions": {
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Morning!",
+              "gesture": "wave"
+            },
+            {
+              "who": "fujita",
+              "ja": "今日の 昼、いっしょに ラーメンを 食べませんか。",
+              "kana": "きょうの ひる、いっしょに ラーメンを たべませんか。",
+              "en": "Won't you have ramen with me at lunch today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "He invites you to ramen. Accept, decline softly, or suggest another day or food.",
+            "grammar": [
+              "g5",
+              "g7"
+            ],
+            "hintJa": "ええ、いいですね。＿＿ましょう。／すみません、きょうは ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。たべましょう。",
+              "すみません。きょうは ちょっと……。",
+              "きょうは ちょっと……。あした たべませんか。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted the invitation for today.",
+                "next": "n2_yes",
+                "exampleJa": "ええ、いいですね。たべましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined (softly or directly) without suggesting anything else.",
+                "next": "n2_no",
+                "exampleJa": "すみません。きょうは ちょっと……。"
+              },
+              {
+                "id": "counter",
+                "whenEn": "Learner suggested another day or another food / place instead.",
+                "next": "n2_counter",
+                "exampleJa": "きょうは ちょっと……。あした たべませんか。"
+              }
+            ],
+            "fallback": "n2_no"
+          }
+        },
+        {
+          "id": "n2_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、いっしょに 行きましょう。",
+              "kana": "じゃ、いっしょに いきましょう。",
+              "en": "Great, let's go together!",
+              "gesture": "laugh"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask him where you'll eat — or suggest a place yourself.",
+            "grammar": [
+              "g4",
+              "g5"
+            ],
+            "hintJa": "どこで ＿＿か。／＿＿で たべませんか。",
+            "modelAnswers": [
+              "どこで たべますか。",
+              "えきの みせで たべませんか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_where",
+                "whenEn": "Learner asked where they will eat.",
+                "next": "n3_ask",
+                "exampleJa": "どこで たべますか。"
+              },
+              {
+                "id": "propose",
+                "whenEn": "Learner proposed a place to eat.",
+                "next": "n3_prop",
+                "exampleJa": "えきの みせで たべませんか。"
+              }
+            ],
+            "fallback": "n3_ask"
+          }
+        },
+        {
+          "id": "n3_ask",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "駅の 「まるふく」で 食べましょう。",
+              "kana": "えきの 「まるふく」で たべましょう。",
+              "en": "Let's eat at Marufuku, at the station."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_prop",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あ、いいですね。じゃ、そこで 食べましょう。",
+              "kana": "あ、いいですね。じゃ、そこで たべましょう。",
+              "en": "Oh, nice. OK, let's eat there.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ぼくは いつも みそラーメンを 食べます。何を 食べますか。",
+              "kana": "ぼくは いつも みそラーメンを たべます。なにを たべますか。",
+              "en": "I always have miso ramen. What will you have?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what you'll eat.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "わたしは ＿＿を たべます。",
+            "modelAnswers": [
+              "わたしも みそラーメンを たべます。",
+              "わたしは しおラーメンを たべます。"
+            ],
+            "branches": [
+              {
+                "id": "same",
+                "whenEn": "Learner will also have miso ramen (the same as him).",
+                "next": "n5_same",
+                "exampleJa": "わたしも みそラーメンを たべます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner will have something else.",
+                "next": "n5_other",
+                "exampleJa": "わたしは しおラーメンを たべます。"
+              }
+            ],
+            "fallback": "n5_other"
+          }
+        },
+        {
+          "id": "n5_same",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。じゃ、ぎょうざも 食べましょう。",
+              "kana": "いいですね。じゃ、ぎょうざも たべましょう。",
+              "en": "Nice. Then let's get gyoza too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5_other",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。ぼくは ぎょうざも 食べます。",
+              "kana": "いいですね。ぼくは ぎょうざも たべます。",
+              "en": "Sounds good. I'm having gyoza as well."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、12時に 1階の ロビーで 会いませんか。",
+              "kana": "じゃ、12じに 1かいの ロビーで あいませんか。",
+              "en": "So, shall we meet in the first-floor lobby at 12?",
+              "tts": "じゃ、じゅうにじに いっかいの ロビーで あいませんか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Agree to meet at 12 in the lobby — or suggest another time.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、12じに ＿＿ましょう。／12じは ちょっと……。＿＿に あいませんか。",
+            "modelAnswers": [
+              "ええ、12じに あいましょう。",
+              "12じは ちょっと……。12じはんに あいませんか。"
+            ],
+            "branches": [
+              {
+                "id": "agree",
+                "whenEn": "Learner agreed to meet at 12 in the lobby.",
+                "next": "end_meet",
+                "exampleJa": "ええ、12じに あいましょう。"
+              },
+              {
+                "id": "other_time",
+                "whenEn": "Learner suggested a different time or place to meet.",
+                "next": "end_change",
+                "exampleJa": "12じは ちょっと……。12じはんに あいませんか。"
+              }
+            ],
+            "fallback": "end_meet"
+          }
+        },
+        {
+          "id": "end_meet",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、12時に 会いましょう。ラーメン、ラーメン!",
+              "kana": "じゃ、12じに あいましょう。ラーメン、ラーメン!",
+              "en": "See you at 12, then. Ramen, ramen!",
+              "gesture": "wave",
+              "tts": "じゃ、じゅうにじに あいましょう。ラーメン、ラーメン!"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_change",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わかりました。じゃ、そう しましょう。",
+              "kana": "わかりました。じゃ、そう しましょう。",
+              "en": "Got it. Let's do that, then.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n2_counter",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あ、いいですね。そう しましょう。どこで 食べますか。",
+              "kana": "あ、いいですね。そう しましょう。どこで たべますか。",
+              "en": "Oh, good idea. Let's do that. Where shall we eat?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Suggest a place to eat — or ask him where.",
+            "grammar": [
+              "g4",
+              "g6"
+            ],
+            "hintJa": "＿＿で たべましょう。／どこで ＿＿か。",
+            "modelAnswers": [
+              "えきの みせで たべましょう。",
+              "どこで たべますか。"
+            ],
+            "branches": [
+              {
+                "id": "propose",
+                "whenEn": "Learner proposed a place to eat.",
+                "next": "n3_prop",
+                "exampleJa": "えきの みせで たべましょう。"
+              },
+              {
+                "id": "ask_back",
+                "whenEn": "Learner asked him where, or left the choice to him.",
+                "next": "n3_ask",
+                "exampleJa": "どこで たべますか。"
+              }
+            ],
+            "fallback": "n3_ask"
+          }
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。今日は 何を 食べますか。",
+              "kana": "そうですか。きょうは なにを たべますか。",
+              "en": "I see. What are you eating today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what you'll eat for lunch — or that you won't eat anything.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "＿＿を たべます。／なにも ＿＿。",
+            "modelAnswers": [
+              "パンを たべます。",
+              "なにも たべません。"
+            ],
+            "branches": [
+              {
+                "id": "food",
+                "whenEn": "Learner named something they will eat.",
+                "next": "n2n_food",
+                "exampleJa": "パンを たべます。"
+              },
+              {
+                "id": "nothing",
+                "whenEn": "Learner won't eat anything.",
+                "next": "n2n_nothing",
+                "exampleJa": "なにも たべません。"
+              }
+            ],
+            "fallback": "n2n_food"
+          }
+        },
+        {
+          "id": "n2n_food",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。ぼくは 一人で ラーメンを 食べます。",
+              "kana": "いいですね。ぼくは ひとりで ラーメンを たべます。",
+              "en": "Nice. I'll go and eat ramen on my own, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n_tomorrow"
+        },
+        {
+          "id": "n2n_nothing",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "え、何も 食べませんか。",
+              "kana": "え、なにも たべませんか。",
+              "en": "What, you're not eating anything?",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n_tomorrow"
+        },
+        {
+          "id": "n_tomorrow",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、あした いっしょに ラーメンを 食べませんか。",
+              "kana": "じゃ、あした いっしょに ラーメンを たべませんか。",
+              "en": "Then won't you have ramen with me tomorrow?"
+            }
+          ],
+          "listen": {
+            "promptEn": "He tries again for tomorrow. Accept or decline.",
+            "grammar": [
+              "g5",
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、あした ＿＿ましょう。／あしたも ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。あした たべましょう。",
+              "すみません。あしたも ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted for tomorrow.",
+                "next": "n6",
+                "exampleJa": "ええ、いいですね。あした たべましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined again.",
+                "next": "end_soft",
+                "exampleJa": "すみません。あしたも ちょっと……。"
+              }
+            ],
+            "fallback": "end_soft"
+          }
+        },
+        {
+          "id": "end_soft",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。わかりました。じゃ、また。",
+              "kana": "そうですか。わかりました。じゃ、また。",
+              "en": "I see. No problem. Another time, then.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l06b",
+      "titleJa": "さくらの したで",
+      "titleEn": "Picnic under the cherry blossoms",
+      "scene": "park",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Saturday noon at Sakura Park. Aoki-san has spread a picnic sheet under the cherry trees and waves you over. There's a lunch box, drinks — and your camera.",
+      "roleEn": "You are Aoki-san's colleague, joining her ohanami picnic. Choose what you like; she adapts.",
+      "missionsEn": [
+        {
+          "text": "Say what you'll drink",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Answer her invitation to share the lunch box",
+          "grammar": [
+            "g5",
+            "g7"
+          ]
+        },
+        {
+          "text": "Invite her to take photos, and decide where",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Answer her invitation for next Saturday",
+          "grammar": [
+            "g6",
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki"
+      ],
+      "positions": {
+        "aoki": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "picnic_sheet",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "こんにちは。今日は お花見ですよ!",
+              "kana": "こんにちは。きょうは おはなみですよ!",
+              "en": "Hello! It's ohanami day!",
+              "gesture": "wave"
+            },
+            {
+              "who": "aoki",
+              "ja": "何を 飲みますか。お茶ですか。ビールですか。",
+              "kana": "なにを のみますか。おちゃですか。ビールですか。",
+              "en": "What will you drink? Tea? Beer?",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her what you'll drink.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "＿＿を のみます。",
+            "modelAnswers": [
+              "おちゃを のみます。",
+              "ビールを のみます。"
+            ],
+            "branches": [
+              {
+                "id": "tea",
+                "whenEn": "Learner chose tea.",
+                "next": "n2_tea",
+                "exampleJa": "おちゃを のみます。"
+              },
+              {
+                "id": "beer",
+                "whenEn": "Learner chose beer.",
+                "next": "n2_beer",
+                "exampleJa": "ビールを のみます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner wants something else (juice, water, coffee …) or nothing.",
+                "next": "n2_other",
+                "exampleJa": "ジュースを のみます。"
+              }
+            ],
+            "fallback": "n2_tea"
+          }
+        },
+        {
+          "id": "n2_tea",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、お茶です。どうぞ。",
+              "kana": "はい、おちゃです。どうぞ。",
+              "en": "Here you are — tea.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_beer",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、どうぞ。わたしも ビールを 飲みます。",
+              "kana": "はい、どうぞ。わたしも ビールを のみます。",
+              "en": "Here you go. I'll have a beer too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。じゃ、あの 店で 買いましょう。",
+              "kana": "そうですか。じゃ、あの みせで かいましょう。",
+              "en": "I see. Then let's buy it at that stall over there.",
+              "gesture": "point",
+              "target": "food_stall"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "bento",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "お弁当ですよ。いっしょに 食べませんか。",
+              "kana": "おべんとうですよ。いっしょに たべませんか。",
+              "en": "I brought a lunch box. Won't you share it with me?",
+              "gesture": "point",
+              "target": "bento"
+            }
+          ],
+          "listen": {
+            "promptEn": "She offers to share her lunch box. Accept — or decline softly.",
+            "grammar": [
+              "g5",
+              "g7"
+            ],
+            "hintJa": "ええ、＿＿ましょう。／すみません、いまは ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。たべましょう。",
+              "すみません。いまは ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted and will eat.",
+                "next": "n4_yes",
+                "exampleJa": "ええ、いいですね。たべましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined (not now, already ate, etc.).",
+                "next": "n4_no",
+                "exampleJa": "すみません。いまは ちょっと……。"
+              }
+            ],
+            "fallback": "n4_yes"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "どうぞ。卵と 魚と 野菜です。",
+              "kana": "どうぞ。たまごと さかなと やさいです。",
+              "en": "Help yourself. Egg, fish and vegetables.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。じゃ、わたしは ちょっと 食べます。",
+              "kana": "そうですか。じゃ、わたしは ちょっと たべます。",
+              "en": "I see. Well, I'll have a little myself.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "camera",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、カメラですね。",
+              "kana": "あ、カメラですね。",
+              "en": "Oh, you brought a camera.",
+              "gesture": "point",
+              "target": "camera"
+            }
+          ],
+          "listen": {
+            "promptEn": "Invite her to take photos together.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "いっしょに しゃしんを ＿＿ませんか。",
+            "modelAnswers": [
+              "いっしょに しゃしんを とりませんか。"
+            ],
+            "branches": [
+              {
+                "id": "photo",
+                "whenEn": "Learner invited her to take photos / a photo together.",
+                "next": "n6_photo",
+                "exampleJa": "いっしょに しゃしんを とりませんか。"
+              },
+              {
+                "id": "something_else",
+                "whenEn": "Learner said something else about the camera or suggested a different activity.",
+                "next": "n6_other",
+                "exampleJa": "はい、わたしの カメラです。"
+              }
+            ],
+            "fallback": "n6_other"
+          }
+        },
+        {
+          "id": "n6_photo",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええ、撮りましょう。どこで 撮りますか。",
+              "kana": "ええ、とりましょう。どこで とりますか。",
+              "en": "Yes, let's! Where shall we take them?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say where to take the photos: here under the cherry tree, at the pond …",
+            "grammar": [
+              "g4",
+              "g6"
+            ],
+            "hintJa": "＿＿で とりましょう。",
+            "modelAnswers": [
+              "いけで とりましょう。",
+              "ここで とりましょう。"
+            ],
+            "branches": [
+              {
+                "id": "pond",
+                "whenEn": "Learner chose the pond (or another place away from the sheet).",
+                "next": "n7_pond",
+                "exampleJa": "いけで とりましょう。"
+              },
+              {
+                "id": "here",
+                "whenEn": "Learner chose here / by the cherry tree.",
+                "next": "n7_here",
+                "exampleJa": "ここで とりましょう。"
+              }
+            ],
+            "fallback": "n7_here"
+          }
+        },
+        {
+          "id": "n6_other",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね。それから、写真も 撮りましょう。どこで 撮りますか。",
+              "kana": "いいですね。それから、しゃしんも とりましょう。どこで とりますか。",
+              "en": "Nice. And then let's take photos too. Where shall we take them?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say where to take the photos: here under the cherry tree, at the pond …",
+            "grammar": [
+              "g4",
+              "g6"
+            ],
+            "hintJa": "＿＿で とりましょう。",
+            "modelAnswers": [
+              "いけで とりましょう。",
+              "ここで とりましょう。"
+            ],
+            "branches": [
+              {
+                "id": "pond",
+                "whenEn": "Learner chose the pond (or another place away from the sheet).",
+                "next": "n7_pond",
+                "exampleJa": "いけで とりましょう。"
+              },
+              {
+                "id": "here",
+                "whenEn": "Learner chose here / by the cherry tree.",
+                "next": "n7_here",
+                "exampleJa": "ここで とりましょう。"
+              }
+            ],
+            "fallback": "n7_here"
+          }
+        },
+        {
+          "id": "n7_pond",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "池ですね。いいですね。行きましょう。",
+              "kana": "いけですね。いいですね。いきましょう。",
+              "en": "The pond — nice. Let's go.",
+              "gesture": "point",
+              "target": "pond"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_here",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ここですね。じゃ、撮りましょう。はい、チーズ!",
+              "kana": "ここですね。じゃ、とりましょう。はい、チーズ!",
+              "en": "Right here. OK, let's take one. Say cheese!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "来週の 土曜日、いっしょに 映画を 見ませんか。",
+              "kana": "らいしゅうの どようび、いっしょに えいがを みませんか。",
+              "en": "Won't you see a movie with me next Saturday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "She invites you to a movie next Saturday. Accept or decline softly.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、いいですね。＿＿ましょう。／どようびは ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。みましょう。",
+              "すみません。どようびは ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted the movie invitation.",
+                "next": "end_yes",
+                "exampleJa": "ええ、いいですね。みましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined.",
+                "next": "end_no",
+                "exampleJa": "すみません。どようびは ちょっと……。"
+              }
+            ],
+            "fallback": "end_no"
+          }
+        },
+        {
+          "id": "end_yes",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "じゃ、来週 駅で 会いましょう。",
+              "kana": "じゃ、らいしゅう えきで あいましょう。",
+              "en": "Then let's meet at the station next week!",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。じゃ、また お花見を しましょう。",
+              "kana": "そうですか。じゃ、また おはなみを しましょう。",
+              "en": "I see. Well, let's do ohanami again some time.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "休みは いつも 何を しますか。",
+        "openerKana": "やすみは いつも なにを しますか。",
+        "openerEn": "What do you usually do on your days off?",
+        "topicEn": "Relaxed picnic chat: what the learner does, eats, drinks, watches and reads on days off, and where. Aoki may invite them to something with ～ませんか. Stay within lesson 1–6 grammar.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l06c",
+      "titleJa": "マスターと あさの コーヒー",
+      "titleEn": "Morning coffee with the owner",
+      "scene": "cafe",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy morning. You duck into the little café near the office. Sakamoto-san, the owner, has time to chat — and a jazz poster on the wall he is quite proud of.",
+      "roleEn": "You are a regular-to-be at the café. Talk about your real habits.",
+      "missionsEn": [
+        {
+          "text": "Tell him what you'll drink",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Say where you usually eat",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Say what you do on your days off",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Answer his invitation to the café concert",
+          "grammar": [
+            "g5",
+            "g6",
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto"
+      ],
+      "positions": {
+        "sakamoto": "counter"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "menu_board",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いらっしゃいませ。おはよう ございます。",
+              "kana": "いらっしゃいませ。おはよう ございます。",
+              "en": "Welcome. Good morning.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "今朝は 何を 飲みますか。",
+              "kana": "けさは なにを のみますか。",
+              "en": "What will you drink this morning?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what you'll drink.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "＿＿を のみます。",
+            "modelAnswers": [
+              "コーヒーを のみます。",
+              "こうちゃを のみます。"
+            ],
+            "branches": [
+              {
+                "id": "coffee",
+                "whenEn": "Learner will drink coffee.",
+                "next": "n2_coffee",
+                "exampleJa": "コーヒーを のみます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner will drink something else (tea, juice, milk …).",
+                "next": "n2_other",
+                "exampleJa": "こうちゃを のみます。"
+              }
+            ],
+            "fallback": "n2_coffee"
+          }
+        },
+        {
+          "id": "n2_coffee",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "コーヒーですね。わたしも 毎朝 コーヒーを 飲みます。",
+              "kana": "コーヒーですね。わたしも まいあさ コーヒーを のみます。",
+              "en": "Coffee it is. I drink coffee every morning too.",
+              "gesture": "offer"
+            }
+          ],
+          "nextRandom": [
+            "q_breakfast",
+            "q_dinner"
+          ]
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、どうぞ。わたしは 毎朝 コーヒーを 飲みます。",
+              "kana": "はい、どうぞ。わたしは まいあさ コーヒーを のみます。",
+              "en": "Here you are. Me, I drink coffee every morning.",
+              "gesture": "offer"
+            }
+          ],
+          "nextRandom": [
+            "q_breakfast",
+            "q_dinner"
+          ]
+        },
+        {
+          "id": "q_breakfast",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "朝ごはんは いつも どこで 食べますか。",
+              "kana": "あさごはんは いつも どこで たべますか。",
+              "en": "Where do you usually eat breakfast?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him where you eat breakfast — or that you don't eat anything.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿で たべます。／なにも たべません。",
+            "modelAnswers": [
+              "うちで たべます。",
+              "かいしゃで パンを たべます。",
+              "なにも たべません。"
+            ],
+            "branches": [
+              {
+                "id": "home",
+                "whenEn": "Learner eats at home.",
+                "next": "r_home",
+                "exampleJa": "うちで たべます。"
+              },
+              {
+                "id": "out",
+                "whenEn": "Learner eats somewhere else (office, café, station, school …) or doesn't eat breakfast.",
+                "next": "r_out",
+                "exampleJa": "かいしゃで パンを たべます。"
+              }
+            ],
+            "fallback": "r_home"
+          }
+        },
+        {
+          "id": "q_dinner",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "晩ごはんは いつも どこで 食べますか。",
+              "kana": "ばんごはんは いつも どこで たべますか。",
+              "en": "Where do you usually eat dinner?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him where you usually eat dinner.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿で たべます。",
+            "modelAnswers": [
+              "うちで たべます。",
+              "えきの レストランで たべます。"
+            ],
+            "branches": [
+              {
+                "id": "home",
+                "whenEn": "Learner eats at home.",
+                "next": "r_home",
+                "exampleJa": "うちで たべます。"
+              },
+              {
+                "id": "out",
+                "whenEn": "Learner eats somewhere else (restaurant, office, cafeteria …) or doesn't eat dinner.",
+                "next": "r_out",
+                "exampleJa": "えきの レストランで たべます。"
+              }
+            ],
+            "fallback": "r_home"
+          }
+        },
+        {
+          "id": "r_home",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "うちで ですか。いいですね。",
+              "kana": "うちで ですか。いいですね。",
+              "en": "At home? That's nice.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "r_out",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。じゃ、時々 ここで 食べましょう。",
+              "kana": "そうですか。じゃ、ときどき ここで たべましょう。",
+              "en": "I see. Then eat here now and then!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "休みは いつも 何を しますか。",
+              "kana": "やすみは いつも なにを しますか。",
+              "en": "What do you usually do on your days off?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what you do on your days off (sport, films, music, reading, shopping …).",
+            "grammar": [
+              "g1",
+              "g2",
+              "g3"
+            ],
+            "hintJa": "＿＿を します。／＿＿を みます。",
+            "modelAnswers": [
+              "ともだちと サッカーを します。",
+              "うちで えいがを みます。",
+              "CDを ききます。"
+            ],
+            "branches": [
+              {
+                "id": "music",
+                "whenEn": "Learner mentioned music (listening to music or CDs, playing an instrument, concerts).",
+                "next": "r_music",
+                "exampleJa": "うちで CDを ききます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner mentioned anything else (sport, films, reading, shopping, homework, resting, nothing).",
+                "next": "r_other",
+                "exampleJa": "ともだちと サッカーを します。"
+              }
+            ],
+            "fallback": "r_other"
+          }
+        },
+        {
+          "id": "r_music",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "え、そうですか。わたしも 毎日 ジャズを 聞きますよ。",
+              "kana": "え、そうですか。わたしも まいにち ジャズを ききますよ。",
+              "en": "Oh, really? I listen to jazz every day myself.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "r_other",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。わたしは 休みに いつも ジャズを 聞きます。",
+              "kana": "そうですか。わたしは やすみに いつも ジャズを ききます。",
+              "en": "I see. On my days off I always listen to jazz."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "focus": "poster_concert",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "土曜日の 晩、ここで ジャズの コンサートを します。",
+              "kana": "どようびの ばん、ここで ジャズの コンサートを します。",
+              "en": "On Saturday evening we're holding a jazz concert here.",
+              "gesture": "point",
+              "target": "poster_concert"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "いっしょに 聞きませんか。",
+              "kana": "いっしょに ききませんか。",
+              "en": "Won't you come and listen with us?"
+            }
+          ],
+          "listen": {
+            "promptEn": "He invites you to the concert. Accept, decline softly — or ask what time it is.",
+            "grammar": [
+              "g5",
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、いいですね。＿＿ましょう。／どようびは ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。ききましょう。",
+              "すみません。どようびの ばんは ちょっと……。",
+              "なんじからですか。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted the invitation.",
+                "next": "end_yes",
+                "exampleJa": "ええ、いいですね。ききましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined.",
+                "next": "n_decline",
+                "exampleJa": "すみません。どようびの ばんは ちょっと……。"
+              },
+              {
+                "id": "ask_info",
+                "whenEn": "Learner asked for details first (what time, how much, until when).",
+                "next": "n6_info",
+                "exampleJa": "なんじからですか。"
+              }
+            ],
+            "fallback": "n_decline"
+          }
+        },
+        {
+          "id": "n6_info",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "7時から 9時までです。聞きませんか。",
+              "kana": "7じから 9じまでです。ききませんか。",
+              "en": "It's from 7 to 9. Won't you come?",
+              "tts": "しちじから くじまでです。ききませんか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Now accept — or decline softly.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、＿＿ましょう。／どようびは ちょっと……。",
+            "modelAnswers": [
+              "ええ、ききましょう。",
+              "すみません。どようびは ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted the invitation.",
+                "next": "end_yes",
+                "exampleJa": "ええ、ききましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined.",
+                "next": "n_decline",
+                "exampleJa": "すみません。どようびは ちょっと……。"
+              }
+            ],
+            "fallback": "n_decline"
+          }
+        },
+        {
+          "id": "end_yes",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ありがとう ございます。じゃ、土曜日に 会いましょう。",
+              "kana": "ありがとう ございます。じゃ、どようびに あいましょう。",
+              "en": "Thank you! See you on Saturday, then.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n_decline",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。じゃ、今 ここで CDを 聞きませんか。",
+              "kana": "そうですか。じゃ、いま ここで CDを ききませんか。",
+              "en": "I see. Then how about listening to the CD here, right now?",
+              "tts": "そうですか。じゃ、いま ここで シーディーを ききませんか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "He offers to play the band's CD right now. Accept or decline.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "ええ、＿＿ましょう。／すみません、いまは ちょっと……。",
+            "modelAnswers": [
+              "ええ、いいですね。ききましょう。",
+              "すみません。いまは ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepted and wants to listen now.",
+                "next": "end_cd",
+                "exampleJa": "ええ、いいですね。ききましょう。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declined again.",
+                "next": "end_coffee",
+                "exampleJa": "すみません。いまは ちょっと……。"
+              }
+            ],
+            "fallback": "end_coffee"
+          }
+        },
+        {
+          "id": "end_cd",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい。じゃ、いっしょに 聞きましょう。",
+              "kana": "はい。じゃ、いっしょに ききましょう。",
+              "en": "Good. Let's listen together, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_coffee",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。じゃ、コーヒーを どうぞ。",
+              "kana": "そうですか。じゃ、コーヒーを どうぞ。",
+              "en": "I see. Well then, enjoy your coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
