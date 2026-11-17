@@ -17,6 +17,7 @@ export const RADIANT = new Set(['sword']);
 const K_HALO = 0, K_RUNE = 1, K_GLYPH = 2, K_STAR = 3, K_SPARK = 4;
 const MOTES = 4, SPARKS = MOTES + 2;                    // drifting motes + the two guard gems
 const CYAN = new THREE.Color(0.5, 0.9, 1.0), WHITE = new THREE.Color(0.86, 1.0, 1.0), GOLD = new THREE.Color(1.0, 0.8, 0.4);
+const RUNE_DAY = new THREE.Color(0.12, 0.78, 1.0);        // saturated so it stays cyan over sunlit steel
 const _ch = new THREE.Color(), _cr = new THREE.Color(), _p = new THREE.Vector3(), _sc = new THREE.Color();
 const _iq = new THREE.Quaternion(), _cq = new THREE.Quaternion(), _cpos = new THREE.Vector3(), _cs = new THREE.Vector3();
 const _rx = new THREE.Vector3(), _ry = new THREE.Vector3(), _hl = new THREE.Vector3();
@@ -129,7 +130,7 @@ export function createRadiance(ctx, I) {
     const lift = 1 + 1.4 * fx.flare + 1.2 * fx.hitK;
     const desk = (ctx.flags.xr ? 1 : 1.25) * R.gain;       // the PC preview sees the blade small: a little more
     _ch.copy(CYAN).lerp(GOLD, gold);                       // sheath
-    _cr.copy(WHITE).lerp(GOLD, gold * 0.6);                // runes
+    _cr.copy(WHITE).lerp(RUNE_DAY, 0.8 * (1 - night)).lerp(GOLD, gold * 0.6);   // runes: cyan in sunlight, white-hot at night
     // daylight levels ≈ 1.45 × the first pass (the fuller line reads as glowing cyan at 1 m in full sun); night unchanged
     const halo = (0.0175 + 0.0645 * night) * lift * desk * (ctx.flags.xr ? 1 : 1.6);   // PC: the blade is small on screen
     const rune = (0.435 + 0.285 * night) * (1 + 0.6 * fx.flare + 0.8 * fx.hitK) * desk;

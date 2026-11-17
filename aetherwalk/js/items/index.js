@@ -295,13 +295,19 @@ export async function createItems(ctx) {
       const held = models.makeMesh('sword');
       const pool = new THREE.InstancedMesh(models.geometry('apple'), models.material(), 1);
       pool.setMatrixAt(0, _m.identity());
-      return [held, radiance.warmObject(), pool];
+      // the flame / spark / aim glows, the bowstring, a wind blade, the holster ghost
+      const glow = ctx.art.glow({ color: 0xffb347, size: 0.001, opacity: 0.001 });
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([_v.set(0, 0, 0), _v2.set(0, 0.1, 0)]),
+        new THREE.LineBasicMaterial({ color: 0xfffbe8, fog: false }));
+      const ghost = new THREE.Mesh(models.geometry('torch'), ctx.art.basic({ color: 0xffd76a, additive: true }));
+      return [held, radiance.warmObject(), pool, glow, line, proj.warmObject(), ghost];
     },
     makeModel(itemId) { return models.makeModel(itemId); },
 
     // ── used by the player (grab.js / desktop.js) ──
     createInHand(itemId, hand, from = 'holster', slot = null) {
       const st = defs[itemId]?.stack === 1 && gearState[itemId] ? { ...gearState[itemId] } : undefined;
+      if (st) { gearState[itemId].slot = null; delete st.slot; }       // out of its holster now
       const inst = makeInstance(itemId, { state: st, owned: defs[itemId]?.stack === 1 });
       if (!inst) return null;
       scene.add(inst.object3D);

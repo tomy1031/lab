@@ -305,6 +305,8 @@ export function createProjectiles(ctx, I) {
 
   return {
     update, settle, launchArrow, fireGale, retireOldest,
+    /** a throwaway wind blade for the shader warm-up frame */
+    warmObject() { const m = new THREE.Mesh(galeGeo, galeMat); m.name = 'warm-gale'; return m; },
     drawCalls() { let n = streaks.visible ? 1 : 0; for (const g of gales) if (g.alive) n++; return n; },
   };
 }

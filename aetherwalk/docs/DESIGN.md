@@ -874,7 +874,7 @@ ctx.events = { on(name, fn) → off関数, once(name, fn), off(name, fn), emit(n
 | `item:pickup` | A または B | `{ itemId, count }`（持ちものに入った） |
 | `item:consume` | A | `{ itemId, hand, how:'eat'|'drink' }`（効果は B が `defs.food` を見て適用） |
 | `item:use` | A | `{ itemId, action, hand }`（`'ring'` 鈴、`'fuse'` 点火、`'pour'`、`'fill'`、`'fan'`） |
-| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` |
+| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` / `{ uid, itemId, why:'burnout'|'water'|'wind'|'stowed'|'return' }`（ホルスターの中で水に沈んだときは `uid: null`） |
 | `item:cook` | A | `{ from, to }` |
 | `item:return` | A | `{ itemId }`（持ちものに戻った） |
 | `swing` | A | `{ hand, itemId, speed, type }`（先端 3 m/s を超えた瞬間に 1 回） |
@@ -1341,6 +1341,7 @@ window.AW = {
 - **`item:consume`**：水筒は 1 口ごとに出す（`{ itemId:'flask', how:'drink', gulpsLeft }`、効果は `defs.flask.food` が 1 口ぶん）。食べものは食べ終えたとき 1 回（`bites` 口、0.4 s ごと）。
 - **`item:use` の action**：`'ring' 'fuse' 'pour' 'fill' 'fan' 'bite' 'nock'`。
 - **松明の燃える時間**：`instance.state.burnLimit`（秒）を書けば 180 s の代わりに使う（灯しの祠の 45 s 用。`ctx.items.held.right.state.burnLimit = 45`）。
+- **ホルスターの松明**：灯った松明をホルスターに差すと消えずに燃え続け、燃える時間はそのあいだ止まる（枠の上に小さな残り火が光る）。抜けばそのまま燃えている。袋にしまうと消える（`why:'stowed'`）。差したまま枠が水に沈むと消える。残り 30 s で炎が小さくなり揺らぐ。
 - **かけら・種・珠**：世界に置かれたもの（`items.spawn('shard', …)`）は 1 m 以内を通るか手で触れると `inventory.add` で集まる（`item:pickup` は inventory が出す）。数のある束（`count > 1`）はつかむと全部袋に入る。
 - **戻ってくる装備**：落とした・投げた自分の装備は 8 s 後か 25 m 離れると消え、`inventory.markIn(id)` と `item:return` を出す。
 - **追加のイベント**：`player:turn { yaw }`（スナップ／スムーズターン）、`player:recenter {}`。`hit` には `targetId, targetKind, applied, killed, blocked` が付く。

@@ -166,8 +166,7 @@ export function createTorch(ctx, I) {
   /** a lit torch resting in its holster: an ember glow at the slot (shared glow sprites, no extra mesh) */
   function holstered() {
     const gs = I.gearState.torch;
-    if (!gs || !gs.lit || !gs.slot) return;
-    for (const inst of I.all) if (inst.id === 'torch') return;          // drawn: it burns in the hand
+    if (!gs || !gs.lit || !gs.slot) return;                              // (slot is cleared when it is drawn)
     const H = ctx.player?.holsters;
     if (!H?.slotPos) return;
     H.slotPos(gs.slot, _hp);
