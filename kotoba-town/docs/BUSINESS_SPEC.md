@@ -138,3 +138,88 @@ Story B (12月10日, a Wednesday)
 - First answer time: **10時半までに ご連絡します**.
 - Cause found ~11:00, fixed 11:30: a = 価格データを 更新した ときの ミス (a wrong file); b = 決済サービスの
   設定が 期限切れ (an expired setting). Prevention: 更新の 前に 2人で 確認する / 期限を カレンダーで 管理する.
+
+---
+
+## Story C 「就職の 面接」 (episodes 11–12) — interview practice
+
+Separate from the project story: the learner practises **job interviews** for an engineer position.
+Two episodes, each with two patterns:
+
+| file | title | where / who | patterns |
+|---|---|---|---|
+| `b11.json` | ふつうの 面接 | `interview` scene, `setup.room: "midori"` — みどりデザイン (before the learner joined) | a: 一次面接 — 村上 (npc1, main) + 藤田 (npc2, technical questions). b: 最終面接 — 小川 部長 (npc1, main) + 村上 (npc2) |
+| `b12.json` | 圧迫面接 | `interview` scene, `setup.room: "grey"` — 株式会社 くろがねシステム (a different, fictional company) | a: 否定と 深掘り — 黒岩 (npc1) alone: "なぜ？", "それは 理由に なりません", "具体的には？". b: 答えにくい 質問 — 黒岩 (npc1) + 白石 (npc2, HR): 2 against 1, interruptions, uncomfortable questions |
+
+Both files: `"storyJa": "就職の 面接"`, `"storyEn": "Job interviews"`, `"episodeJa": "面接①"` / `"面接②"`,
+`"episodeEn": "Interview 1"` / `"Interview 2"`, and **`"format": "interview"`**.
+
+### Interview format (differs from the other episodes)
+
+- **Order like a real Japanese interview** (research it; this is the usual flow):
+  入室（ノック → 「どうぞ」 → 「失礼します」） → 名乗る・あいさつ（「〇〇と 申します。本日は よろしく お願いいたします」）
+  → 「どうぞ、おかけください」 → 「失礼します」 (sits) → (short ice-break) → 自己紹介 → 志望動機 →
+  経験（学校の プロジェクト・アルバイト = ガクチカ）→ 強み・弱み → 技術・勉強していること / 日本語・日本で 働く こと
+  → 入社後 やりたい こと・将来 → 逆質問（「最後に、何か 質問は ありますか」）→ お礼 → 退室（「失礼いたします」）.
+  Each pattern picks the questions that fit it (a 一次面接 asks about skills and experience; a 最終面接 about
+  motivation, fit, long-term plans) but keeps this order.
+- **7–10 learner turns** per pattern and **up to 36 spoken lines** (target 26–34). Lines ≤ 55 characters.
+  Interviewers mostly react briefly (「ありがとう ございます。」「なるほど。」「では、次に…」) and move on;
+  branch where a real interviewer would (e.g. no reason given → 「それは なぜですか。」, very short self-intro →
+  「もう少し 詳しく 教えて ください。」).
+- **Learner movement** (node field `"learner"`): on the node right after the learner's first 「失礼します」 at
+  the door use `"learner": "walk"` (the learner walks to the chair); on the node right after the learner's
+  「失礼します」 to sit use `"learner": "sit"`; on the node after the final お礼 use `"learner": "stand"`.
+  The variant sets `"entrance": "knock"` — the game plays a knock (コン、コン、コン) before the first node, so the
+  first line is the interviewer's 「どうぞ、お入りください。」.
+- **Evaluation data** (the judge uses it; the learner sees it as feedback):
+  - Episode-level `"rubric"`: the criteria used in the final evaluation, from this fixed list:
+    `manners` 入退室・あいさつ（失礼します, 本日は よろしく お願いいたします, ありがとう ございました）,
+    `conclusion` 結論から 話す, `specific` 具体的に（経験・数字・例）, `company` 会社・仕事と 結びつける,
+    `keigo` 面接の ことばづかい（申します, 御社, 〜させて いただきます, です・ます）, `length` 長さ・わかりやすさ
+    （30秒〜1分、話の 順番）, `attitude` 前向きな 姿勢・熱意, `composure` 落ち着き（圧迫に 冷静に、ていねいに 答える）.
+    `b11` uses all except `composure`; `b12` uses all eight.
+  - Every interview `listen` adds `"criteria": [ids from the rubric]` (what this question tests),
+    `"lookForEn"` (what interviewers listen for in this answer, 1–2 sentences) and `"pitfallsEn"` (typical
+    mistakes, 1 sentence). Write them from your research.
+- **Learner profile.** The learner answers as themselves, but `briefEn` must give a ready profile they can
+  use, so nobody has to invent facts on the spot: e.g. name (their own), final-year IT student in
+  their country (the model answers use **カンボジア / プノンペンの 大学**), studied web development
+  (JavaScript, React, PHP, MySQL), a 3-person team project (a booking website for a local shop; the learner
+  built the front end and fixed a bug before the deadline), part-time job at a café (customer service),
+  JLPT N3 (studying for N2), strength = careful testing / patience, weakness = shy about asking questions
+  (now asks early), wants to build apps that help small shops and to grow into a team leader in 5 years.
+  Keep these facts the same across b11 and b12.
+- **Level.** Interview Japanese is more formal than the office episodes: 申します, 御社 (spoken; 貴社 is for
+  writing), 〜させて いただきます, 〜と 考えて おります — allowed, at most one keigo chunk per line; the rest
+  です・ます, N4–N3. Model answers should be 2–4 short sentences (≈ 20–40 seconds), 結論 → 理由・具体例 → 一言.
+- **Pressure interview (b12).** 黒岩 is stern, short and cold but **never insulting or discriminatory**: he
+  doubts and digs deeper（「それは 理由に なりませんね」「具体的には？」「ほかの 会社でも 同じでは？」「日本語で 本当に
+  仕事が できますか」「あなたを 採用する メリットは？」）, interrupts, stays silent. The learner trains staying calm:
+  受け止める（「おっしゃる とおりです」/「ご指摘 ありがとう ございます」）→ 言い直す・根拠 → 前向きに. Not arguing,
+  not over-apologising. In b12b, 白石 may ask one question companies in Japan should not ask (公正採用選考 —
+  e.g. family's jobs): teach a polite, calm way to answer briefly or steer back to the job. **End both b12
+  patterns with the interviewer revealing it was deliberately strict and giving one line of honest feedback**
+  (「今日は わざと 厳しく 質問しました。…」), so the learner leaves with a clear lesson.
+- No `freeTalk` (the 逆質問 is the open part). `tipsEn`: interview culture (arrive 5–10 min early, knock 3
+  times, wait to be asked to sit, bag on the floor beside the chair, end with お礼, 御社 vs 貴社 …).
+
+### People for Story C
+
+| id | role |
+|---|---|
+| `murakami` | みどりデザイン project leader — in b11a the main interviewer (warm, practical); in b11b second interviewer |
+| `fujita` | みどりデザイン engineer — b11a asks the technical questions (friendly) |
+| `ogawa` | みどりデザイン 部長 — b11b main interviewer (formal, kind, asks about motivation and the future) |
+| `kuroiwa` 黒岩 たけし | 開発部長 at 株式会社 くろがねシステム — the pressure interviewer (b12a, b12b) |
+| `shiraishi` 白石 れい | 人事 (HR) at くろがねシステム — b12b second interviewer: cool, reads questions from a sheet, checks the time |
+
+### Scene `interview`
+
+A company meeting room set up for an interview. The learner starts just inside the door (`spawn`), walks to
+the candidate's chair (`learner: "walk"`), sits (`"sit"`) and stands (`"stand"`). Interviewers sit behind a
+table facing the chair. Slots: `npc1` (centre), `npc2` (to npc1's right as the learner sees it), `npc3`
+(left), `phone`. Props: `door` (far), `chair` (near), `bag` (near), `table` (npc), `resume` (npc, 履歴書 in
+front of npc1), `laptop` (npc), `water` (npc), `nameplate` (npc), `clock` (far), `window` (far),
+`logo` (far), `plant` (far). `setup.room`: `midori` (bright, wood, plants, green logo) or `grey` (cool grey,
+blinds, bare walls, steel table — colder light).

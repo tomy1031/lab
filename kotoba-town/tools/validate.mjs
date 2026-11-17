@@ -26,6 +26,8 @@ const err = (where, msg) => { errors++; console.log(`  ✗ ${where}: ${msg}`); }
 const warn = (where, msg) => { warnings++; console.log(`  ! ${where}: ${msg}`); };
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
 const jaLen = (s) => [...(s || '')].length;
+const RUBRIC = ['manners', 'conclusion', 'specific', 'company', 'keigo', 'length', 'attitude', 'composure'];
+const LEARNER_MOVES = ['walk', 'sit', 'stand'];
 const KANA_ONLY = /^[぀-ゟ゠-ヿ　-〿！-～\s0-9A-Za-z・ー〜～…、。！？「」（）().,!?:%\-]+$/;
 
 if (!files.length) { console.log('no lesson files found'); process.exit(1); }
@@ -37,9 +39,15 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
   const L = file.slice(0, 3);
   const n = Number(file.slice(1, 3));
   if (data[course.numberField] !== n) err(L, `${course.numberField} must be ${n}`);
+  const interview = data.format === 'interview';
   if (course.prefix === 'b') {
     for (const k of ['course', 'storyJa', 'storyEn', 'levelEn']) if (!isStr(data[k])) err(L, `missing ${k}`);
     if (data.course !== 'it') err(L, 'course must be "it"');
+  }
+  if (data.format !== undefined && !interview) err(L, `unknown format "${data.format}"`);
+  if (interview) {
+    if (!Array.isArray(data.rubric) || data.rubric.length < 4) err(L, 'interview needs rubric[] (criteria ids)');
+    for (const r of data.rubric || []) if (!RUBRIC.includes(r)) err(L, `rubric "${r}" is not one of ${RUBRIC.join(', ')}`);
   }
   for (const k of ['titleJa', 'titleEn', 'summaryEn']) if (!isStr(data[k])) err(L, `missing ${k}`);
   const gids = new Set();
@@ -71,6 +79,8 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
     if (s.time && !TIMES.includes(s.time)) err(V, `setup.time "${s.time}"`);
     if (s.season && !SEASONS.includes(s.season)) err(V, `setup.season "${s.season}"`);
     if (s.weather && !WEATHERS.includes(s.weather)) err(V, `setup.weather "${s.weather}"`);
+    if (s.room && !(scene?.rooms || []).includes(s.room)) err(V, `setup.room "${s.room}" (scene ${v.scene} has ${(scene?.rooms || []).join(', ') || 'none'})`);
+    if (v.entrance !== undefined && v.entrance !== 'knock') err(V, `entrance must be "knock"`);
     if (!Array.isArray(v.missionsEn) || v.missionsEn.length < 2 || v.missionsEn.length > 4) err(V, 'missionsEn needs 2–4 items');
     for (const m of v.missionsEn || []) {
       if (!isStr(m.text)) err(V, 'mission without text');
@@ -126,6 +136,7 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
         if (line.gesture === 'point' && (!line.target || !scene?.props[line.target])) err(W, `point gesture needs a prop target of scene ${v.scene}`);
       }
       if (nd.focus && scene && !scene.props[nd.focus]) err(W, `focus "${nd.focus}" is not a prop of ${v.scene}`);
+      if (nd.learner !== undefined && !LEARNER_MOVES.includes(nd.learner)) err(W, `learner must be one of ${LEARNER_MOVES.join(', ')}`);
       if (nd.next && !nodes[nd.next]) err(W, `next "${nd.next}" missing`);
       if (nd.nextRandom) {
         if (!Array.isArray(nd.nextRandom) || nd.nextRandom.length < 2) err(W, 'nextRandom needs ≥2 ids');
@@ -149,6 +160,12 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
           if (!nodes[b.next]) err(W, `branch ${b.id} next "${b.next}" missing`);
         }
         if (!nodes[li.fallback]) err(W, `listen.fallback "${li.fallback}" missing`);
+        if (interview) {
+          if (!Array.isArray(li.criteria) || !li.criteria.length) err(W, 'interview listen needs criteria[]');
+          for (const c of li.criteria || []) if (!(data.rubric || []).includes(c)) err(W, `criteria "${c}" not in the episode rubric`);
+          if (!isStr(li.lookForEn)) err(W, 'interview listen needs lookForEn');
+          if (!isStr(li.pitfallsEn)) err(W, 'interview listen needs pitfallsEn');
+        }
       }
     }
     // reachability + every path ends
@@ -179,10 +196,17 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
       if (v.freeTalk.openerJa && jaLen(v.freeTalk.openerJa) > course.maxLen) err(V, `freeTalk.openerJa longer than ${course.maxLen} chars`);
     }
     const lines = variantLines(v);
-    const maxLines = course.prefix === 'b' ? 24 : 22;
-    if (lines.length > maxLines) err(V, `${lines.length} spoken lines — keep it to ${course.prefix === 'b' ? '14–20' : '12–18'} (voice budget)`);
-    else if (lines.length > maxLines - 4) warn(V, `${lines.length} spoken lines (target ${course.prefix === 'b' ? '14–20' : '12–18'})`);
-    if (minListens < 3) warn(V, `a path with only ${minListens} learner turn(s) (aim 4–6)`);
+    const maxLines = interview ? 36 : course.prefix === 'b' ? 24 : 22;
+    const target = interview ? '26–34' : course.prefix === 'b' ? '14–20' : '12–18';
+    if (lines.length > maxLines) err(V, `${lines.length} spoken lines — keep it to ${target} (voice budget)`);
+    else if (lines.length > maxLines - (interview ? 2 : 4)) warn(V, `${lines.length} spoken lines (target ${target})`);
+    if (interview) {
+      if (minListens < 7) err(V, `an interview path with only ${minListens} learner turn(s) (needs 7–10)`);
+      if (maxListens > 10) err(V, `an interview path with ${maxListens} learner turns (max 10)`);
+      if (v.entrance !== 'knock') err(V, 'interview variants start with "entrance": "knock"');
+      for (const mv of LEARNER_MOVES) if (!Object.values(nodes).some((x) => x.learner === mv)) err(V, `interview needs a node with "learner": "${mv}"`);
+      if (v.freeTalk) warn(V, 'interviews have no freeTalk (the 逆質問 is the open part)');
+    } else if (minListens < 3) warn(V, `a path with only ${minListens} learner turn(s) (aim 4–6)`);
     console.log(`  · ${V} [${v.scene}] ${Object.keys(nodes).length} nodes, ${lines.length} lines, learner turns ${minListens}–${maxListens}`);
   }
   for (const g of gids) if (!targeted.has(g)) warn(L, `grammar ${g} is never targeted by a listen`);

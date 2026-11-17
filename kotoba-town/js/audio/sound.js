@@ -110,6 +110,30 @@ export class Sound {
     return new Promise((r) => setTimeout(r, times * 1600));
   }
 
+  /** Knocking on a wooden door: コン、コン、コン. */
+  knock(times = 3) {
+    if (!this.ctx) return Promise.resolve();
+    const c = this.ctx;
+    const len = Math.floor(c.sampleRate * 0.09);
+    const noise = c.createBuffer(1, len, c.sampleRate);
+    const d = noise.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.12));
+    for (let k = 0; k < times; k++) {
+      const t = c.currentTime + 0.05 + k * 0.42;
+      // the thump of the door panel
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(95, t + 0.08);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+      o.connect(g).connect(this.uiBus); o.start(t); o.stop(t + 0.16);
+      // the knuckle click
+      const n = c.createBufferSource(); n.buffer = noise;
+      const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 1.4;
+      const ng = c.createGain(); ng.gain.value = 0.5;
+      n.connect(bp).connect(ng).connect(this.uiBus); n.start(t);
+    }
+    return new Promise((r) => setTimeout(r, times * 420 + 500));
+  }
+
   /** Little three-note fanfare for stars on the report. */
   fanfare(stars = 3) {
     if (!this.ctx) return;

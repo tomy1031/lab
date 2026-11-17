@@ -119,10 +119,9 @@ async function boot() {
     try { await runner.begin(); } catch (e) { KT.errors.push(String(e?.stack || e)); console.error(e); toast.show(`Error: ${e.message}`, 5000); }
   }
 
-  function showReport(L, v, { report, turns, missions }, mode) {
+  function showReport(L, v, { report, turns, missions }, mode, { again = false } = {}) {
     state.where = 'report';
-    store.record(v.id, report.stars, mode);
-    sound.fanfare(report.stars);
+    if (!again) { store.record(v.id, report.stars, mode); sound.fanfare(report.stars); }
     boardMode = 'follow';
     boardFollow.update(0, true);
     // ITビジネス編 follows one story: offer the next episode (same pattern letter when it exists)
@@ -137,7 +136,7 @@ async function boot() {
       onOther: () => { board.hide(); goTown().then(() => showVariants(L)); },
       onTown: () => goTown(),
     });
-    KT.lastReport = { report, turns, missions, mode };
+    KT.lastReport = { report, turns, missions, mode, variant: v.id };
   }
 
   // ---------------------------------------------------------------- landing
@@ -184,13 +183,13 @@ async function boot() {
 
   function openMenu() {
     if (state.where === 'town' || state.where === 'title' || state.menu) return;
-    const prev = { draw: board.panel.drawFn, visible: board.panel.visible, mode: boardMode };
+    const prev = { draw: board.panel.drawFn, visible: board.panel.visible, mode: boardMode, h: board.panel.canvas.height };
     state.menu = true;
     boardMode = 'follow'; boardFollow.update(0, true);
     const resume = () => {
       state.menu = false;
       boardMode = prev.mode;
-      if (prev.visible && prev.draw) board.panel.draw(prev.draw); else board.hide();
+      if (prev.visible && prev.draw) { board.panel.setHeight(prev.h); board.panel.draw(prev.draw); } else board.hide();
     };
     board.message('メニュー · Menu', 'Go back to the town square, or keep going here.', [
       { label: 'つづける · Resume', onClick: resume },
