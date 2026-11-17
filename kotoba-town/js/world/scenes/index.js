@@ -11,6 +11,8 @@ export const SCENE_MODULES = {
   home: () => import('./home.js'),
   konbini: () => import('./konbini.js'),
   interview: () => import('./interview.js'),
+  clinic: () => import('./clinic.js'),
+  izakaya: () => import('./izakaya.js'),
   hub: () => import('./hub.js'),
 };
 

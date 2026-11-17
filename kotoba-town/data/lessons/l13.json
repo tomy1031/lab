@@ -1,0 +1,1248 @@
+{
+  "lesson": 13,
+  "titleJa": "なにが ほしいですか",
+  "titleEn": "What do you want?",
+  "summaryEn": "Say what you want (～が ほしいです), what you want to do (～たいです), and where you go to do something (～へ ～に 行きます). Order at a restaurant and pay separately.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Nが ほしいです",
+      "meaningEn": "I want N (a thing, time, a friend…). ほしい is an い-adjective: ほしくないです. Only for your own wishes, or to ask the listener.",
+      "exampleJa": "あたらしい パソコンが ほしいです。",
+      "exampleEn": "I want a new computer."
+    },
+    {
+      "id": "g2",
+      "pattern": "Vます-stem＋たいです（Nを／Nが）",
+      "meaningEn": "I want to do V. Drop ます and add たいです; it conjugates like an い-adjective: たべたくないです.",
+      "exampleJa": "つめたい おちゃが のみたいです。",
+      "exampleEn": "I want to drink cold tea."
+    },
+    {
+      "id": "g3",
+      "pattern": "N(place)へ Vます-stem／N に 行きます・来ます・帰ります",
+      "meaningEn": "go / come / return to a place in order to do something (に marks the purpose)",
+      "exampleJa": "デパートへ かいものに いきます。",
+      "exampleEn": "I'm going to the department store to shop."
+    },
+    {
+      "id": "g4",
+      "pattern": "なにか／どこか",
+      "meaningEn": "something / somewhere (the particles を and へ after them can be dropped); in a negative answer: なにも／どこも ～ません",
+      "exampleJa": "しゅうまつは どこか いきますか。",
+      "exampleEn": "Are you going anywhere this weekend?"
+    },
+    {
+      "id": "g5",
+      "pattern": "ごちゅうもんは？ → ～を おねがいします／べつべつに おねがいします",
+      "meaningEn": "ordering at a restaurant and asking to pay separately",
+      "exampleJa": "ビールと やきとりを おねがいします。",
+      "exampleEn": "Beer and yakitori, please."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "ほしい",
+      "kana": "ほしい",
+      "en": "want (a thing)"
+    },
+    {
+      "ja": "週末",
+      "kana": "しゅうまつ",
+      "en": "weekend"
+    },
+    {
+      "ja": "夏休み",
+      "kana": "なつやすみ",
+      "en": "summer holiday"
+    },
+    {
+      "ja": "遊びます",
+      "kana": "あそびます",
+      "en": "play, have fun"
+    },
+    {
+      "ja": "泳ぎます",
+      "kana": "およぎます",
+      "en": "swim"
+    },
+    {
+      "ja": "疲れます",
+      "kana": "つかれます",
+      "en": "get tired"
+    },
+    {
+      "ja": "買い物します",
+      "kana": "かいものします",
+      "en": "do the shopping"
+    },
+    {
+      "ja": "食事します",
+      "kana": "しょくじします",
+      "en": "have a meal"
+    },
+    {
+      "ja": "何か",
+      "kana": "なにか",
+      "en": "something"
+    },
+    {
+      "ja": "どこか",
+      "kana": "どこか",
+      "en": "somewhere"
+    },
+    {
+      "ja": "のどが かわきます",
+      "kana": "のどが かわきます",
+      "en": "get thirsty"
+    },
+    {
+      "ja": "おなかが すきます",
+      "kana": "おなかが すきます",
+      "en": "get hungry"
+    },
+    {
+      "ja": "ご注文は？",
+      "kana": "ごちゅうもんは？",
+      "en": "May I take your order?"
+    },
+    {
+      "ja": "少々 お待ちください",
+      "kana": "しょうしょう おまちください",
+      "en": "One moment, please."
+    },
+    {
+      "ja": "～で ございます",
+      "kana": "～で ございます",
+      "en": "polite です (used by staff)"
+    },
+    {
+      "ja": "別々に",
+      "kana": "べつべつに",
+      "en": "separately"
+    },
+    {
+      "ja": "お会計",
+      "kana": "おかいけい",
+      "en": "the bill"
+    },
+    {
+      "ja": "焼き鳥",
+      "kana": "やきとり",
+      "en": "grilled chicken skewers"
+    },
+    {
+      "ja": "海",
+      "kana": "うみ",
+      "en": "sea"
+    },
+    {
+      "ja": "色",
+      "kana": "いろ",
+      "en": "colour"
+    },
+    {
+      "ja": "軽い",
+      "kana": "かるい",
+      "en": "light (not heavy)"
+    },
+    {
+      "ja": "遠い",
+      "kana": "とおい",
+      "en": "far"
+    }
+  ],
+  "tipsEn": [
+    "In Japan friends and colleagues usually split the bill. At the register just say 「べつべつに おねがいします」.",
+    "ほしいです and ～たいです are for your own wishes. Don't ask a boss or a customer 「のみたいですか」 — offer instead: 「コーヒーは いかがですか」.",
+    "An izakaya is a place to eat as much as to drink. Ordering tea or juice is completely normal."
+  ],
+  "research": {
+    "sources": [
+      "https://www.vnjpclub.com/en/minna-no-nihongo/lesson-13-vocabulary.html",
+      "https://wasabi-jpn.com/magazine/how-to-speak-japanese/how-to-express-desire-in-japanese-using-tai-hoshii/",
+      "https://jepang.org/en/tutorial/expressing-desires"
+    ],
+    "notesEn": "Lesson 13 is about wishes and purposes: Nが ほしいです (wanting a thing), Vます-stem＋たいです (wanting to do something; を may become が; both conjugate like い-adjectives, so the negatives are ほしくないです／～たくないです), and place へ V-stem／N に 行きます・来ます・帰ります (going somewhere in order to do something), plus なにか／どこか and the restaurant chunks ご注文は？, 少々 お待ちください, ～で ございます and 別々に. The natural situations are ordering and paying at a restaurant, weekend and holiday plans, and saying what you want in a shop. Typical mistakes are を or は instead of が with ほしい, putting a verb before ほしい (✗ のむ ほしい), keeping ます in front of たい (✗ のみますたい), using these forms for a third person, asking a superior ～たいですか instead of offering with いかがですか, and を instead of に for the purpose of going. The three scenes are original: a winter Friday night at the izakaya with a colleague, summer weekend talk in the café, and a rainy-morning umbrella hunt at the department store. No て-form appears in any NPC line."
+  },
+  "variants": [
+    {
+      "id": "l13a",
+      "titleJa": "いざかや「だいち」",
+      "titleEn": "Friday night at the izakaya",
+      "scene": "izakaya",
+      "setup": {
+        "time": "night",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A cold Friday night after a long week. Fujita takes you to his favourite izakaya, Daichi. The cheerful owner, Nakano, shows you to a table. (You don't have to drink alcohol — tea and juice are fine.)",
+      "roleEn": "You are Fujita's colleague. Say what you want, order for the table, and pay your own share at the end.",
+      "missionsEn": [
+        {
+          "text": "Say what you want to drink",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Order drinks and food from the owner",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Tell Fujita what you want most right now",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask to pay separately",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "nakano",
+        "fujita"
+      ],
+      "positions": {
+        "nakano": "staff",
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "learner": "sit",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "いらっしゃいませ！どうぞ、こちらへ。",
+              "kana": "いらっしゃいませ！どうぞ、こちらへ。",
+              "en": "Welcome! This way, please.",
+              "gesture": "beckon"
+            },
+            {
+              "who": "fujita",
+              "ja": "今日は 疲れましたね。何を 飲みたいですか。",
+              "kana": "きょうは つかれましたね。なにを のみたいですか。",
+              "en": "What a day — I'm tired. What do you want to drink?",
+              "tts": "きょうは つかれましたね。なにを のみたいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you want to drink — a beer, or something without alcohol like tea or juice.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿が のみたいです。",
+            "modelAnswers": [
+              "ビールが のみたいです。",
+              "つめたい おちゃが のみたいです。",
+              "ジュースを のみたいです。"
+            ],
+            "branches": [
+              {
+                "id": "alcohol",
+                "whenEn": "Learner wants an alcoholic drink (beer, sake, wine…).",
+                "next": "n2_beer",
+                "exampleJa": "ビールが のみたいです。"
+              },
+              {
+                "id": "soft",
+                "whenEn": "Learner wants a non-alcoholic drink (tea, juice, water, cola…) or says they don't drink alcohol.",
+                "next": "n2_soft",
+                "exampleJa": "つめたい おちゃが のみたいです。"
+              }
+            ],
+            "fallback": "n2_soft"
+          }
+        },
+        {
+          "id": "n2_beer",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！わたしも ビールが 飲みたいです。",
+              "kana": "いいですね！わたしも ビールが のみたいです。",
+              "en": "Nice! I want a beer too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_soft",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。わたしは ビールが 飲みたいです。",
+              "kana": "いいですね。わたしは ビールが のみたいです。",
+              "en": "Sounds good. I want a beer.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "menu",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "ご注文は？今日は 焼き鳥が おいしいですよ。",
+              "kana": "ごちゅうもんは？きょうは やきとりが おいしいですよ。",
+              "en": "What can I get you? The yakitori is good today.",
+              "gesture": "point",
+              "target": "menu_strips"
+            }
+          ],
+          "listen": {
+            "promptEn": "Order for the table: your drink, a beer for Fujita, and something to eat.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿と ＿＿を おねがいします。",
+            "modelAnswers": [
+              "ビールを ふたつと やきとりを おねがいします。",
+              "ビールと おちゃと やきとりを おねがいします。",
+              "おちゃと ビールと さかなを おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "yakitori",
+                "whenEn": "Learner's order includes yakitori.",
+                "next": "n4_yaki",
+                "exampleJa": "ビールと おちゃと やきとりを おねがいします。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner orders without yakitori: other food (fish, edamame, salad…) or only drinks.",
+                "next": "n4_other",
+                "exampleJa": "ビールを ふたつと えだまめを おねがいします。"
+              }
+            ],
+            "fallback": "n4_other"
+          }
+        },
+        {
+          "id": "n4_yaki",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "焼き鳥ですね。少々 お待ちください！",
+              "kana": "やきとりですね。しょうしょう おまちください！",
+              "en": "Yakitori, right. Just a moment, please!",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_other",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "はい、わかりました。少々 お待ちください！",
+              "kana": "はい、わかりました。しょうしょう おまちください！",
+              "en": "Certainly. Just a moment, please!",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしは 今、新しい ギターが ほしいです。高いですが……。",
+              "kana": "わたしは いま、あたらしい ギターが ほしいです。たかいですが……。",
+              "en": "Right now I want a new guitar. It's expensive, though…",
+              "gesture": "think"
+            },
+            {
+              "who": "fujita",
+              "ja": "今、何が いちばん ほしいですか。",
+              "kana": "いま、なにが いちばん ほしいですか。",
+              "en": "What do you want most right now?",
+              "tts": "いま、なにが いちばん ほしいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you want most right now — a thing (a new PC, a bike…) or something like time, a holiday or money.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿が ほしいです。",
+            "modelAnswers": [
+              "あたらしい パソコンが ほしいです。",
+              "やすみが ほしいです。",
+              "じかんが いちばん ほしいです。"
+            ],
+            "branches": [
+              {
+                "id": "thing",
+                "whenEn": "Learner wants an object you can buy (computer, phone, car, bike, clothes, a house…).",
+                "next": "n6_thing",
+                "exampleJa": "あたらしい パソコンが ほしいです。"
+              },
+              {
+                "id": "not_a_thing",
+                "whenEn": "Learner wants something that is not an object: time, a holiday, money, a friend or partner — or says they want nothing.",
+                "next": "n6_time",
+                "exampleJa": "やすみが ほしいです。"
+              }
+            ],
+            "fallback": "n6_time"
+          }
+        },
+        {
+          "id": "n6_thing",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！お金が たくさん かかりますが……。",
+              "kana": "いいですね！おかねが たくさん かかりますが……。",
+              "en": "Nice! It costs a lot of money, though…",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_time",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わかります！わたしも 休みが ほしいです。",
+              "kana": "わかります！わたしも やすみが ほしいです。",
+              "en": "I get it! I want some time off too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "register",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "もう 9時ですね。そろそろ 帰りましょう。",
+              "kana": "もう くじですね。そろそろ かえりましょう。",
+              "en": "It's nine already. Let's head home.",
+              "tts": "もう くじですね。そろそろ かえりましょう。"
+            },
+            {
+              "who": "nakano",
+              "ja": "ありがとう ございます！お会計は ごいっしょですか。",
+              "kana": "ありがとう ございます！おかいけいは ごいっしょですか。",
+              "en": "Thank you! Are you paying together?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Time to pay. Tell the owner you will pay separately — or together, if you want to treat Fujita.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿に おねがいします。",
+            "modelAnswers": [
+              "べつべつに おねがいします。",
+              "すみません、べつべつに おねがいします。",
+              "きょうは わたしが はらいます。いっしょに おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "separate",
+                "whenEn": "Learner asks to pay separately.",
+                "next": "end_sep",
+                "exampleJa": "べつべつに おねがいします。"
+              },
+              {
+                "id": "together",
+                "whenEn": "Learner asks to pay together or says they will pay for both.",
+                "next": "end_treat",
+                "exampleJa": "きょうは わたしが はらいます。いっしょに おねがいします。"
+              }
+            ],
+            "fallback": "end_sep"
+          }
+        },
+        {
+          "id": "end_sep",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "別々ですね。お一人 2,100円で ございます。",
+              "kana": "べつべつですね。おひとり にせんひゃくえんで ございます。",
+              "en": "Separately, right. That's 2,100 yen each.",
+              "tts": "べつべつですね。おひとり にせんひゃくえんで ございます。"
+            },
+            {
+              "who": "fujita",
+              "ja": "おいしかったですね。また 来たいです。",
+              "kana": "おいしかったですね。また きたいです。",
+              "en": "That was good. I want to come again.",
+              "tts": "おいしかったですね。また きたいです。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_treat",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、いいですか。ありがとう ございます！",
+              "kana": "えっ、いいですか。ありがとう ございます！",
+              "en": "What, are you sure? Thank you!",
+              "gesture": "surprised"
+            },
+            {
+              "who": "nakano",
+              "ja": "4,200円で ございます。また どうぞ！",
+              "kana": "よんせんにひゃくえんで ございます。また どうぞ！",
+              "en": "That's 4,200 yen. Come again!",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l13b",
+      "titleJa": "なつの しゅうまつ",
+      "titleEn": "Summer weekend plans",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "summer",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A hot Friday lunch break. You and Aoki are cooling down in Sakamoto's café near the office, and the talk turns to the weekend and the summer holiday.",
+      "roleEn": "You are Aoki's colleague. Talk about your real plans and wishes — where you are going, and what you want to do.",
+      "missionsEn": [
+        {
+          "text": "Say where you are going this weekend, and what for",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Answer Aoki's invitation: what do you want to do?",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say what you want to do in the summer holiday",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Tell the owner whether you want cake",
+          "grammar": [
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "sakamoto"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "sakamoto": "counter"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "毎日 暑いですね。週末は どこか 行きますか。",
+              "kana": "まいにち あついですね。しゅうまつは どこか いきますか。",
+              "en": "It's hot every day, isn't it. Are you going anywhere this weekend?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her your weekend plan: where you are going and what for — or say you are not going anywhere.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿へ ＿＿に いきます。／いいえ、どこも いきません。",
+            "modelAnswers": [
+              "はい、デパートへ かいものに いきます。",
+              "ともだちと こうえんへ あそびに いきます。",
+              "いいえ、どこも いきません。うちで やすみます。"
+            ],
+            "branches": [
+              {
+                "id": "going",
+                "whenEn": "Learner is going somewhere (with or without saying what for).",
+                "next": "n2_go",
+                "exampleJa": "デパートへ かいものに いきます。"
+              },
+              {
+                "id": "staying",
+                "whenEn": "Learner is not going anywhere, is staying home, or has no plan yet.",
+                "next": "n2_stay",
+                "exampleJa": "いいえ、どこも いきません。"
+              }
+            ],
+            "fallback": "n2_stay"
+          }
+        },
+        {
+          "id": "n2_go",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！楽しい 週末ですね。",
+              "kana": "いいですね！たのしい しゅうまつですね。",
+              "en": "Nice! That sounds like a fun weekend.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_stay",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。うちも いいですね。暑いですから。",
+              "kana": "そうですか。うちも いいですね。あついですから。",
+              "en": "I see. Home is nice too — it's so hot.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしは 来週の 日曜日、海へ 泳ぎに 行きます。",
+              "kana": "わたしは らいしゅうの にちようび、うみへ およぎに いきます。",
+              "en": "Next Sunday I'm going to the sea for a swim."
+            },
+            {
+              "who": "aoki",
+              "ja": "いっしょに 行きませんか。",
+              "kana": "いっしょに いきませんか。",
+              "en": "Won't you come with me?",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept — say you want to go (and what you want to do there) — or decline and say what you want to do instead.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "いいですね。わたしも ＿＿たいです。／すみません、＿＿たいです。",
+            "modelAnswers": [
+              "いいですね。わたしも うみで およぎたいです。",
+              "ええ、いきたいです。",
+              "すみません。にちようびは うちで やすみたいです。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts or says they want to go / swim.",
+                "next": "n4_yes",
+                "exampleJa": "いいですね。わたしも およぎたいです。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines, cannot go, or wants to do something else that day.",
+                "next": "n4_no",
+                "exampleJa": "すみません。にちようびは うちで やすみたいです。"
+              }
+            ],
+            "fallback": "n4_no"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "よかったです！じゃ、藤田さんの 車で 行きましょう。",
+              "kana": "よかったです！じゃ、ふじたさんの くるまで いきましょう。",
+              "en": "Great! Then let's go in Fujita's car.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。残念です。じゃ、また 今度。",
+              "kana": "そうですか。ざんねんです。じゃ、また こんど。",
+              "en": "I see. That's a pity. Next time, then.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "来月は 夏休みですね。何を したいですか。",
+              "kana": "らいげつは なつやすみですね。なにを したいですか。",
+              "en": "Next month is the summer holiday. What do you want to do?",
+              "tts": "らいげつは なつやすみですね。なにを したいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you want to do in the summer holiday.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "＿＿たいです。／＿＿へ ＿＿に いきたいです。",
+            "modelAnswers": [
+              "くにへ かえりたいです。かぞくに あいたいです。",
+              "きょうとへ おてらを みに いきたいです。",
+              "まいにち たくさん ねたいです。"
+            ],
+            "branches": [
+              {
+                "id": "travel",
+                "whenEn": "Learner wants to go somewhere: a trip, their home country, the sea, a city…",
+                "next": "n6_travel",
+                "exampleJa": "きょうとへ おてらを みに いきたいです。"
+              },
+              {
+                "id": "stay",
+                "whenEn": "Learner wants to stay around home: rest, sleep, study, work, hobbies — or wants to do nothing.",
+                "next": "n6_home",
+                "exampleJa": "まいにち たくさん ねたいです。"
+              }
+            ],
+            "fallback": "n6_home"
+          }
+        },
+        {
+          "id": "n6_travel",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね。わたしも どこか 遠い 所へ 行きたいです。",
+              "kana": "いいですね。わたしも どこか とおい ところへ いきたいです。",
+              "en": "Nice. I want to go somewhere far away too."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_home",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わかります。わたしも 夏は 何も したくないです。",
+              "kana": "わかります。わたしも なつは なにも したくないです。",
+              "en": "I know the feeling. In summer I don't want to do anything either.",
+              "gesture": "laugh",
+              "tts": "わかります。わたしも なつは なにも したくないです。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "cake_case",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "今日は 冷たい レモンケーキが ありますよ。いかがですか。",
+              "kana": "きょうは つめたい レモンケーキが ありますよ。いかがですか。",
+              "en": "We have chilled lemon cake today. Would you like some?",
+              "gesture": "point",
+              "target": "cake_case"
+            }
+          ],
+          "listen": {
+            "promptEn": "The owner offers lemon cake. Say you want to eat it — or that you don't want to eat anything right now.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "はい、たべたいです。／いまは なにも たべたくないです。",
+            "modelAnswers": [
+              "はい、たべたいです。ひとつ おねがいします。",
+              "いいえ、けっこうです。いまは なにも たべたくないです。"
+            ],
+            "branches": [
+              {
+                "id": "wants_cake",
+                "whenEn": "Learner wants the cake.",
+                "next": "end_cake",
+                "exampleJa": "はい、たべたいです。ひとつ おねがいします。"
+              },
+              {
+                "id": "no_cake",
+                "whenEn": "Learner does not want cake / is full / declines.",
+                "next": "end_no",
+                "exampleJa": "いまは なにも たべたくないです。"
+              }
+            ],
+            "fallback": "end_no"
+          }
+        },
+        {
+          "id": "end_cake",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、少々 お待ちください。",
+              "kana": "はい、しょうしょう おまちください。",
+              "en": "Certainly, just a moment.",
+              "gesture": "nod"
+            },
+            {
+              "who": "aoki",
+              "ja": "わたしも 食べたいです！一つ お願いします。",
+              "kana": "わたしも たべたいです！ひとつ おねがいします。",
+              "en": "I want one too! One for me, please.",
+              "tts": "わたしも たべたいです！ひとつ おねがいします。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。じゃ、また 今度 どうぞ。",
+              "kana": "そうですか。じゃ、また こんど どうぞ。",
+              "en": "I see. Next time, then.",
+              "gesture": "nod"
+            },
+            {
+              "who": "aoki",
+              "ja": "あ、もう 1時ですね。会社へ 帰りましょう。",
+              "kana": "あ、もう いちじですね。かいしゃへ かえりましょう。",
+              "en": "Oh, it's one already. Let's go back to the office.",
+              "tts": "あ、もう いちじですね。かいしゃへ かえりましょう。"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "日本で どこへ 行きたいですか。",
+        "openerKana": "にほんで どこへ いきたいですか。",
+        "openerEn": "Where in Japan do you want to go?",
+        "topicEn": "Chat about wishes and plans: places the learner wants to go, things they want to do, eat or buy, and what they go there to do. Stay within lesson 13 grammar (～が ほしいです, ～たいです／～たくないです, ～へ ～に 行きます, なにか／どこか). Polite style, no て-form.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l13c",
+      "titleJa": "あめの ひの デパート",
+      "titleEn": "A rainy morning at the department store",
+      "scene": "depato",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "It's raining and your old umbrella has just broken, so you step into the department store. Your neighbour Aya is shopping there too. (You may also choose something else you want: a bag, a watch, a tie.)",
+      "roleEn": "You are a shopper. Decide what you want, its colour, and whether the price is right — then answer Aya's lunch invitation.",
+      "missionsEn": [
+        {
+          "text": "Say what you came to buy",
+          "grammar": [
+            "g3",
+            "g1"
+          ]
+        },
+        {
+          "text": "Tell the clerk what kind you want",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Buy it, or say you want a cheaper one",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Answer Aya's invitation and say what you want to eat",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "nishimura"
+      ],
+      "positions": {
+        "mori_aya": "npc1",
+        "nishimura": "clerk"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あ、こんにちは。今日は 何を 買いに 来ましたか。",
+              "kana": "あ、こんにちは。きょうは なにを かいに きましたか。",
+              "en": "Oh, hello! What did you come to buy today?",
+              "gesture": "wave",
+              "tts": "あ、こんにちは。きょうは なにを かいに きましたか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you came to buy: an umbrella — or something else you want (a bag, a watch, a tie).",
+            "grammar": [
+              "g3",
+              "g1"
+            ],
+            "hintJa": "＿＿を かいに きました。／＿＿が ほしいです。",
+            "modelAnswers": [
+              "かさを かいに きました。",
+              "あたらしい かばんが ほしいです。",
+              "とけいを みに きました。"
+            ],
+            "branches": [
+              {
+                "id": "umbrella",
+                "whenEn": "Learner came for an umbrella.",
+                "next": "n2_umb",
+                "exampleJa": "かさを かいに きました。"
+              },
+              {
+                "id": "other_item",
+                "whenEn": "Learner came for anything else, or just to look.",
+                "next": "n2_other",
+                "exampleJa": "あたらしい かばんが ほしいです。"
+              }
+            ],
+            "fallback": "n2_umb"
+          }
+        },
+        {
+          "id": "n2_umb",
+          "focus": "umbrella_rack",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "今日は 雨ですからね。かさは あそこですよ。",
+              "kana": "きょうは あめですからね。かさは あそこですよ。",
+              "en": "Well, it is raining today. The umbrellas are over there.",
+              "gesture": "point",
+              "target": "umbrella_rack"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね。わたしは 新しい かさが ほしいです。",
+              "kana": "いいですね。わたしは あたらしい かさが ほしいです。",
+              "en": "Nice. I want a new umbrella myself.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "いらっしゃいませ。どんな 色が いいですか。",
+              "kana": "いらっしゃいませ。どんな いろが いいですか。",
+              "en": "Welcome. What colour would you like?",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the clerk what colour (and what kind) you want.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿い ＿＿が ほしいです。",
+            "modelAnswers": [
+              "あおい かさが ほしいです。",
+              "くろい かばんが ほしいです。",
+              "あかい かさが ほしいです。おおきい かさが いいです。"
+            ],
+            "branches": [
+              {
+                "id": "dark",
+                "whenEn": "Learner wants a dark or plain colour (black, blue, navy, grey, brown, green).",
+                "next": "n4_dark",
+                "exampleJa": "あおい かさが ほしいです。"
+              },
+              {
+                "id": "bright",
+                "whenEn": "Learner wants a bright or light colour (red, yellow, pink, white, orange) or does not name a colour.",
+                "next": "n4_bright",
+                "exampleJa": "あかい かさが ほしいです。"
+              }
+            ],
+            "fallback": "n4_bright"
+          }
+        },
+        {
+          "id": "n4_dark",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "では、こちらは いかがですか。軽いですよ。",
+              "kana": "では、こちらは いかがですか。かるいですよ。",
+              "en": "Then how about this one? It's light.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_bright",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "きれいな 色ですね。では、こちらは いかがですか。",
+              "kana": "きれいな いろですね。では、こちらは いかがですか。",
+              "en": "A lovely colour. Then how about this one?",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "こちらは 8,500円で ございます。",
+              "kana": "こちらは はっせんごひゃくえんで ございます。",
+              "en": "This one is 8,500 yen."
+            },
+            {
+              "who": "mori_aya",
+              "ja": "うーん、ちょっと 高いですね。買いますか。",
+              "kana": "うーん、ちょっと たかいですね。かいますか。",
+              "en": "Hmm, that's a bit expensive. Are you going to buy it?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Decide: buy it — or say you want a cheap one, or that you don't want to buy today.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "これを ください。／やすい ＿＿が ほしいです。",
+            "modelAnswers": [
+              "はい、これが ほしいです。これを ください。",
+              "すみません。やすい かさが ほしいです。",
+              "きょうは かいたくないです。"
+            ],
+            "branches": [
+              {
+                "id": "buy",
+                "whenEn": "Learner decides to buy it.",
+                "next": "n6_buy",
+                "exampleJa": "はい、これが ほしいです。これを ください。"
+              },
+              {
+                "id": "not_buy",
+                "whenEn": "Learner wants a cheaper one or does not want to buy it.",
+                "next": "n6_no",
+                "exampleJa": "すみません。やすい かさが ほしいです。"
+              }
+            ],
+            "fallback": "n6_no"
+          }
+        },
+        {
+          "id": "n6_buy",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ありがとう ございます。少々 お待ちください。",
+              "kana": "ありがとう ございます。しょうしょう おまちください。",
+              "en": "Thank you very much. One moment, please.",
+              "gesture": "bow_light"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_no",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "わかりました。安い 物は 1階に あります。どうぞ。",
+              "kana": "わかりました。やすい ものは いっかいに あります。どうぞ。",
+              "en": "I understand. The cheaper ones are on the first floor. Please have a look.",
+              "gesture": "bow_light",
+              "tts": "わかりました。やすい ものは いっかいに あります。どうぞ。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "買い物は 疲れますね。おなかが すきました。",
+              "kana": "かいものは つかれますね。おなかが すきました。",
+              "en": "Shopping is tiring, isn't it. I'm hungry."
+            },
+            {
+              "who": "mori_aya",
+              "ja": "8階の レストランへ 食事に 行きませんか。",
+              "kana": "はちかいの レストランへ しょくじに いきませんか。",
+              "en": "Shall we go to the restaurant on the 8th floor for a meal?",
+              "tts": "はちかいの レストランへ しょくじに いきませんか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept her invitation — or decline and say what you want to do instead (go home early?).",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "いいですね。わたしも なにか ＿＿たいです。／すみません、＿＿たいです。",
+            "modelAnswers": [
+              "いいですね。わたしも なにか たべたいです。",
+              "ええ、いきましょう。",
+              "すみません。きょうは はやく うちへ かえりたいです。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts / wants to eat.",
+                "next": "n8_yes",
+                "exampleJa": "いいですね。わたしも なにか たべたいです。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines or wants to go home.",
+                "next": "end_no",
+                "exampleJa": "すみません。きょうは はやく かえりたいです。"
+              }
+            ],
+            "fallback": "end_no"
+          }
+        },
+        {
+          "id": "n8_yes",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "よかったです。何が 食べたいですか。",
+              "kana": "よかったです。なにが たべたいですか。",
+              "en": "Lovely. What do you want to eat?",
+              "tts": "よかったです。なにが たべたいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you want to eat.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿が たべたいです。",
+            "modelAnswers": [
+              "てんぷらが たべたいです。",
+              "おすしが たべたいです。",
+              "カレーが たべたいです。"
+            ],
+            "branches": [
+              {
+                "id": "japanese",
+                "whenEn": "Learner wants Japanese food (sushi, tempura, soba, ramen…).",
+                "next": "end_ja",
+                "exampleJa": "てんぷらが たべたいです。"
+              },
+              {
+                "id": "other_food",
+                "whenEn": "Learner wants any other food, or anything is fine.",
+                "next": "end_other",
+                "exampleJa": "カレーが たべたいです。"
+              }
+            ],
+            "fallback": "end_other"
+          }
+        },
+        {
+          "id": "end_ja",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね！8階に おいしい 店が ありますよ。行きましょう。",
+              "kana": "いいですね！はちかいに おいしい みせが ありますよ。いきましょう。",
+              "en": "Good choice! There's a great place on the 8th floor. Let's go.",
+              "gesture": "beckon",
+              "tts": "いいですね！はちかいに おいしい みせが ありますよ。いきましょう。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_other",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね。じゃ、レストランで メニューを 見ましょう。",
+              "kana": "いいですね。じゃ、レストランで メニューを みましょう。",
+              "en": "Sounds good. Let's look at the menu at the restaurant, then.",
+              "gesture": "beckon"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。じゃ、わたしは 一人で 行きます。また あした。",
+              "kana": "そうですか。じゃ、わたしは ひとりで いきます。また あした。",
+              "en": "I see. Then I'll go on my own. See you tomorrow.",
+              "gesture": "wave",
+              "tts": "そうですか。じゃ、わたしは ひとりで いきます。また あした。"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

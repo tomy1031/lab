@@ -8,16 +8,39 @@ import { Mic } from './audio/mic.js';
 import { Ambience } from './audio/ambience.js';
 import { Stage } from './world/stage.js';
 import { SCENES } from './content/cast.js';
-import { loadCourses, loadVoiceIndex, charactersOf } from './content/index.js';
+import { loadCourses, loadVoiceIndex, loadFreeTalk, charactersOf } from './content/index.js';
+import { resolveCharacter } from './content/lines.js';
 import { SpeechBubble, TurnCard, Board, Toast, LazyFollow } from './ui/views.js';
 import { Runner } from './talk/runner.js';
+import { FreeTalk, topicsFor } from './talk/free.js';
+import { FREE_LEVELS } from './talk/judge.js';
 import { LIVE_MODELS } from './talk/live.js';
 
 const KT = (window.KT = window.KT || { ready: false, errors: [], log: [] });
 const log = (...a) => { KT.log.push(a.join(' ')); if (KT.log.length > 200) KT.log.shift(); if (new URLSearchParams(location.search).has('debug')) console.log('[kt]', ...a); };
 
 const $ = (s) => document.querySelector(s);
-const SCENE_NAMES = { office: 'かいしゃ · Office', classroom: 'きょうしつ · Classroom', apartment: 'アパート · Apartment', depato: 'デパート · Dept. store', museum: 'びじゅつかん · Museum', station: 'えき · Station', cafe: 'きっさてん · Café', park: 'こうえん · Park', home: 'もりさんの いえ · Home', konbini: 'コンビニ · Konbini' };
+const SCENE_NAMES = { office: 'かいしゃ · Office', classroom: 'きょうしつ · Classroom', apartment: 'アパート · Apartment', depato: 'デパート · Dept. store', museum: 'びじゅつかん · Museum', station: 'えき · Station', cafe: 'きっさてん · Café', park: 'こうえん · Park', home: 'もりさんの いえ · Home', konbini: 'コンビニ · Konbini', clinic: 'びょういん · Clinic', izakaya: 'いざかや · Izakaya', interview: 'めんせつの へや · Interview room' };
+
+// Free-talk room: where the partner stands in each place (staff = at their own workplace) and how the learner moves.
+const FREE_PLACES = {
+  cafe: { staff: 'counter', friend: 'npc1' },
+  park: { friend: 'npc1' },
+  office: { staff: 'npc1', friend: 'npc1' },
+  classroom: { staff: 'teacher', friend: 'npc1' },
+  apartment: { friend: 'npc1' },
+  depato: { staff: 'clerk', friend: 'npc1' },
+  museum: { staff: 'counter', friend: 'npc1' },
+  station: { staff: 'staff', friend: 'npc1' },
+  home: { staff: 'host', friend: 'host' },
+  konbini: { staff: 'clerk', friend: 'npc1' },
+  clinic: { staff: 'doctor', friend: 'npc1', staffMoves: ['walk', 'sit'] },
+  izakaya: { staff: 'staff', friend: 'npc1', moves: ['sit'] },
+  interview: { staff: 'npc1', friend: 'npc1', moves: ['walk', 'sit'] },
+};
+const OUTDOOR = new Set(['park', 'station']);
+const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const placeName = (id) => { const [ja, en] = (SCENE_NAMES[id] || id).split(' · '); return { nameJa: ja, nameEn: en || ja }; };
 
 async function boot() {
   const fontReady = document.fonts?.load('800 40px "M PLUS Rounded 1c"').catch(() => {});
@@ -26,7 +49,7 @@ async function boot() {
   const mic = new Mic(sound);
   const amb = new Ambience(sound);
   const stage = new Stage(app, sound);
-  const [courses] = await Promise.all([loadCourses(), loadVoiceIndex(), fontReady]);
+  const [courses, freeData] = await Promise.all([loadCourses(), loadFreeTalk(), loadVoiceIndex(), fontReady]);
   const units = courses.flatMap((c) => c.units);
   const bubble = new SpeechBubble(app);
   const toast = new Toast(app);
@@ -35,6 +58,7 @@ async function boot() {
   const turn = new TurnCard(app, {
     hint: () => runner?.hint(), again: () => runner?.again(), skip: () => runner?.skip(),
     choose: (t) => runner?.choose(t), finish: () => runner?.endFree(),
+    ideas: () => runner?.ideas?.(), topic: () => runner?.newTopic?.(),
   });
   turn.panel.onClickSound = () => sound.blip('pop');
   const follow = new LazyFollow(app, turn.panel.mesh, { dist: 0.8, height: -0.42 });
@@ -48,8 +72,9 @@ async function boot() {
     board.panel.mesh.scale.setScalar(boardMode === 'follow' ? 0.62 : 1);
   });
 
-  const state = { lesson: null, variant: null, where: 'title', course: courses[0]?.id || 'minna', mode: 'practice' };
-  KT.state = state; KT.app = app; KT.stage = stage; KT.store = store;
+  const state = { lesson: null, variant: null, where: 'title', course: courses[0]?.id || 'minna', mode: 'practice', page: {}, free: null };
+  const tabs = [...courses.map(({ id, titleJa, titleEn }) => ({ id, titleJa, titleEn })), ...(freeData ? [{ id: 'free', titleJa: 'フリートーク', titleEn: 'Free talk' }] : [])];
+  KT.state = state; KT.app = app; KT.stage = stage; KT.store = store; KT.board = board; KT.turn = turn;
 
   // ------------------------------------------------------------------ places
   async function goTown() {
@@ -69,11 +94,127 @@ async function boot() {
   const starsOf = (id, mode) => store.starsOf(id, mode);
 
   function showLessons() {
+    if (state.course === 'free' && freeData) { showFree(); return; }
     board.courses({
-      courses, active: state.course, starsOf,
+      courses, tabs, active: state.course, starsOf,
       onTab: (id) => { state.course = id; showLessons(); },
       onPick: (L) => showVariants(L),
+      page: state.page[state.course] || 0,
+      onPage: (i) => { state.page[state.course] = i; showLessons(); },
     });
+  }
+
+  // ------------------------------------------------------- free-talk room
+  const freePartners = () => Object.keys(freeData?.partners || {}).filter((id) => resolveCharacter(id));
+  function freePlaces(pid) {
+    const typical = (freeData.partners[pid]?.places || []).filter((x) => FREE_PLACES[x]);
+    return [...typical, ...Object.keys(FREE_PLACES).filter((x) => !typical.includes(x))];
+  }
+  const freeTopics = (sel) => topicsFor(freeData, { partner: sel.partner, place: sel.place, level: sel.level });
+  function freeSel() {
+    if (!state.free) {
+      const partner = freePartners()[0];
+      state.free = { partner, place: freePlaces(partner)[0], topic: 0, level: store.settings.freeLevel || 'easy', style: 'polite' };
+    }
+    return state.free;
+  }
+
+  function showFree() {
+    const sel = freeSel();
+    const info = freeData.partners[sel.partner] || {};
+    const partner = resolveCharacter(sel.partner);
+    const topics = freeTopics(sel);
+    sel.topic = Math.max(0, Math.min(topics.length - 1, sel.topic));
+    const topic = topics[sel.topic];
+    const place = placeName(sel.place);
+    const lv = FREE_LEVELS[sel.level];
+    const set = (patch) => { Object.assign(sel, patch); showFree(); };
+    const cyc = (list, cur, dir) => list[(list.indexOf(cur) + dir + list.length) % list.length];
+    board.freeSetup({
+      tabs, partners: freePartners().map((id) => { const c = resolveCharacter(id); return { id, nameJa: c.nameJa, roleEn: c.roleEn }; }),
+      partner, info, place, topic, topicPos: `${sel.topic + 1} / ${topics.length}`, level: sel.level, style: sel.style,
+      levels: Object.entries(FREE_LEVELS).map(([id, l]) => [id, l.ja, l.en]),
+      live: !!store.apiKey,
+      summary: `${partner.nameJa}さんと、${place.nameJa}で「${topic.titleJa}」 · ${lv.ja}・${sel.style === 'casual' ? 'ともだち' : 'ていねい'}`,
+      on: {
+        tab: (id) => { state.course = id; showLessons(); },
+        partner: (id) => set({ partner: id, place: freePlaces(id)[0], topic: 0, style: freeData.partners[id]?.casual ? sel.style : 'polite' }),
+        place: (dir) => set({ place: cyc(freePlaces(sel.partner), sel.place, dir), topic: 0 }),
+        topic: (dir) => set({ topic: (sel.topic + dir + topics.length) % topics.length }),
+        level: (l) => { store.settings.freeLevel = l; store.saveSettings(); set({ level: l, topic: 0 }); },
+        style: (st) => set({ style: st }),
+        random: () => {
+          const id = pickOne(freePartners());
+          const typical = freePlaces(id).slice(0, Math.max(1, (freeData.partners[id]?.places || []).length));
+          const where = Math.random() < 0.8 ? pickOne(typical) : pickOne(freePlaces(id));
+          Object.assign(sel, { partner: id, place: where, style: freeData.partners[id]?.casual && Math.random() < 0.5 ? 'casual' : 'polite' });
+          const list = freeTopics(sel);
+          sel.topic = list.length > 1 && Math.random() < 0.85 ? 1 + Math.floor(Math.random() * (list.length - 1)) : 0;
+          sound.blip('pop');
+          showFree();
+        },
+        start: () => openFree({ ...sel }),
+      },
+    });
+  }
+
+  function randomSetup(place) {
+    const now = season();
+    return {
+      time: pickOne(place === 'izakaya' ? ['evening', 'night', 'night'] : place === 'clinic' || place === 'museum' || place === 'depato' ? ['morning', 'noon', 'evening'] : ['morning', 'noon', 'noon', 'evening', 'night']),
+      season: Math.random() < 0.5 ? now : pickOne(['spring', 'summer', 'autumn', 'winter']),
+      weather: OUTDOOR.has(place) && Math.random() < 0.25 ? 'rain' : 'clear',
+    };
+  }
+
+  async function openFree(sel) {
+    const partner = resolveCharacter(sel.partner);
+    const info = freeData.partners[sel.partner] || {};
+    const topics = freeTopics(sel);
+    const topic = topics[sel.topic] || topics[0];
+    const P = FREE_PLACES[sel.place] || FREE_PLACES.park;
+    const staff = info.worksAt === sel.place && P.staff;
+    const slot = staff ? P.staff : P.friend;
+    const moves = (staff ? P.staffMoves : P.friendMoves) || P.moves || [];
+    const setup = randomSetup(sel.place);
+    runner?.stop(); runner = null;
+    state.where = 'free';
+    board.hide();
+    await stage.fade(1, 350);
+    await stage.load(sel.place, setup, [{ char: partner, slot }]);
+    amb.start(sel.place, { weather: setup.weather, time: setup.time });
+    boardMode = 'follow';
+    await stage.fade(0, 450);
+    for (const m of moves) await stage.learner(m);
+    await sound.unlock();
+    stage.ensureSpeakers();
+    if (mic.state !== 'on') await mic.start();
+    const place = { id: sel.place, ...placeName(sel.place) };
+    runner = new FreeTalk({
+      partner, info, place, setupEn: `${setup.time}, ${setup.season}${setup.weather === 'rain' ? ', raining' : ''}`,
+      // at work they stay polite with customers, even friends of the learner's age
+      topic, topics, level: sel.level, style: staff ? 'polite' : sel.style,
+      twists: (freeData.twists || []).filter((t) => !t.places?.length || t.places.includes(sel.place)),
+      stage, bubble, turn, toast, sound, mic, settings: store.settings, apiKey: store.apiKey, log,
+      onDone: (res) => (res.failed ? goTown() : showFreeReport(sel, partner, place, res)),
+    });
+    KT.runner = runner;
+    follow.update(0, true);
+    try { await runner.begin(); } catch (e) { KT.errors.push(String(e?.stack || e)); console.error(e); toast.show(`Error: ${e.message}`, 5000); }
+  }
+
+  function showFreeReport(sel, partner, place, { report, turns, topics }) {
+    state.where = 'report';
+    sound.fanfare(report.stars);
+    boardMode = 'follow';
+    boardFollow.update(0, true);
+    board.freeReport({
+      report, turns, partner, place, topics,
+      onAgain: () => openFree(sel),
+      onNew: () => { state.course = 'free'; goTown(); },
+      onTown: () => goTown(),
+    });
+    KT.lastReport = { report, turns, free: true };
   }
 
   function showVariants(L) {
@@ -83,7 +224,8 @@ async function boot() {
   }
 
   async function openVariant(L, v) {
-    state.lesson = L; state.variant = v; state.where = 'brief';
+    // 'loading' until the briefing is on screen, so nothing can start the talk underneath it
+    state.lesson = L; state.variant = v; state.where = 'loading';
     board.hide();
     await stage.fade(1, 350);
     const cast = charactersOf(v).map((char) => ({ char, slot: v.positions?.[char.id] || null }));
@@ -99,6 +241,7 @@ async function boot() {
       note: mic.state !== 'on' && live ? '🎙️ The microphone is not available — allow it in the browser to talk with Gemini Live.' : null,
       onPractice: () => start(L, v, 'practice'), onReal: () => start(L, v, 'real'), onBack: () => goTown(),
     });
+    state.where = 'brief';
     await stage.fade(0, 450);
   }
 
@@ -250,6 +393,8 @@ async function boot() {
   KT.start = (mode = 'practice') => start(state.lesson, state.variant, mode);
   KT.goTown = goTown;
   KT.showCourse = (id) => { state.course = id; showLessons(); };
+  KT.free = (patch = {}) => { if (!freeData) return null; Object.assign(freeSel(), patch); state.course = 'free'; showLessons(); return state.free; };
+  KT.startFree = () => openFree({ ...freeSel() });
 
   // test hook: jump straight into a variant (?play=l01a)
   const q = new URLSearchParams(location.search);

@@ -1,0 +1,1191 @@
+{
+  "lesson": 19,
+  "titleJa": "のぼったことが ありますか",
+  "titleEn": "Have you ever…?",
+  "summaryEn": "Talk about your experiences with 〜たことが あります, list examples of what you did with 〜たり 〜たり します, and say how things have changed with 〜く／〜に なります.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Vた ことが あります",
+      "meaningEn": "have done V before (an experience, not a recent one-off event)",
+      "exampleJa": "ふじさんに のぼったことが あります。",
+      "exampleEn": "I have climbed Mt Fuji."
+    },
+    {
+      "id": "g2",
+      "pattern": "V1たり、V2たり します",
+      "meaningEn": "do things like V1 and V2 (examples, in no fixed order; the final します carries the tense)",
+      "exampleJa": "しゅうまつは そうじしたり、えいがを みたり しました。",
+      "exampleEn": "At the weekend I cleaned, watched a film and so on."
+    },
+    {
+      "id": "g3",
+      "pattern": "い-adj(〜く) なります",
+      "meaningEn": "become ~ (い-adjective: drop い, add く; いい → よく)",
+      "exampleJa": "もう よく なりました。",
+      "exampleEn": "I have got better."
+    },
+    {
+      "id": "g4",
+      "pattern": "な-adj／N に なります",
+      "meaningEn": "become ~ (な-adjective or noun + に)",
+      "exampleJa": "おかげさまで、げんきに なりました。",
+      "exampleEn": "Thanks to you, I am well again."
+    },
+    {
+      "id": "g5",
+      "pattern": "いちど／なんかいも／いちども ＋ 〜ことが あります／ありません",
+      "meaningEn": "how often you have had the experience: once, many times, never (いちども + negative)",
+      "exampleJa": "いいえ、いちども ありません。",
+      "exampleEn": "No, not even once."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "登ります",
+      "kana": "のぼります",
+      "en": "to climb"
+    },
+    {
+      "ja": "富士山",
+      "kana": "ふじさん",
+      "en": "Mt Fuji"
+    },
+    {
+      "ja": "温泉",
+      "kana": "おんせん",
+      "en": "hot spring"
+    },
+    {
+      "ja": "掃除します",
+      "kana": "そうじします",
+      "en": "to clean"
+    },
+    {
+      "ja": "洗濯します",
+      "kana": "せんたくします",
+      "en": "to do the laundry"
+    },
+    {
+      "ja": "なります",
+      "kana": "なります",
+      "en": "to become"
+    },
+    {
+      "ja": "一度",
+      "kana": "いちど",
+      "en": "once"
+    },
+    {
+      "ja": "一度も",
+      "kana": "いちども",
+      "en": "not even once (with a negative)"
+    },
+    {
+      "ja": "何回も",
+      "kana": "なんかいも",
+      "en": "many times"
+    },
+    {
+      "ja": "だんだん",
+      "kana": "だんだん",
+      "en": "gradually"
+    },
+    {
+      "ja": "もうすぐ",
+      "kana": "もうすぐ",
+      "en": "soon"
+    },
+    {
+      "ja": "調子",
+      "kana": "ちょうし",
+      "en": "condition, how you feel"
+    },
+    {
+      "ja": "眠い",
+      "kana": "ねむい",
+      "en": "sleepy"
+    },
+    {
+      "ja": "体に いい",
+      "kana": "からだに いい",
+      "en": "good for your health"
+    },
+    {
+      "ja": "無理[な]",
+      "kana": "むり[な]",
+      "en": "unreasonable, too much"
+    },
+    {
+      "ja": "乾杯",
+      "kana": "かんぱい",
+      "en": "cheers"
+    },
+    {
+      "ja": "おかげさまで",
+      "kana": "おかげさまで",
+      "en": "thanks to you (said when things went well)"
+    },
+    {
+      "ja": "週末",
+      "kana": "しゅうまつ",
+      "en": "weekend"
+    },
+    {
+      "ja": "夏休み",
+      "kana": "なつやすみ",
+      "en": "summer holiday"
+    },
+    {
+      "ja": "薬",
+      "kana": "くすり",
+      "en": "medicine"
+    },
+    {
+      "ja": "熱",
+      "kana": "ねつ",
+      "en": "fever"
+    },
+    {
+      "ja": "外国",
+      "kana": "がいこく",
+      "en": "foreign country"
+    }
+  ],
+  "tipsEn": [
+    "〜たことが あります is for life experiences, not for yesterday: say きのう すしを 食べました, not きのう 食べたことが あります.",
+    "At an izakaya everyone waits for the first drinks, says かんぱい! together, and only then starts to eat and drink.",
+    "When someone asks about your health after an illness, おかげさまで、元気に なりました is a warm, polite reply — even if they did nothing to help."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-19.html/2",
+      "https://www.tofugu.com/japanese-grammar/takotogaaru/",
+      "https://open-exam-prep.com/study-guides/jlpt-n5/grammar-in-depth-1/plain-casual-forms"
+    ],
+    "notesEn": "Lesson 19 introduces the た-form (made exactly like the て-form: て／で becomes た／だ) and three uses around it: Vたことが あります for experiences, Vたり Vたり します for a non-exhaustive, unordered list of actions whose tense sits on the final します, and change with い-adjective 〜く なります and な-adjective/noun 〜に なります. Its vocabulary brings のぼります, そうじします, せんたくします, ちょうし, ねむい, だんだん, もうすぐ, いちど／いちども／なんかいも, おかげさまで, かんぱい, むり and からだに いい. Natural situations are swapping experiences over a meal, Monday-morning talk about the weekend, and reporting a change (weather, health, skill). Typical mistakes are forming the た-form wrongly (いった, not いきた; のんだ, not のみた), using 〜たことが あります with recent time words such as きのう, putting the past on the wrong verb (行きましたことが あります) or forgetting the final します after 〜たり, and saying いいに なりました or げんきく なりました. The three scenes are original: dinner at the izakaya Daichi with Fujita, a Monday morning at the office with Aoki and Mr Ogawa, and a follow-up visit to Dr Ishida's clinic."
+  },
+  "variants": [
+    {
+      "id": "l19a",
+      "titleJa": "いざかやで かんぱい",
+      "titleEn": "Cheers at the izakaya",
+      "scene": "izakaya",
+      "setup": {
+        "time": "night",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A cold winter night. Your colleague Fujita has brought you to his favourite izakaya, Daichi. Over dinner the talk turns to what you have (and have not) tried in Japan.",
+      "roleEn": "You are Fujita's colleague from abroad. Answer with your real experiences — and ask him one too.",
+      "missionsEn": [
+        {
+          "text": "Say whether you have ever eaten sushi, seen Mt Fuji and been in a hot spring",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Say how many times: once, many times, or never",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask Fujita about one of his experiences",
+          "grammar": [
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita",
+        "nakano"
+      ],
+      "positions": {
+        "fujita": "npc1",
+        "nakano": "staff"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "learner": "sit",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おつかれさまです。じゃ、かんぱい！",
+              "kana": "おつかれさまです。じゃ、かんぱい！",
+              "en": "Good work today. Well then, cheers!",
+              "gesture": "offer"
+            },
+            {
+              "who": "nakano",
+              "ja": "きょうは 魚が いいですよ。すしも あります。",
+              "kana": "きょうは さかなが いいですよ。すしも あります。",
+              "en": "The fish is good today. We have sushi too.",
+              "gesture": "point",
+              "target": "menu_strips"
+            },
+            {
+              "who": "fujita",
+              "ja": "すしを 食べたことが ありますか。",
+              "kana": "すしを たべたことが ありますか。",
+              "en": "Have you ever eaten sushi?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Have you ever eaten sushi? Answer from your real experience — add how many times if you can.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、＿＿ことが あります。／いいえ、いちども ありません。",
+            "modelAnswers": [
+              "はい、なんかいも たべたことが あります。",
+              "はい、いちど あります。",
+              "いいえ、いちども たべたことが ありません。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner has eaten sushi before (once, a few times, many times).",
+                "next": "n2_yes",
+                "exampleJa": "はい、なんかいも たべたことが あります。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner has never eaten sushi.",
+                "next": "n2_no",
+                "exampleJa": "いいえ、いちども ありません。"
+              }
+            ],
+            "fallback": "n2_no"
+          }
+        },
+        {
+          "id": "n2_yes",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "おっ、いいですね！じゃ、きょうの すしを どうぞ。",
+              "kana": "おっ、いいですね！じゃ、きょうの すしを どうぞ。",
+              "en": "Oh, nice! Then please try today's sushi.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "はじめてですか。じゃ、少しだけ どうぞ。",
+              "kana": "はじめてですか。じゃ、すこしだけ どうぞ。",
+              "en": "Your first time? Then have just a little.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしは 山が 好きです。きょねん 富士山に のぼりました。",
+              "kana": "わたしは やまが すきです。きょねん ふじさんに のぼりました。",
+              "en": "I like mountains. Last year I climbed Mt Fuji."
+            },
+            {
+              "who": "fujita",
+              "ja": "富士山を 見たことが ありますか。",
+              "kana": "ふじさんを みたことが ありますか。",
+              "en": "Have you ever seen Mt Fuji?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Have you ever seen (or climbed) Mt Fuji? If yes, say from where or how many times.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、＿＿ことが あります。／いいえ、いちども ありません。",
+            "modelAnswers": [
+              "はい、しんかんせんから みたことが あります。",
+              "はい、いちど のぼったことが あります。",
+              "いいえ、いちども ありません。しゃしんで みました。"
+            ],
+            "branches": [
+              {
+                "id": "seen",
+                "whenEn": "Learner has seen or climbed Mt Fuji in person (from a train or plane counts).",
+                "next": "n4_seen",
+                "exampleJa": "はい、いちど みたことが あります。"
+              },
+              {
+                "id": "never",
+                "whenEn": "Learner has never seen it in person (only in photos or on TV, or not at all).",
+                "next": "n4_never",
+                "exampleJa": "いいえ、いちども ありません。"
+              }
+            ],
+            "fallback": "n4_never"
+          }
+        },
+        {
+          "id": "n4_seen",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！わたしは 2回 のぼったことが ありますよ。",
+              "kana": "いいですね！わたしは にかい のぼったことが ありますよ。",
+              "en": "Nice! I've climbed it twice, you know.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_never",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。じゃ、夏に いっしょに のぼりましょう。",
+              "kana": "そうですか。じゃ、なつに いっしょに のぼりましょう。",
+              "en": "I see. Then let's climb it together in summer.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "わたしは 外国へ 行ったことが ありません。行きたいですねえ。",
+              "kana": "わたしは がいこくへ いったことが ありません。いきたいですねえ。",
+              "en": "I've never been abroad. I'd love to go.",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your turn to ask. Ask Fujita whether he has ever been to your country — or eaten food from your country.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "ふじたさんは ＿＿へ いったことが ありますか。／＿＿を たべたことが ありますか。",
+            "modelAnswers": [
+              "ふじたさんは カンボジアへ いったことが ありますか。",
+              "カンボジアの りょうりを たべたことが ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "been",
+                "whenEn": "Learner asks whether Fujita has ever been to (or seen) a country or place.",
+                "next": "n6_go",
+                "exampleJa": "ふじたさんは カンボジアへ いったことが ありますか。"
+              },
+              {
+                "id": "food",
+                "whenEn": "Learner asks whether Fujita has ever eaten or drunk something.",
+                "next": "n6_food",
+                "exampleJa": "カンボジアの りょうりを たべたことが ありますか。"
+              }
+            ],
+            "fallback": "n6_go"
+          }
+        },
+        {
+          "id": "n6_go",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいえ、一度も ありません。いつか 行きたいです。",
+              "kana": "いいえ、いちども ありません。いつか いきたいです。",
+              "en": "No, not even once. I want to go some day.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_food",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "はい、一度 食べたことが あります。おいしかったですよ。",
+              "kana": "はい、いちど たべたことが あります。おいしかったですよ。",
+              "en": "Yes, I've eaten it once. It was delicious.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "冬は 温泉が いいですね。温泉に 入ったことが ありますか。",
+              "kana": "ふゆは おんせんが いいですね。おんせんに はいったことが ありますか。",
+              "en": "Hot springs are great in winter. Have you ever been in one?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Have you ever been in a hot spring (おんせん)? Say how many times — or that you never have but want to.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、＿＿かい はいったことが あります。／いいえ、いちども ありません。",
+            "modelAnswers": [
+              "はい、にかい はいったことが あります。",
+              "いいえ、いちども ありません。はいりたいです。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner has been in a hot spring before.",
+                "next": "n8_yes",
+                "exampleJa": "はい、いちど はいったことが あります。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner has never been in a hot spring.",
+                "next": "n8_no",
+                "exampleJa": "いいえ、いちども ありません。"
+              }
+            ],
+            "fallback": "n8_no"
+          }
+        },
+        {
+          "id": "n8_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。温泉は 体に いいですね。",
+              "kana": "そうですか。おんせんは からだに いいですね。",
+              "en": "Really? Hot springs are good for you, aren't they.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、こんど みんなで 行きましょう。",
+              "kana": "じゃ、こんど みんなで いきましょう。",
+              "en": "Then let's all go together some time.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "focus": "yakitori",
+          "say": [
+            {
+              "who": "nakano",
+              "ja": "はい、やきとりです。おまたせしました！",
+              "kana": "はい、やきとりです。おまたせしました！",
+              "en": "Here's your yakitori. Sorry for the wait!",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l19b",
+      "titleJa": "げつようびの あさ",
+      "titleEn": "Monday morning at the office",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "summer",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Monday morning in early summer. Aoki wants to hear about your weekend, and Mr Ogawa stops by to ask how work is going after your first six months.",
+      "roleEn": "You joined the company half a year ago. Talk about your own weekend, rainy days and holiday plans.",
+      "missionsEn": [
+        {
+          "text": "Tell Aoki a few things you did at the weekend",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Tell Mr Ogawa how work has changed for you",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say what you will do in the summer holidays",
+          "grammar": [
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "ogawa"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "ogawa": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。暑く なりましたね。",
+              "kana": "おはよう ございます。あつく なりましたね。",
+              "en": "Good morning. It's got hot, hasn't it.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "aoki",
+              "ja": "週末は 何を しましたか。",
+              "kana": "しゅうまつは なにを しましたか。",
+              "en": "What did you do at the weekend?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aoki two or three things you did at the weekend, as examples: 〜たり 〜たり しました.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿たり、＿＿たり しました。",
+            "modelAnswers": [
+              "かいものしたり、えいがを みたり しました。",
+              "うちで そうじしたり、せんたくしたり しました。"
+            ],
+            "branches": [
+              {
+                "id": "went_out",
+                "whenEn": "Learner mentions at least one thing done outside the home (shopping, a film, a trip, sport, meeting friends…).",
+                "next": "n2_out",
+                "exampleJa": "かいものしたり、えいがを みたり しました。"
+              },
+              {
+                "id": "at_home",
+                "whenEn": "Learner mentions only things done at home (cleaning, laundry, sleeping, TV, games, study).",
+                "next": "n2_home",
+                "exampleJa": "うちで そうじしたり、ねたり しました。"
+              }
+            ],
+            "fallback": "n2_home"
+          }
+        },
+        {
+          "id": "n2_out",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！わたしは うちで そうじしたり、ねたり しました。",
+              "kana": "いいですね！わたしは うちで そうじしたり、ねたり しました。",
+              "en": "Nice! I stayed home, cleaned, slept and so on.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_home",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしもです。そうじしたり、せんたくしたり しました。",
+              "kana": "わたしもです。そうじしたり、せんたくしたり しました。",
+              "en": "Me too. I cleaned, did the laundry and so on.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "雨の 日は いつも うちで 何を しますか。",
+              "kana": "あめの ひは いつも うちで なにを しますか。",
+              "en": "What do you usually do at home on rainy days?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you usually do on rainy days. It is a habit, so end with 〜たり します (not しました).",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿たり、＿＿たり します。",
+            "modelAnswers": [
+              "おんがくを きいたり、ゲームを したり します。",
+              "にほんごを べんきょうしたり、ほんを よんだり します。"
+            ],
+            "branches": [
+              {
+                "id": "study",
+                "whenEn": "Learner mentions studying (Japanese, kanji, programming, reading to learn).",
+                "next": "n4_study",
+                "exampleJa": "にほんごを べんきょうしたり、ほんを よんだり します。"
+              },
+              {
+                "id": "fun",
+                "whenEn": "Learner mentions only relaxing things (music, games, films, cooking, sleeping…).",
+                "next": "n4_fun",
+                "exampleJa": "おんがくを きいたり、ゲームを したり します。"
+              }
+            ],
+            "fallback": "n4_fun"
+          }
+        },
+        {
+          "id": "n4_fun",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "楽しいですね。わたしは 雨の 日が 好きに なりました。",
+              "kana": "たのしいですね。わたしは あめの ひが すきに なりました。",
+              "en": "That sounds fun. I've come to like rainy days.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_study",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "すごいですね！日本語が 上手に なりましたね。",
+              "kana": "すごいですね！にほんごが じょうずに なりましたね。",
+              "en": "Wow! Your Japanese has got really good.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "おはよう ございます。日本へ 来て、もう 半年ですね。",
+              "kana": "おはよう ございます。にほんへ きて、もう はんとしですね。",
+              "en": "Good morning. It's already half a year since you came to Japan.",
+              "gesture": "nod"
+            },
+            {
+              "who": "ogawa",
+              "ja": "仕事は どうですか。",
+              "kana": "しごとは どうですか。",
+              "en": "How is work?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell your manager how work has changed: it has become fun, interesting, busy, difficult… or you have come to like it.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "だんだん ＿＿く なりました。／＿＿に なりました。",
+            "modelAnswers": [
+              "だんだん おもしろく なりました。",
+              "いそがしく なりましたが、たのしいです。",
+              "しごとが すきに なりました。"
+            ],
+            "branches": [
+              {
+                "id": "positive",
+                "whenEn": "Learner says mainly something positive: it has become fun, interesting or easier, or they have come to like it.",
+                "next": "n6_pos",
+                "exampleJa": "だんだん おもしろく なりました。"
+              },
+              {
+                "id": "hard",
+                "whenEn": "Learner says mainly that it has become busy, difficult or tiring.",
+                "next": "n6_hard",
+                "exampleJa": "いそがしく なりました。"
+              }
+            ],
+            "fallback": "n6_pos"
+          }
+        },
+        {
+          "id": "n6_pos",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "それは よかったです。これからも お願いします。",
+              "kana": "それは よかったです。これからも おねがいします。",
+              "en": "I'm glad to hear it. Please keep it up.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_hard",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。あまり むりを しないで くださいね。",
+              "kana": "そうですか。あまり むりを しないで くださいね。",
+              "en": "I see. Please don't push yourself too hard.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "calendar",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "来週から 夏休みですね。休みは 何を しますか。",
+              "kana": "らいしゅうから なつやすみですね。やすみは なにを しますか。",
+              "en": "The summer holiday starts next week. What will you do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give two or three plans for the summer holiday with 〜たり 〜たり します (or したいです).",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿たり、＿＿たり します。／したいです。",
+            "modelAnswers": [
+              "りょこうしたり、ともだちに あったり します。",
+              "うみで およいだり、やまに のぼったり したいです。",
+              "うちで やすんだり、にほんごを べんきょうしたり します。"
+            ],
+            "branches": [
+              {
+                "id": "trip",
+                "whenEn": "Learner plans to go somewhere: a trip, the sea, the mountains, back to their home country.",
+                "next": "n8_trip",
+                "exampleJa": "りょこうしたり、ともだちに あったり します。"
+              },
+              {
+                "id": "stay",
+                "whenEn": "Learner plans to stay in town: rest, study, see friends, do things at home.",
+                "next": "n8_rest",
+                "exampleJa": "うちで やすんだり、べんきょうしたり します。"
+              }
+            ],
+            "fallback": "n8_rest"
+          }
+        },
+        {
+          "id": "n8_trip",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！写真を 見せて くださいね。",
+              "kana": "いいですね！しゃしんを みせて くださいね。",
+              "en": "Lovely! Please show me the photos.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_rest",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね。ゆっくり 休んで ください。",
+              "kana": "いいですね。ゆっくり やすんで ください。",
+              "en": "That's good. Have a proper rest.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "では、きょうも よろしく お願いします。",
+              "kana": "では、きょうも よろしく おねがいします。",
+              "en": "Well then, let's have a good day today too.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l19c",
+      "titleJa": "もう よく なりました",
+      "titleEn": "A follow-up visit at the clinic",
+      "scene": "clinic",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "You had a cold last week and have come back to the town clinic for a check-up. Mrs Hara from the park is in the waiting room; then Dr Ishida calls you in.",
+      "roleEn": "You are a patient who is (almost) well again. Decide for yourself how you feel today and what you did while you were ill.",
+      "missionsEn": [
+        {
+          "text": "Say that you have got better",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell the doctor what you did at home this week",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say whether you have taken this medicine before",
+          "grammar": [
+            "g1",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "ishida",
+        "hara"
+      ],
+      "positions": {
+        "ishida": "doctor",
+        "hara": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "こんにちは。雨ですが、あたたかく なりましたね。",
+              "kana": "こんにちは。あめですが、あたたかく なりましたね。",
+              "en": "Hello. It's raining, but it has got warm, hasn't it.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "hara",
+              "ja": "きょうは かぜですか。",
+              "kana": "きょうは かぜですか。",
+              "en": "Are you here for a cold today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "You had a cold last week. Tell Mrs Hara that you have got better — or that you are still a little unwell.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "せんしゅう かぜでしたが、もう ＿＿ なりました。",
+            "modelAnswers": [
+              "せんしゅう かぜでしたが、もう よく なりました。",
+              "はい。でも、もう げんきに なりました。",
+              "はい。まだ すこし のどが いたいです。"
+            ],
+            "branches": [
+              {
+                "id": "better",
+                "whenEn": "Learner says they have got better / are well again.",
+                "next": "n2_better",
+                "exampleJa": "せんしゅう かぜでしたが、もう よく なりました。"
+              },
+              {
+                "id": "still",
+                "whenEn": "Learner says they are still unwell or still have a symptom.",
+                "next": "n2_still",
+                "exampleJa": "まだ すこし のどが いたいです。"
+              }
+            ],
+            "fallback": "n2_better"
+          }
+        },
+        {
+          "id": "n2_better",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "それは よかったですね。",
+              "kana": "それは よかったですね。",
+              "en": "Oh, I'm glad to hear that.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_still",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。お大事に。",
+              "kana": "そうですか。おだいじに。",
+              "en": "Oh dear. Take care of yourself.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "learner": "walk",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "次の 方、どうぞ。",
+              "kana": "つぎの かた、どうぞ。",
+              "en": "Next, please.",
+              "gesture": "beckon",
+              "tts": "つぎの かた、どうぞ。"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "learner": "sit",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "こんにちは。体の ちょうしは どうですか。",
+              "kana": "こんにちは。からだの ちょうしは どうですか。",
+              "en": "Hello. How are you feeling?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the doctor how you are now compared with last week: completely well, or better but with one symptom left.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "おかげさまで、＿＿に なりました。／よく なりましたが、まだ ＿＿。",
+            "modelAnswers": [
+              "おかげさまで、げんきに なりました。",
+              "よく なりましたが、まだ すこし のどが いたいです。",
+              "げんきに なりましたが、まだ すこし あたまが いたいです。"
+            ],
+            "branches": [
+              {
+                "id": "all_better",
+                "whenEn": "Learner says they are completely well again.",
+                "next": "n5_good",
+                "exampleJa": "おかげさまで、げんきに なりました。"
+              },
+              {
+                "id": "symptom_left",
+                "whenEn": "Learner says they are better but something remains (sore throat, cough, tired, sleepy…), or they are not better.",
+                "next": "n5_partly",
+                "exampleJa": "よく なりましたが、まだ すこし のどが いたいです。"
+              }
+            ],
+            "fallback": "n5_good"
+          }
+        },
+        {
+          "id": "n5_good",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "よかったですね。熱も ありませんね。",
+              "kana": "よかったですね。ねつも ありませんね。",
+              "en": "That's good. And you have no fever.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5_partly",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "そうですか。でも、だんだん よく なりますよ。",
+              "kana": "そうですか。でも、だんだん よく なりますよ。",
+              "en": "I see. But you will get better little by little.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "この 一週間、うちで 何を して いましたか。",
+              "kana": "この いっしゅうかん、うちで なにを して いましたか。",
+              "en": "What have you been doing at home this past week?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her what you did at home this week, as examples: 〜たり 〜たり して いました／しました.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿たり、＿＿たり して いました。",
+            "modelAnswers": [
+              "ねたり、ほんを よんだり して いました。",
+              "テレビを みたり、おんがくを きいたり しました。",
+              "ねたり、うちで しごとを したり しました。"
+            ],
+            "branches": [
+              {
+                "id": "rested",
+                "whenEn": "Learner mentions only restful things (sleeping, reading, TV, music…).",
+                "next": "n7_rest",
+                "exampleJa": "ねたり、ほんを よんだり して いました。"
+              },
+              {
+                "id": "worked",
+                "whenEn": "Learner mentions working or studying.",
+                "next": "n7_work",
+                "exampleJa": "ねたり、べんきょうしたり しました。"
+              }
+            ],
+            "fallback": "n7_rest"
+          }
+        },
+        {
+          "id": "n7_rest",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "いいですね。よく 休みましたね。",
+              "kana": "いいですね。よく やすみましたね。",
+              "en": "Good. You rested well.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_work",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "そうですか。まだ むりを しないで くださいね。",
+              "kana": "そうですか。まだ むりを しないで くださいね。",
+              "en": "I see. Please don't overdo it yet.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "focus": "medicine",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "もう 少し 薬を 出します。",
+              "kana": "もう すこし くすりを だします。",
+              "en": "I'll give you a little more medicine.",
+              "gesture": "point",
+              "target": "medicine"
+            },
+            {
+              "who": "ishida",
+              "ja": "この 薬を 飲んだことが ありますか。",
+              "kana": "この くすりを のんだことが ありますか。",
+              "en": "Have you ever taken this medicine?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the medicine. Have you ever taken it before? (You decide.)",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、＿＿ことが あります。／いいえ、いちども ありません。",
+            "modelAnswers": [
+              "はい、いちど のんだことが あります。",
+              "いいえ、いちども ありません。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner has taken this medicine before.",
+                "next": "n9_yes",
+                "exampleJa": "はい、いちど のんだことが あります。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner has never taken it (or does not know it).",
+                "next": "n9_no",
+                "exampleJa": "いいえ、いちども ありません。"
+              }
+            ],
+            "fallback": "n9_no"
+          }
+        },
+        {
+          "id": "n9_yes",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "じゃ、だいじょうぶですね。一日に 2回 飲んで ください。",
+              "kana": "じゃ、だいじょうぶですね。いちにちに にかい のんで ください。",
+              "en": "Then you'll be fine. Please take it twice a day.",
+              "gesture": "offer",
+              "tts": "じゃ、だいじょうぶですね。いちにちに にかい のんで ください。"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9_no",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "少し 眠く なりますから、夜 飲んで ください。",
+              "kana": "すこし ねむく なりますから、よる のんで ください。",
+              "en": "It makes you a little sleepy, so please take it at night.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "じゃ、お大事に。",
+              "kana": "じゃ、おだいじに。",
+              "en": "Well then, take care.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
