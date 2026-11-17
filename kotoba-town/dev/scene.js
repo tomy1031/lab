@@ -69,11 +69,15 @@ if (q.get('gesture') && people[0]) setTimeout(() => people[0].gesture(q.get('ges
 if (view === 'lineup') {
   for (const p of people) app.scene.remove(p.root);
   people.length = 0;
-  const ids = castIds.length ? castIds : Object.keys(CAST);
+  // &per=4&row=1 → only that row, framed close (for comparing characters)
+  const per = Number(q.get('per') || 8);
+  const onlyRow = q.get('row') === null ? null : Number(q.get('row'));
+  let ids = castIds.length ? castIds : Object.keys(CAST);
+  if (onlyRow !== null) ids = ids.slice(onlyRow * per, onlyRow * per + per);
   ids.forEach((cid, i) => {
     const p = new Person(CAST[cid].look, { name: cid });
-    const col = i % 8; const row = Math.floor(i / 8);
-    p.root.position.set((col - 3.5) * 0.85, 0, -3 - row * 1.6);
+    const col = i % per; const row = Math.floor(i / per);
+    p.root.position.set((col - (per - 1) / 2) * 0.85, 0, -3 - row * 1.6);
     app.scene.add(p.root);
     people.push(p);
     const c = CAST[cid];
@@ -95,14 +99,24 @@ function setView() {
     app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
     const p = people[0].root;
     const fwd = new THREE.Vector3(Math.sin(p.rotation.y), 0, Math.cos(p.rotation.y));
-    const h = people[0].dims.H;
-    cam.position.copy(p.position).addScaledVector(fwd, 0.55).add(new THREE.Vector3(0, h * 0.9, 0)); cam.fov = 40; cam.updateProjectionMatrix();
-    cam.lookAt(p.position.clone().add(new THREE.Vector3(0, h * 0.88, 0)));
+    p.updateMatrixWorld(true);
+    const hc = people[0].head.localToWorld(people[0].headCentre.clone());
+    const dist = Number(q.get('dist') || 0.62);
+    const side = Number(q.get('side') || 0);
+    cam.position.copy(hc).addScaledVector(fwd, dist).add(new THREE.Vector3(Math.cos(p.rotation.y) * side, 0.02, -Math.sin(p.rotation.y) * side)); cam.fov = 35; cam.updateProjectionMatrix();
+    cam.lookAt(hc);
     people[0].setLookTarget(cam.position.clone());
   } else if (view === 'lineup') {
     app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
-    cam.position.set(0, 1.5, 1.0);
-    cam.lookAt(0, 0.85, -3.7);
+    if (q.get('row') !== null) {
+      const per = Number(q.get('per') || 8);
+      const d = per * 0.85 * 0.75 + 0.8;
+      cam.position.set(0, 1.05, -3 + d); cam.fov = 45; cam.updateProjectionMatrix();
+      cam.lookAt(0, 0.92, -3);
+    } else {
+      cam.position.set(0, 1.5, 1.0);
+      cam.lookAt(0, 0.85, -3.7);
+    }
   } else if (view === 'people') {
     app.rig.position.set(0, 0, 0); app.rig.rotation.set(0, 0, 0);
     const p = people[0].root;
