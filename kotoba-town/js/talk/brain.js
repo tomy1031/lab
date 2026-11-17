@@ -35,6 +35,7 @@ export class LiveBrain {
     this.judgeAt = 0;
     this.played = 0;
     this.maxBytes = Infinity;
+    this.cancelled = new Set();
   }
 
   setup() {
@@ -89,7 +90,13 @@ export class LiveBrain {
       onInterrupted: () => { this.trace('interrupted'); if (this.gate === 'play') this.on.npcDone(true); this.gate = 'drop'; },
       onResumption: (h) => { this.resumeHandle = h; },
       onGoAway: () => { this.reconnect('goAway'); },
-      onClose: (reason) => { if (!this.closed) this.reconnect(reason); },
+      onClose: (reason, ev) => {
+        this.trace(`close ${ev?.code ?? ''} ${String(ev?.reason ?? '').slice(0, 80)}`);
+        // a reply that was playing or about to play will not finish: let the conversation go on
+        if (this.gate !== 'drop') { this.gate = 'drop'; clearTimeout(this.armTimer); this.on.npcDone(true); }
+        if (!this.closed) this.reconnect(reason === 'badKey' ? 'closed' : reason);
+      },
+      onToolCancel: (ids) => { this.trace(`toolCancel ${ids.join(',')}`); for (const id of ids) this.cancelled.add(id); },
     };
   }
 
@@ -167,6 +174,7 @@ export class LiveBrain {
   }
 
   finishJudge(call) {
+    if (this.cancelled.has(call.id)) { this.trace(`skip cancelled ${call.id}`); return; } // the server dropped this call
     const result = readJudge(call.args, this.valid);
     // Cross-check with the separate speech-to-text: a verdict whose "heard" is not what the
     // transcript says (e.g. the model copied an example answer) is not trusted.
@@ -226,7 +234,12 @@ export class LiveBrain {
     });
   }
 
-  trace(ev) { if (this.o.trace) this.o.trace.push(`${Date.now() % 100000} ${ev}`.slice(0, 120)); }
+  trace(ev) {
+    const t = this.o.trace;
+    if (!t || ev === 'audio') return; // audio chunks are too many to keep
+    t.push(`${Date.now() % 100000} ${ev}`.slice(0, 160));
+    if (t.length > 400) t.shift();
+  }
 
   close() {
     this.closed = true;

@@ -43,6 +43,7 @@ export class Runner {
         learnerName: this.settings.name,
         silenceMs: this.settings.slowSpeaker ? 1800 : 1300,
         model: this.settings.model || undefined,
+        trace: (window.KT && (window.KT.trace = [])) || undefined,
         on: {
           status: (s, d) => this.log('live', s, d),
           heard: (t) => this.onHeard(t),
