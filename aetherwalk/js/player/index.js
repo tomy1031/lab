@@ -143,9 +143,26 @@ export async function createPlayer(ctx) {
     // the first region of the session is announced once everyone listens
     try { lastRegion = ctx.world.regionAt(P.pos.x, P.pos.z); } catch { lastRegion = 'meadow'; }
   };
-  // B button (VR) pauses / resumes (§3.1); runs after input even while paused
-  ctx.loop?.addHook?.('pause-button', () => {
-    if (ctx.flags.xr && input.justPressed('b')) ctx.setPaused(!ctx.paused, 'user');
+  // B button (VR) pauses / resumes (§3.1); runs after input even while paused.
+  // Pausing needs B held for PAUSE_HOLD s: a thumb resting on B while gripping a sword must not freeze the game
+  // (playtest: 「剣を取ったらうごけなくなりました」). Resuming is a single press.
+  const PAUSE_HOLD = 0.9;
+  let bHeld = 0, bLatched = false;
+  ctx.loop?.addHook?.('pause-button', (dt) => {
+    if (!ctx.flags.xr) { bHeld = 0; bLatched = false; return; }
+    if (ctx.paused && ctx.pauseReason === 'user') {
+      if (input.justPressed('b') && !bLatched) ctx.setPaused(false, 'user');
+      if (!input.pressed('b')) bLatched = false;
+      bHeld = 0;
+      return;
+    }
+    if (input.pressed('b') && !bLatched) {
+      bHeld += dt;
+      if (bHeld >= PAUSE_HOLD) { bLatched = true; bHeld = 0; ctx.setPaused(true, 'user'); }
+    } else {
+      bHeld = 0;
+      if (!input.pressed('b')) bLatched = false;
+    }
   });
   // xr start: learn the real standing height again and recentre on the headset
   ctx.events.on('xr:start', () => { steps.reset(); P.center.set(0, 0, 0); P.turnYaw = -ctx.rig.rotation.y; });
