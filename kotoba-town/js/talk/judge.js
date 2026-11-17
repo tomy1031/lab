@@ -333,11 +333,11 @@ export function offlineInterviewReport(turns, rubric) {
 export const FREE_LEVELS = {
   easy: {
     ja: 'やさしい', en: 'Easy · N5',
-    guide: 'The learner is a beginner (around JLPT N5, Minna no Nihongo lessons 1–10). Speak slowly and very simply: short です/ます sentences, basic everyday words, one idea per sentence, no long chains, no keigo. If they struggle, ask a yes/no question or give two choices (AですかBですか).',
+    guide: 'The learner is a beginner (around JLPT N5, Minna no Nihongo lessons 1–10). Speak slowly and very simply, using ONLY: short です/ます sentences, nouns and adjectives (〜は 〜です, 〜い／〜な), ます-forms (〜ます／〜ません／〜ました／〜ませんか／〜ましょう), あります／います, 〜が 好きです, reasons with 〜から. Do NOT use ので, 〜と 思います, 〜て-forms (〜て います／〜て ください), dictionary or plain forms inside a sentence, or relative clauses. Basic everyday words, one idea per sentence, no keigo. If they struggle, ask a yes/no question or give two choices (AですかBですか).',
   },
   normal: {
     ja: 'ふつう', en: 'Normal · N4',
-    guide: 'The learner is around JLPT N4 (Minna no Nihongo up to about lesson 25: て-form, ない-form, dictionary and た-forms, 〜たい, 〜たことが あります, 〜と 思います). Speak at a gentle pace in short, natural sentences.',
+    guide: 'The learner is around JLPT N4 (Minna no Nihongo up to about lesson 25: て-form, ない-form, dictionary and た-forms, 〜たい, 〜たことが あります, 〜と 思います, 〜とき, 〜たら). Speak at a gentle pace in short, natural sentences; avoid N3 grammar and difficult kanji words.',
   },
   hard: {
     ja: 'むずかしい', en: 'Hard · N3',

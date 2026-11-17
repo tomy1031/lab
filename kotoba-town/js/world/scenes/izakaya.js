@@ -91,7 +91,7 @@ export default function build({ setup }) {
   add(bench(1.36, M, [npc1Pos.x, npc2Pos.x], [M.zabuA, M.zabuB]), 0, 0, NPC_Z - 0.05);
   add(bench(1.36, M, [0], [M.zabuA]), 0, 0, 0.02, Math.PI);
   // pendant washi lamp over the table
-  add(pendant(A, M, 0.85), TBL.x, H, TBL.z);
+  add(pendant(A, M, 0.42), TBL.x, H, TBL.z);
 
   // things on the table — the learner's side (near)
   const menu = K.prop('menu', tentMenu(A, M), { labelJa: 'メニュー', labelEn: 'menu' });
@@ -116,7 +116,7 @@ export default function build({ setup }) {
   // ------------------------------------------------------------------ the counter + open kitchen (far, ahead)
   const ctr = new THREE.Group();
   const CX0 = -1.36; const CX1 = X1 - 0.02;
-  ctr.add(K.box(CX1 - CX0, CH - 0.06, ZK - CF + 0.02, M.panel, { x: (CX0 + CX1) / 2, z: (CF + ZK) / 2 - 0.02 }));
+  ctr.add(K.box(CX1 - CX0, CH - 0.06, CF - ZK - 0.04, M.panel, { x: (CX0 + CX1) / 2, z: (CF + ZK) / 2 - 0.02 }));
   for (let x = CX0 + 0.2; x < CX1 - 0.1; x += 0.36) ctr.add(K.box(0.045, CH - 0.2, 0.025, M.dark, { x, y: 0.1, z: CF - 0.03 }));
   ctr.add(K.box(CX1 - CX0, 0.1, 0.05, M.dark, { x: (CX0 + CX1) / 2, z: CF - 0.03 }));
   ctr.add(K.box(CX1 - CX0 + 0.06, 0.06, 0.62, M.top, { x: (CX0 + CX1) / 2 + 0.03, y: CH - 0.06, z: CF - 0.25 }));
@@ -155,14 +155,14 @@ export default function build({ setup }) {
   g.add(K.box(1.4, 0.32, 0.62, M.steel, { x: 2.0, y: 2.2, z: (KZF + KZB) / 2, cast: false }));
   g.add(K.box(0.3, H - 2.52, 0.3, M.steel, { x: 2.0, y: 2.52, z: (KZF + KZB) / 2, cast: false }));
   // back counter, fridge
-  g.add(K.box(X1 - KX - 1.0, 0.86, 0.6, M.steelDark, { x: (KX + X1 - 1.0) / 2, z: ZN + 0.3 }));
-  g.add(K.box(X1 - KX - 1.0, 0.03, 0.62, M.steel, { x: (KX + X1 - 1.0) / 2, y: 0.86, z: ZN + 0.31 }));
+  g.add(K.box(3.35, 0.86, 0.6, M.steelDark, { x: 1.225, z: ZN + 0.3 }));
+  g.add(K.box(3.35, 0.03, 0.62, M.steel, { x: 1.225, y: 0.86, z: ZN + 0.31 }));
   g.add(K.rbox(0.85, 1.85, 0.66, 0.02, M.steel, { x: X1 - 0.5, z: ZN + 0.34 }));
   g.add(K.box(0.03, 0.5, 0.03, M.steelDark, { x: X1 - 0.86, y: 1.0, z: ZN + 0.68 }));
-  add(riceCooker(M), -0.8, 0.89, ZN + 0.3);
-  add(stockPot(M), 0.0, 0.89, ZN + 0.3);
-  add(stockPot(M, 0.11), 0.45, 0.89, ZN + 0.32);
-  for (let i = 0; i < 5; i++) add(smallPlate(M, M.white), 1.1, 0.89 + i * 0.016, ZN + 0.3);
+  add(riceCooker(M), -0.15, 0.89, ZN + 0.32);
+  add(stockPot(M, 0.15), 0.5, 0.89, ZN + 0.32);
+  add(stockPot(M, 0.11), 0.95, 0.89, ZN + 0.34);
+  for (let i = 0; i < 5; i++) add(smallPlate(M, M.white), 1.6, 0.89 + i * 0.016, ZN + 0.3);
   // two wooden shelves of sake bottles (一升瓶) on the back wall
   const bottleNames = ['だいち', 'まつかぜ', 'ゆきみ', 'つきあかり', 'やまびこ', 'ことぶき', 'はるかぜ', 'しらなみ', 'あおば'];
   const bottleCols = ['#2f4a2c', '#5a3418', '#8fb3b8', '#2f4a2c', '#3f2a1a', '#6f9aa0', '#2a3f2a', '#5a3418', '#8fb3b8'];
@@ -171,13 +171,13 @@ export default function build({ setup }) {
     c.fillStyle = i % 4 === 1 ? '#a8231c' : '#2a2320'; c.fillRect(0, 0, W, 6); c.fillRect(0, Hh - 6, W, 6);
     drawVertical(c, W / 2, 12, n, Math.min(W * 0.62, (Hh - 22) / [...n].length), '#1f1a17', 800);
   }));
-  for (const [y, n0] of [[1.42, 0], [1.84, 4]]) {
-    g.add(K.box(3.9, 0.035, 0.26, M.light, { x: 0.55, y, z: ZN + 0.14 }));
-    for (const x of [-1.2, 2.35]) g.add(K.box(0.03, 0.12, 0.2, M.dark, { x, y: y - 0.12, z: ZN + 0.12 }));
-    for (let i = 0; i < 18; i++) {
+  for (const [y, n0] of [[1.22, 0], [1.72, 4]]) {
+    g.add(K.box(2.9, 0.035, 0.26, M.light, { x: 1.1, y, z: ZN + 0.14 }));
+    for (const x of [-0.2, 2.4]) g.add(K.box(0.03, 0.12, 0.2, M.dark, { x, y: y - 0.12, z: ZN + 0.12 }));
+    for (let i = 0; i < 14; i++) {
       const k = (i * 5 + n0) % bottleNames.length;
       const big = i % 3 !== 2;
-      add(sakeBottle(A, M, bottleCols[k], labelRegions[k], big ? 1 : 0.62), -1.25 + i * 0.21, y + 0.035, ZN + 0.15 + (i % 2) * 0.02);
+      add(sakeBottle(A, M, bottleCols[k], labelRegions[k], big ? 1 : 0.62), -0.25 + i * 0.2, y + 0.035, ZN + 0.15 + (i % 2) * 0.02);
     }
   }
   // a short noren to the back room (kitchen, left)
@@ -185,8 +185,8 @@ export default function build({ setup }) {
     c.fillStyle = '#7a2a24'; c.fillRect(0, 0, W, Hh);
     c.strokeStyle = 'rgba(255,240,220,0.5)'; c.lineWidth = 3; c.strokeRect(8, 8, W - 16, Hh - 16);
   });
-  for (let i = 0; i < 2; i++) add(T.plane(0.34, 0.55, sub(backNoren, i / 2, (i + 1) / 2)), -0.95 + i * 0.36, 1.62, ZN + 0.01);
-  g.add(K.box(0.84, 2.0, 0.02, M.black, { x: -0.77, z: ZN + 0.005, cast: false }));
+  for (let i = 0; i < 2; i++) add(T.plane(0.34, 0.55, sub(backNoren, i / 2, (i + 1) / 2)), -1.11 + i * 0.36, 1.62, ZN + 0.025);
+  g.add(K.box(0.84, 2.0, 0.02, M.black, { x: -0.93, z: ZN + 0.005, cast: false }));
 
   // ------------------------------------------------------------------ menu strips on the soffit (far)
   const stripG = new THREE.Group();
@@ -293,7 +293,7 @@ export default function build({ setup }) {
     add(izTable(1.2, 0.7, 0.72, M), 2.55, 0, z);
     add(bench(1.16, M, [2.25 - 2.55, 2.85 - 2.55], [M.zabuB, M.zabuA]), 2.55, 0, z - 0.66);
     add(bench(1.16, M, [-0.3, 0.3], [M.zabuA, M.zabuB]), 2.55, 0, z + 0.66, Math.PI);
-    add(pendant(A, M, 0.85), 2.55, H, z);
+    add(pendant(A, M, 0.5), 2.55, H, z);
   }
   // leftovers on the other tables (customers are not modelled)
   add(beerMug(M, false, 0.05), 2.3, 0.72, -1.35, 0.3);
@@ -358,7 +358,7 @@ export default function build({ setup }) {
   for (let i = 0; i < 4; i++) add(sakeBottle(A, M, bottleCols[i], labelRegions[i + 2], 1), -0.65 + i * 0.23, 1.455, ZS - 0.12, Math.PI);
   add(pendant(A, M, 0.7), -2.3, H, 1.95);
   // a plant in the corner by the entrance
-  add(K.plant(1.15, 7), X0 + 0.35, 0, -3.75 + 0.0);
+  add(K.plant(1.1, 7), X0 + 0.3, 0, -4.32);
 
   // ------------------------------------------------------------------ lights
   const k = lit ? 1.25 : 0.9;
@@ -432,8 +432,7 @@ function rod(rt, rb, h, material, o = {}, seg = 8) {
 function izTable(w, d, h, M) {
   const t = new THREE.Group();
   t.add(K.box(w, 0.05, d, M.top, { y: h - 0.05 }));
-  t.add(K.box(w - 0.1, 0.06, 0.03, M.dark, { y: h - 0.11, z: -d / 2 + 0.07 }));
-  t.add(K.box(w - 0.1, 0.06, 0.03, M.dark, { y: h - 0.11, z: d / 2 - 0.07 }));
+  for (const x of [-w / 2 + 0.07, w / 2 - 0.07]) t.add(K.box(0.03, 0.06, d - 0.1, M.dark, { x, y: h - 0.11 }));
   const lx = w / 2 - 0.07; const lz = d / 2 - 0.07;
   for (const [x, z] of [[-lx, -lz], [lx, -lz], [-lx, lz], [lx, lz]]) t.add(K.box(0.06, h - 0.05, 0.06, M.dark, { x, z }));
   for (const x of [-lx, lx]) t.add(K.box(0.04, 0.05, d - 0.14, M.dark, { x, y: 0.1 }));
@@ -659,7 +658,7 @@ function yakitoriGrill(A, M, lit) {
     gr.add(rod(0.0018, 0.0018, d + 0.12, stick, { x, y: 0.215, z: 0.05, rx: Math.PI / 2 }, 4));
     for (let k = 0; k < 4; k++) gr.add(K.mesh(chunk, i % 3 === 0 ? raw : meat, { x, y: 0.215, z: -0.09 + k * 0.045 }));
   }
-  if (lit) gr.add(K.mesh(new THREE.PlaneGeometry(w, 0.02), new THREE.MeshBasicMaterial({ color: '#ff8a3a', toneMapped: false }), { y: 0.205, z: d / 2 + 0.021, cast: false }));
+  if (lit) gr.add(A.box(w - 0.04, 0.012, 0.004, A.solid('#ff8a3a'), A.solid('#ff8a3a'), { glow: true, y: 0.17, z: d / 2 + 0.002, cast: false }));
   return { group: gr };
 }
 
@@ -836,7 +835,7 @@ function fishTank(A, T, M) {
   const frame = K.mat('#2b2a28', { metal: 0.4, rough: 0.4 });
   for (const [x, z] of [[-TW / 2, -TD / 2], [TW / 2, -TD / 2], [-TW / 2, TD / 2], [TW / 2, TD / 2]]) grp.add(K.box(0.025, TH, 0.025, frame, { x, y: B, z }));
   grp.add(K.box(TW + 0.02, 0.05, TD + 0.02, frame, { y: B + TH }));
-  grp.add(K.box(TW - 0.1, 0.012, 0.04, A.glow, { y: B + TH - 0.012, z: 0.1, cast: false, receive: false })); // tank light
+  grp.add(A.box(TW - 0.1, 0.012, 0.04, A.solid('#e6f6ff'), A.solid('#e6f6ff'), { glow: true, y: B + TH - 0.012, z: 0.1, cast: false, receive: false })); // tank light
   grp.add(rod(0.008, 0.008, TH - 0.02, M.steel, { x: 0.5, y: B + TH / 2, z: -0.17 }, 6)); // air pipe
   // fish (one InstancedMesh, swimming on ellipses) + rising bubbles
   const moving = new THREE.Group();
@@ -1040,7 +1039,7 @@ function specialsBoard(T, M, time, season) {
       c.textAlign = 'right'; c.fillStyle = '#b0261c'; c.fillText(p, W * 0.93, y);
     });
   });
-  b.add(T.plane(w, h, r, { y: -h / 2 - 0.03, z: 0.017 }));
+  b.add(T.plane(w, h, r, { z: 0.017 }));
   return b;
 }
 
@@ -1066,8 +1065,7 @@ function beerPoster(T, M) {
   });
   const p = new THREE.Group();
   p.add(K.box(w + 0.02, h + 0.02, 0.008, K.mat('#e9e2d2'), { y: -(h + 0.02) / 2 }));
-  p.add(T.plane(w, h, r, { y: -h / 2 - 0.01, z: 0.009 }));
-  p.position.y = h / 2;
+  p.add(T.plane(w, h, r, { z: 0.009 }));
   const holder = new THREE.Group(); holder.add(p);
   return holder;
 }
@@ -1091,8 +1089,7 @@ function highballPoster(T, M) {
   });
   const p = new THREE.Group();
   p.add(K.box(w + 0.02, h + 0.02, 0.008, K.mat('#e9e2d2'), { y: -(h + 0.02) / 2 }));
-  p.add(T.plane(w, h, r, { y: -h / 2 - 0.01, z: 0.009 }));
-  p.position.y = h / 2;
+  p.add(T.plane(w, h, r, { z: 0.009 }));
   const holder = new THREE.Group(); holder.add(p);
   return holder;
 }
@@ -1111,8 +1108,7 @@ function sakePoster(T, M) {
   });
   const p = new THREE.Group();
   p.add(K.box(w + 0.04, h + 0.04, 0.01, M.dark, { y: -(h + 0.04) / 2 }));
-  p.add(T.plane(w, h, r, { y: -h / 2 - 0.02, z: 0.011 }));
-  p.position.y = h / 2;
+  p.add(T.plane(w, h, r, { z: 0.011 }));
   const holder = new THREE.Group(); holder.add(p);
   return holder;
 }
@@ -1128,8 +1124,7 @@ function fujiPicture(T, M) {
   });
   const p = new THREE.Group();
   p.add(K.box(w + 0.06, h + 0.06, 0.03, M.dark, { y: -(h + 0.06) / 2 }));
-  p.add(T.plane(w, h, r, { y: -h / 2 - 0.03, z: 0.016 }));
-  p.position.y = h / 2;
+  p.add(T.plane(w, h, r, { z: 0.016 }));
   const holder = new THREE.Group(); holder.add(p);
   return holder;
 }
