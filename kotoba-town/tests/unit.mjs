@@ -184,6 +184,27 @@ await test('Live: a model that refuses the hints gets a plain transcription setu
   assert.equal(g.judged.branch, 'name_only');
 });
 
+await test('interview review: picks a thinking model, falls back without the thinking setting, normalises the JSON', async () => {
+  const { reviewInterview } = await import('../js/talk/review.js');
+  const calls = [];
+  const fetchImpl = async (url, opts = {}) => {
+    calls.push({ url, body: opts.body ? JSON.parse(opts.body) : null });
+    if (url.endsWith('/models?pageSize=200')) return { ok: true, json: async () => ({ models: [{ name: 'models/gemini-9-pro', supportedGenerationMethods: ['generateContent'] }, { name: 'models/gemini-9-live', supportedGenerationMethods: ['bidiGenerateContent'] }] }) };
+    const body = JSON.parse(opts.body);
+    if (body.generationConfig.thinkingConfig) return { ok: false, status: 400, text: async () => 'thinking not supported' };
+    const out = { verdict: 'not_yet', verdict_reason_en: 'Generic reason.', criteria_scores: [{ id: 'company', score: 2, comment_en: 'No link to the company.' }, { id: 'teleport', score: 5 }], top_improvements_en: ['Link your reason to this company.'], rewrite_question_ja: '志望動機は', rewrite_answer_ja: '御社は…', summary_en: 's', strengths_en: 't', stars: 1 };
+    return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(out) }] } }] }) };
+  };
+  const lesson = { titleJa: 'x', rubric: ['company', 'conclusion'] };
+  const variant = { titleJa: 'y', titleEn: 'y', briefEn: 'b', roleEn: 'r' };
+  const r = await reviewInterview({ apiKey: 'k', lesson, variant, turns: [{ questionJa: '志望動機は', promptEn: 'p', heard: '日本で 働きたいからです。', score: 1, criteria: ['company'] }], fetchImpl });
+  assert.equal(r.verdict, 'not_yet');
+  assert.deepEqual(r.criteria.map((c) => c.id), ['company']);
+  assert.equal(r.model, 'gemini-9-pro');
+  assert.ok(calls.some((c) => c.body?.generationConfig?.thinkingConfig) && calls.at(-1).body.generationConfig.thinkingConfig === undefined);
+  assert.match(calls.at(-1).body.contents[0].parts[0].text, /日本で 働きたい/);
+});
+
 await test('base64 silence is exactly 100 ms at 16 kHz', () => {
   assert.equal(Buffer.from(`${'A'.repeat(4267)}=`, 'base64').length, 3200);
 });

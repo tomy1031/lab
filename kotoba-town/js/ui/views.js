@@ -428,7 +428,7 @@ export class Board {
       const tw = nameTag(g, 70, 44, 'めんせつの けっか · Interview result', THEME.sun, THEME.ink, 40);
       nameTag(g, 70 + tw + 18, 50, mode === 'real' ? 'ほんばん' : 'れんしゅう', mode === 'real' ? '#f7a35c' : '#d7ecdf', mode === 'real' ? '#ffffff' : THEME.leafDark, 30);
       g.font = font(24, 700); g.fillStyle = THEME.soft; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
-      const by = report.source !== 'live' ? 'scored on this device' : /extended-thinking/.test(report.model || '') ? 'judged by Gemini Live (Extended Thinking)' : 'judged by Gemini Live';
+      const by = report.source !== 'live' ? 'scored on this device' : report.reviewMs ? `evaluated by ${report.model} (thinking)` : /extended-thinking/.test(report.model || '') ? 'judged by Gemini Live (Extended Thinking)' : 'judged by Gemini Live';
       g.fillText(`${lesson.titleJa} · ${variant.titleJa} · ${by}`, W - 80, 90);
       const buttons = page === 'summary'
         ? [['answers', 'こたえを みる · Answers', () => this.interviewReport(args, 'answers'), '#cfe3f7', THEME.ink]]
