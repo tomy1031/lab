@@ -128,4 +128,29 @@ await test('Live: no function call → judged from the transcript', async () => 
   assert.equal(g.judged.heard, 'リンです');
 });
 
+await test('Live: a verdict that copies an example (not what was heard) is flagged', async () => {
+  const { WS } = fakeLive();
+  const orig = WS.prototype.send;
+  // the model claims the learner said the example answer, but the transcript says something else
+  WS.prototype.send = function (s) {
+    const m = JSON.parse(s);
+    if (m.realtimeInput?.audio && this.n === 2) {
+      this.n++;
+      this.emit({ serverContent: { inputTranscription: { text: 'おはようございます。きのうは ログインがめんを つくりました。' } } });
+      setTimeout(() => this.emit({ toolCall: { functionCalls: [{ id: 'c9', name: 'judge_reply', args: { heard: 'あしたの ひるまでに おわる よていです。', branch: 'full', score: 3, correction: '', tip_en: '' } }] } }), 5);
+      return;
+    }
+    return orig.call(this, s);
+  };
+  let judged = null;
+  const b = new LiveBrain({ apiKey: 'k', lesson: fx.lesson, variant: fx.variant, character: fx.character, WebSocketImpl: WS, on: { judge: (r) => { judged = r; return 'nothing'; } } });
+  await b.connect();
+  b.setTurn('[TURN 1]', ['full', 'name_only']);
+  for (let i = 0; i < 4; i++) b.audio('AAAA');
+  await new Promise((r) => setTimeout(r, 60));
+  b.close();
+  assert.equal(judged.suspect, true);
+  assert.match(judged.heard, /ログイン/);
+});
+
 console.log(`\n${pass} passed`);

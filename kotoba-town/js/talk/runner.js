@@ -288,6 +288,8 @@ export class Runner {
   handle(r) {
     const c = this.cur;
     const li = c.li;
+    // the judge's words did not match the transcript: ask again instead of trusting the branch
+    if (r.suspect && li.branches.some((b) => b.id === r.branch)) r = { ...r, branch: 'unclear', score: 0, tipEn: 'I could not catch that clearly — please say it again.' };
     const valid = li.branches.find((b) => b.id === r.branch);
     this.log('judge', r.branch, r.score, r.heard);
     if (valid) {

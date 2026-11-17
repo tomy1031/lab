@@ -4,7 +4,7 @@
 // or "chat" for that turn; everything else the model says is dropped. No DOM, no Web Audio here, so the
 // same class runs in Node for the API self-check (tools/live_selfcheck.mjs).
 import { connectLive, LIVE_MODELS } from './live.js';
-import { JUDGE_TOOL, systemInstruction, readJudge, readReport } from './judge.js';
+import { JUDGE_TOOL, systemInstruction, readJudge, readReport, similarity } from './judge.js';
 
 const noop = () => {};
 
@@ -78,7 +78,7 @@ export class LiveBrain {
       onOutputText: (t) => { this.trace(`out:${t}`); if (this.gate === 'play' || this.gate === 'armed') this.on.npcText(t); },
       onInputText: (t) => {
         // Transcript fragments that trail in right after a verdict belong to the judged utterance.
-        if (Date.now() - this.judgeAt < 2500) return;
+        if (!this.judgePending && Date.now() - this.judgeAt < 2500) return;
         this.trace(`in:${t}`);
         this.heardText += t;
         this.awaitingJudge = true;
@@ -142,43 +142,63 @@ export class LiveBrain {
 
   toolCalls(calls) {
     this.trace(`toolCall:${calls.map((c) => c.name).join(',')}`);
-    const responses = [];
     for (const call of calls) {
       if (call.name === 'judge_reply') {
-        const result = readJudge(call.args, this.valid);
-        if (!result.heard) result.heard = this.heardText.trim();
-        this.judgedThisTurn = true;
-        this.awaitingJudge = false;
-        this.judgeAt = Date.now();
-        let say = 'nothing';
-        try { say = this.on.judge(result) || 'nothing'; } catch (e) { console.error(e); }
-        this.trace(`judge:${result.branch}/${result.score} → ${say}`);
-        // 'armed': the reply has not started yet. A turnComplete that closes the function-call turn
-        // can arrive before the reply audio, so only audio switches the gate to 'play'.
-        this.gate = say === 'nothing' ? 'drop' : 'armed';
-        clearTimeout(this.armTimer);
-        if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
-        const response = { ok: true, say };
-        if (say === 'react') {
-          response.instruction = `Reply in character to what the learner just said (${result.heard ? `「${result.heard}」` : 'see audio'}): ONE short polite Japanese sentence, at most 15 words, that answers their question or comment directly. Do not greet, do not introduce yourself, do not ask a question, do not continue the script.`;
-        } else if (say === 'chat') {
-          response.instruction = `Reply in character to 「${result.heard}」 with 1–2 short polite Japanese sentences at the learner's level, then ask one simple question back. No greetings.`;
-        }
-        responses.push({ id: call.id, name: call.name, response });
-        this.played = 0;
-        this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8); // hard cap on reply length
-        this.heardText = '';
+        // The speech-to-text of the learner's words can trail the verdict by a moment: give it up to
+        // 0.8 s, so the cross-check below has something to compare against.
+        this.judgePending = true;
+        const t0 = Date.now();
+        const go = () => {
+          if (!this.heardText.trim() && Date.now() - t0 < 800 && !this.closed) { setTimeout(go, 100); return; }
+          this.judgePending = false;
+          this.finishJudge(call);
+        };
+        go();
       } else if (call.name === 'final_report') {
         const report = readReport(call.args);
         this.gate = 'drop';
-        responses.push({ id: call.id, name: call.name, response: { ok: true, say: 'nothing' } });
+        this.session?.sendToolResponse([{ id: call.id, name: call.name, response: { ok: true, say: 'nothing' } }]);
         this.pendingReport?.(report);
         this.pendingReport = null;
       } else {
-        responses.push({ id: call.id, name: call.name, response: { ok: false, error: 'unknown function' } });
+        this.session?.sendToolResponse([{ id: call.id, name: call.name, response: { ok: false, error: 'unknown function' } }]);
       }
     }
-    this.session?.sendToolResponse(responses);
+  }
+
+  finishJudge(call) {
+    const result = readJudge(call.args, this.valid);
+    // Cross-check with the separate speech-to-text: a verdict whose "heard" is not what the
+    // transcript says (e.g. the model copied an example answer) is not trusted.
+    const asr = this.heardText.trim();
+    if (asr) result.asr = asr;
+    if (!result.heard) result.heard = asr;
+    else if ([...asr].length >= 4 && similarity(result.heard, asr) < 0.4) {
+      result.suspect = true;
+      this.trace(`suspect: heard「${result.heard}」 asr「${asr}」`);
+      result.heard = asr;
+    }
+    this.judgedThisTurn = true;
+    this.awaitingJudge = false;
+    this.judgeAt = Date.now();
+    let say = 'nothing';
+    try { say = this.on.judge(result) || 'nothing'; } catch (e) { console.error(e); }
+    this.trace(`judge:${result.branch}/${result.score} → ${say}`);
+    // 'armed': the reply has not started yet. A turnComplete that closes the function-call turn
+    // can arrive before the reply audio, so only audio switches the gate to 'play'.
+    this.gate = say === 'nothing' ? 'drop' : 'armed';
+    clearTimeout(this.armTimer);
+    if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
+    const response = { ok: true, say };
+    if (say === 'react') {
+      response.instruction = `Reply in character to what the learner just said (${result.heard ? `「${result.heard}」` : 'see audio'}): ONE short polite Japanese sentence, at most 15 words, that answers their question or comment directly. Do not greet, do not introduce yourself, do not ask a question, do not continue the script.`;
+    } else if (say === 'chat') {
+      response.instruction = `Reply in character to 「${result.heard}」 with 1–2 short polite Japanese sentences at the learner's level, then ask one simple question back. No greetings.`;
+    }
+    this.played = 0;
+    this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8); // hard cap on reply length
+    this.heardText = '';
+    this.session?.sendToolResponse([{ id: call.id, name: call.name, response }]);
   }
 
   turnComplete() {
@@ -187,7 +207,7 @@ export class LiveBrain {
     if (this.gate === 'play') this.on.npcDone(false);
     this.gate = 'drop';
     // The model finished a turn without judging although the learner spoke: judge from the transcript.
-    if (this.awaitingJudge && this.heardText.trim()) {
+    if (this.awaitingJudge && !this.judgePending && this.heardText.trim()) {
       const heard = this.heardText.trim();
       this.heardText = '';
       this.awaitingJudge = false;
