@@ -250,6 +250,7 @@ async function boot() {
   KT.open = (vId) => { const L = units.find((x) => x.variants.some((v) => v.id === vId)); return openVariant(L, L.variants.find((v) => v.id === vId)); };
   KT.start = (mode = 'practice') => start(state.lesson, state.variant, mode);
   KT.goTown = goTown;
+  KT.showCourse = (id) => { state.course = id; showLessons(); };
 
   // test hook: jump straight into a variant (?play=l01a)
   const q = new URLSearchParams(location.search);

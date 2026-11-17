@@ -282,7 +282,7 @@ export class Person {
         cap(1.1, Math.PI * 0.6, 0.06); fringe(1.05); sides(1.05);
         break;
       case 'long':
-        cap(1.09, Math.PI * 0.6, 0.06); fringe(0.95, 0.12); sides(1.05);
+        cap(1.09, Math.PI * 0.52, 0.06); fringe(0.95, 0.12, 0.2); sides(1.05);
         add(new THREE.CapsuleGeometry(R * 0.55, R * 1.6, 4, 12), [0, hcy - R * 1.35, -R * 0.55], [0.1, 0, 0], [1.45, 1, 0.45]);
         break;
       case 'ponytail': {
