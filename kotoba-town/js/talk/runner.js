@@ -2,7 +2,8 @@
 // answers (Gemini Live judges them and picks the branch), retries/hints, off-script replies in the
 // NPC's own Live voice, optional free talk, and the closing report.
 import { LiveBrain } from './brain.js';
-import { turnNote, freeTalkNote, endNote, offlineJudge, offlineReport } from './judge.js';
+import { turnNote, freeTalkNote, endNote, offlineJudge, offlineReport, offlineInterviewReport } from './judge.js';
+import { LIVE_MODELS, THINKING_MODEL } from './live.js';
 import { resolveCharacter } from '../content/lines.js';
 import { voiceUrl } from '../content/index.js';
 import { UTILITY_LINES } from '../content/cast.js';
@@ -17,6 +18,9 @@ export class Runner {
     this.chars = Object.fromEntries(this.variant.characters.map((c) => { const r = resolveCharacter(c); return [r.id, r]; }));
     this.main = resolveCharacter(this.variant.characters[0]);
     this.nodes = Object.fromEntries(this.variant.nodes.map((n) => [n.id, n]));
+    // job interviews (ITビジネス編 Story C): judged against an interviewer's rubric, by the Live model
+    // that reasons in the background (Extended Thinking) when it is available
+    this.interview = this.lesson.format === 'interview';
     this.turns = [];
     this.k = 0;
     this.brain = null;
@@ -41,8 +45,10 @@ export class Runner {
         variant: this.variant,
         character: this.main,
         learnerName: this.settings.name,
-        silenceMs: this.settings.slowSpeaker ? 1800 : 1300,
+        silenceMs: this.settings.slowSpeaker ? 1800 : this.interview ? 1600 : 1300,
         model: this.settings.model || undefined,
+        models: this.interview ? [THINKING_MODEL, ...LIVE_MODELS] : undefined,
+        thinkingLevel: this.settings.thinkingLevel || 'MEDIUM',
         trace: (window.KT && (window.KT.trace = [])) || undefined,
         on: {
           status: (s, d) => this.log('live', s, d),
@@ -66,6 +72,10 @@ export class Runner {
     if (this.variant.call) {
       this.toast.show('📞 でんわ です · The phone is ringing', 3000);
       await this.sound.ring(2);
+    }
+    if (this.variant.entrance === 'knock') {
+      this.toast.show('コン、コン、コン · You knock on the door', 2600);
+      await this.sound.knock(3);
     }
     await this.go(this.variant.start);
   }
@@ -95,6 +105,7 @@ export class Runner {
     while (nodeId && !this.stopped) {
       const node = this.nodes[nodeId];
       if (!node) break;
+      if (node.learner) await this.stage.learner(node.learner); // interviews: walk to the chair, sit, stand
       if (node.focus) this.stage.focus(node.focus);
       this.lastSay = node.say || [];
       await this.say(this.lastSay);
@@ -203,7 +214,7 @@ export class Runner {
   listen(node) {
     const li = node.listen;
     return new Promise((resolve) => {
-      this.cur = { node, li, attempts: 0, reacts: 0, resolve, showHint: false, choices: null, heard: '' };
+      this.cur = { node, li, attempts: 0, reacts: 0, resolve, showHint: false, choices: null, heard: '', question: this.lastSpoken || [] };
       this.k += 1;
       if (this.live) {
         this.brain.setTurn(turnNote({ k: this.k, character: this.main, npcLines: this.lastSpoken || [], listen: li, grammar: this.lesson.grammar }), li.branches.map((b) => b.id));
@@ -362,6 +373,19 @@ export class Runner {
     clearTimeout(this.idleTimer); clearTimeout(this.idleTimer2);
     this.closeMic();
     this.sound.blip(r.score >= 2 ? 'good' : 'soft');
+    if (this.interview) {
+      // ほんばん is a real interview: no feedback in between, everything comes in the evaluation at the end
+      if (this.mode === 'real') { this.turn.set({ mode: 'npc', promptEn: '…', mic: this.mic.state }); await sleep(500); c.resolve(next); return; }
+      const better = r.betterAnswer || (r.source === 'live' ? r.correction : c.li.modelAnswers?.[0]) || '';
+      this.turn.set({
+        mode: 'feedback',
+        feedback: { score: r.score, heard: r.heard, correction: better, tipEn: r.improveEn || r.tipEn || c.li.lookForEn || '', criteriaMet: r.criteriaMet || [], criteriaMissed: r.criteriaMissed || [], interview: true, offline: r.source !== 'live' },
+        mic: this.mic.state,
+      });
+      await sleep(better && better !== r.heard ? 6500 : 3500);
+      c.resolve(next);
+      return;
+    }
     this.turn.set({ mode: 'feedback', feedback: { score: r.score, heard: r.heard, correction: r.correction, tipEn: r.tipEn }, mic: this.mic.state });
     await sleep(r.score >= 2 && (!r.correction || r.correction === r.heard) ? 1600 : 3200);
     c.resolve(next);
@@ -372,6 +396,10 @@ export class Runner {
     this.turns.push({
       nodeId: c.node?.id, promptEn: c.free ? 'Free talk' : c.li.promptEn, heard: r.heard || '', score: r.score ?? 0,
       correction: r.correction || '', tipEn: r.tipEn || '', branch: r.branch, grammar: c.li?.grammar || [], grammarUsed: r.grammarUsed || [],
+      ...(this.interview && !c.free ? {
+        questionJa: (c.question || []).map((l) => l.ja).join(' '), criteria: c.li.criteria || [], criteriaMet: r.criteriaMet || [], criteriaMissed: r.criteriaMissed || [],
+        improveEn: r.improveEn || '', betterAnswer: r.betterAnswer || '', pitfallsEn: c.li.pitfallsEn || '', lookForEn: c.li.lookForEn || '', modelAnswer: c.li.modelAnswers?.[0] || '',
+      } : {}),
     });
   }
 
@@ -446,9 +474,16 @@ export class Runner {
     this.closeMic();
     this.turn.hide();
     this.bubble.hide();
-    this.toast.show(this.live ? 'Gemini Live が ふりかえり中… Writing your feedback' : 'まとめ中…', 0);
+    this.toast.show(this.live ? (this.interview ? '面接の 評価を 考えて います… Evaluating your interview' : 'Gemini Live が ふりかえり中… Writing your feedback') : 'まとめ中…', 0);
     let report = null;
-    if (this.live) report = await this.brain.report(endNote({ turns: this.turns }), 15000);
+    const rubric = this.interview ? this.lesson.rubric || [] : null;
+    if (this.live) report = await this.brain.report(endNote({ turns: this.turns, rubric }), this.interview ? 45000 : 15000);
+    if (this.interview) {
+      // a Live report without the interview part (an older model) is completed from the per-answer verdicts
+      const local = offlineInterviewReport(this.turns, rubric);
+      report = report ? (report.interview ? report : { ...local, ...report, interview: true, verdict: local.verdict, criteria: local.criteria, improvements: local.improvements, rewrite: local.rewrite }) : local;
+      report.model = this.brain?.model || null;
+    }
     if (!report) report = offlineReport(this.turns);
     this.toast.hide();
     const missions = this.variant.missionsEn.map((m) => ({

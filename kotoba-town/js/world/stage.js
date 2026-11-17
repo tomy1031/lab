@@ -25,15 +25,8 @@ export class Stage {
     const m = this.fader.material;
     const from = m.opacity;
     this.fader.visible = true;
-    const t0 = performance.now();
-    await new Promise((resolve) => {
-      const tick = () => {
-        const k = Math.min(1, (performance.now() - t0) / ms);
-        m.opacity = from + (to - from) * k;
-        if (k < 1) requestAnimationFrame(tick); else resolve();
-      };
-      tick();
-    });
+    // driven by the render loop: window.requestAnimationFrame stops inside an immersive WebXR session
+    await this.app.tween(ms, (k) => { m.opacity = from + (to - from) * k; }, 'fade');
     if (to === 0) this.fader.visible = false;
   }
 
@@ -82,6 +75,23 @@ export class Stage {
       this.people.set(char.id, { person, speaker, slot, char });
     }
     return built;
+  }
+
+  /**
+   * Learner movement in a scene: 'walk' (fade, then stand at the scene's seat spot), 'sit', 'stand'.
+   * Scenes without a seat spot ignore it.
+   */
+  async learner(move) {
+    const seat = this.built?.spots?.seat;
+    if (move === 'walk' && seat) {
+      await this.fade(1, 280);
+      this.app.placeRig(seat.pos, seat.yaw);
+      await this.fade(0, 380);
+    } else if (move === 'sit') {
+      await this.app.setSeated(true);
+    } else if (move === 'stand') {
+      await this.app.setSeated(false);
+    }
   }
 
   /** The learner holds a phone; the caller's voice comes from it. */

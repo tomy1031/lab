@@ -3,6 +3,25 @@
 import * as THREE from 'three';
 import { Panel, THEME, rr, font, wrap, card, nameTag, stars, star, text, shade } from './panel.js';
 import { toRomaji } from '../content/index.js';
+import { RUBRIC_INFO, VERDICTS } from '../talk/judge.js';
+
+/** A small rounded label (criteria chips). Returns its width. */
+function chip(g, x, y, label, bg, fg, size = 24) {
+  g.font = font(size, 800);
+  const w = g.measureText(label).width + size * 1.1;
+  g.fillStyle = bg; rr(g, x, y, w, size * 1.8, size * 0.9); g.fill();
+  g.fillStyle = fg; g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.fillText(label, x + size * 0.55, y + size * 0.92);
+  return w;
+}
+
+/** Five dots for a 1–5 score. */
+function dots(g, x, y, score, color) {
+  for (let i = 0; i < 5; i++) {
+    g.fillStyle = i < score ? color : '#e8dfcf';
+    g.beginPath(); g.arc(x + i * 30, y, 11, 0, Math.PI * 2); g.fill();
+  }
+}
 
 const NAME_COLORS = ['#ffd36b', '#9ad8b7', '#f6b3c6', '#a9cdf0', '#f7c08a', '#c9b6ef'];
 /** 「だい 3 か」 for the textbook course, 「第2話 · story」 for ITビジネス編. */
@@ -140,6 +159,29 @@ export class TurnCard {
         text(g, s.promptEn || 'Listen…', 60, y, W - 240, 40, { color: THEME.soft });
         return;
       }
+      if (s.mode === 'feedback' && s.feedback?.interview) {
+        // job interview: how an interviewer would take this answer
+        const f = s.feedback;
+        stars(g, 60, y - 6, f.score, 3, 48);
+        g.font = font(36, 800); g.fillStyle = THEME.ink; g.textAlign = 'left';
+        g.fillText(['もう いちど 考えよう', 'もう 少し', 'いい 答えです', 'すばらしい 答えです'][f.score] || '', 250, y + 4);
+        y += 72;
+        if (f.heard) y = text(g, `🎤 ${f.heard}`, 60, y, W - 120, 28, { color: THEME.soft, maxLines: 2 });
+        let cx = 60; const cy = y + 6; let any = false;
+        for (const id of f.criteriaMet || []) { if (!RUBRIC_INFO[id] || cx > W - 300) continue; cx += chip(g, cx, cy, `✓ ${RUBRIC_INFO[id].ja}`, '#e3f3ea', THEME.leafDark) + 12; any = true; }
+        for (const id of f.criteriaMissed || []) { if (!RUBRIC_INFO[id] || cx > W - 300) continue; cx += chip(g, cx, cy, `△ ${RUBRIC_INFO[id].ja}`, '#fdebd3', '#a3622a') + 12; any = true; }
+        if (any) y += 62;
+        if (f.correction && f.correction !== f.heard) {
+          y += 6;
+          g.fillStyle = '#eaf6ef'; rr(g, 50, y, W - 100, 196, 28); g.fill();
+          g.font = font(22, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
+          g.fillText(f.offline ? 'こたえの れい · A model answer' : '言い直すなら · A better answer', 76, y + 16);
+          text(g, f.correction, 76, y + 52, W - 160, 32, { color: THEME.leafDark, weight: 800, maxLines: 4 });
+          y += 214;
+        }
+        if (f.tipEn) text(g, `${f.offline ? '👂' : '🌱'} ${f.tipEn}`, 60, y + 4, W - 120, 28, { color: '#6c7d8a', maxLines: 3 });
+        return;
+      }
       if (s.mode === 'feedback' && s.feedback) {
         const f = s.feedback;
         stars(g, 60, y, f.score, 3, 56);
@@ -239,7 +281,7 @@ export class Board {
         p.button(`tab-${c.id}`, tx, 36, 560, 78, `${c.titleJa} · ${c.titleEn}`, () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink, size: 30 });
         tx += 590;
       }
-      const cols = 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 380;
+      const cols = course.units.length > 10 ? 6 : 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 380;
       course.units.forEach((L, i) => {
         const x = 80 + (i % cols) * (cw + 28); const y = 150 + Math.floor(i / cols) * (ch + 30);
         const real = L.variants.reduce((s2, v) => s2 + starsOf(v.id, 'real'), 0);
@@ -258,11 +300,12 @@ export class Board {
         text(g, L.titleJa, x + 26, y + 132, cw - 52, 36, { weight: 800, maxLines: 2 });
         text(g, L.titleEn, x + 26, y + 222, cw - 52, 24, { color: THEME.soft, maxLines: 2, weight: 500 });
         const max = L.variants.length * 3;
-        g.font = font(20, 800); g.fillStyle = THEME.leafDark; g.fillText('れんしゅう', x + 26, y + ch - 82);
-        g.fillStyle = '#c9772e'; g.fillText('ほんばん', x + 26, y + ch - 50);
+        const sx = cols > 5 ? 132 : 150; const step = Math.min(22, (cw - sx - 18) / max); const sr = Math.min(9, step * 0.42);
+        g.font = font(cols > 5 ? 18 : 20, 800); g.fillStyle = THEME.leafDark; g.fillText('れんしゅう', x + 22, y + ch - 82);
+        g.fillStyle = '#c9772e'; g.fillText('ほんばん', x + 22, y + ch - 50);
         for (let k = 0; k < max; k++) {
-          star(g, x + 150 + k * 22, y + ch - 72, 9, k < prac ? '#9ad8b7' : '#ece3d2');
-          star(g, x + 150 + k * 22, y + ch - 40, 9, k < real ? THEME.sun : '#ece3d2');
+          star(g, x + sx + k * step, y + ch - 72, sr, k < prac ? '#9ad8b7' : '#ece3d2');
+          star(g, x + sx + k * step, y + ch - 40, sr, k < real ? THEME.sun : '#ece3d2');
         }
         p.buttons.push({ id: L.id, x, y, w: cw, h: ch, onClick: () => onPick(L) });
       });
@@ -332,7 +375,9 @@ export class Board {
     });
   }
 
-  report({ lesson, variant, report, turns, missions, mode, onRetry, onReal, onNext, onOther, onTown }) {
+  report(args) {
+    if (args.report?.interview) { this.interviewReport(args); return; }
+    const { lesson, variant, report, turns, missions, mode, onRetry, onReal, onNext, onOther, onTown } = args;
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
@@ -371,6 +416,81 @@ export class Board {
       ].filter(Boolean);
       const bw = (W - 160 - (buttons.length - 1) * 24) / buttons.length;
       buttons.forEach(([id, label, fn, color, fg], i) => p.button(id, 80 + i * (bw + 24), by, bw, 90, label, fn, { color, fg, size: 32 }));
+    });
+  }
+
+  /** Job interview result: verdict, the interviewer's rubric, what to improve, a better answer; page 2 lists every answer. */
+  interviewReport(args, page = 'summary') {
+    const { lesson, variant, report, turns, mode, onRetry, onReal, onNext, onOther, onTown } = args;
+    this.panel.visible = true;
+    this.panel.draw((g, W, H, p) => {
+      card(g, 10, 10, W - 20, H - 30, { r: 60 });
+      const tw = nameTag(g, 70, 44, 'めんせつの けっか · Interview result', THEME.sun, THEME.ink, 40);
+      nameTag(g, 70 + tw + 18, 50, mode === 'real' ? 'ほんばん' : 'れんしゅう', mode === 'real' ? '#f7a35c' : '#d7ecdf', mode === 'real' ? '#ffffff' : THEME.leafDark, 30);
+      g.font = font(24, 700); g.fillStyle = THEME.soft; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
+      const by = report.source !== 'live' ? 'scored on this device' : /extended-thinking/.test(report.model || '') ? 'judged by Gemini Live (Extended Thinking)' : 'judged by Gemini Live';
+      g.fillText(`${lesson.titleJa} · ${variant.titleJa} · ${by}`, W - 80, 90);
+      const buttons = page === 'summary'
+        ? [['answers', 'こたえを みる · Answers', () => this.interviewReport(args, 'answers'), '#cfe3f7', THEME.ink]]
+        : [['back', 'けっかに もどる · Back', () => this.interviewReport(args, 'summary'), '#cfe3f7', THEME.ink]];
+      if (page === 'summary') {
+        const v = VERDICTS[report.verdict] || VERDICTS.borderline;
+        g.fillStyle = v.color; rr(g, 80, 128, 640, 120, 60); g.fill();
+        g.fillStyle = '#ffffff'; g.textAlign = 'left'; g.textBaseline = 'middle';
+        g.font = font(46, 800); g.fillText(`判定：${v.ja}`, 120, 172);
+        g.font = font(24, 700); g.fillText(v.en, 122, 220);
+        text(g, report.verdictReasonEn || report.summaryEn || '', 760, 132, W - 840, 30, { weight: 700, maxLines: 4 });
+        // rubric
+        g.font = font(28, 800); g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillText('ひょうか · How the interviewer saw it', 80, 282);
+        let ry = 332;
+        for (const c of report.criteria || []) {
+          const info = RUBRIC_INFO[c.id]; if (!info) continue;
+          g.font = font(26, 800); g.fillStyle = THEME.ink; g.textBaseline = 'top'; g.fillText(info.ja, 80, ry);
+          g.font = font(18, 700); g.fillStyle = THEME.soft; g.fillText(info.en, 80, ry + 32);
+          dots(g, 352, ry + 18, c.score, c.score >= 4 ? THEME.leaf : c.score === 3 ? THEME.sun : '#e0705c');
+          if (c.commentEn) text(g, c.commentEn, 512, ry + 2, 400, 22, { color: '#6c7d8a', maxLines: 2, weight: 500 });
+          ry += 64;
+        }
+        // improvements + a better answer
+        const rx = 960; const rw = W - rx - 80;
+        g.font = font(28, 800); g.fillStyle = '#a3622a'; g.textBaseline = 'top'; g.fillText('🌱 つぎに なおす こと · Improve next', rx, 282);
+        let iy = 330;
+        (report.improvements || []).forEach((t, i) => { iy = text(g, `${i + 1}. ${t}`, rx, iy, rw, 26, { color: THEME.ink, maxLines: 3, weight: 600 }) + 8; });
+        if (report.rewrite?.answerJa) {
+          iy += 10;
+          g.fillStyle = '#eaf6ef'; rr(g, rx - 16, iy, rw + 32, H - 210 - iy, 28); g.fill();
+          g.font = font(26, 800); g.fillStyle = THEME.leafDark; g.textBaseline = 'top'; g.fillText('✍️ 言い直して みよう · Try this answer', rx, iy + 18);
+          let qy = iy + 58;
+          if (report.rewrite.questionJa) qy = text(g, `Q. ${report.rewrite.questionJa}`, rx, qy, rw, 24, { color: THEME.soft, maxLines: 2, weight: 700 }) + 6;
+          text(g, report.rewrite.answerJa, rx, qy, rw, 28, { color: THEME.leafDark, weight: 800, maxLines: Math.max(2, Math.floor((H - 230 - qy) / 40)) });
+        }
+      } else {
+        g.font = font(28, 800); g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillText('こたえ · Your answers (→ a better answer)', 80, 130);
+        let ty = 180;
+        const rows = turns.filter((t) => t.questionJa !== undefined);
+        const per = Math.max(78, Math.min(120, (H - 380) / Math.max(1, rows.length)));
+        for (const t of rows) {
+          if (ty > H - 260) break;
+          stars(g, 80, ty + 4, t.score, 3, 22);
+          text(g, `Q. ${t.questionJa || t.promptEn}`, 180, ty, W - 260, 22, { color: THEME.soft, maxLines: 1, weight: 700 });
+          text(g, `🎤 ${t.heard || '—'}`, 180, ty + 28, (W - 280) / 2, 22, { maxLines: 2 });
+          const better = t.betterAnswer || (t.score < 2 ? t.modelAnswer : '');
+          if (better) text(g, `→ ${better}`, 180 + (W - 260) / 2, ty + 28, (W - 280) / 2, 22, { color: THEME.leafDark, maxLines: 2, weight: 700 });
+          ty += per;
+        }
+      }
+      const list = [
+        ...buttons,
+        ['retry', 'もう いちど · Retry', onRetry, THEME.leaf, '#ffffff'],
+        onReal && ['real', 'ほんばんに ちょうせん', onReal, '#f7a35c', '#ffffff'],
+        onNext && ['next', 'つぎの 話へ · Next', onNext, THEME.sun, THEME.ink],
+        ['other', 'ほかの ばめん', onOther, '#a9cdf0', THEME.ink],
+        ['town', 'まちへ · Town', onTown, '#e8dccb', THEME.ink],
+      ].filter(Boolean);
+      const bw = (W - 160 - (list.length - 1) * 20) / list.length;
+      list.forEach(([id, label, fn, color, fg], i) => p.button(id, 80 + i * (bw + 20), H - 160, bw, 90, label, fn, { color, fg, size: 28 }));
     });
   }
 

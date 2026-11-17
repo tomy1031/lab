@@ -16,6 +16,10 @@
  * gemini-3.8-live is GA; it rejects thinkingConfig / enableAffectiveDialog / proactivity:false, so
  * none of those are ever sent.
  */
+/** Live model that reasons in the background before it answers (used for interview evaluation). */
+export const THINKING_MODEL = 'gemini-3.8-live-extended-thinking';
+export const isThinkingModel = (m) => /extended-thinking/.test(m || '');
+
 export const LIVE_MODELS = [
   'gemini-3.8-live',
   'gemini-3.1-flash-live-preview',
@@ -41,6 +45,8 @@ export function closeReason(ev) {
   const reason = typeof ev?.reason === 'string' ? ev.reason : '';
   if (/api key|API_KEY|permission|unauthori[sz]ed|PERMISSION_DENIED/i.test(reason)) return 'badKey';
   if (/quota|exhaust|rate.?limit|too many/i.test(reason)) return 'rateLimited';
+  // a setup field this model does not know (newer options such as transcription languages)
+  if (/unknown name|invalid json payload|cannot find field|invalid argument|INVALID_ARGUMENT/i.test(reason)) return 'invalidSetup';
   if (/not found|not supported|unsupported|invalid model/i.test(reason)) return 'modelNotFound';
   if (ev?.code === 1008) return 'badKey';
   return reason ? 'closed' : 'network';
@@ -105,6 +111,9 @@ export class LiveSession {
       if (sc.generationComplete) h.onGenerationComplete?.();
       if (sc.turnComplete) h.onTurnComplete?.();
     }
+    // models that think in the background say when they are busy / idle (turnComplete alone is not "idle")
+    const status = sc?.interactionStatus ?? msg.interactionStatus;
+    if (status) h.onInteraction?.(String(status));
     if (msg.toolCall?.functionCalls?.length) h.onToolCall?.(msg.toolCall.functionCalls);
     if (msg.toolCallCancellation) h.onToolCancel?.(msg.toolCallCancellation.ids || []);
     if (msg.goAway) h.onGoAway?.(msg.goAway.timeLeft);
@@ -174,6 +183,7 @@ function openModel({ apiKey, model, setup, handlers, WebSocketImpl }) {
  * Connect, trying models in order. Returns { ok:true, session } or { ok:false, reason, tried }.
  * A bad key stops at once (every model would refuse it the same way).
  */
+/** setup may be an object or a function (model) → object, for options only some models accept. */
 export async function connectLive({ apiKey, setup, handlers = {}, models = LIVE_MODELS, preferred, WebSocketImpl }) {
   if (!apiKey) return { ok: false, reason: 'noKey', tried: [] };
   const order = preferred ? [preferred, ...models.filter((m) => m !== preferred)] : models;
@@ -181,7 +191,7 @@ export async function connectLive({ apiKey, setup, handlers = {}, models = LIVE_
   let last = 'modelNotFound';
   for (const model of order) {
     try {
-      const session = await openModel({ apiKey, model, setup, handlers, WebSocketImpl });
+      const session = await openModel({ apiKey, model, setup: typeof setup === 'function' ? setup(model) : setup, handlers, WebSocketImpl });
       return { ok: true, session, model, tried };
     } catch (e) {
       last = e?.reason || 'network';

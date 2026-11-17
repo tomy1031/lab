@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
 export const EYE_HEIGHT = 1.6;
+/** Eye height when the learner sits on a chair (interviews). */
+export const SEATED_EYE = 1.18;
 
 export class App {
   constructor(container) {
@@ -54,12 +56,56 @@ export class App {
 
   onUpdate(fn) { this.updaters.add(fn); return () => this.updaters.delete(fn); }
 
+  /**
+   * Run fn(k) with k going 0 → 1 over ms, driven by the render loop (window.requestAnimationFrame does not
+   * run during an immersive WebXR session on Quest). Resolves when done; a later tween with the same key
+   * replaces this one.
+   */
+  tween(ms, fn, key = null) {
+    if (key && this._tweens?.[key]) this._tweens[key]();
+    this._tweens ||= {};
+    const t0 = performance.now();
+    return new Promise((resolve) => {
+      let off = null;
+      const stop = () => { off?.(); if (key && this._tweens[key] === stop) delete this._tweens[key]; resolve(); };
+      off = this.onUpdate(() => {
+        const k = Math.min(1, (performance.now() - t0) / Math.max(1, ms));
+        fn(k);
+        if (k >= 1) stop();
+      });
+      if (key) this._tweens[key] = stop;
+      fn(0);
+    });
+  }
+
   /** Put the learner at a spot (feet position, facing yaw radians). */
   placeRig(pos, yaw) {
     this.rig.position.copy(pos);
     this.rig.rotation.set(0, yaw, 0);
+    this.rigBaseY = pos.y;
+    this.seatOffset = 0;
+    this._tweens?.seat?.();
+    if (!this.inXR) this.camera.position.y = EYE_HEIGHT;
     this.yaw = 0; this.pitch = 0;
     this._applyLook();
+  }
+
+  /**
+   * Sit down / stand up: the eyes move smoothly to chair height and back. On PC the camera moves; in VR
+   * the world moves instead, so a learner who stands in the room still sees from the chair (someone who
+   * really sits down needs no change).
+   */
+  setSeated(on, ms = 900) {
+    const target = !on ? 0 : this.inXR
+      ? Math.max(-0.6, Math.min(0, SEATED_EYE - this.camera.position.y))
+      : SEATED_EYE - EYE_HEIGHT;
+    const from = this.seatOffset || 0;
+    return this.tween(ms, (k) => {
+      const e = k * k * (3 - 2 * k);
+      this.seatOffset = from + (target - from) * e;
+      if (this.inXR) this.rig.position.y = (this.rigBaseY || 0) + this.seatOffset;
+      else { this.rig.position.y = this.rigBaseY || 0; this.camera.position.y = EYE_HEIGHT + this.seatOffset; }
+    }, 'seat');
   }
 
   /** World position of the learner's eyes. */
@@ -154,7 +200,8 @@ export class App {
     });
     r.xr.addEventListener('sessionend', () => {
       this.inXR = false;
-      this.camera.position.set(0, EYE_HEIGHT, 0);
+      this.rig.position.y = this.rigBaseY || 0;
+      this.camera.position.set(0, EYE_HEIGHT + (this.seatOffset || 0), 0);
       document.body.classList.remove('xr');
       this._applyLook();
       this.onXRChange?.(false);

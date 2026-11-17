@@ -148,6 +148,23 @@ export const CAST = {
     look: { sex: 'f', age: 43, height: 1.62, build: 1.0, skin: SKIN.fair, hair: { style: 'short', color: '#2a1c14' },
       outfit: { type: 'suit', top: '#6b6f78', bottom: '#4a4d55', accent: '#f2f0ea' }, extras: [] },
   },
+  // ITビジネス編 Story C (interviews): the strict company
+  kuroiwa: {
+    nameJa: '黒岩 たけし', kana: 'くろいわ たけし', roleEn: 'Development manager at Kurogane System (a strict interviewer)',
+    voice: 'Orus',
+    styleJa: '低い 声で、短く、少し 冷たく。ゆっくり、はっきり。怒鳴らない。',
+    personaJa: '50代の 開発部長。株式会社 くろがねシステムの 面接官。表情を あまり 変えず、答えに すぐ「なぜですか」「具体的には」と 聞き返す。厳しいが、失礼な ことばや 差別的な ことは 言わない。',
+    look: { sex: 'm', age: 53, height: 1.75, build: 1.08, skin: SKIN.medium, hair: { style: 'side_part', color: '#3b3734' },
+      outfit: { type: 'suit', top: '#3a3d44', bottom: '#33363c', accent: '#4b5563' }, extras: ['glasses', 'tie'] },
+  },
+  shiraishi: {
+    nameJa: '白石 れい', kana: 'しらいし れい', roleEn: 'HR at Kurogane System (second interviewer)',
+    voice: 'Schedar',
+    styleJa: '落ち着いて、事務的に、感情を あまり 出さずに。',
+    personaJa: '30代の 人事担当。質問シートを 読み上げ、時計を 気に する。冷静で 事務的。',
+    look: { sex: 'f', age: 34, height: 1.62, build: 0.95, skin: SKIN.light, hair: { style: 'bob', color: '#1c1714' },
+      outfit: { type: 'suit', top: '#5b5f68', bottom: '#4a4d55', accent: '#f2f0ea' }, extras: ['badge'] },
+  },
 };
 
 /** Scene catalog: slots and props (zone = near | npc | far, relative to the learner). */
@@ -187,6 +204,11 @@ export const SCENES = {
   home: {
     nameEn: 'Japanese home', slots: ['host', 'host2', 'phone'],
     props: { genkan: 'near', slippers: 'near', gift: 'near', sofa: 'npc', table: 'near', tea: 'near', cake: 'near', spoon: 'near', tv: 'far', photo: 'npc', clock: 'far', garden: 'far', kitchen: 'far', piano: 'far', shoes: 'npc' },
+  },
+  interview: {
+    nameEn: 'Interview room', slots: ['npc1', 'npc2', 'npc3', 'phone'],
+    props: { door: 'far', chair: 'near', bag: 'near', table: 'npc', resume: 'npc', laptop: 'npc', water: 'npc', nameplate: 'npc', clock: 'far', window: 'far', logo: 'far', plant: 'far' },
+    rooms: ['midori', 'grey'],
   },
   konbini: {
     nameEn: 'Convenience store', slots: ['clerk', 'npc1', 'phone'],

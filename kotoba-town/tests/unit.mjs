@@ -57,7 +57,7 @@ await test('PCM helpers round-trip', () => {
 
 // ---------------------------------------------------------------- fake Live
 const enc = new TextEncoder();
-function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false } = {}) {
+function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false, rejectHints = false } = {}) {
   const sent = [];
   class WS {
     constructor() { this.readyState = 0; setTimeout(() => { this.readyState = 1; this.onopen?.(); }, 2); this.n = 0; }
@@ -66,6 +66,7 @@ function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false }
       const m = JSON.parse(s); sent.push(m);
       if (m.setup) {
         if (rejectModels.includes(m.setup.model.replace('models/', ''))) { setTimeout(() => { this.readyState = 3; this.onclose?.({ code: 1008, reason: 'model not found' }); }, 2); return; }
+        if (rejectHints && m.setup.inputAudioTranscription?.languageCodes) { setTimeout(() => { this.readyState = 3; this.onclose?.({ code: 1007, reason: 'Invalid JSON payload received. Unknown name "languageCodes"' }); }, 2); return; }
         setTimeout(() => this.emit({ setupComplete: {} }), 2);
       }
       if (m.realtimeInput?.audio && ++this.n === 3) {
@@ -166,6 +167,21 @@ await test('Live: no function call but the app wants a reply → the reply is re
   const note = sent.find((m) => m.clientContent?.turns?.[0]?.parts?.[0]?.text?.startsWith('[REPLY]'));
   assert.ok(note && note.clientContent.turnComplete === true);
   assert.match(note.clientContent.turns[0].parts[0].text, /リンです/);
+});
+
+await test('Live: transcription is set to Japanese with the scene words as hints', async () => {
+  const g = await runBrain('nothing', {});
+  const t = g.sent.find((m) => m.setup).setup.inputAudioTranscription;
+  assert.deepEqual(t.languageCodes, ['ja-JP']);
+  assert.ok(Array.isArray(t.customVocabulary) && t.customVocabulary.length > 0);
+});
+
+await test('Live: a model that refuses the hints gets a plain transcription setup', async () => {
+  const g = await runBrain('nothing', { rejectHints: true });
+  assert.ok(g.ok);
+  const setups = g.sent.filter((m) => m.setup).map((m) => m.setup.inputAudioTranscription);
+  assert.ok(setups[0].languageCodes && !setups.at(-1).languageCodes);
+  assert.equal(g.judged.branch, 'name_only');
 });
 
 await test('base64 silence is exactly 100 ms at 16 kHz', () => {

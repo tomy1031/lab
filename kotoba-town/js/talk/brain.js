@@ -3,10 +3,12 @@
 // The app owns the script and the speakers: model audio is forwarded only after the app decided "react"
 // or "chat" for that turn; everything else the model says is dropped. No DOM, no Web Audio here, so the
 // same class runs in Node for the API self-check (tools/live_selfcheck.mjs).
-import { connectLive, LIVE_MODELS } from './live.js';
-import { JUDGE_TOOL, systemInstruction, readJudge, readReport, similarity } from './judge.js';
+import { connectLive, LIVE_MODELS, isThinkingModel } from './live.js';
+import { judgeTool, systemInstruction, readJudge, readReport, similarity } from './judge.js';
+import { resolveCharacter } from '../content/lines.js';
 
 const noop = () => {};
+const transcriptionHints = (words) => (words.length ? { languageCodes: ['ja-JP'], customVocabulary: words } : { languageCodes: ['ja-JP'] });
 
 export class LiveBrain {
   /**
@@ -15,6 +17,7 @@ export class LiveBrain {
    * @param {object} o.lesson, o.variant, o.character   resolved content
    * @param {string} [o.learnerName]
    * @param {number} [o.silenceMs]  how long a pause ends the learner's turn (beginners pause a lot)
+   * @param {string} [o.thinkingLevel]  LOW | MEDIUM | HIGH for models that reason in the background
    * @param {object} o.on  callbacks: status(s, detail), heard(text), npcAudio(b64), npcText(text),
    *        npcDone(), judge(result) → 'nothing'|'react'|'chat', error(reason)
    */
@@ -38,16 +41,38 @@ export class LiveBrain {
     this.cancelled = new Set();
   }
 
-  setup() {
+  /**
+   * Words the speech recogniser should expect in this scene: people's names, the learner's name and the
+   * lesson's key words. Sent as transcription hints together with the language (Japanese).
+   */
+  vocabulary() {
+    const { lesson, variant, learnerName, character } = this.o;
+    const out = [];
+    for (const c of [character, ...(variant.characters || [])]) {
+      const r = typeof c === 'object' && c?.nameJa ? c : resolveCharacter(c);
+      if (!r) continue;
+      const [family, given] = (r.nameJa || '').split(/\s+/);
+      out.push(family, given && `${family}さん`, (r.kana || '').split(/\s+/)[0]);
+    }
+    if (learnerName) out.push(learnerName);
+    for (const v of lesson.vocab || []) out.push(v.ja);
+    return [...new Set(out.filter((w) => w && [...w].length <= 20))].slice(0, 40);
+  }
+
+  setup(model = '') {
     const { lesson, variant, character, learnerName, silenceMs = 1300 } = this.o;
+    const thinking = isThinkingModel(model);
     const setup = {
       generationConfig: {
         responseModalities: ['AUDIO'],
         temperature: 0.5,
         speechConfig: { languageCode: 'ja-JP', voiceConfig: { prebuiltVoiceConfig: { voiceName: character.voice } } },
+        // only the thinking model takes this; others reject it
+        ...(thinking ? { thinkingConfig: { thinkingLevel: this.o.thinkingLevel || 'MEDIUM' } } : {}),
       },
       systemInstruction: { parts: [{ text: systemInstruction({ lesson, variant, character, learnerName }) }] },
-      tools: [JUDGE_TOOL],
+      // the thinking model only accepts non-blocking functions
+      tools: [judgeTool({ interview: lesson.format === 'interview', nonBlocking: thinking })],
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
@@ -57,7 +82,9 @@ export class LiveBrain {
           silenceDurationMs: silenceMs,
         },
       },
-      inputAudioTranscription: {},
+      // The learner always speaks Japanese (with an accent): tell the recogniser, so it does not guess
+      // another language. Models that do not know these fields get a plain setup (see connect()).
+      inputAudioTranscription: this.plainTranscription ? {} : transcriptionHints(this.vocabulary()),
       outputAudioTranscription: {},
       contextWindowCompression: { slidingWindow: {} },
       sessionResumption: this.resumeHandle ? { handle: this.resumeHandle } : {},
@@ -81,6 +108,7 @@ export class LiveBrain {
         // Transcript fragments that trail in right after a verdict belong to the judged utterance.
         if (!this.judgePending && Date.now() - this.judgeAt < 2500) return;
         this.trace(`in:${t}`);
+        this.lastHeardAt = Date.now();
         this.heardText += t;
         this.awaitingJudge = true;
         this.on.heard(this.heardText);
@@ -97,15 +125,27 @@ export class LiveBrain {
         if (!this.closed) this.reconnect(reason === 'badKey' ? 'closed' : reason);
       },
       onToolCancel: (ids) => { this.trace(`toolCancel ${ids.join(',')}`); for (const id of ids) this.cancelled.add(id); },
+      onInteraction: (st) => {
+        this.trace(`status:${st}`);
+        this.idle = /IDLE/i.test(st);
+        if (this.idle && this.fallbackTimer) { clearTimeout(this.fallbackTimer); this.fallbackTimer = setTimeout(() => this.fallbackJudge(), 1200); }
+      },
     };
   }
 
   async connect() {
     this.on.status('connecting');
-    const res = await connectLive({
-      apiKey: this.o.apiKey, setup: this.setup(), handlers: this.handlers(),
+    const open = () => connectLive({
+      apiKey: this.o.apiKey, setup: (model) => this.setup(model), handlers: this.handlers(),
       models: this.o.models || LIVE_MODELS, preferred: this.o.model, WebSocketImpl: this.o.WebSocketImpl,
     });
+    let res = await open();
+    if (!res.ok && !this.plainTranscription && res.tried.some((t) => t.endsWith(':invalidSetup'))) {
+      // an older model refused the transcription language/vocabulary fields: connect without them
+      this.trace('setup refused → plain transcription');
+      this.plainTranscription = true;
+      res = await open();
+    }
     if (!res.ok) {
       this.on.status('offline', res.reason);
       this.on.error(res.reason, res.tried);
@@ -113,6 +153,7 @@ export class LiveBrain {
     }
     this.session = res.session;
     this.model = res.model;
+    this.thinking = isThinkingModel(res.model);
     this.on.status('live', res.model);
     this.keepAlive();
     return true;
@@ -138,6 +179,7 @@ export class LiveBrain {
     this.heardText = '';
     this.judgedThisTurn = false;
     this.awaitingJudge = false;
+    clearTimeout(this.fallbackTimer); this.fallbackTimer = null;
     this.gate = 'drop';
     this.session?.sendText(note, false);
   }
@@ -199,6 +241,8 @@ export class LiveBrain {
     }
     this.judgedThisTurn = true;
     this.awaitingJudge = false;
+    clearTimeout(this.fallbackTimer); this.fallbackTimer = null;
+    this.trace(`judged ${this.lastHeardAt ? Date.now() - this.lastHeardAt : '?'} ms after the last words`);
     this.judgeAt = Date.now();
     let say = 'nothing';
     try { say = this.on.judge(result) || 'nothing'; } catch (e) { console.error(e); }
@@ -207,7 +251,7 @@ export class LiveBrain {
     // can arrive before the reply audio, so only audio switches the gate to 'play'.
     this.gate = say === 'nothing' ? 'drop' : 'armed';
     clearTimeout(this.armTimer);
-    if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
+    if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, this.thinking ? 15000 : 7000);
     const response = { ok: true, say };
     if (say === 'react') {
       response.instruction = `Reply in character to what the learner just said (${result.heard ? `「${result.heard}」` : 'see audio'}): ONE short polite Japanese sentence, at most 15 words, that answers their question or comment directly. Do not greet, do not introduce yourself, do not ask a question, do not continue the script.`;
@@ -226,6 +270,20 @@ export class LiveBrain {
     if (this.gate === 'play') this.on.npcDone(false);
     this.gate = 'drop';
     // The model finished a turn without judging although the learner spoke: judge from the transcript.
+    // A thinking model may still be reasoning (turnComplete is not "idle" for it): give it time first.
+    if (this.awaitingJudge && !this.judgePending && this.heardText.trim()) {
+      if (this.thinking) {
+        clearTimeout(this.fallbackTimer);
+        this.fallbackTimer = setTimeout(() => this.fallbackJudge(), this.idle ? 4000 : 14000);
+        return;
+      }
+      this.fallbackJudge();
+    }
+  }
+
+  /** No verdict came for what the learner said: judge from the transcript. */
+  fallbackJudge() {
+    this.fallbackTimer = null;
     if (this.awaitingJudge && !this.judgePending && this.heardText.trim()) {
       const heard = this.heardText.trim();
       this.heardText = '';
@@ -269,6 +327,7 @@ export class LiveBrain {
   close() {
     this.closed = true;
     clearTimeout(this.armTimer);
+    clearTimeout(this.fallbackTimer);
     clearInterval(this.keepTimer);
     try { this.session?.close(); } catch { /* ignore */ }
     this.session = null;
