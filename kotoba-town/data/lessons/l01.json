@@ -1,0 +1,1391 @@
+{
+  "lesson": 1,
+  "titleJa": "はじめまして",
+  "titleEn": "Nice to meet you",
+  "summaryEn": "Introduce yourself — name, country, job, age — and ask other people about theirs.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "N1は N2です",
+      "meaningEn": "N1 is N2 (は marks the topic; \"わたしは\" is often dropped)",
+      "exampleJa": "わたしは リンです。",
+      "exampleEn": "I am Linh."
+    },
+    {
+      "id": "g2",
+      "pattern": "N1は N2じゃ ありません",
+      "meaningEn": "N1 is not N2 (では ありません in formal speech)",
+      "exampleJa": "わたしは がくせいじゃ ありません。",
+      "exampleEn": "I am not a student."
+    },
+    {
+      "id": "g3",
+      "pattern": "N1は N2ですか — はい／いいえ",
+      "meaningEn": "Is N1 N2? Yes/no question with か, answered はい、～です / いいえ、～じゃ ありません",
+      "exampleJa": "ミンさんは がくせいですか。",
+      "exampleEn": "Minh, are you a student?"
+    },
+    {
+      "id": "g4",
+      "pattern": "Nも",
+      "meaningEn": "N too (も replaces は when the same thing is true)",
+      "exampleJa": "わたしも デザイナーです。",
+      "exampleEn": "I am a designer too."
+    },
+    {
+      "id": "g5",
+      "pattern": "N1の N2",
+      "meaningEn": "N2 of N1 — belonging to a company, school or group",
+      "exampleJa": "わたしは みどりデザインの しゃいんです。",
+      "exampleEn": "I am an employee of Midori Design."
+    },
+    {
+      "id": "g6",
+      "pattern": "あの ひと／あの かたは だれ／どなたですか",
+      "meaningEn": "Who is that person? (あの かた・どなた are the polite versions)",
+      "exampleJa": "あの かたは どなたですか。",
+      "exampleEn": "Who is that person over there?"
+    },
+    {
+      "id": "g7",
+      "pattern": "なんさい／おいくつですか — ～さいです",
+      "meaningEn": "How old are you? (おいくつ is polite) — I am ～ years old",
+      "exampleJa": "しつれいですが、おいくつですか。",
+      "exampleEn": "Excuse me, but how old are you?"
+    },
+    {
+      "id": "g8",
+      "pattern": "はじめまして。～です。～から きました。どうぞ よろしく。",
+      "meaningEn": "Self-introduction set phrases; ～さん is for other people, never for your own name",
+      "exampleJa": "はじめまして。リンです。ベトナムから きました。どうぞ よろしく おねがいします。",
+      "exampleEn": "How do you do. I'm Linh. I'm from Vietnam. Pleased to meet you."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "わたし",
+      "kana": "わたし",
+      "en": "I"
+    },
+    {
+      "ja": "あの ひと／あの かた",
+      "kana": "あの ひと／あの かた",
+      "en": "that person (かた is polite)"
+    },
+    {
+      "ja": "みなさん",
+      "kana": "みなさん",
+      "en": "everyone"
+    },
+    {
+      "ja": "～さん",
+      "kana": "～さん",
+      "en": "Mr./Ms. (never for yourself)"
+    },
+    {
+      "ja": "～人",
+      "kana": "～じん",
+      "en": "a person from ～ (nationality)"
+    },
+    {
+      "ja": "先生",
+      "kana": "せんせい",
+      "en": "teacher (title for others)"
+    },
+    {
+      "ja": "教師",
+      "kana": "きょうし",
+      "en": "teacher (as your own job)"
+    },
+    {
+      "ja": "学生",
+      "kana": "がくせい",
+      "en": "student"
+    },
+    {
+      "ja": "会社員",
+      "kana": "かいしゃいん",
+      "en": "company employee"
+    },
+    {
+      "ja": "社員",
+      "kana": "しゃいん",
+      "en": "employee of ～ (with a company name)"
+    },
+    {
+      "ja": "銀行員",
+      "kana": "ぎんこういん",
+      "en": "bank employee"
+    },
+    {
+      "ja": "医者",
+      "kana": "いしゃ",
+      "en": "doctor"
+    },
+    {
+      "ja": "エンジニア",
+      "kana": "エンジニア",
+      "en": "engineer"
+    },
+    {
+      "ja": "デザイナー",
+      "kana": "デザイナー",
+      "en": "designer"
+    },
+    {
+      "ja": "部長",
+      "kana": "ぶちょう",
+      "en": "department manager"
+    },
+    {
+      "ja": "大学",
+      "kana": "だいがく",
+      "en": "university"
+    },
+    {
+      "ja": "だれ／どなた",
+      "kana": "だれ／どなた",
+      "en": "who (どなた is polite)"
+    },
+    {
+      "ja": "～歳",
+      "kana": "～さい",
+      "en": "～ years old"
+    },
+    {
+      "ja": "何歳／おいくつ",
+      "kana": "なんさい／おいくつ",
+      "en": "how old (おいくつ is polite)"
+    },
+    {
+      "ja": "はい／いいえ",
+      "kana": "はい／いいえ",
+      "en": "yes / no"
+    },
+    {
+      "ja": "失礼ですが",
+      "kana": "しつれいですが",
+      "en": "excuse me, but… (before a personal question)"
+    },
+    {
+      "ja": "お名前は？",
+      "kana": "おなまえは？",
+      "en": "May I have your name?"
+    },
+    {
+      "ja": "～から 来ました",
+      "kana": "～から きました",
+      "en": "I am from ～"
+    },
+    {
+      "ja": "こちらこそ",
+      "kana": "こちらこそ",
+      "en": "likewise / the pleasure is mine"
+    }
+  ],
+  "tipsEn": [
+    "A small bow with はじめまして is all you need — no handshake expected.",
+    "Never add さん to your own name: \"リンです\", not \"リンさんです\".",
+    "Japanese people rarely say あなた. Use the person's name + さん, or just leave \"you\" out."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-01/grammar/",
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-1.html",
+      "https://jftguru.com/minano-nihongo/minano-nihongo-chapter-1",
+      "https://www.japanesepod101.com/blog/2015/06/19/common-mistakes-beginner-japanese-learners-make/",
+      "https://cotoacademy.com/common-japanese-mistake-anata/"
+    ],
+    "notesEn": "Lesson 1 teaches noun sentences (N1は N2です, its negative じゃ ありません and the か question), も for \"too\", N1の N2 for affiliation, ～さん, the question words だれ／どなた and なんさい／おいくつ, and the self-introduction chunks はじめまして, ～から きました and どうぞ よろしく. It prepares learners for first meetings: a new workplace, a new class, being introduced to or mistaken for someone. Typical mistakes are adding さん to one's own name, overusing わたしは and あなた, and using なんさい where the polite おいくつ is expected. The three scenes cover a first day at a design company, a first class at the language school, and a mistaken-identity chat in a café."
+  },
+  "variants": [
+    {
+      "id": "l01a",
+      "titleJa": "あたらしい かいしゃ",
+      "titleEn": "First day at the office",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "It's your first morning at Midori Design, a small design company in Tokyo. A cheerful colleague spots you in the lobby — and the manager is just arriving.",
+      "roleEn": "You are the new hire from abroad. Use your own name and country. Engineer or designer? You decide.",
+      "missionsEn": [
+        {
+          "text": "Tell Aoki your name and where you are from",
+          "grammar": [
+            "g1",
+            "g8"
+          ]
+        },
+        {
+          "text": "Answer her yes/no question about your job",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask politely who the man at reception is",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Introduce yourself properly to the manager",
+          "grammar": [
+            "g1",
+            "g8"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "ogawa"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "ogawa": "reception"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "logo_wall",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。みどりデザインの 青木です。",
+              "kana": "おはよう ございます。みどりデザインの あおきです。",
+              "en": "Good morning. I'm Aoki, from Midori Design.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "aoki",
+              "ja": "しつれいですが、おなまえは？",
+              "kana": "しつれいですが、おなまえは？",
+              "en": "Excuse me, may I ask your name?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Greet her and tell her your name. Add where you are from if you can.",
+            "grammar": [
+              "g1",
+              "g8"
+            ],
+            "hintJa": "はじめまして。＿＿です。＿＿から きました。",
+            "modelAnswers": [
+              "はじめまして。リンです。ベトナムから きました。",
+              "はじめまして。わたしは マリアです。ブラジルじんです。"
+            ],
+            "branches": [
+              {
+                "id": "with_country",
+                "whenEn": "Learner gave their name AND said their country or nationality.",
+                "next": "n3",
+                "exampleJa": "はじめまして。リンです。ベトナムから きました。"
+              },
+              {
+                "id": "name_only",
+                "whenEn": "Learner gave their name (with or without a greeting) but did not mention any country or nationality.",
+                "next": "n2",
+                "exampleJa": "はじめまして。リンです。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええと……アメリカの かたですか。",
+              "kana": "ええと……アメリカの かたですか。",
+              "en": "Um… are you from the United States?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "She is guessing your country. Answer yes or no. If it's no, tell her your nationality.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "はい、アメリカじんです。／いいえ、アメリカじんじゃ ありません。＿＿じんです。",
+            "modelAnswers": [
+              "いいえ、アメリカじんじゃ ありません。ベトナムじんです。",
+              "はい、アメリカじんです。"
+            ],
+            "branches": [
+              {
+                "id": "yes_american",
+                "whenEn": "Learner confirmed they are American / from the USA.",
+                "next": "n3",
+                "exampleJa": "はい、アメリカじんです。"
+              },
+              {
+                "id": "not_american",
+                "whenEn": "Learner said no, and/or named a different country or nationality.",
+                "next": "n2c",
+                "exampleJa": "いいえ、アメリカじんじゃ ありません。ベトナムじんです。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、すみません！",
+              "kana": "あ、すみません！",
+              "en": "Oh, sorry!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "どうぞ よろしく おねがいします。",
+              "kana": "どうぞ よろしく おねがいします。",
+              "en": "Very nice to meet you.",
+              "gesture": "bow"
+            },
+            {
+              "who": "aoki",
+              "ja": "しつれいですが、エンジニアですか。",
+              "kana": "しつれいですが、エンジニアですか。",
+              "en": "Excuse me, but are you an engineer?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Is she right? Answer yes or no. If no, say what your job is (designer, for example).",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "はい、エンジニアです。／いいえ、エンジニアじゃ ありません。＿＿です。",
+            "modelAnswers": [
+              "はい、エンジニアです。",
+              "いいえ、エンジニアじゃ ありません。デザイナーです。"
+            ],
+            "branches": [
+              {
+                "id": "engineer",
+                "whenEn": "Learner said yes / that they are an engineer.",
+                "next": "n3a",
+                "exampleJa": "はい、エンジニアです。"
+              },
+              {
+                "id": "designer",
+                "whenEn": "Learner said they are a designer.",
+                "next": "n3b",
+                "exampleJa": "いいえ、エンジニアじゃ ありません。デザイナーです。"
+              },
+              {
+                "id": "other_job",
+                "whenEn": "Learner said no and gave some other job, or gave no job at all.",
+                "next": "n4",
+                "exampleJa": "いいえ、エンジニアじゃ ありません。かいしゃいんです。"
+              }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n3a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "エンジニアですか。藤田さんも エンジニアです。",
+              "kana": "エンジニアですか。ふじたさんも エンジニアです。",
+              "en": "An engineer! Fujita-san is an engineer too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わあ、わたしも デザイナーです！",
+              "kana": "わあ、わたしも デザイナーです！",
+              "en": "Oh, I'm a designer too!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "みなさん、おはよう ございます。",
+              "kana": "みなさん、おはよう ございます。",
+              "en": "Good morning, everyone.",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "A man in a suit greets everyone from the reception counter. Quietly ask Aoki who that is — politely.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "あの かたは ＿＿ですか。",
+            "modelAnswers": [
+              "あの かたは どなたですか。",
+              "あの ひとは だれですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_who",
+                "whenEn": "Learner asked who that person is (with だれ or どなた).",
+                "next": "n5a",
+                "exampleJa": "あの かたは どなたですか。"
+              },
+              {
+                "id": "guessed",
+                "whenEn": "Learner asked a yes/no question about him instead (e.g. whether he is the manager, an employee, or a certain person).",
+                "next": "n5b",
+                "exampleJa": "あの かたは みどりデザインの しゃいんですか。"
+              }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あの かたは 小川さんです。みどりデザインの ぶちょうです。",
+              "kana": "あの かたは おがわさんです。みどりデザインの ぶちょうです。",
+              "en": "That is Ogawa-san. He's a department manager at Midori Design."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい。あの かたは ぶちょうの 小川さんです。",
+              "kana": "はい。あの かたは ぶちょうの おがわさんです。",
+              "en": "Yes. That's Ogawa-san, our department manager.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "はじめまして。小川です。",
+              "kana": "はじめまして。おがわです。",
+              "en": "How do you do. I'm Ogawa.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "The manager is looking at you. Give a proper first-day self-introduction and finish it politely.",
+            "grammar": [
+              "g1",
+              "g8"
+            ],
+            "hintJa": "はじめまして。＿＿です。＿＿から きました。どうぞ よろしく おねがいします。",
+            "modelAnswers": [
+              "はじめまして。リンです。ベトナムから きました。どうぞ よろしく おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "with_closing",
+                "whenEn": "Learner introduced themselves AND ended with どうぞ よろしく / よろしく おねがいします.",
+                "next": "n7a",
+                "exampleJa": "はじめまして。リンです。どうぞ よろしく おねがいします。"
+              },
+              {
+                "id": "no_closing",
+                "whenEn": "Learner introduced themselves (name, maybe country) but did not say a よろしく closing.",
+                "next": "n7b",
+                "exampleJa": "はじめまして。リンです。ベトナムから きました。"
+              }
+            ],
+            "fallback": "n7b"
+          }
+        },
+        {
+          "id": "n7a",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "こちらこそ、どうぞ よろしく。",
+              "kana": "こちらこそ、どうぞ よろしく。",
+              "en": "The pleasure is mine.",
+              "gesture": "bow"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n7b",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "はい。どうぞ よろしく おねがいします。",
+              "kana": "はい。どうぞ よろしく おねがいします。",
+              "en": "Right. I look forward to working with you.",
+              "gesture": "bow"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしも、どうぞ よろしく おねがいします！",
+              "kana": "わたしも、どうぞ よろしく おねがいします！",
+              "en": "Me too — so glad to have you here!",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "ええと……わたしは 26さいです。おいくつですか。",
+        "openerKana": "ええと……わたしは にじゅうろくさいです。おいくつですか。",
+        "openerEn": "Um… I'm 26. May I ask how old you are?",
+        "topicEn": "Aoki chats with her new colleague: ages, countries, jobs, and who is who at Midori Design (Ogawa is the manager, Fujita is an engineer). Lesson 1 grammar only; encourage the learner to ask questions back.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l01b",
+      "titleJa": "はじめての クラス",
+      "titleEn": "First class at the language school",
+      "scene": "classroom",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "It's the first lesson at your Japanese language school. The teacher and two classmates are getting to know each other — and now it's your turn.",
+      "roleEn": "You are a new student in the class. Answer as yourself: your name, country, whether you are a student, your age (or make one up).",
+      "missionsEn": [
+        {
+          "text": "Introduce yourself to the class",
+          "grammar": [
+            "g1",
+            "g8"
+          ]
+        },
+        {
+          "text": "Say whether you are a student",
+          "grammar": [
+            "g2",
+            "g3",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask Minh if he is a student too",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell your age and ask the teacher's — politely",
+          "grammar": [
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana",
+        "minh"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "みなさん、はじめまして。きょうしの 早川です。",
+              "kana": "みなさん、はじめまして。きょうしの はやかわです。",
+              "en": "Nice to meet you, everyone. I'm Hayakawa, your teacher.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "ana",
+              "ja": "アナ・シルバです。ブラジルから きました。",
+              "kana": "アナ・シルバです。ブラジルから きました。",
+              "en": "I'm Ana Silva. I'm from Brazil.",
+              "gesture": "wave"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "はい、どうぞ。",
+              "kana": "はい、どうぞ。",
+              "en": "Now you, please.",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "It's your turn. Introduce yourself to the class: your name and your country.",
+            "grammar": [
+              "g1",
+              "g8"
+            ],
+            "hintJa": "はじめまして。＿＿です。＿＿から きました。どうぞ よろしく。",
+            "modelAnswers": [
+              "はじめまして。リンです。ちゅうごくから きました。どうぞ よろしく おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "brazil",
+                "whenEn": "Learner said they are from Brazil / are Brazilian.",
+                "next": "n1_br",
+                "exampleJa": "ブラジルから きました。"
+              },
+              {
+                "id": "vietnam",
+                "whenEn": "Learner said they are from Vietnam / are Vietnamese.",
+                "next": "n1_vn",
+                "exampleJa": "ベトナムじんです。"
+              },
+              {
+                "id": "other_country",
+                "whenEn": "Learner named any other country or nationality.",
+                "next": "n2",
+                "exampleJa": "リンです。ちゅうごくから きました。"
+              },
+              {
+                "id": "no_country",
+                "whenEn": "Learner gave their name (and maybe a greeting) but no country or nationality.",
+                "next": "n1_ask",
+                "exampleJa": "はじめまして。リンです。"
+              }
+            ],
+            "fallback": "n1_ask"
+          }
+        },
+        {
+          "id": "n1_ask",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "おくには？",
+              "kana": "おくには？",
+              "en": "And your country?"
+            }
+          ],
+          "listen": {
+            "promptEn": "The teacher wants to know your country. Tell her.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿です。／＿＿から きました。",
+            "modelAnswers": [
+              "ちゅうごくです。",
+              "インドから きました。"
+            ],
+            "branches": [
+              {
+                "id": "brazil",
+                "whenEn": "Learner said they are from Brazil / are Brazilian.",
+                "next": "n1_br",
+                "exampleJa": "ブラジルから きました。"
+              },
+              {
+                "id": "vietnam",
+                "whenEn": "Learner said they are from Vietnam / are Vietnamese.",
+                "next": "n1_vn",
+                "exampleJa": "ベトナムじんです。"
+              },
+              {
+                "id": "other_country",
+                "whenEn": "Learner named any other country or nationality.",
+                "next": "n2",
+                "exampleJa": "インドから きました。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n1_br",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "えっ、わたしも ブラジルじんです！",
+              "kana": "えっ、わたしも ブラジルじんです！",
+              "en": "What? I'm Brazilian too!",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n1_vn",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "あ、わたしも ベトナムじんです。",
+              "kana": "あ、わたしも ベトナムじんです。",
+              "en": "Oh, I'm Vietnamese too.",
+              "gesture": "wave"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "がくせいですか。",
+              "kana": "がくせいですか。",
+              "en": "Are you a student?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Are you a student? Answer yes or no. If no, say what you are — maybe an employee of some company.",
+            "grammar": [
+              "g2",
+              "g3",
+              "g5"
+            ],
+            "hintJa": "はい、がくせいです。／いいえ、がくせいじゃ ありません。＿＿の しゃいんです。",
+            "modelAnswers": [
+              "はい、がくせいです。",
+              "いいえ、がくせいじゃ ありません。かいしゃいんです。",
+              "いいえ、がくせいじゃ ありません。みどりデザインの しゃいんです。"
+            ],
+            "branches": [
+              {
+                "id": "student",
+                "whenEn": "Learner said they are a student.",
+                "next": "n2a",
+                "exampleJa": "はい、がくせいです。"
+              },
+              {
+                "id": "not_student",
+                "whenEn": "Learner said they are not a student and/or gave a job.",
+                "next": "n2b",
+                "exampleJa": "いいえ、がくせいじゃ ありません。かいしゃいんです。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしも 学生です。みなと大学の 学生です。",
+              "kana": "わたしも がくせいです。みなとだいがくの がくせいです。",
+              "en": "I'm a student too — at Minato University.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしは 学生です。みなと大学の 学生です。",
+              "kana": "わたしは がくせいです。みなとだいがくの がくせいです。",
+              "en": "I'm a student — at Minato University."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [],
+          "listen": {
+            "promptEn": "Now you ask. Turn to Minh: is he a student too?",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "ミンさんも ＿＿ですか。",
+            "modelAnswers": [
+              "ミンさんも がくせいですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_student",
+                "whenEn": "Learner asked Minh whether he is (also) a student.",
+                "next": "n3a",
+                "exampleJa": "ミンさんも がくせいですか。"
+              },
+              {
+                "id": "asked_other",
+                "whenEn": "Learner asked Minh something else (his name, country, or another job such as engineer or company employee).",
+                "next": "n3b",
+                "exampleJa": "ミンさんは エンジニアですか。"
+              }
+            ],
+            "fallback": "n3a"
+          }
+        },
+        {
+          "id": "n3a",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "はい、わたしも 学生です。",
+              "kana": "はい、わたしも がくせいです。",
+              "en": "Yes, I'm a student too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3b",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしは グエン・ミンです。学生です。",
+              "kana": "わたしは グエン・ミンです。がくせいです。",
+              "en": "I'm Nguyen Minh. I'm a student."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしは 23さいです。なんさいですか。",
+              "kana": "わたしは にじゅうさんさいです。なんさいですか。",
+              "en": "I'm 23. How old are you?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ana wants to know your age. Tell her — you can make one up!",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "＿＿さいです。",
+            "modelAnswers": [
+              "28さいです。",
+              "わたしは 31さいです。"
+            ],
+            "branches": [
+              {
+                "id": "gave_age",
+                "whenEn": "Learner stated an age.",
+                "next": "n4a",
+                "exampleJa": "わたしは 28さいです。"
+              },
+              {
+                "id": "no_age",
+                "whenEn": "Learner avoided the question or gave no age (e.g. hesitated, or only asked back).",
+                "next": "n4b",
+                "exampleJa": "えっ、わたしですか。ええと……。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしは 25さいです。",
+              "kana": "わたしは にじゅうごさいです。",
+              "en": "I'm 25."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "アナさん、「なんさい」じゃ ありません。「おいくつ」です。",
+              "kana": "アナさん、「なんさい」じゃ ありません。「おいくつ」です。",
+              "en": "Ana, not \"nansai\" — \"oikutsu\" is the polite way.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [],
+          "listen": {
+            "promptEn": "Everyone turns to the teacher… Ask her age — with the polite word!",
+            "grammar": [
+              "g7",
+              "g3"
+            ],
+            "hintJa": "しつれいですが、せんせいは ＿＿ですか。",
+            "modelAnswers": [
+              "せんせいは おいくつですか。",
+              "しつれいですが、せんせいは おいくつですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_age",
+                "whenEn": "Learner asked how old the teacher is (おいくつ or なんさい).",
+                "next": "n5a",
+                "exampleJa": "せんせいは おいくつですか。"
+              },
+              {
+                "id": "guessed_age",
+                "whenEn": "Learner guessed a specific age with a yes/no question.",
+                "next": "n5b",
+                "exampleJa": "せんせいは 30さいですか。"
+              }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "わたしですか。わたしは……20さいです。",
+              "kana": "わたしですか。わたしは……はたちです。",
+              "en": "Me? I'm… twenty.",
+              "gesture": "think",
+              "tts": "わたしですか。わたしは……はたちです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいえ。わたしは 20さいです。",
+              "kana": "いいえ。わたしは はたちです。",
+              "en": "No. I'm twenty.",
+              "gesture": "shake_head",
+              "tts": "いいえ。わたしは はたちです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "えっ、20さいですか！",
+              "kana": "えっ、はたちですか！",
+              "en": "What, twenty?!",
+              "gesture": "surprised",
+              "tts": "えっ、はたちですか！"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "はい。みなさん、どうぞ よろしく おねがいします。",
+              "kana": "はい。みなさん、どうぞ よろしく おねがいします。",
+              "en": "Yes! Everyone, I'm looking forward to our class.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l01c",
+      "titleJa": "ひとちがい",
+      "titleEn": "Mistaken identity at the café",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "You are waiting at the café near the office for your colleague Fujita, an engineer at Midori Design. A woman you have never seen walks up to your table…",
+      "roleEn": "You work at Midori Design (みどりデザインの しゃいん). You are NOT Fujita — but you know him. Use your own name.",
+      "missionsEn": [
+        {
+          "text": "Tell her you are not Fujita, and who you are",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Say you are an employee of Midori Design",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Guess her job with a question",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Tell her who the man at the door is",
+          "grammar": [
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "takeuchi",
+        "fujita"
+      ],
+      "positions": {
+        "takeuchi": "npc1",
+        "fujita": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "すみません。",
+              "kana": "すみません。",
+              "en": "Excuse me.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "しつれいですが、みどりデザインの 藤田さんですか。",
+              "kana": "しつれいですが、みどりデザインの ふじたさんですか。",
+              "en": "Sorry to ask, but are you Fujita-san from Midori Design?"
+            }
+          ],
+          "listen": {
+            "promptEn": "She thinks you are someone else! Tell her you are not Fujita, and say who you are.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "いいえ、ふじたじゃ ありません。わたしは ＿＿です。",
+            "modelAnswers": [
+              "いいえ、ふじたじゃ ありません。わたしは リンです。"
+            ],
+            "branches": [
+              {
+                "id": "denied_with_name",
+                "whenEn": "Learner said they are not Fujita AND gave their own name.",
+                "next": "n3",
+                "exampleJa": "いいえ、ふじたじゃ ありません。わたしは リンです。"
+              },
+              {
+                "id": "denied_only",
+                "whenEn": "Learner said they are not Fujita but did not give their own name.",
+                "next": "n2",
+                "exampleJa": "いいえ、ふじたじゃ ありません。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "えっ、すみません。しつれいですが、おなまえは？",
+              "kana": "えっ、すみません。しつれいですが、おなまえは？",
+              "en": "Oh, I'm sorry! May I ask your name?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her your name. You can add that you work at Midori Design.",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "＿＿です。みどりデザインの しゃいんです。",
+            "modelAnswers": [
+              "リンです。",
+              "リンです。みどりデザインの しゃいんです。"
+            ],
+            "branches": [
+              {
+                "id": "name_only",
+                "whenEn": "Learner gave only their name.",
+                "next": "n3",
+                "exampleJa": "リンです。"
+              },
+              {
+                "id": "name_and_company",
+                "whenEn": "Learner gave their name AND said they work at / belong to Midori Design.",
+                "next": "n4a",
+                "exampleJa": "リンです。みどりデザインの しゃいんです。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "すみません。わたしは 竹内です。",
+              "kana": "すみません。わたしは たけうちです。",
+              "en": "I'm sorry. I'm Takeuchi.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "しつれいですが、学生ですか。",
+              "kana": "しつれいですが、がくせいですか。",
+              "en": "If I may ask, are you a student?"
+            }
+          ],
+          "listen": {
+            "promptEn": "You're not a student — you work at Midori Design. Tell her.",
+            "grammar": [
+              "g2",
+              "g3",
+              "g5"
+            ],
+            "hintJa": "いいえ、がくせいじゃ ありません。＿＿の しゃいんです。",
+            "modelAnswers": [
+              "いいえ、がくせいじゃ ありません。みどりデザインの しゃいんです。"
+            ],
+            "branches": [
+              {
+                "id": "midori",
+                "whenEn": "Learner said they work at / are an employee of Midori Design.",
+                "next": "n4a",
+                "exampleJa": "いいえ、がくせいじゃ ありません。みどりデザインの しゃいんです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner did not mention Midori Design (e.g. said yes, or just \"company employee\", or another job).",
+                "next": "n4b",
+                "exampleJa": "いいえ、がくせいじゃ ありません。かいしゃいんです。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "えっ、みどりデザインの かたですか。藤田さんも……。",
+              "kana": "えっ、みどりデザインの かたですか。ふじたさんも……。",
+              "en": "Oh, you're from Midori Design? Fujita-san is too…",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。藤田さんは みどりデザインの エンジニアです。",
+              "kana": "そうですか。ふじたさんは みどりデザインの エンジニアです。",
+              "en": "I see. Fujita-san is an engineer at Midori Design."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [],
+          "listen": {
+            "promptEn": "Your turn to be curious. Guess her job and ask: company employee? bank employee? teacher? doctor?",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "たけうちさんは ＿＿ですか。",
+            "modelAnswers": [
+              "たけうちさんは かいしゃいんですか。",
+              "たけうちさんは ぎんこういんですか。"
+            ],
+            "branches": [
+              {
+                "id": "guessed_employee",
+                "whenEn": "Learner asked whether she is a company employee (かいしゃいん).",
+                "next": "n5a",
+                "exampleJa": "たけうちさんは かいしゃいんですか。"
+              },
+              {
+                "id": "guessed_other",
+                "whenEn": "Learner asked about any other job (bank employee, teacher, doctor, engineer…) or asked something else.",
+                "next": "n5b",
+                "exampleJa": "たけうちさんは ぎんこういんですか。"
+              }
+            ],
+            "fallback": "n5b"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "はい、会社員です。",
+              "kana": "はい、かいしゃいんです。",
+              "en": "Yes, I'm a company employee.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "いいえ。わたしは 会社員です。",
+              "kana": "いいえ。わたしは かいしゃいんです。",
+              "en": "No. I'm a company employee.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "すみません、すみません！",
+              "kana": "すみません、すみません！",
+              "en": "Sorry, sorry!",
+              "gesture": "wave"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "あの かたは どなたですか。",
+              "kana": "あの かたは どなたですか。",
+              "en": "Who is that gentleman?"
+            }
+          ],
+          "listen": {
+            "promptEn": "A man hurries in, waving at you. It's your colleague Fujita, the engineer! Tell her who he is.",
+            "grammar": [
+              "g5",
+              "g6"
+            ],
+            "hintJa": "あの ひとは ＿＿さんです。",
+            "modelAnswers": [
+              "あの ひとは ふじたさんです。",
+              "ふじたさんです。みどりデザインの エンジニアです。"
+            ],
+            "branches": [
+              {
+                "id": "named_fujita",
+                "whenEn": "Learner said the man is Fujita (with or without more detail).",
+                "next": "n6a",
+                "exampleJa": "あの ひとは ふじたさんです。"
+              },
+              {
+                "id": "described_only",
+                "whenEn": "Learner did not say his name, only described him (an engineer, a Midori Design employee…).",
+                "next": "n7",
+                "exampleJa": "あの ひとは みどりデザインの エンジニアです。"
+              }
+            ],
+            "fallback": "n6a"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "えっ、藤田さんですか！",
+              "kana": "えっ、ふじたさんですか！",
+              "en": "What, that's Fujita-san?!",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "藤田です。竹内さんですか。はじめまして。",
+              "kana": "ふじたです。たけうちさんですか。はじめまして。",
+              "en": "I'm Fujita. Are you Takeuchi-san? Nice to meet you.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "はじめまして。竹内です。",
+              "kana": "はじめまして。たけうちです。",
+              "en": "Nice to meet you. I'm Takeuchi.",
+              "gesture": "bow"
+            },
+            {
+              "who": "fujita",
+              "ja": "こちらも みどりデザインの 社員です。",
+              "kana": "こちらも みどりデザインの しゃいんです。",
+              "en": "This is another Midori Design employee.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "はい。どうぞ よろしく おねがいします。",
+              "kana": "はい。どうぞ よろしく おねがいします。",
+              "en": "I know! Very nice to meet you both.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

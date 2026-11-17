@@ -1,0 +1,1052 @@
+{
+  "course": "it",
+  "unit": 7,
+  "storyJa": "デパートの ネットショップ トラブル",
+  "storyEn": "Trouble at the department store's online shop",
+  "episodeJa": "第7話",
+  "episodeEn": "Episode 7",
+  "titleJa": "障害の 第一報（電話）",
+  "titleEn": "The first report of an incident (phone)",
+  "summaryEn": "Take the customer's call: ask the facts, repeat them back, and give a time for your next contact.",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "previouslyEn": "さかもと予約, the booking app for Café Sakamoto, went live in early December. Since then your team also looks after the department store's online shop. It is the morning of Wednesday, December 10.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "お電話 ありがとう ございます。[会社]の [名前]です。",
+      "meaningEn": "Answer a business call: thanks, company, your name",
+      "exampleJa": "お電話 ありがとう ございます。みどりデザインの リンです。",
+      "exampleEn": "Thank you for calling. This is Lin at Midori Design."
+    },
+    {
+      "id": "g2",
+      "pattern": "いつからですか／どの 画面ですか／何件ですか／今も 続いて いますか",
+      "meaningEn": "Fact questions (5W1H) for an incident: since when, which screen, how many, still happening",
+      "exampleJa": "いつからでしょうか。どの 画面ですか。",
+      "exampleEn": "Since when? On which screen?"
+    },
+    {
+      "id": "g3",
+      "pattern": "確認させて ください。〜から、〜が 〜、という ことですね。",
+      "meaningEn": "Repeat back (復唱) to confirm what you heard",
+      "exampleJa": "確認させて ください。9時ごろから、15件の 商品が 0円、という ことですね。",
+      "exampleEn": "Let me confirm: since about 9, fifteen items show 0 yen — is that right?"
+    },
+    {
+      "id": "g4",
+      "pattern": "すぐ 確認して、〜時までに ご連絡します。",
+      "meaningEn": "First answer: what you will do now + the time of the next contact (no promise to fix yet)",
+      "exampleJa": "すぐ 確認して、10時半までに ご連絡します。",
+      "exampleEn": "I'll check right away and contact you by 10:30."
+    },
+    {
+      "id": "g5",
+      "pattern": "ご不便を おかけして、申し訳 ございません。",
+      "meaningEn": "Apologise for the inconvenience before asking or explaining",
+      "exampleJa": "ご不便を おかけして、申し訳 ございません。いつからでしょうか。",
+      "exampleEn": "I'm sorry for the inconvenience. Since when has it been like this?"
+    },
+    {
+      "id": "g6",
+      "pattern": "今、いちばん お困りの ことは 何でしょうか。",
+      "meaningEn": "Ask what the customer needs most right now",
+      "exampleJa": "今、いちばん お困りの ことは 何でしょうか。",
+      "exampleEn": "What is troubling you most right now?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "障害",
+      "kana": "しょうがい",
+      "en": "incident, outage"
+    },
+    {
+      "ja": "第一報",
+      "kana": "だいいっぽう",
+      "en": "first report"
+    },
+    {
+      "ja": "ネットショップ",
+      "kana": "ネットショップ",
+      "en": "online shop"
+    },
+    {
+      "ja": "値段",
+      "kana": "ねだん",
+      "en": "price"
+    },
+    {
+      "ja": "商品",
+      "kana": "しょうひん",
+      "en": "item, product"
+    },
+    {
+      "ja": "画面",
+      "kana": "がめん",
+      "en": "screen"
+    },
+    {
+      "ja": "決済",
+      "kana": "けっさい",
+      "en": "payment (settlement)"
+    },
+    {
+      "ja": "お支払い",
+      "kana": "おしはらい",
+      "en": "payment (polite)"
+    },
+    {
+      "ja": "注文",
+      "kana": "ちゅうもん",
+      "en": "order"
+    },
+    {
+      "ja": "失敗する",
+      "kana": "しっぱいする",
+      "en": "to fail"
+    },
+    {
+      "ja": "〜件",
+      "kana": "〜けん",
+      "en": "counter for items / cases"
+    },
+    {
+      "ja": "状況",
+      "kana": "じょうきょう",
+      "en": "situation"
+    },
+    {
+      "ja": "原因",
+      "kana": "げんいん",
+      "en": "cause"
+    },
+    {
+      "ja": "確認する",
+      "kana": "かくにんする",
+      "en": "to check, confirm"
+    },
+    {
+      "ja": "復唱",
+      "kana": "ふくしょう",
+      "en": "repeating back"
+    },
+    {
+      "ja": "続く",
+      "kana": "つづく",
+      "en": "to continue"
+    },
+    {
+      "ja": "急ぎ",
+      "kana": "いそぎ",
+      "en": "urgent"
+    },
+    {
+      "ja": "ご連絡",
+      "kana": "ごれんらく",
+      "en": "contact (polite)"
+    },
+    {
+      "ja": "ご不便",
+      "kana": "ごふべん",
+      "en": "inconvenience"
+    },
+    {
+      "ja": "お世話に なって おります",
+      "kana": "おせわに なって おります",
+      "en": "set greeting to a business partner"
+    },
+    {
+      "ja": "失礼いたします",
+      "kana": "しつれいいたします",
+      "en": "goodbye (business phone)"
+    }
+  ],
+  "tipsEn": [
+    "On a first incident call, collect facts before promising anything: since when, which screen, how many, still happening?",
+    "Repeat back (復唱) times and numbers. On the phone, 「9時ごろから、15件ですね」 prevents costly mistakes.",
+    "Don't say 「すぐ 直します」 before you know the cause. Give a time for the next contact instead — and keep it, even with no news."
+  ],
+  "research": {
+    "sources": [
+      "https://www.ai-agent-x.com/media/saas-incident-status-page-communication/",
+      "https://docs.pagerduty.com/ops-guides/incident-response-guide/external-comms",
+      "https://biz.moneyforward.com/work-efficiency/basic/?p=12010",
+      "https://line-works.com/aicall/column/phone-complaints/",
+      "https://imitsu.jp/matome/customer-service/complaint-response-phone"
+    ],
+    "notesEn": "Japanese incident-handling guides agree on the shape of a first report: the symptom users see, when it started, which function and how many are affected, the current status, and a concrete time for the next update — 'when there is progress' is not enough, and the promised update must come even if nothing changed. Cause and recovery time must not be stated before they are confirmed. Phone-complaint guides add: listen to the end, apologise for the inconvenience, check facts with 5W1H, repeat back, and if you cannot answer on the spot promise a call-back with a clear time. The two variants turn this into a call from the department store: wrong prices (a) and failed payments (b)."
+  },
+  "variants": [
+    {
+      "id": "b07a",
+      "titleJa": "値段が 0円に なって います",
+      "titleEn": "\"Some prices show 0 yen\"",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "call": true,
+      "briefEn": "Wednesday, December 10, 9:40. The phone on your desk rings: it is Nishimura-san, who runs the department store's online shop. Something is wrong with the prices. Listen, ask the facts (since when, which screen, how many, still now?), repeat them back, and tell her you will check right away and contact her by 10:30 (10時半). Don't promise a fix yet — nobody knows the cause.",
+      "roleEn": "You are a new engineer at Midori Design (みどりデザイン). You answer the phone. Use your own name.",
+      "missionsEn": [
+        {
+          "text": "Answer the phone with the company name and your name",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask since when, which screen, how many, still now",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Repeat the facts back to confirm",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Promise the next contact by 10:30",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "nishimura"
+      ],
+      "positions": {
+        "nishimura": "phone"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [],
+          "listen": {
+            "promptEn": "The office phone is ringing. Answer it: thank the caller, say the company name and your name.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "お電話 ありがとう ございます。みどりデザインの ＿＿です。",
+            "modelAnswers": [
+              "お電話 ありがとう ございます。みどりデザインの リンです。"
+            ],
+            "branches": [
+              {
+                "id": "with_name",
+                "whenEn": "Learner answered with the company name AND their own name.",
+                "next": "n2",
+                "exampleJa": "お電話 ありがとう ございます。みどりデザインの リンです。"
+              },
+              {
+                "id": "no_name",
+                "whenEn": "Learner answered without their own name (only the company name, はい, or もしもし).",
+                "next": "n2n",
+                "exampleJa": "はい、みどりデザインです。"
+              }
+            ],
+            "fallback": "n2n"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "お世話に なって おります。デパートの 西村です。",
+              "kana": "おせわに なって おります。デパートの にしむらです。",
+              "en": "Thank you for your help as always. This is Nishimura from the department store.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2n",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "デパートの 西村です。お世話に なって おります。開発チームの 方に ご相談です。",
+              "kana": "デパートの にしむらです。おせわに なって おります。かいはつチームの かたに ごそうだんです。",
+              "en": "This is Nishimura from the department store. I'd like to consult someone on the development team.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "実は、ネットショップで 値段が 0円の 商品が あるんです。",
+              "kana": "じつは、ネットショップで ねだんが ゼロえんの しょうひんが あるんです。",
+              "en": "Actually, some items in the online shop show a price of 0 yen.",
+              "tts": "じつは、ネットショップで ねだんが ゼロえんの しょうひんが あるんです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Apologise for the trouble, then ask when it started and on which screen.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "ご不便を おかけして、申し訳 ございません。いつからですか。どの ＿＿ですか。",
+            "modelAnswers": [
+              "ご不便を おかけして、申し訳 ございません。いつからでしょうか。どの 画面ですか。",
+              "0円ですか。いつからでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_when",
+                "whenEn": "Learner asked since when it has been happening (with or without also asking which screen).",
+                "next": "n4w",
+                "exampleJa": "申し訳 ございません。いつからでしょうか。"
+              },
+              {
+                "id": "asked_where",
+                "whenEn": "Learner asked which screen, page or items, but did NOT ask when.",
+                "next": "n4p",
+                "exampleJa": "どの 画面で 0円に なって いますか。"
+              },
+              {
+                "id": "no_question",
+                "whenEn": "Learner asked no question: only apologised, or said they would check or fix it.",
+                "next": "n4n",
+                "exampleJa": "申し訳 ございません。すぐ 確認します。"
+              }
+            ],
+            "fallback": "n4n"
+          }
+        },
+        {
+          "id": "n4w",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "けさ 9時ごろからです。商品の ページで 0円に なって います。",
+              "kana": "けさ くじごろからです。しょうひんの ページで ゼロえんに なって います。",
+              "en": "Since about 9 this morning. The product pages show 0 yen.",
+              "tts": "けさ くじごろからです。しょうひんの ページで ゼロえんに なって います。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4p",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "商品の ページです。けさ 9時ごろ、お客さまの 電話で わかりました。",
+              "kana": "しょうひんの ページです。けさ くじごろ、おきゃくさまの でんわで わかりました。",
+              "en": "On the product pages. We found out around 9 this morning from a customer's call.",
+              "tts": "しょうひんの ページです。けさ くじごろ、おきゃくさまの でんわで わかりました。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4n",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "あ、先に 状況を お伝えしますね。けさ 9時ごろから、商品の ページです。",
+              "kana": "あ、さきに じょうきょうを おつたえしますね。けさ くじごろから、しょうひんの ページです。",
+              "en": "Oh, let me tell you the situation first. Since about 9 this morning, on the product pages.",
+              "tts": "あ、さきに じょうきょうを おつたえしますね。けさ くじごろから、しょうひんの ページです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [],
+          "listen": {
+            "promptEn": "Ask how many items are affected, and whether it is still happening now.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "何件ぐらいですか。今も ＿＿ですか。",
+            "modelAnswers": [
+              "0円の 商品は 何件ぐらいですか。今も 0円ですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_count",
+                "whenEn": "Learner asked how many items (with or without asking if it is still happening).",
+                "next": "n6c",
+                "exampleJa": "0円の 商品は 何件ぐらいですか。"
+              },
+              {
+                "id": "asked_now",
+                "whenEn": "Learner asked only whether it is still happening now, or whether orders can still be placed.",
+                "next": "n6n",
+                "exampleJa": "今も 0円の ままですか。"
+              }
+            ],
+            "fallback": "n6c"
+          }
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "15件です。今も 0円の ままで、注文も できて しまいます。",
+              "kana": "じゅうごけんです。いまも ゼロえんの ままで、ちゅうもんも できて しまいます。",
+              "en": "Fifteen items. They still show 0 yen, and people can still order them.",
+              "tts": "じゅうごけんです。いまも ゼロえんの ままで、ちゅうもんも できて しまいます。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6n",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい、今も です。15件の 商品が 0円で、注文も できます。",
+              "kana": "はい、いまも です。じゅうごけんの しょうひんが ゼロえんで、ちゅうもんも できます。",
+              "en": "Yes, still now. Fifteen items show 0 yen, and they can be ordered.",
+              "tts": "はい、いまも です。じゅうごけんの しょうひんが ゼロえんで、ちゅうもんも できます。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "0円で 買われると、とても 困ります……。",
+              "kana": "ゼロえんで かわれると、とても こまります……。",
+              "en": "If people buy them for 0 yen, we'll be in real trouble…",
+              "tts": "ゼロえんで かわれると、とても こまります……。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat back what you heard to confirm: since about 9:00, 15 items show 0 yen, and orders are still possible.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "確認させて ください。＿＿時ごろから、＿＿件の 商品が 0円、という ことですね。",
+            "modelAnswers": [
+              "確認させて ください。けさ 9時ごろから、15件の 商品が 0円で、注文も できる、という ことですね。"
+            ],
+            "branches": [
+              {
+                "id": "repeated_full",
+                "whenEn": "Learner repeated back at least the time (about 9:00) AND the number (15 items).",
+                "next": "n8f",
+                "exampleJa": "確認させて ください。9時ごろから、15件が 0円、という ことですね。"
+              },
+              {
+                "id": "repeated_part",
+                "whenEn": "Learner confirmed only one of the facts, or just said わかりました without repeating.",
+                "next": "n8p",
+                "exampleJa": "わかりました。15件ですね。"
+              }
+            ],
+            "fallback": "n8p"
+          }
+        },
+        {
+          "id": "n8f",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい、その とおりです。",
+              "kana": "はい、その とおりです。",
+              "en": "Yes, exactly."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8p",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい。けさ 9時ごろから、15件です。注文も できます。",
+              "kana": "はい。けさ くじごろから、じゅうごけんです。ちゅうもんも できます。",
+              "en": "Yes. Since about 9 this morning, fifteen items. And they can be ordered.",
+              "tts": "はい。けさ くじごろから、じゅうごけんです。ちゅうもんも できます。"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "どう したら いいでしょうか。",
+              "kana": "どう したら いいでしょうか。",
+              "en": "What should we do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give a first answer: you will check right away and contact her by 10:30. Don't promise a fix yet.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "すぐ 確認して、＿＿時半までに ご連絡します。",
+            "modelAnswers": [
+              "すぐ 確認して、10時半までに ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "with_time",
+                "whenEn": "Learner said they will check AND gave 10:30 (or another clear time) for the next contact.",
+                "next": "n10",
+                "exampleJa": "すぐ 確認して、10時半までに ご連絡します。"
+              },
+              {
+                "id": "no_time",
+                "whenEn": "Learner said they will check or investigate, but gave no time for the next contact.",
+                "next": "n9t",
+                "exampleJa": "すぐ 確認します。"
+              },
+              {
+                "id": "promised_fix",
+                "whenEn": "Learner promised that it will be fixed (soon or by a certain time).",
+                "next": "n9p",
+                "exampleJa": "すぐ 直します。"
+              }
+            ],
+            "fallback": "n9t"
+          }
+        },
+        {
+          "id": "n9t",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ありがとう ございます。いつごろ ご連絡 いただけますか。",
+              "kana": "ありがとう ございます。いつごろ ごれんらく いただけますか。",
+              "en": "Thank you. About when can you get back to me?"
+            }
+          ],
+          "next": "n9L"
+        },
+        {
+          "id": "n9p",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "助かります。でも、原因は まだ ですよね。次の ご連絡は 何時ごろですか。",
+              "kana": "たすかります。でも、げんいんは まだ ですよね。つぎの ごれんらくは なんじごろですか。",
+              "en": "That helps. But you don't know the cause yet, do you? Around what time will you contact me next?"
+            }
+          ],
+          "next": "n9L"
+        },
+        {
+          "id": "n9L",
+          "say": [],
+          "listen": {
+            "promptEn": "Tell her the time of your next contact: by 10:30.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿時半までに ご連絡します。",
+            "modelAnswers": [
+              "10時半までに ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "time_1030",
+                "whenEn": "Learner said they will contact her by 10:30.",
+                "next": "n10",
+                "exampleJa": "10時半までに ご連絡します。"
+              },
+              {
+                "id": "other_time",
+                "whenEn": "Learner gave a different or vague time (later, as soon as possible, when we know).",
+                "next": "n10v",
+                "exampleJa": "わかったら、すぐ ご連絡します。"
+              }
+            ],
+            "fallback": "n10v"
+          }
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "10時半ですね。わかりました。お待ちして おります。",
+              "kana": "じゅうじはんですね。わかりました。おまちして おります。",
+              "en": "10:30. Understood. I'll be waiting.",
+              "tts": "じゅうじはんですね。わかりました。おまちして おります。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n10v",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "では、10時半ごろに 一度 ご連絡 いただけますか。お待ちして おります。",
+              "kana": "では、じゅうじはんごろに いちど ごれんらく いただけますか。おまちして おります。",
+              "en": "Then could you contact me once around 10:30? I'll be waiting.",
+              "tts": "では、じゅうじはんごろに いちど ごれんらく いただけますか。おまちして おります。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "お忙しい ところ すみません。よろしく お願いいたします。失礼いたします。",
+              "kana": "おいそがしい ところ すみません。よろしく おねがいいたします。しつれいいたします。",
+              "en": "Sorry to trouble you when you're busy. Thank you. Goodbye."
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b07b",
+      "titleJa": "お支払いが できません",
+      "titleEn": "\"Customers can't pay\"",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "call": true,
+      "briefEn": "Wednesday, December 10, 9:40. The phone on your desk rings: it is Nishimura-san from the department store's online shop, and she sounds hurried — customers cannot pay. Ask the facts (which screen, how many), repeat them back, ask what she needs most right now, and tell her you will contact her by 10:30 (10時半). Nobody knows the cause yet, so don't promise when it will be fixed.",
+      "roleEn": "You are a new engineer at Midori Design (みどりデザイン). You answer the phone. Use your own name.",
+      "missionsEn": [
+        {
+          "text": "Answer the phone; ask which screen and how many",
+          "grammar": [
+            "g1",
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Repeat the facts back to confirm",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask what she needs most right now",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Next contact by 10:30 — no promise to fix",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "nishimura"
+      ],
+      "positions": {
+        "nishimura": "phone"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [],
+          "listen": {
+            "promptEn": "The office phone is ringing. Answer it: thank the caller, say the company name and your name.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "お電話 ありがとう ございます。みどりデザインの ＿＿です。",
+            "modelAnswers": [
+              "お電話 ありがとう ございます。みどりデザインの リンです。"
+            ],
+            "branches": [
+              {
+                "id": "with_name",
+                "whenEn": "Learner answered with the company name AND their own name.",
+                "next": "n2",
+                "exampleJa": "お電話 ありがとう ございます。みどりデザインの リンです。"
+              },
+              {
+                "id": "no_name",
+                "whenEn": "Learner answered without their own name (only the company name, はい, or もしもし).",
+                "next": "n2n",
+                "exampleJa": "はい、みどりデザインです。"
+              }
+            ],
+            "fallback": "n2n"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "デパートの 西村です。お世話に なって おります。急ぎの ご連絡です。",
+              "kana": "デパートの にしむらです。おせわに なって おります。いそぎの ごれんらくです。",
+              "en": "This is Nishimura from the department store. I'm calling about something urgent.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2n",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "デパートの 西村です。開発チームの 方に、急ぎの ご連絡です。",
+              "kana": "デパートの にしむらです。かいはつチームの かたに、いそぎの ごれんらくです。",
+              "en": "This is Nishimura from the department store. I have something urgent for the development team.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "9時15分ごろから、お客さまが ネットショップで お支払い できないんです。",
+              "kana": "くじじゅうごふんごろから、おきゃくさまが ネットショップで おしはらい できないんです。",
+              "en": "Since about 9:15, customers haven't been able to pay in the online shop.",
+              "tts": "くじじゅうごふんごろから、おきゃくさまが ネットショップで おしはらい できないんです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Apologise for the trouble, then ask on which screen it happens and how many orders are affected.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "ご不便を おかけして、申し訳 ございません。どの ＿＿ですか。何件ぐらいですか。",
+            "modelAnswers": [
+              "ご不便を おかけして、申し訳 ございません。どの 画面で エラーが 出ますか。何件ぐらいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_screen",
+                "whenEn": "Learner asked on which screen or where the problem appears (with or without asking how many).",
+                "next": "n4s",
+                "exampleJa": "申し訳 ございません。どの 画面で エラーが 出ますか。"
+              },
+              {
+                "id": "asked_count",
+                "whenEn": "Learner asked only how many orders or customers are affected.",
+                "next": "n4c",
+                "exampleJa": "申し訳 ございません。何件ぐらいでしょうか。"
+              },
+              {
+                "id": "no_question",
+                "whenEn": "Learner asked no question: only apologised, or said they would check or fix it.",
+                "next": "n4n",
+                "exampleJa": "申し訳 ございません。すぐ 確認します。"
+              }
+            ],
+            "fallback": "n4n"
+          }
+        },
+        {
+          "id": "n4s",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "決済の 画面です。エラーが 出て、30件ぐらい 注文が 失敗して います。",
+              "kana": "けっさいの がめんです。エラーが でて、さんじゅっけんぐらい ちゅうもんが しっぱいして います。",
+              "en": "The payment screen. An error appears, and about 30 orders have failed.",
+              "tts": "けっさいの がめんです。エラーが でて、さんじゅっけんぐらい ちゅうもんが しっぱいして います。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4c",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "30件ぐらいです。決済の 画面で エラーが 出て、注文が できません。",
+              "kana": "さんじゅっけんぐらいです。けっさいの がめんで エラーが でて、ちゅうもんが できません。",
+              "en": "About 30. An error appears on the payment screen and orders can't be placed.",
+              "tts": "さんじゅっけんぐらいです。けっさいの がめんで エラーが でて、ちゅうもんが できません。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4n",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "先に 状況を お伝えします。決済の 画面で エラーが 出て、30件ぐらい 失敗です。",
+              "kana": "さきに じょうきょうを おつたえします。けっさいの がめんで エラーが でて、さんじゅっけんぐらい しっぱいです。",
+              "en": "Let me tell you the situation first. An error on the payment screen; about 30 orders failed.",
+              "tts": "さきに じょうきょうを おつたえします。けっさいの がめんで エラーが でて、さんじゅっけんぐらい しっぱいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "今も 続いて いて、お客さまから 電話が 来て います。",
+              "kana": "いまも つづいて いて、おきゃくさまから でんわが きて います。",
+              "en": "It is still going on, and customers are phoning us."
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat back to confirm: since about 9:15, error on the payment screen, about 30 orders failed, still happening.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "確認させて ください。＿＿ごろから、決済の 画面で エラーが 出て、＿＿件ぐらい 失敗、という ことですね。",
+            "modelAnswers": [
+              "確認させて ください。9時15分ごろから、決済の 画面で エラーが 出て、30件ぐらい 失敗して いる、という ことですね。"
+            ],
+            "branches": [
+              {
+                "id": "repeated_full",
+                "whenEn": "Learner repeated back at least the time (about 9:15) AND the number (about 30).",
+                "next": "n6f",
+                "exampleJa": "確認させて ください。9時15分ごろから、30件ぐらい 失敗、という ことですね。"
+              },
+              {
+                "id": "repeated_part",
+                "whenEn": "Learner confirmed only one of the facts, or just said わかりました without repeating.",
+                "next": "n6p",
+                "exampleJa": "わかりました。決済の エラーですね。"
+              }
+            ],
+            "fallback": "n6p"
+          }
+        },
+        {
+          "id": "n6f",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい、その とおりです。",
+              "kana": "はい、その とおりです。",
+              "en": "Yes, exactly."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6p",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい。9時15分ごろから、30件ぐらいです。今も 続いて います。",
+              "kana": "はい。くじじゅうごふんごろから、さんじゅっけんぐらいです。いまも つづいて います。",
+              "en": "Yes. Since about 9:15, about 30 orders. It is still going on.",
+              "tts": "はい。くじじゅうごふんごろから、さんじゅっけんぐらいです。いまも つづいて います。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [],
+          "listen": {
+            "promptEn": "This is urgent for the store. Ask what she needs most right now.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "今、いちばん お困りの ことは ＿＿でしょうか。",
+            "modelAnswers": [
+              "今、いちばん お困りの ことは 何でしょうか。",
+              "今 すぐ、こちらで できる ことは ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_need",
+                "whenEn": "Learner asked what she needs most now, or what they can do for her right away.",
+                "next": "n8a",
+                "exampleJa": "今、いちばん お困りの ことは 何でしょうか。"
+              },
+              {
+                "id": "no_ask",
+                "whenEn": "Learner did not ask: went straight to saying they will check, fix it or call back.",
+                "next": "n8b",
+                "exampleJa": "すぐ 確認します。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ありがとう ございます。お客さまに 何と 言えば いいか、困って います。",
+              "kana": "ありがとう ございます。おきゃくさまに なんと いえば いいか、こまって います。",
+              "en": "Thank you. I don't know what to tell the customers."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "お願いします。あの、電話の お客さまには 何と 言えば いいでしょうか。",
+              "kana": "おねがいします。あの、でんわの おきゃくさまには なんと いえば いいでしょうか。",
+              "en": "Please do. Um, what should I say to the customers on the phone?"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [],
+          "listen": {
+            "promptEn": "Tell her what to say for now (\"we are investigating\") and that you will contact her by 10:30. Don't promise when it will be fixed.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "「今 調べて います」と お伝え ください。＿＿時半までに ご連絡します。",
+            "modelAnswers": [
+              "「今 調べて います」と お伝え ください。すぐ 確認して、10時半までに ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "with_time",
+                "whenEn": "Learner said they are checking/investigating AND will contact her by 10:30 (no promise of a fix).",
+                "next": "n10",
+                "exampleJa": "「今 調べて います」と お伝え ください。10時半までに ご連絡します。"
+              },
+              {
+                "id": "promised_fix",
+                "whenEn": "Learner promised it will be fixed (soon, or by 10:30).",
+                "next": "n9p",
+                "exampleJa": "10時半までに 直します。"
+              },
+              {
+                "id": "no_time",
+                "whenEn": "Learner gave no time for the next contact.",
+                "next": "n9t",
+                "exampleJa": "「今 調べて います」と お伝え ください。"
+              }
+            ],
+            "fallback": "n9t"
+          }
+        },
+        {
+          "id": "n9p",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "10時半に 直る、という ことでしょうか。",
+              "kana": "じゅうじはんに なおる、という ことでしょうか。",
+              "en": "Do you mean it will be fixed by 10:30?",
+              "tts": "じゅうじはんに なおる、という ことでしょうか。"
+            }
+          ],
+          "next": "n9L"
+        },
+        {
+          "id": "n9t",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "わかりました。次の ご連絡は 何時ごろに なりますか。",
+              "kana": "わかりました。つぎの ごれんらくは なんじごろに なりますか。",
+              "en": "I see. Around what time will you contact me next?"
+            }
+          ],
+          "next": "n9L"
+        },
+        {
+          "id": "n9L",
+          "say": [],
+          "listen": {
+            "promptEn": "Be clear: by 10:30 you will report the status — it is not a promise that it will be fixed.",
+            "grammar": [
+              "g4",
+              "g3"
+            ],
+            "hintJa": "10時半までに、＿＿を ご連絡します。",
+            "modelAnswers": [
+              "いいえ、まだ わかりません。10時半までに、状況を ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "clear_1030",
+                "whenEn": "Learner said they will contact her / report the status by 10:30, without promising a fix.",
+                "next": "n10",
+                "exampleJa": "10時半までに、状況を ご連絡します。"
+              },
+              {
+                "id": "unclear",
+                "whenEn": "Learner still promised a fix, or gave no clear time.",
+                "next": "n10v",
+                "exampleJa": "できるだけ 早く 直します。"
+              }
+            ],
+            "fallback": "n10v"
+          }
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "10時半までに ご連絡ですね。お客さまには「調べて います」と 伝えます。",
+              "kana": "じゅうじはんまでに ごれんらくですね。おきゃくさまには「しらべて います」と つたえます。",
+              "en": "You'll contact me by 10:30. I'll tell the customers you are looking into it.",
+              "tts": "じゅうじはんまでに ごれんらくですね。おきゃくさまには「しらべて います」と つたえます。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n10v",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "わかりました。では 10時半に、まず 状況を 教えて ください。",
+              "kana": "わかりました。では じゅうじはんに、まず じょうきょうを おしえて ください。",
+              "en": "I see. Then at 10:30, please tell me the situation first.",
+              "tts": "わかりました。では じゅうじはんに、まず じょうきょうを おしえて ください。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "どうか よろしく お願いいたします。失礼いたします。",
+              "kana": "どうか よろしく おねがいいたします。しつれいいたします。",
+              "en": "Please take care of it. Goodbye."
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

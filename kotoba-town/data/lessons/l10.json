@@ -1,0 +1,1366 @@
+{
+  "lesson": 10,
+  "titleJa": "どこに ありますか",
+  "titleEn": "Where is it? Who is there?",
+  "summaryEn": "Say what and who is where: things with あります, people and animals with います, and position words like うえ, となり and あいだ. Ask a shop if they have something.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Nが あります／います",
+      "meaningEn": "there is N (あります: things, plants, places; います: people, animals)",
+      "exampleJa": "あそこに ねこが います。",
+      "exampleEn": "There is a cat over there."
+    },
+    {
+      "id": "g2",
+      "pattern": "N1(place)に N2が あります／います",
+      "meaningEn": "in/at N1 there is N2 (に marks where something exists)",
+      "exampleJa": "この ちかくに ゆうびんきょくが ありますか。",
+      "exampleEn": "Is there a post office near here?"
+    },
+    {
+      "id": "g3",
+      "pattern": "N1は N2(place)に あります／います",
+      "meaningEn": "N1 is in/at N2 (asking and telling where a known thing or person is)",
+      "exampleJa": "ATMは どこに ありますか。",
+      "exampleEn": "Where is the ATM?"
+    },
+    {
+      "id": "g4",
+      "pattern": "N1の N2(position)",
+      "meaningEn": "position words after の: うえ, した, まえ, うしろ, みぎ, ひだり, なか, そと, となり, ちかく, あいだ",
+      "exampleJa": "スプーンは テーブルの うえに あります。",
+      "exampleEn": "The spoon is on the table."
+    },
+    {
+      "id": "g5",
+      "pattern": "N1や N2[など]",
+      "meaningEn": "N1, N2 and so on (a few examples, not the full list)",
+      "exampleJa": "へやに つくえや ベッドなどが あります。",
+      "exampleEn": "In my room there are a desk, a bed and so on."
+    },
+    {
+      "id": "g6",
+      "pattern": "N、ありますか／Nは ありませんか",
+      "meaningEn": "asking a shop whether they have N (the negative question is softer)",
+      "exampleJa": "すみません。でんち、ありますか。",
+      "exampleEn": "Excuse me, do you have batteries?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "あります",
+      "kana": "あります",
+      "en": "there is (things)"
+    },
+    {
+      "ja": "います",
+      "kana": "います",
+      "en": "there is (people, animals)"
+    },
+    {
+      "ja": "上",
+      "kana": "うえ",
+      "en": "on, above"
+    },
+    {
+      "ja": "下",
+      "kana": "した",
+      "en": "under, below"
+    },
+    {
+      "ja": "前",
+      "kana": "まえ",
+      "en": "in front"
+    },
+    {
+      "ja": "後ろ",
+      "kana": "うしろ",
+      "en": "behind"
+    },
+    {
+      "ja": "右",
+      "kana": "みぎ",
+      "en": "right"
+    },
+    {
+      "ja": "左",
+      "kana": "ひだり",
+      "en": "left"
+    },
+    {
+      "ja": "中",
+      "kana": "なか",
+      "en": "inside"
+    },
+    {
+      "ja": "外",
+      "kana": "そと",
+      "en": "outside"
+    },
+    {
+      "ja": "となり",
+      "kana": "となり",
+      "en": "next door, next to"
+    },
+    {
+      "ja": "近く",
+      "kana": "ちかく",
+      "en": "near"
+    },
+    {
+      "ja": "間",
+      "kana": "あいだ",
+      "en": "between"
+    },
+    {
+      "ja": "いちばん 下",
+      "kana": "いちばん した",
+      "en": "the very bottom"
+    },
+    {
+      "ja": "たな",
+      "kana": "たな",
+      "en": "shelf"
+    },
+    {
+      "ja": "箱",
+      "kana": "はこ",
+      "en": "box"
+    },
+    {
+      "ja": "ねこ",
+      "kana": "ねこ",
+      "en": "cat"
+    },
+    {
+      "ja": "電池",
+      "kana": "でんち",
+      "en": "battery"
+    },
+    {
+      "ja": "入口",
+      "kana": "いりぐち",
+      "en": "entrance"
+    },
+    {
+      "ja": "郵便局",
+      "kana": "ゆうびんきょく",
+      "en": "post office"
+    },
+    {
+      "ja": "銀行",
+      "kana": "ぎんこう",
+      "en": "bank"
+    },
+    {
+      "ja": "バスのりば",
+      "kana": "バスのりば",
+      "en": "bus stop, bus boarding area"
+    },
+    {
+      "ja": "庭",
+      "kana": "にわ",
+      "en": "garden"
+    },
+    {
+      "ja": "木",
+      "kana": "き",
+      "en": "tree"
+    },
+    {
+      "ja": "～や ～など",
+      "kana": "～や ～など",
+      "en": "…, … and so on"
+    }
+  ],
+  "tipsEn": [
+    "In a shop, just name the thing and add ありますか: 「でんち、ありますか」. Staff often repeat the word back (でんちですか) to check they heard you.",
+    "A cat います, a box あります: います is for people and animals, あります for everything that does not move by itself.",
+    "Convenience stores in Japan usually have an ATM, a copy machine and a toilet — it is fine to ask where they are."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-10/grammar/",
+      "https://blog.gokigen.jp/?p=272",
+      "https://jepang.org/en/grammar/common-beginner-mistakes"
+    ],
+    "notesEn": "Lesson 10 is about existence and location: Nが あります／います, the two word orders \"place に N が あります\" (what is there?) and \"N は place に あります\" (where is it?), position nouns after の (うえ, した, まえ, うしろ, みぎ, ひだり, なか, そと, となり, ちかく, あいだ), non-exhaustive listing with ～や～[など], confirming a word with ～ですか and asking a shop for an item (～は ありませんか). The natural situations are asking shop staff for a product and its shelf, finding things and people around a room, and asking where places are in a neighbourhood. Typical mistakes are mixing up あります and います, using で or dropping に for the place of existence, forgetting の before the position word, saying と instead of や for an open list, and building あいだ without \"AとBの\". The three scenes are original: a rainy-night konbini errand that ends with finding a neighbour's cat, tea at the neighbours' home, and getting your bearings in front of the station."
+  },
+  "variants": [
+    {
+      "id": "l10a",
+      "titleJa": "あめの よるの コンビニ",
+      "titleEn": "A rainy night at the konbini",
+      "scene": "konbini",
+      "setup": {
+        "time": "night",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "It's raining, your TV remote has died, and you duck into the convenience store. Noguchi is at the register — and your neighbour Aya is about to rush in with a problem.",
+      "roleEn": "You are a customer from the neighbourhood. Look around the shop (and out of the window!) before you answer.",
+      "missionsEn": [
+        {
+          "text": "Ask whether the shop has what you need",
+          "grammar": [
+            "g6",
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask where the ATM or the toilet is",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Tell Aya that there is a cat, and exactly where",
+          "grammar": [
+            "g1",
+            "g2",
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "noguchi",
+        "mori_aya"
+      ],
+      "positions": {
+        "noguchi": "clerk",
+        "mori_aya": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "いらっしゃいませ。",
+              "kana": "いらっしゃいませ。",
+              "en": "Welcome.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "You need batteries (でんち) — or an umbrella (かさ). Ask the clerk if they have it.",
+            "grammar": [
+              "g6",
+              "g1"
+            ],
+            "hintJa": "すみません。＿＿、ありますか。／＿＿は ありませんか。",
+            "modelAnswers": [
+              "すみません。でんち、ありますか。",
+              "すみません。かさは ありませんか。"
+            ],
+            "branches": [
+              {
+                "id": "batteries",
+                "whenEn": "Learner asks whether the shop has batteries.",
+                "next": "n2_denchi",
+                "exampleJa": "すみません。でんち、ありますか。"
+              },
+              {
+                "id": "umbrella",
+                "whenEn": "Learner asks whether the shop has umbrellas.",
+                "next": "n2_kasa",
+                "exampleJa": "すみません。かさは ありませんか。"
+              },
+              {
+                "id": "other_item",
+                "whenEn": "Learner asks for any other item.",
+                "next": "n2_none",
+                "exampleJa": "すみません。きっては ありませんか。"
+              }
+            ],
+            "fallback": "n2_denchi"
+          }
+        },
+        {
+          "id": "n2_none",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "すみません、それは ありません。電池や かさなどは あります。",
+              "kana": "すみません、それは ありません。でんちや かさなどは あります。",
+              "en": "Sorry, we don't have that. We do have things like batteries and umbrellas.",
+              "gesture": "shake_head"
+            }
+          ],
+          "listen": {
+            "promptEn": "They do not have that. Ask for batteries (でんち) or an umbrella (かさ) instead.",
+            "grammar": [
+              "g6",
+              "g1"
+            ],
+            "hintJa": "すみません。＿＿、ありますか。／＿＿は ありませんか。",
+            "modelAnswers": [
+              "すみません。でんち、ありますか。",
+              "すみません。かさは ありませんか。"
+            ],
+            "branches": [
+              {
+                "id": "batteries",
+                "whenEn": "Learner asks whether the shop has batteries.",
+                "next": "n2_denchi",
+                "exampleJa": "すみません。でんち、ありますか。"
+              },
+              {
+                "id": "umbrella",
+                "whenEn": "Learner asks whether the shop has umbrellas.",
+                "next": "n2_kasa",
+                "exampleJa": "すみません。かさは ありませんか。"
+              }
+            ],
+            "fallback": "n2_denchi"
+          }
+        },
+        {
+          "id": "n2_denchi",
+          "focus": "magazines",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "電池ですか。はい、あります。",
+              "kana": "でんちですか。はい、あります。",
+              "en": "Batteries? Yes, we have them.",
+              "gesture": "nod"
+            },
+            {
+              "who": "noguchi",
+              "ja": "あそこの 雑誌の たなの いちばん 下です。",
+              "kana": "あそこの ざっしの たなの いちばん したです。",
+              "en": "On the bottom shelf of the magazine rack over there.",
+              "gesture": "point",
+              "target": "magazines"
+            }
+          ],
+          "listen": {
+            "promptEn": "You also need cash — or the toilet. Ask where the ATM (or the toilet) is.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿は どこに ありますか。",
+            "modelAnswers": [
+              "すみません、ATMは どこに ありますか。",
+              "トイレは どこに ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "atm",
+                "whenEn": "Learner asks where the ATM is (or asks whether there is an ATM).",
+                "next": "n4_atm",
+                "exampleJa": "ATMは どこに ありますか。"
+              },
+              {
+                "id": "toilet",
+                "whenEn": "Learner asks where the toilet is (or whether there is one).",
+                "next": "n4_toilet",
+                "exampleJa": "トイレは どこに ありますか。"
+              }
+            ],
+            "fallback": "n4_atm"
+          }
+        },
+        {
+          "id": "n2_kasa",
+          "focus": "entrance",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "かさですか。はい、あります。",
+              "kana": "かさですか。はい、あります。",
+              "en": "Umbrellas? Yes, we have them.",
+              "gesture": "nod"
+            },
+            {
+              "who": "noguchi",
+              "ja": "あそこです。入口の 近くに あります。",
+              "kana": "あそこです。いりぐちの ちかくに あります。",
+              "en": "Over there. They're near the entrance.",
+              "gesture": "point",
+              "target": "entrance"
+            }
+          ],
+          "listen": {
+            "promptEn": "You also need cash — or the toilet. Ask where the ATM (or the toilet) is.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿は どこに ありますか。",
+            "modelAnswers": [
+              "すみません、ATMは どこに ありますか。",
+              "トイレは どこに ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "atm",
+                "whenEn": "Learner asks where the ATM is (or asks whether there is an ATM).",
+                "next": "n4_atm",
+                "exampleJa": "ATMは どこに ありますか。"
+              },
+              {
+                "id": "toilet",
+                "whenEn": "Learner asks where the toilet is (or whether there is one).",
+                "next": "n4_toilet",
+                "exampleJa": "トイレは どこに ありますか。"
+              }
+            ],
+            "fallback": "n4_atm"
+          }
+        },
+        {
+          "id": "n4_atm",
+          "focus": "atm",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "ATMは あそこです。コピー機の となりに あります。",
+              "kana": "ATMは あそこです。コピーきの となりに あります。",
+              "en": "The ATM is over there. It's next to the copy machine.",
+              "gesture": "point",
+              "target": "atm",
+              "tts": "エーティーエムは あそこです。コピーきの となりに あります。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_toilet",
+          "focus": "toilet_sign",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "トイレは あそこです。飲み物の たなの 右に あります。",
+              "kana": "トイレは あそこです。のみものの たなの みぎに あります。",
+              "en": "The toilet is over there. It's to the right of the drinks fridge.",
+              "gesture": "point",
+              "target": "toilet_sign"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "cat",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あ、こんばんは！うちの ねこが いません……。",
+              "kana": "あ、こんばんは！うちの ねこが いません……。",
+              "en": "Oh, good evening! My cat is gone…",
+              "gesture": "surprised"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "白い ねこです。名前は シロです。",
+              "kana": "しろい ねこです。なまえは シロです。",
+              "en": "She's a white cat. Her name is Shiro.",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look out of the window! Tell Aya there is a cat — and where you see it.",
+            "grammar": [
+              "g1",
+              "g2",
+              "g4"
+            ],
+            "hintJa": "あそこに ねこが ＿＿よ。",
+            "modelAnswers": [
+              "あそこに ねこが いますよ。",
+              "みせの そとに しろい ねこが います。",
+              "まどの そとの はこの うえに ねこが います。"
+            ],
+            "branches": [
+              {
+                "id": "on_box",
+                "whenEn": "Learner says there is a cat AND mentions the box (on the box, at the box).",
+                "next": "n6_box",
+                "exampleJa": "はこの うえに ねこが いますよ。"
+              },
+              {
+                "id": "cat_somewhere",
+                "whenEn": "Learner says there is a cat over there / outside / by the window, without mentioning the box.",
+                "next": "n6_where",
+                "exampleJa": "あそこに ねこが いますよ。"
+              }
+            ],
+            "fallback": "n6_where"
+          }
+        },
+        {
+          "id": "n6_where",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "えっ、どこですか。どこに いますか。",
+              "kana": "えっ、どこですか。どこに いますか。",
+              "en": "What? Where? Where is she?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Aya cannot see the cat yet. Tell her exactly where it is (look at the box outside).",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿の ＿＿に います。",
+            "modelAnswers": [
+              "はこの うえに います。",
+              "まどの そとに います。はこの うえです。"
+            ],
+            "branches": [
+              {
+                "id": "on_box",
+                "whenEn": "Learner says the cat is on (or at) the box.",
+                "next": "end_found",
+                "exampleJa": "はこの うえに います。"
+              },
+              {
+                "id": "other_place",
+                "whenEn": "Learner gives another position: outside the window, outside the shop, near the entrance, etc.",
+                "next": "end_found2",
+                "exampleJa": "まどの そとに います。"
+              }
+            ],
+            "fallback": "end_found2"
+          }
+        },
+        {
+          "id": "n6_box",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "えっ、箱ですか。箱は どこに ありますか。",
+              "kana": "えっ、はこですか。はこは どこに ありますか。",
+              "en": "What, a box? Where is the box?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aya where the box is. (A box is a thing: あります, not います.)",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿の ＿＿に あります。",
+            "modelAnswers": [
+              "まどの そとに あります。",
+              "みせの そとに あります。"
+            ],
+            "branches": [
+              {
+                "id": "outside_window",
+                "whenEn": "Learner says the box is outside the window / outside the shop.",
+                "next": "end_found",
+                "exampleJa": "まどの そとに あります。"
+              },
+              {
+                "id": "other_place",
+                "whenEn": "Learner gives another position (near the entrance, in front of the shop, over there, etc.).",
+                "next": "end_found2",
+                "exampleJa": "いりぐちの ちかくに あります。"
+              }
+            ],
+            "fallback": "end_found2"
+          }
+        },
+        {
+          "id": "end_found",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あっ、シロ！ああ……。ありがとう ございます。",
+              "kana": "あっ、シロ！ああ……。ありがとう ございます。",
+              "en": "Oh, Shiro! Phew… Thank you so much.",
+              "gesture": "bow"
+            },
+            {
+              "who": "noguchi",
+              "ja": "きれいな ねこですね。",
+              "kana": "きれいな ねこですね。",
+              "en": "What a pretty cat.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_found2",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あっ、箱の 上に いますね。シロ！",
+              "kana": "あっ、はこの うえに いますね。シロ！",
+              "en": "Oh, she's on top of the box! Shiro!",
+              "gesture": "point",
+              "target": "cat"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "どうも ありがとう ございます。",
+              "kana": "どうも ありがとう ございます。",
+              "en": "Thank you so much.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l10b",
+      "titleJa": "もりさんの うち",
+      "titleEn": "Tea at the Moris'",
+      "scene": "home",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Sunday afternoon. Your neighbours Aya and Shun have invited you in for tea and cake. Shun is a little absent-minded today.",
+      "roleEn": "You are their neighbour and guest. Look around the room, and talk about your own room and family.",
+      "missionsEn": [
+        {
+          "text": "Help Shun: say where the spoon is",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Ask what is in the garden, or who is in the photo",
+          "grammar": [
+            "g2",
+            "g1"
+          ]
+        },
+        {
+          "text": "Say what is in your room (～や ～など)",
+          "grammar": [
+            "g5",
+            "g2"
+          ]
+        },
+        {
+          "text": "Say where your family is",
+          "grammar": [
+            "g3",
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "host",
+        "mori_shun": "host2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "spoon",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いらっしゃい。どうぞ。お茶と ケーキですよ。",
+              "kana": "いらっしゃい。どうぞ。おちゃと ケーキですよ。",
+              "en": "Welcome, come in. Here's tea and cake.",
+              "gesture": "offer"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "あれ？スプーンが ありません。どこに ありますか。",
+              "kana": "あれ？スプーンが ありません。どこに ありますか。",
+              "en": "Huh? There's no spoon. Where is it?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the table in front of you. Tell Shun where the spoon is.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "スプーンは ＿＿の ＿＿に あります。",
+            "modelAnswers": [
+              "テーブルの うえに ありますよ。",
+              "スプーンは ケーキの となりに あります。",
+              "ここに あります。"
+            ],
+            "branches": [
+              {
+                "id": "on_table",
+                "whenEn": "Learner says the spoon is on the table (or simply here).",
+                "next": "n2_table",
+                "exampleJa": "テーブルの うえに あります。"
+              },
+              {
+                "id": "next_to",
+                "whenEn": "Learner places the spoon relative to the cake or the tea (next to, to the right/left of, in front of).",
+                "next": "n2_cake",
+                "exampleJa": "ケーキの となりに あります。"
+              }
+            ],
+            "fallback": "n2_table"
+          }
+        },
+        {
+          "id": "n2_table",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "あ、テーブルの 上ですか。すみません。",
+              "kana": "あ、テーブルの うえですか。すみません。",
+              "en": "Oh, on the table? Sorry about that.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_cake",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "あ、ケーキの となりですね。すみません。",
+              "kana": "あ、ケーキの となりですね。すみません。",
+              "en": "Oh, right next to the cake. Sorry about that.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "photo",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "うちは 古いですが、庭や ピアノなどが あります。",
+              "kana": "うちは ふるいですが、にわや ピアノなどが あります。",
+              "en": "Our house is old, but we have a garden, a piano and so on.",
+              "gesture": "point",
+              "target": "garden"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "あ、それは 家族の 写真です。",
+              "kana": "あ、それは かぞくの しゃしんです。",
+              "en": "Oh, that's a family photo.",
+              "gesture": "point",
+              "target": "photo"
+            }
+          ],
+          "listen": {
+            "promptEn": "Be curious! Ask what there is in the garden — or who is in the photo.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "にわに なにが ＿＿か。／しゃしんに だれが ＿＿か。",
+            "modelAnswers": [
+              "にわに なにが ありますか。",
+              "しゃしんに だれが いますか。"
+            ],
+            "branches": [
+              {
+                "id": "garden",
+                "whenEn": "Learner asks what is in the garden.",
+                "next": "n4_garden",
+                "exampleJa": "にわに なにが ありますか。"
+              },
+              {
+                "id": "photo",
+                "whenEn": "Learner asks who is in the photo.",
+                "next": "n4_photo",
+                "exampleJa": "しゃしんに だれが いますか。"
+              }
+            ],
+            "fallback": "n4_garden"
+          }
+        },
+        {
+          "id": "n4_garden",
+          "focus": "garden",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "桜の 木が あります。花も たくさん ありますよ。",
+              "kana": "さくらの きが あります。はなも たくさん ありますよ。",
+              "en": "There's a cherry tree. And lots of flowers, too.",
+              "gesture": "point",
+              "target": "garden"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_photo",
+          "focus": "photo",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "わたしと あやと、あやの 両親が います。",
+              "kana": "わたしと あやと、あやの りょうしんが います。",
+              "en": "That's me, Aya, and Aya's parents.",
+              "gesture": "point",
+              "target": "photo"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "今の うちは どうですか。部屋に 何が ありますか。",
+              "kana": "いまの うちは どうですか。へやに なにが ありますか。",
+              "en": "How's your place now? What do you have in your room?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell them a few things you have in your room. Use ～や ～[など] for \"things like…\".",
+            "grammar": [
+              "g5",
+              "g2"
+            ],
+            "hintJa": "へやに ＿＿や ＿＿などが あります。",
+            "modelAnswers": [
+              "つくえや ベッドなどが あります。",
+              "テレビや れいぞうこが あります。",
+              "ベッドが あります。ほかに なにも ありません。"
+            ],
+            "branches": [
+              {
+                "id": "several",
+                "whenEn": "Learner lists two or more things in their room.",
+                "next": "n6_many",
+                "exampleJa": "つくえや ベッドなどが あります。"
+              },
+              {
+                "id": "little",
+                "whenEn": "Learner names only one thing, or says there is almost nothing.",
+                "next": "n6_few",
+                "exampleJa": "ベッドが あります。"
+              }
+            ],
+            "fallback": "n6_few"
+          }
+        },
+        {
+          "id": "n6_many",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "いいですね。うちは 物が たくさん ありますから……。",
+              "kana": "いいですね。うちは ものが たくさん ありますから……。",
+              "en": "Nice. We just have so much stuff here…",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_few",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。うちに 古い つくえが あります。あげますよ。",
+              "kana": "そうですか。うちに ふるい つくえが あります。あげますよ。",
+              "en": "Really? We have an old desk here. You can have it.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ご家族は どこに いますか。",
+              "kana": "ごかぞくは どこに いますか。",
+              "en": "Where is your family?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aya where your family is (people: います).",
+            "grammar": [
+              "g3",
+              "g1"
+            ],
+            "hintJa": "かぞくは ＿＿に います。",
+            "modelAnswers": [
+              "かぞくは ブラジルに います。",
+              "りょうしんは くにに います。",
+              "かぞくも にほんに います。"
+            ],
+            "branches": [
+              {
+                "id": "abroad",
+                "whenEn": "Learner says their family is in their home country / abroad / far away.",
+                "next": "end_abroad",
+                "exampleJa": "かぞくは くにに います。"
+              },
+              {
+                "id": "in_japan",
+                "whenEn": "Learner says their family (or part of it) is in Japan / lives with them.",
+                "next": "end_japan",
+                "exampleJa": "かぞくも にほんに います。"
+              }
+            ],
+            "fallback": "end_abroad"
+          }
+        },
+        {
+          "id": "end_abroad",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。じゃ、ここも うちですよ。",
+              "kana": "そうですか。じゃ、ここも うちですよ。",
+              "en": "I see. Well then, this is your home too.",
+              "gesture": "nod"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "また いらっしゃって ください。さあ、ケーキを どうぞ。",
+              "kana": "また いらっしゃって ください。さあ、ケーキを どうぞ。",
+              "en": "Please come again. Now, have some cake.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_japan",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね。今度 ご家族と いっしょに どうぞ。",
+              "kana": "いいですね。こんど ごかぞくと いっしょに どうぞ。",
+              "en": "How nice. Next time, please come with your family.",
+              "gesture": "nod"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "また いらっしゃって ください。さあ、ケーキを どうぞ。",
+              "kana": "また いらっしゃって ください。さあ、ケーキを どうぞ。",
+              "en": "Please come again. Now, have some cake.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "うちの 近くに 何が ありますか。",
+        "openerKana": "うちの ちかくに なにが ありますか。",
+        "openerEn": "What is there near your place?",
+        "topicEn": "Chat about the learner's home and neighbourhood: what is there, who is there, where things are. Stay within lesson 10 grammar (あります／います, position words, ～や～など).",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l10c",
+      "titleJa": "この ちかくに……",
+      "titleEn": "New in town",
+      "scene": "station",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "You have just moved to town and you are standing in front of the station with errands to run. Takeuchi-san, who you have met here before, stops to say hello.",
+      "roleEn": "You are new in the neighbourhood. Talk about where your own home is and what is around it.",
+      "missionsEn": [
+        {
+          "text": "Ask if there is a post office or a bank nearby",
+          "grammar": [
+            "g2",
+            "g1"
+          ]
+        },
+        {
+          "text": "Say where your home is",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say what is near your home (～や ～など)",
+          "grammar": [
+            "g5",
+            "g2"
+          ]
+        },
+        {
+          "text": "Say whether you have friends in this town",
+          "grammar": [
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "takeuchi"
+      ],
+      "positions": {
+        "takeuchi": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "あ、こんにちは。きょうは どこへ 行きますか。",
+              "kana": "あ、こんにちは。きょうは どこへ いきますか。",
+              "en": "Oh, hello. Where are you off to today?",
+              "gesture": "wave",
+              "alts": [
+                {
+                  "ja": "あ、こんにちは。いい 天気ですね。どこへ 行きますか。",
+                  "kana": "あ、こんにちは。いい てんきですね。どこへ いきますか。",
+                  "en": "Oh, hello. Lovely weather, isn't it? Where are you off to?"
+                }
+              ]
+            }
+          ],
+          "listen": {
+            "promptEn": "You need a post office (ゆうびんきょく) — or a bank (ぎんこう). Ask her if there is one near here.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "すみません。この ちかくに ＿＿が ありますか。",
+            "modelAnswers": [
+              "すみません。この ちかくに ゆうびんきょくが ありますか。",
+              "この ちかくに ぎんこうが ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "post_office",
+                "whenEn": "Learner asks whether there is a post office nearby (or where it is).",
+                "next": "n2_post",
+                "exampleJa": "この ちかくに ゆうびんきょくが ありますか。"
+              },
+              {
+                "id": "bank",
+                "whenEn": "Learner asks whether there is a bank nearby (or where it is).",
+                "next": "n2_bank",
+                "exampleJa": "この ちかくに ぎんこうが ありますか。"
+              },
+              {
+                "id": "other_place",
+                "whenEn": "Learner asks about any other place.",
+                "next": "n2_other",
+                "exampleJa": "この ちかくに びょういんが ありますか。"
+              }
+            ],
+            "fallback": "n2_post"
+          }
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "すみません、わかりません。郵便局や 銀行は ありますが……。",
+              "kana": "すみません、わかりません。ゆうびんきょくや ぎんこうは ありますが……。",
+              "en": "Sorry, I don't know. There is a post office and a bank, though…",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "She does not know that one. Ask about a post office (ゆうびんきょく) or a bank (ぎんこう).",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "すみません。この ちかくに ＿＿が ありますか。",
+            "modelAnswers": [
+              "すみません。この ちかくに ゆうびんきょくが ありますか。",
+              "この ちかくに ぎんこうが ありますか。"
+            ],
+            "branches": [
+              {
+                "id": "post_office",
+                "whenEn": "Learner asks whether there is a post office nearby (or where it is).",
+                "next": "n2_post",
+                "exampleJa": "この ちかくに ゆうびんきょくが ありますか。"
+              },
+              {
+                "id": "bank",
+                "whenEn": "Learner asks whether there is a bank nearby (or where it is).",
+                "next": "n2_bank",
+                "exampleJa": "この ちかくに ぎんこうが ありますか。"
+              }
+            ],
+            "fallback": "n2_post"
+          }
+        },
+        {
+          "id": "n2_post",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "郵便局ですか。ええ、駅の 前に あります。",
+              "kana": "ゆうびんきょくですか。ええ、えきの まえに あります。",
+              "en": "A post office? Yes, there's one in front of the station.",
+              "gesture": "nod"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "銀行と スーパーの 間ですよ。",
+              "kana": "ぎんこうと スーパーの あいだですよ。",
+              "en": "It's between the bank and the supermarket.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_bank",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "銀行ですか。ええ、駅の 前に あります。",
+              "kana": "ぎんこうですか。ええ、えきの まえに あります。",
+              "en": "A bank? Yes, there's one in front of the station.",
+              "gesture": "nod"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "郵便局の 左ですよ。",
+              "kana": "ゆうびんきょくの ひだりですよ。",
+              "en": "It's to the left of the post office.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "うちは どこに ありますか。駅の 近くですか。",
+              "kana": "うちは どこに ありますか。えきの ちかくですか。",
+              "en": "Where is your home? Is it near the station?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her where your home is: near the station, next to / behind something, or further away.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "うちは ＿＿の ＿＿に あります。",
+            "modelAnswers": [
+              "はい、えきの ちかくに あります。",
+              "いいえ、こうえんの となりに あります。",
+              "うちは だいがくの ちかくに あります。"
+            ],
+            "branches": [
+              {
+                "id": "near_station",
+                "whenEn": "Learner says their home is near the station (or in front of / behind / next to it).",
+                "next": "n4_near",
+                "exampleJa": "はい、えきの ちかくに あります。"
+              },
+              {
+                "id": "elsewhere",
+                "whenEn": "Learner says their home is not near the station, or places it somewhere else (near a park, a school, another area).",
+                "next": "n4_far",
+                "exampleJa": "いいえ、こうえんの ちかくに あります。"
+              }
+            ],
+            "fallback": "n4_far"
+          }
+        },
+        {
+          "id": "n4_near",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "駅の 近くですか。便利ですね。",
+              "kana": "えきの ちかくですか。べんりですね。",
+              "en": "Near the station? How convenient.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_far",
+          "focus": "bus_stop_sign",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。バスのりばは あそこに ありますよ。",
+              "kana": "そうですか。バスのりばは あそこに ありますよ。",
+              "en": "I see. The bus stop is over there, by the way.",
+              "gesture": "point",
+              "target": "bus_stop_sign"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "うちの 近くに 何が ありますか。",
+              "kana": "うちの ちかくに なにが ありますか。",
+              "en": "What is there near your home?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her what is near your home. Use ～や ～[など] for \"things like…\".",
+            "grammar": [
+              "g5",
+              "g2"
+            ],
+            "hintJa": "うちの ちかくに ＿＿や ＿＿などが あります。",
+            "modelAnswers": [
+              "スーパーや コンビニなどが あります。",
+              "こうえんや きっさてんが あります。",
+              "こうえんが あります。みせは ありません。"
+            ],
+            "branches": [
+              {
+                "id": "shops",
+                "whenEn": "Learner mentions shops or services (supermarket, convenience store, restaurant, bank, station…).",
+                "next": "n6_shops",
+                "exampleJa": "スーパーや コンビニなどが あります。"
+              },
+              {
+                "id": "quiet",
+                "whenEn": "Learner mentions only parks, nature, schools or homes — or says there is nothing much.",
+                "next": "n6_quiet",
+                "exampleJa": "こうえんが あります。"
+              }
+            ],
+            "fallback": "n6_quiet"
+          }
+        },
+        {
+          "id": "n6_shops",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "店が たくさん ありますね。便利な ところですね。",
+              "kana": "みせが たくさん ありますね。べんりな ところですね。",
+              "en": "Lots of shops, then. That's a convenient area.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_quiet",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "静かな ところですね。いいですね。",
+              "kana": "しずかな ところですね。いいですね。",
+              "en": "A quiet area, then. That's nice.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "この 町に 友だちが いますか。",
+              "kana": "この まちに ともだちが いますか。",
+              "en": "Do you have friends in this town?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Do you have friends in this town? Answer with います／いません.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "はい、＿＿が います。／いいえ、まだ いません。",
+            "modelAnswers": [
+              "はい、います。かいしゃの ともだちが います。",
+              "いいえ、まだ いません。"
+            ],
+            "branches": [
+              {
+                "id": "has_friends",
+                "whenEn": "Learner says they have friends (or colleagues, classmates, family) in town.",
+                "next": "end_friends",
+                "exampleJa": "はい、ともだちが います。"
+              },
+              {
+                "id": "no_friends",
+                "whenEn": "Learner says they have no friends here yet.",
+                "next": "end_first",
+                "exampleJa": "いいえ、まだ いません。"
+              }
+            ],
+            "fallback": "end_first"
+          }
+        },
+        {
+          "id": "end_friends",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "いいですね。わたしも 友だちですよ。じゃ、また。",
+              "kana": "いいですね。わたしも ともだちですよ。じゃ、また。",
+              "en": "That's nice. I'm your friend too, you know. See you!",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_first",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。じゃ、わたしが 友だちですよ。じゃ、また。",
+              "kana": "そうですか。じゃ、わたしが ともだちですよ。じゃ、また。",
+              "en": "Is that so? Then I'm your friend. See you!",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "この 町は どうですか。",
+        "openerKana": "この まちは どうですか。",
+        "openerEn": "How do you like this town?",
+        "topicEn": "Chat about the town: what places there are, where they are, who lives nearby. Stay within lesson 10 grammar (あります／います, position words, ～や～など).",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

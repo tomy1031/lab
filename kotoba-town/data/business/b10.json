@@ -1,0 +1,979 @@
+{
+  "course": "it",
+  "unit": 10,
+  "storyJa": "デパートの ネットショップ トラブル",
+  "storyEn": "Trouble at the department store's online shop",
+  "episodeJa": "第10話",
+  "episodeEn": "Episode 10",
+  "titleJa": "ふりかえり（KPT）",
+  "titleEn": "Retrospective (KPT)",
+  "summaryEn": "Look back with the team: what to keep, what was a problem, what to try next — and thank each other.",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "previouslyEn": "さかもと予約 is live at Café Sakamoto, after a save error and a delayed calendar screen. On December 10 the department store's online shop had trouble; it was fixed at 11:30 and you apologised and explained to Nishimura-san. Two days later, the team sits down to look back.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "〜が よかったと 思います。これからも 続けたいです。",
+      "meaningEn": "Keep: something that went well and that you want to continue",
+      "exampleJa": "困った ときに 早く 相談できた ことが よかったと 思います。これからも 続けたいです。",
+      "exampleEn": "I think it was good that I could ask for help early. I want to keep doing that."
+    },
+    {
+      "id": "g2",
+      "pattern": "〜が むずかしかったです。／〜の とき、〜で 困りました。",
+      "meaningEn": "Problem: say what was hard, as a fact about the situation (not about a person)",
+      "exampleJa": "カレンダーの 画面の 見積もりが むずかしかったです。",
+      "exampleEn": "Estimating the calendar screen was hard."
+    },
+    {
+      "id": "g3",
+      "pattern": "次は、〜して みたいです。",
+      "meaningEn": "Try: one concrete action for next time",
+      "exampleJa": "次は、見積もりを 出す 前に、藤田さんに 相談して みたいです。",
+      "exampleEn": "Next time I want to consult Fujita-san before I give an estimate."
+    },
+    {
+      "id": "g4",
+      "pattern": "〜の 前に、〜する ように します。",
+      "meaningEn": "Prevention: a rule you will follow from now on",
+      "exampleJa": "更新の 前に、2人で 確認する ように します。",
+      "exampleEn": "We will make sure two people check before an update."
+    },
+    {
+      "id": "g5",
+      "pattern": "〜て くださって、ありがとう ございました。これからも よろしく お願いします。",
+      "meaningEn": "Thank the team and look ahead",
+      "exampleJa": "いろいろ 教えて くださって、ありがとう ございました。これからも よろしく お願いします。",
+      "exampleEn": "Thank you for teaching me so much. I look forward to working with you."
+    },
+    {
+      "id": "g6",
+      "pattern": "正直に 言うと、〜",
+      "meaningEn": "Cushion before saying something that is hard to say",
+      "exampleJa": "正直に 言うと、会議の 日本語が 速くて、むずかしかったです。",
+      "exampleEn": "To be honest, the Japanese in meetings was fast and hard for me."
+    },
+    {
+      "id": "g7",
+      "pattern": "〜ては どうでしょうか。",
+      "meaningEn": "Propose an improvement to the team",
+      "exampleJa": "会議の あとで、決まった ことを チャットに 書いては どうでしょうか。",
+      "exampleEn": "How about writing what was decided in the chat after each meeting?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "ふりかえり",
+      "kana": "ふりかえり",
+      "en": "retrospective"
+    },
+    {
+      "ja": "続ける",
+      "kana": "つづける",
+      "en": "to continue (Keep)"
+    },
+    {
+      "ja": "問題",
+      "kana": "もんだい",
+      "en": "problem"
+    },
+    {
+      "ja": "試す",
+      "kana": "ためす",
+      "en": "to try"
+    },
+    {
+      "ja": "再発防止",
+      "kana": "さいはつぼうし",
+      "en": "preventing it from happening again"
+    },
+    {
+      "ja": "相談する",
+      "kana": "そうだんする",
+      "en": "to consult"
+    },
+    {
+      "ja": "復唱",
+      "kana": "ふくしょう",
+      "en": "repeating back"
+    },
+    {
+      "ja": "見積もり",
+      "kana": "みつもり",
+      "en": "estimate"
+    },
+    {
+      "ja": "遅れる",
+      "kana": "おくれる",
+      "en": "to be late"
+    },
+    {
+      "ja": "更新",
+      "kana": "こうしん",
+      "en": "update"
+    },
+    {
+      "ja": "手順",
+      "kana": "てじゅん",
+      "en": "procedure"
+    },
+    {
+      "ja": "仕組み",
+      "kana": "しくみ",
+      "en": "system, mechanism"
+    },
+    {
+      "ja": "具体的",
+      "kana": "ぐたいてき",
+      "en": "concrete"
+    },
+    {
+      "ja": "提案",
+      "kana": "ていあん",
+      "en": "proposal"
+    },
+    {
+      "ja": "正直",
+      "kana": "しょうじき",
+      "en": "honest"
+    },
+    {
+      "ja": "早口",
+      "kana": "はやくち",
+      "en": "fast speech"
+    },
+    {
+      "ja": "悩む",
+      "kana": "なやむ",
+      "en": "to struggle, worry"
+    },
+    {
+      "ja": "決まった こと",
+      "kana": "きまった こと",
+      "en": "what was decided"
+    },
+    {
+      "ja": "障害",
+      "kana": "しょうがい",
+      "en": "incident"
+    },
+    {
+      "ja": "助かる",
+      "kana": "たすかる",
+      "en": "to be helped"
+    },
+    {
+      "ja": "お疲れさまでした",
+      "kana": "おつかれさまでした",
+      "en": "thank you for your hard work"
+    }
+  ],
+  "tipsEn": [
+    "KPT = Keep (続ける こと) / Problem (問題) / Try (次に 試す こと). A retrospective ends with a Try that someone will really do.",
+    "A retrospective looks for causes, not for someone to blame: 「手順の 問題」, not 「〜さんの ミス」. Speak with 「わたしは 〜と 思います」.",
+    "A Try is concrete: when, who, what. 「がんばります」 is a feeling; 「見積もりの 前に 相談します」 is a Try.",
+    "Newcomers see what the team no longer sees. Saying what was hard for you — politely, with a proposal — is a contribution."
+  ],
+  "research": {
+    "sources": [
+      "https://biz.moneyforward.com/payroll/basic/62605/",
+      "https://scrapbox.io/online-hunting-union/KPT%E9%80%B2%E3%82%81%E6%96%B9",
+      "https://zenn.dev/kubot64/articles/7d53b2e8280b01",
+      "https://scrapbox.io/june29/%E3%83%81%E3%83%BC%E3%83%A0%E3%81%AB%E3%81%B5%E3%82%8A%E3%81%8B%E3%81%88%E3%82%8A%E3%81%AE%E6%A6%82%E5%BF%B5%E3%82%92%E6%8C%81%E3%81%A1%E8%BE%BC%E3%82%80%E3%81%A8%E3%81%8D%E3%81%AB%E8%80%83%E3%81%88%E3%82%8B%E3%81%93%E3%81%A8",
+      "https://biz.moneyforward.com/work-efficiency/basic/?p=12010"
+    ],
+    "notesEn": "KPT is the most common retrospective format in Japanese teams: a board with Keep, Problem and Try; everyone contributes, the team talks, and the meeting ends by making the Try concrete. Practitioners' ground rules: assume everyone did their best, look for causes without assigning blame, and speak with 'I think'. Known anti-patterns are Tries that are too vague to carry out, too few Keeps (thanks count as Keeps), and criticism that hurts relationships; facilitators draw out quiet members and small worries are welcome as Problems. After an incident, prevention means changing the procedure (cross-checks, managed deadlines), not telling people to be careful. Variant a practises a Keep, a Problem and a concrete Try; variant b has the team ask the newcomer what was hard, and the learner answers with a cushion phrase and a proposal."
+  },
+  "variants": [
+    {
+      "id": "b10a",
+      "titleJa": "Keep と Try を 話す",
+      "titleEn": "Share a Keep and a Try",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "briefEn": "Friday, December 12. The team looks back on both projects with KPT (Keep / Problem / Try). Things you can use — Keep: when the booking form gave a save error you asked early, and Fujita-san's hint about the date format fixed it; on the incident call you repeated the facts back and gave a time for the next contact (10:30). Problem: the calendar screen was 3 days late (your estimate was too short); the price data was updated by one person, with no check. Try: consult Fujita-san before giving an estimate; two people check before an update.",
+      "roleEn": "You are the newest member of the team. Speak about situations and procedures, not about whose mistake it was.",
+      "missionsEn": [
+        {
+          "text": "Share one Keep",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Share one Problem",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Give one concrete Try",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Thank the team",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami",
+        "fujita",
+        "aoki"
+      ],
+      "positions": {
+        "murakami": "npc1",
+        "fujita": "npc2",
+        "aoki": "npc3"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、ふりかえりを 始めます。さかもと予約と ネットショップの 2つですね。",
+              "kana": "では、ふりかえりを はじめます。さかもとよやくと ネットショップの ふたつですね。",
+              "en": "Let's start the retrospective: two things, さかもと予約 and the online shop.",
+              "tts": "では、ふりかえりを はじめます。さかもとよやくと ネットショップの ふたつですね。"
+            },
+            {
+              "who": "murakami",
+              "ja": "まず Keep、よかった ことから。どうでしたか。",
+              "kana": "まず キープ、よかった ことから。どうでしたか。",
+              "en": "First Keep — what went well. How was it for you?",
+              "tts": "まず キープ、よかった ことから。どうでしたか。"
+            }
+          ],
+          "focus": "whiteboard",
+          "listen": {
+            "promptEn": "Share one Keep: asking for help early (the save error), or repeating back and giving the 10:30 time on the incident call.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿が よかったと 思います。これからも 続けたいです。",
+            "modelAnswers": [
+              "エラーで 困った ときに、早く 相談できた ことが よかったと 思います。これからも 続けたいです。",
+              "障害の 電話で、復唱して、次の 連絡の 時間を 伝えた ことが よかったと 思います。"
+            ],
+            "branches": [
+              {
+                "id": "keep_consult",
+                "whenEn": "Learner's Keep is about asking for help / consulting early (the error in the café app).",
+                "next": "n2a",
+                "exampleJa": "エラーの とき、早く 相談できた ことが よかったと 思います。"
+              },
+              {
+                "id": "keep_incident",
+                "whenEn": "Learner's Keep is about the incident: repeating back, giving the next contact time, or reporting early.",
+                "next": "n2b",
+                "exampleJa": "障害の 電話で、復唱した ことが よかったと 思います。"
+              },
+              {
+                "id": "keep_team",
+                "whenEn": "Learner's Keep is about the team: people helped, the atmosphere, working together.",
+                "next": "n2c",
+                "exampleJa": "みなさんが 助けて くださった ことが よかったと 思います。"
+              }
+            ],
+            "fallback": "n2c"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "早く 相談して くれたから、あの エラーも すぐ 直せましたね。",
+              "kana": "はやく そうだんして くれたから、あの エラーも すぐ なおせましたね。",
+              "en": "Because you asked early, we could fix that error quickly.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "あの 電話の 復唱は よかったです。西村さんも 安心して いましたよ。",
+              "kana": "あの でんわの ふくしょうは よかったです。にしむらさんも あんしんして いましたよ。",
+              "en": "Your repeating back on that call was good. Nishimura-san felt reassured too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "うれしいです！ わたしも みんなに 助けて もらいました。",
+              "kana": "うれしいです！ わたしも みんなに たすけて もらいました。",
+              "en": "I'm glad! Everyone helped me too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "次は Problem です。むずかしかった ことは ありましたか。",
+              "kana": "つぎは プロブレムです。むずかしかった ことは ありましたか。",
+              "en": "Next is Problem. Was there anything difficult?",
+              "tts": "つぎは プロブレムです。むずかしかった ことは ありましたか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Share one Problem: the calendar screen was 3 days late (estimating was hard), or the price data was updated by one person without a check.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿が むずかしかったです。",
+            "modelAnswers": [
+              "カレンダーの 画面が 3日 遅れました。見積もりが むずかしかったです。",
+              "価格の データの 更新を、1人で して いた ことが 問題だったと 思います。"
+            ],
+            "branches": [
+              {
+                "id": "problem_delay",
+                "whenEn": "Learner's Problem is about the schedule: the delay of the calendar screen or estimating.",
+                "next": "n4a",
+                "exampleJa": "カレンダーの 画面が 3日 遅れました。見積もりが むずかしかったです。"
+              },
+              {
+                "id": "problem_incident",
+                "whenEn": "Learner's Problem is about the incident: the update was done by one person / there was no check.",
+                "next": "n4b",
+                "exampleJa": "データの 更新を、1人で して いた ことが 問題だったと 思います。"
+              }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "カレンダーは 3日 遅れましたね。見積もりは、わたしも むずかしいです。",
+              "kana": "カレンダーは みっか おくれましたね。みつもりは、わたしも むずかしいです。",
+              "en": "Yes, the calendar was three days late. Estimating is hard for me too.",
+              "tts": "カレンダーは みっか おくれましたね。みつもりは、わたしも むずかしいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "1人で 更新する 手順でしたね。あれは 仕組みの 問題です。",
+              "kana": "ひとりで こうしんする てじゅんでしたね。あれは しくみの もんだいです。",
+              "en": "The procedure had one person doing the update. That's a problem of the system, not of a person.",
+              "tts": "ひとりで こうしんする てじゅんでしたね。あれは しくみの もんだいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では Try です。次に、何を して みたいですか。",
+              "kana": "では トライです。つぎに、なにを して みたいですか。",
+              "en": "Now Try. What would you like to try next?",
+              "tts": "では トライです。つぎに、なにを して みたいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give one concrete Try: consult Fujita-san before giving an estimate, or have two people check before an update.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "次は、＿＿の 前に、＿＿して みたいです。",
+            "modelAnswers": [
+              "次は、見積もりを 出す 前に、藤田さんに 相談して みたいです。",
+              "更新の 前に、2人で 確認する ように します。"
+            ],
+            "branches": [
+              {
+                "id": "concrete_try",
+                "whenEn": "Learner gave a concrete action (who / when / what), e.g. consult before estimating, two people check before an update.",
+                "next": "n6a",
+                "exampleJa": "次は、見積もりを 出す 前に、藤田さんに 相談して みたいです。"
+              },
+              {
+                "id": "vague_try",
+                "whenEn": "Learner only said they will try harder or be careful.",
+                "next": "n6b",
+                "exampleJa": "次は もっと がんばります。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "気持ちは うれしいです。具体的には、いつ、何を しますか。",
+              "kana": "きもちは うれしいです。ぐたいてきには、いつ、なにを しますか。",
+              "en": "I'm glad you feel that way. Concretely, when will you do what?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Make it concrete: before an estimate, consult Fujita-san — or before an update, two people check.",
+            "grammar": [
+              "g4",
+              "g3"
+            ],
+            "hintJa": "＿＿の 前に、＿＿する ように します。",
+            "modelAnswers": [
+              "見積もりを 出す 前に、藤田さんに 相談する ように します。",
+              "更新の 前に、2人で 確認する ように します。"
+            ],
+            "branches": [
+              {
+                "id": "before_estimate",
+                "whenEn": "Learner said they will consult someone before giving an estimate.",
+                "next": "n6a",
+                "exampleJa": "見積もりを 出す 前に、藤田さんに 相談する ように します。"
+              },
+              {
+                "id": "before_update",
+                "whenEn": "Learner said two people will check before an update, or gave another concrete rule.",
+                "next": "n6a",
+                "exampleJa": "更新の 前に、2人で 確認する ように します。"
+              }
+            ],
+            "fallback": "n6a"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！ それ、わたしも 一緒に やりたいです。",
+              "kana": "いいですね！ それ、わたしも いっしょに やりたいです。",
+              "en": "That's good! I'd like to do that with you."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "ホワイトボードに 書きました。来週から やって みましょう。",
+              "kana": "ホワイトボードに かきました。らいしゅうから やって みましょう。",
+              "en": "I've written it on the whiteboard. Let's try it from next week.",
+              "gesture": "nod"
+            },
+            {
+              "who": "murakami",
+              "ja": "さいごに、チームに 一言 お願いします。",
+              "kana": "さいごに、チームに ひとこと おねがいします。",
+              "en": "Finally, a few words to the team, please."
+            }
+          ],
+          "focus": "whiteboard",
+          "listen": {
+            "promptEn": "Say a few words to the team: thank them, and say これからも よろしく お願いします.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "いろいろ ＿＿て くださって、ありがとう ございました。これからも よろしく お願いします。",
+            "modelAnswers": [
+              "いろいろ 教えて くださって、ありがとう ございました。これからも よろしく お願いします。",
+              "助けて くださって、ありがとう ございました。次は、わたしも みなさんを 助けたいです。"
+            ],
+            "branches": [
+              {
+                "id": "thanks",
+                "whenEn": "Learner thanked the team (with or without よろしく お願いします).",
+                "next": "end_a",
+                "exampleJa": "いろいろ 教えて くださって、ありがとう ございました。これからも よろしく お願いします。"
+              },
+              {
+                "id": "thanks_and_goal",
+                "whenEn": "Learner thanked the team AND said what they want to do from now on.",
+                "next": "end_b",
+                "exampleJa": "ありがとう ございました。次は、わたしも みなさんを 助けたいです。"
+              }
+            ],
+            "fallback": "end_a"
+          }
+        },
+        {
+          "id": "end_a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "こちらこそ。短い 間に、たくさん できる ように なりましたね。",
+              "kana": "こちらこそ。みじかい あいだに、たくさん できる ように なりましたね。",
+              "en": "Thank you too. You've learned to do so much in a short time."
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end_b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "たのもしいですね。次は わたしが 相談するかも しれません。",
+              "kana": "たのもしいですね。つぎは わたしが そうだんするかも しれません。",
+              "en": "That's reassuring. Next time I may be the one asking you.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "2つの プロジェクト、お疲れさまでした。これからも よろしく お願いします。",
+              "kana": "ふたつの プロジェクト、おつかれさまでした。これからも よろしく おねがいします。",
+              "en": "Well done on the two projects. We look forward to working with you from now on.",
+              "tts": "ふたつの プロジェクト、おつかれさまでした。これからも よろしく おねがいします。",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "この あと、みんなで 喫茶さかもとに 行きませんか。",
+        "openerKana": "この あと、みんなで きっささかもとに いきませんか。",
+        "openerEn": "Shall we all go to Café Sakamoto after this?",
+        "topicEn": "Relaxed chat after the retrospective: going to Café Sakamoto together, what the learner wants to learn next, how the first weeks at work were. Polite, friendly business Japanese (N4–N3).",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "b10b",
+      "titleJa": "大変だった ことを 話す",
+      "titleEn": "Say what was hard for you",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "briefEn": "Friday, December 12. The team looks back on both projects with KPT. Aoki-san asks what was hard for you as a newcomer — the team really wants to know. Things you can say: the Japanese in meetings was fast and some words were new (on the day of the incident you could not take notes); or you did not know when it was OK to ask questions (when the save error appeared, Fujita-san looked busy). Then propose one improvement for the team: write what was decided in the chat after each meeting, or have a 15-minute question time every day.",
+      "roleEn": "You are the newest member of the team. Be honest and polite: 「正直に 言うと、〜」, then a proposal.",
+      "missionsEn": [
+        {
+          "text": "Say honestly what was hard for you",
+          "grammar": [
+            "g6",
+            "g2"
+          ]
+        },
+        {
+          "text": "Give a concrete example",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Propose one improvement for the team",
+          "grammar": [
+            "g7",
+            "g3"
+          ]
+        },
+        {
+          "text": "Thank the team",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "murakami",
+        "fujita",
+        "aoki"
+      ],
+      "positions": {
+        "murakami": "npc1",
+        "fujita": "npc2",
+        "aoki": "npc3"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "Keep と Problem は たくさん 出ましたね。",
+              "kana": "キープと プロブレムは たくさん でましたね。",
+              "en": "We have plenty of Keeps and Problems now.",
+              "tts": "キープと プロブレムは たくさん でましたね。"
+            },
+            {
+              "who": "aoki",
+              "ja": "あの、入った ばかりで 大変だった ことは ありませんか。",
+              "kana": "あの、はいった ばかりで たいへんだった ことは ありませんか。",
+              "en": "Um, wasn't anything hard for you, having just joined?"
+            }
+          ],
+          "focus": "whiteboard",
+          "listen": {
+            "promptEn": "Say honestly what was hard for you: the fast Japanese in meetings, or not knowing when it was OK to ask questions.",
+            "grammar": [
+              "g6",
+              "g2"
+            ],
+            "hintJa": "正直に 言うと、＿＿が むずかしかったです。",
+            "modelAnswers": [
+              "正直に 言うと、会議の 日本語が 速くて、わからない 言葉が ありました。",
+              "正直に 言うと、いつ 質問して いいか、わかりませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "hard_language",
+                "whenEn": "Learner said the Japanese was hard: fast speech in meetings, unknown words.",
+                "next": "n2a",
+                "exampleJa": "正直に 言うと、会議の 日本語が 速くて、むずかしかったです。"
+              },
+              {
+                "id": "hard_asking",
+                "whenEn": "Learner said it was hard to know when to ask questions / to interrupt busy colleagues.",
+                "next": "n2b",
+                "exampleJa": "正直に 言うと、いつ 質問して いいか、わかりませんでした。"
+              },
+              {
+                "id": "nothing",
+                "whenEn": "Learner said nothing was hard / everything was fine.",
+                "next": "n2c",
+                "exampleJa": "いいえ、大丈夫でした。"
+              }
+            ],
+            "fallback": "n2c"
+          }
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "それは よかったです。でも、小さい ことでも いいですよ。何か ありませんか。",
+              "kana": "それは よかったです。でも、ちいさい ことでも いいですよ。なにか ありませんか。",
+              "en": "I'm glad. But small things are fine too. Isn't there anything?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Share one small thing that was hard: fast Japanese in meetings, or when to ask questions.",
+            "grammar": [
+              "g6",
+              "g2"
+            ],
+            "hintJa": "正直に 言うと、＿＿が 少し むずかしかったです。",
+            "modelAnswers": [
+              "正直に 言うと、会議の 日本語が 少し 速かったです。",
+              "正直に 言うと、いつ 質問して いいか、少し 迷いました。"
+            ],
+            "branches": [
+              {
+                "id": "hard_language",
+                "whenEn": "Learner said the Japanese was hard: fast speech, unknown words.",
+                "next": "n2a",
+                "exampleJa": "正直に 言うと、会議の 日本語が 少し 速かったです。"
+              },
+              {
+                "id": "hard_asking",
+                "whenEn": "Learner said something else was hard, e.g. when to ask questions.",
+                "next": "n2b",
+                "exampleJa": "いつ 質問して いいか、少し 迷いました。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうだったんですね。わたしたち、早口でしたね。ごめんなさい。",
+              "kana": "そうだったんですね。わたしたち、はやくちでしたね。ごめんなさい。",
+              "en": "I see. We were talking fast, weren't we. I'm sorry."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ああ、わたしが 忙しそうに して いましたね。気が つかなくて、すみません。",
+              "kana": "ああ、わたしが いそがしそうに して いましたね。きが つかなくて、すみません。",
+              "en": "Ah, I did look busy, didn't I. I'm sorry I didn't notice."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "言って くれて ありがとう。それは どんな ときでしたか。",
+              "kana": "いって くれて ありがとう。それは どんな ときでしたか。",
+              "en": "Thank you for telling us. When was that, for example?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give one concrete example: on the day of the incident everyone spoke fast and you couldn't take notes — or when the save error appeared you didn't know when to ask.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿の とき、＿＿で 困りました。",
+            "modelAnswers": [
+              "障害の 日、みなさんの 話が 速くて、メモが できなくて 困りました。",
+              "保存の エラーが 出た とき、いつ 聞いたら いいか わからなくて、困りました。"
+            ],
+            "branches": [
+              {
+                "id": "example_incident",
+                "whenEn": "Learner's example is about the incident day or a meeting (fast talk, notes, words).",
+                "next": "n4a",
+                "exampleJa": "障害の 日、話が 速くて、メモが できなくて 困りました。"
+              },
+              {
+                "id": "example_error",
+                "whenEn": "Learner's example is about the error / working alone / not knowing when to ask.",
+                "next": "n4b",
+                "exampleJa": "エラーが 出た とき、いつ 聞いたら いいか わからなくて、困りました。"
+              }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "障害の 日は、みんな 急いで 話して いましたね。気を つけます。",
+              "kana": "しょうがいの ひは、みんな いそいで はなして いましたね。きを つけます。",
+              "en": "On the day of the incident we were all talking in a hurry. I'll be careful."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あの エラーですね。15分 悩んだら、いつでも 聞いて ください。",
+              "kana": "あの エラーですね。じゅうごふん なやんだら、いつでも きいて ください。",
+              "en": "That error. If you've struggled for fifteen minutes, ask me any time.",
+              "tts": "あの エラーですね。じゅうごふん なやんだら、いつでも きいて ください。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、どう したら よく なると 思いますか。提案を 1つ お願いします。",
+              "kana": "では、どう したら よく なると おもいますか。ていあんを ひとつ おねがいします。",
+              "en": "So, how do you think we can make it better? One proposal, please.",
+              "tts": "では、どう したら よく なると おもいますか。ていあんを ひとつ おねがいします。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Propose one improvement for the team: write what was decided in the chat after meetings, or have a 15-minute question time every day.",
+            "grammar": [
+              "g7",
+              "g3"
+            ],
+            "hintJa": "＿＿ては どうでしょうか。",
+            "modelAnswers": [
+              "会議の あとで、決まった ことを チャットに 書いては どうでしょうか。",
+              "毎日 15分、質問の 時間を 作っては どうでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "team_proposal",
+                "whenEn": "Learner proposed something the team can do (notes in chat after meetings, a daily question time, etc.).",
+                "next": "n6a",
+                "exampleJa": "会議の あとで、決まった ことを チャットに 書いては どうでしょうか。"
+              },
+              {
+                "id": "self_only",
+                "whenEn": "Learner only said what they themselves will do (study more, try harder).",
+                "next": "n6b",
+                "exampleJa": "わたしが もっと 日本語を 勉強します。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "自分の Try も 大事です。チームに して ほしい ことも、1つ どうぞ。",
+              "kana": "じぶんの トライも だいじです。チームに して ほしい ことも、ひとつ どうぞ。",
+              "en": "Your own Try matters too. Now tell us one thing you'd like the team to do.",
+              "tts": "じぶんの トライも だいじです。チームに して ほしい ことも、ひとつ どうぞ。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Propose one thing for the team: decisions written in the chat after meetings, or a daily 15-minute question time.",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "＿＿ては どうでしょうか。",
+            "modelAnswers": [
+              "会議の あとで、決まった ことを チャットに 書いては どうでしょうか。",
+              "毎日 15分、質問の 時間を 作っては どうでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "chat_notes",
+                "whenEn": "Learner proposed writing decisions / notes in the chat after meetings.",
+                "next": "n6a",
+                "exampleJa": "会議の あとで、決まった ことを チャットに 書いては どうでしょうか。"
+              },
+              {
+                "id": "question_time",
+                "whenEn": "Learner proposed a question time or another concrete idea for the team.",
+                "next": "n6a",
+                "exampleJa": "毎日 15分、質問の 時間を 作っては どうでしょうか。"
+              }
+            ],
+            "fallback": "n6a"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "いい 提案です。来週から、チームで やって みましょう。",
+              "kana": "いい ていあんです。らいしゅうから、チームで やって みましょう。",
+              "en": "A good proposal. Let's try it as a team from next week.",
+              "gesture": "nod"
+            },
+            {
+              "who": "fujita",
+              "ja": "これは 再発防止にも なりますね。言葉の すれちがいが 減ります。",
+              "kana": "これは さいはつぼうしにも なりますね。ことばの すれちがいが へります。",
+              "en": "This also helps prevention: fewer misunderstandings."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "さいごに、チームに 一言 お願いします。",
+              "kana": "さいごに、チームに ひとこと おねがいします。",
+              "en": "Finally, a few words to the team, please."
+            }
+          ],
+          "listen": {
+            "promptEn": "Say a few words to the team: thank them, and say これからも よろしく お願いします.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "いろいろ ＿＿て くださって、ありがとう ございました。これからも よろしく お願いします。",
+            "modelAnswers": [
+              "いろいろ 教えて くださって、ありがとう ございました。これからも よろしく お願いします。",
+              "助けて くださって、ありがとう ございました。次は、わたしも みなさんを 助けたいです。"
+            ],
+            "branches": [
+              {
+                "id": "thanks",
+                "whenEn": "Learner thanked the team (with or without よろしく お願いします).",
+                "next": "end_a",
+                "exampleJa": "いろいろ 教えて くださって、ありがとう ございました。これからも よろしく お願いします。"
+              },
+              {
+                "id": "thanks_and_goal",
+                "whenEn": "Learner thanked the team AND said what they want to do from now on.",
+                "next": "end_b",
+                "exampleJa": "ありがとう ございました。次は、わたしも みなさんを 助けたいです。"
+              }
+            ],
+            "fallback": "end_a"
+          }
+        },
+        {
+          "id": "end_a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "こちらこそ！ 一緒に 仕事が できて、楽しいです。",
+              "kana": "こちらこそ！ いっしょに しごとが できて、たのしいです。",
+              "en": "Thank you too! I enjoy working with you.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end_b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わあ、たのもしいです！ こちらこそ、ありがとう ございます。",
+              "kana": "わあ、たのもしいです！ こちらこそ、ありがとう ございます。",
+              "en": "Wow, that's reassuring! Thank you too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "正直に 話して くれて、チームが よく なります。これからも よろしく お願いします。",
+              "kana": "しょうじきに はなして くれて、チームが よく なります。これからも よろしく おねがいします。",
+              "en": "Because you spoke honestly, the team gets better. We look forward to working with you.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

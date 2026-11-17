@@ -1,0 +1,1050 @@
+{
+  "course": "it",
+  "storyJa": "喫茶さかもとの 予約アプリ",
+  "storyEn": "A booking app for Café Sakamoto",
+  "unit": 2,
+  "episodeJa": "第2話",
+  "episodeEn": "Episode 2",
+  "titleJa": "要件を 聞く（ヒアリング）",
+  "titleEn": "The requirements hearing",
+  "summaryEn": "Ask the client concrete questions — how many, from when to when, by when — and repeat the answers back.",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "previouslyEn": "At the morning stand-up you reported your progress on さかもと予約, the booking app for Café Sakamoto. The booking rules are still open, so Murakami takes you to the café to hear them from the owner.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "今日は 〜に ついて、いくつか お聞きしたいです。",
+      "meaningEn": "Open a hearing: say your name and what you want to ask about today.",
+      "exampleJa": "はじめまして、リンです。今日は 予約アプリに ついて、いくつか お聞きしたいです。",
+      "exampleEn": "Nice to meet you, I'm Linh. Today I'd like to ask a few things about the booking app."
+    },
+    {
+      "id": "g2",
+      "pattern": "いくつ／何人まで／何時から 何時まで／何日 先まで ＋ ですか",
+      "meaningEn": "Concrete 5W1H questions: ask for a number, a range or a limit — one thing at a time.",
+      "exampleJa": "予約できる テーブルは いくつ ありますか。1つの テーブルは 何人までですか。",
+      "exampleEn": "How many tables can be booked? Up to how many people per table?"
+    },
+    {
+      "id": "g3",
+      "pattern": "〜ですね。／〜という ことですね。",
+      "meaningEn": "復唱: repeat the answer back before you go on — numbers and times are easy to mishear.",
+      "exampleJa": "テーブルは 4つ、4人までですね。",
+      "exampleEn": "So, four tables, up to four people each."
+    },
+    {
+      "id": "g4",
+      "pattern": "〜で よろしいでしょうか。",
+      "meaningEn": "When the other person is vague or says 'up to you': propose something concrete and ask if it is OK.",
+      "exampleJa": "予約は 2週間 先まで、キャンセルは 前の日まで、で よろしいでしょうか。",
+      "exampleEn": "Bookings up to two weeks ahead, cancelling until the day before — would that be all right?"
+    },
+    {
+      "id": "g5",
+      "pattern": "いつから 使いたいですか。／リリースは 〜月〜日で よろしいでしょうか。",
+      "meaningEn": "Pin the deadline to a date. 'Soon' and 'early' are not dates.",
+      "exampleJa": "アプリは いつから 使いたいですか。",
+      "exampleEn": "From when would you like to use the app?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "ヒアリング",
+      "kana": "ヒアリング",
+      "en": "requirements hearing (interviewing the client)"
+    },
+    {
+      "ja": "要件",
+      "kana": "ようけん",
+      "en": "requirement"
+    },
+    {
+      "ja": "お客さま",
+      "kana": "おきゃくさま",
+      "en": "customer"
+    },
+    {
+      "ja": "予約",
+      "kana": "よやく",
+      "en": "booking, reservation"
+    },
+    {
+      "ja": "席",
+      "kana": "せき",
+      "en": "seat"
+    },
+    {
+      "ja": "テーブル",
+      "kana": "テーブル",
+      "en": "table"
+    },
+    {
+      "ja": "〜人まで",
+      "kana": "〜にんまで",
+      "en": "up to ~ people"
+    },
+    {
+      "ja": "何時から 何時まで",
+      "kana": "なんじから なんじまで",
+      "en": "from what time to what time"
+    },
+    {
+      "ja": "〜週間 先",
+      "kana": "〜しゅうかん さき",
+      "en": "~ weeks ahead"
+    },
+    {
+      "ja": "前の日",
+      "kana": "まえの ひ",
+      "en": "the day before"
+    },
+    {
+      "ja": "キャンセル",
+      "kana": "キャンセル",
+      "en": "cancellation"
+    },
+    {
+      "ja": "リリース",
+      "kana": "リリース",
+      "en": "release (start of service)"
+    },
+    {
+      "ja": "締め切り",
+      "kana": "しめきり",
+      "en": "deadline"
+    },
+    {
+      "ja": "具体的に",
+      "kana": "ぐたいてきに",
+      "en": "concretely"
+    },
+    {
+      "ja": "たとえば",
+      "kana": "たとえば",
+      "en": "for example"
+    },
+    {
+      "ja": "復唱",
+      "kana": "ふくしょう",
+      "en": "repeating back to confirm"
+    },
+    {
+      "ja": "うかがう",
+      "kana": "うかがう",
+      "en": "to ask / to hear (humble)"
+    },
+    {
+      "ja": "おまかせします",
+      "kana": "おまかせします",
+      "en": "I leave it to you"
+    },
+    {
+      "ja": "いい感じに",
+      "kana": "いいかんじに",
+      "en": "'make it nice' (a vague request)"
+    },
+    {
+      "ja": "議事録",
+      "kana": "ぎじろく",
+      "en": "minutes of a meeting"
+    },
+    {
+      "ja": "よろしいでしょうか",
+      "kana": "よろしいでしょうか",
+      "en": "would that be all right? (polite)"
+    },
+    {
+      "ja": "助かります",
+      "kana": "たすかります",
+      "en": "that helps / I appreciate it"
+    },
+    {
+      "ja": "忙しい",
+      "kana": "いそがしい",
+      "en": "busy"
+    },
+    {
+      "ja": "年末",
+      "kana": "ねんまつ",
+      "en": "year-end"
+    }
+  ],
+  "tipsEn": [
+    "A client who says 「いい感じに」 or 「おまかせします」 is trusting you, not hiding something. Turn it into numbers: いくつ・何人・何時から 何時まで・いつまで.",
+    "復唱 (repeating back) is polite, not slow: 「10時から 17時までですね」. Dates, times and counts are always repeated.",
+    "After a hearing the team sends the 議事録 (minutes) the same or next day, so nobody argues later about who said what."
+  ],
+  "research": {
+    "sources": [
+      "https://crexgroup.com/ja/development/project/requirements-definition-hearing-tips/",
+      "https://news.mynavi.jp/techplus/article/communication-6/",
+      "https://dev.classmethod.jp/articles/org-catalog-explanation-by-example/",
+      "https://job.rikunabi.com/contents/manners/1007/",
+      "https://www.luft.co.jp/media/recognition-paraphrasing/",
+      "https://www.itmedia.co.jp/news/articles/2403/15/news179_2.html"
+    ],
+    "notesEn": "Guides to 要件ヒアリング in Japan agree on the flow: say the purpose, ask prepared questions, dig into anything vague, confirm, then share minutes the same or next day with decisions, open points and TODOs. Vague words (簡単に, いい感じに) are made concrete with 5W1H and with examples or hypotheses that the client can correct; closed, concrete questions keep the answers from drifting, and proposing an option is a recognised technique. Business-manner sources teach 復唱 for dates, times, numbers and names, and recommend stating key conditions with the exact value (『納品日は 8月31日で よろしいでしょうか』). Foreign engineers report that fast, indirect talk in meetings is where they lose information, which makes repeat-back a survival skill as well as a courtesy. Variant a trains purpose → concrete question → repeat-back with a clear client (including the trap of opening hours vs booking hours); variant b trains pinning down a warm but vague owner by asking from–to, proposing and checking with 〜で よろしいでしょうか."
+  },
+  "variants": [
+    {
+      "id": "b02a",
+      "titleJa": "要件を 聞く（はっきり）",
+      "titleEn": "The hearing: clear answers",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "You and Murakami visit 喫茶さかもと for the requirements hearing (ヒアリング) of the booking app. You lead the questions. Your checklist: ① how many tables can be booked, and how many people per table ② booking hours, from–to ③ how many days ahead customers can book ④ cancelling ⑤ from when he wants to use the app. Repeat each answer back before you move on.",
+      "roleEn": "You are the new engineer from Midori Design. Sakamoto, the owner, is warm and not technical — plain questions, one at a time.",
+      "missionsEn": [
+        {
+          "text": "Say your name and what you'd like to ask about",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask about tables, people and booking hours",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Repeat each answer back before the next question",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Settle cancelling and the start date",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto",
+        "murakami"
+      ],
+      "positions": {
+        "sakamoto": "npc1",
+        "murakami": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "坂本さん、今日は お時間を いただき、ありがとう ございます。",
+              "kana": "さかもとさん、きょうは おじかんを いただき、ありがとう ございます。",
+              "en": "Sakamoto-san, thank you for making time for us today.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "いえいえ。予約の アプリ、楽しみに して いますよ。",
+              "kana": "いえいえ。よやくの アプリ、たのしみに して いますよ。",
+              "en": "Not at all. I'm looking forward to the booking app.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "murakami",
+              "ja": "今日は、新しい エンジニアが お話を うかがいます。",
+              "kana": "きょうは、あたらしい エンジニアが おはなしを うかがいます。",
+              "en": "Today our new engineer will ask you the questions."
+            }
+          ],
+          "listen": {
+            "promptEn": "Greet Sakamoto, give your name, and say what you'd like to ask about today (the booking app).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "はじめまして、＿＿です。今日は 予約アプリに ついて、いくつか お聞きしたいです。",
+            "modelAnswers": [
+              "はじめまして、リンです。今日は 予約アプリに ついて、いくつか お聞きしたいです。よろしく お願いします。"
+            ],
+            "branches": [
+              {
+                "id": "purpose",
+                "whenEn": "Learner said what they want to ask about today (the app / the booking system), with or without their name.",
+                "next": "n2",
+                "exampleJa": "はじめまして、リンです。今日は 予約アプリに ついて、いくつか お聞きしたいです。"
+              },
+              {
+                "id": "greeting_only",
+                "whenEn": "Learner only greeted and/or gave their name, without saying the purpose.",
+                "next": "n2g",
+                "exampleJa": "はじめまして、リンです。よろしく お願いします。"
+              }
+            ],
+            "fallback": "n2g"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、よろしく。何でも 聞いて ください。",
+              "kana": "はい、よろしく。なんでも きいて ください。",
+              "en": "Nice to meet you. Ask me anything.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "q1"
+        },
+        {
+          "id": "n2g",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "よろしく。それで、今日は 何を 話せば いいですか。",
+              "kana": "よろしく。それで、きょうは なにを はなせば いいですか。",
+              "en": "Nice to meet you. So, what should I talk about today?",
+              "gesture": "think"
+            }
+          ],
+          "next": "q1"
+        },
+        {
+          "id": "q1",
+          "say": [],
+          "focus": "table",
+          "listen": {
+            "promptEn": "Question ①: how many tables can be booked, and up to how many people per table?",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "予約できる テーブルは ＿＿ ありますか。1つの テーブルは 何人までですか。",
+            "modelAnswers": [
+              "予約できる テーブルは いくつ ありますか。1つの テーブルは 何人までですか。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner asked for a number: how many tables / seats, or how many people per table.",
+                "next": "a1",
+                "exampleJa": "予約できる テーブルは いくつ ありますか。1つの テーブルは 何人までですか。"
+              },
+              {
+                "id": "open_question",
+                "whenEn": "Learner asked an open question (e.g. what kind of app he wants, what he needs).",
+                "next": "a1o",
+                "exampleJa": "どんな アプリが いいですか。"
+              }
+            ],
+            "fallback": "a1o"
+          }
+        },
+        {
+          "id": "a1",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "テーブルは 4つです。1つの テーブルに 4人まで 座れます。",
+              "kana": "テーブルは よっつです。ひとつの テーブルに よにんまで すわれます。",
+              "en": "There are four tables. Up to four people can sit at each."
+            }
+          ],
+          "next": "q2"
+        },
+        {
+          "id": "a1o",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "お客さんが スマホで 席を 予約できれば、うれしいです。席は 4テーブル、4人ずつです。",
+              "kana": "おきゃくさんが スマホで せきを よやくできれば、うれしいです。せきは よんテーブル、よにんずつです。",
+              "en": "I'd be happy if customers could book a seat on their phones. We have four tables, four people each."
+            }
+          ],
+          "next": "q2"
+        },
+        {
+          "id": "q2",
+          "say": [],
+          "listen": {
+            "promptEn": "Repeat back what you heard (4 tables, up to 4 people). Then question ②: booking hours — from what time to what time?",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "テーブルは ＿＿、＿＿人までですね。予約は 何時から 何時まで できますか。",
+            "modelAnswers": [
+              "テーブルは 4つ、4人までですね。予約は 何時から 何時まで できますか。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_and_ask",
+                "whenEn": "Learner repeated back the tables/people AND asked about booking hours.",
+                "next": "a2",
+                "exampleJa": "テーブルは 4つ、4人までですね。予約は 何時から 何時まで できますか。"
+              },
+              {
+                "id": "ask_only",
+                "whenEn": "Learner asked about booking hours without repeating back the tables/people.",
+                "next": "a2n",
+                "exampleJa": "予約は 何時から 何時まで できますか。"
+              },
+              {
+                "id": "asked_opening_hours",
+                "whenEn": "Learner asked about the café's opening hours rather than booking hours.",
+                "next": "a2o",
+                "exampleJa": "お店は 何時から 何時までですか。"
+              }
+            ],
+            "fallback": "a2n"
+          }
+        },
+        {
+          "id": "a2",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうです。予約は 10時から 17時までに して ください。",
+              "kana": "そうです。よやくは じゅうじから じゅうしちじまでに して ください。",
+              "en": "That's right. Please make bookings possible from 10 to 17.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "q3"
+        },
+        {
+          "id": "a2n",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "席の 話は 大丈夫ですか。予約の 時間は 10時から 17時です。",
+              "kana": "せきの はなしは だいじょうぶですか。よやくの じかんは じゅうじから じゅうしちじです。",
+              "en": "Did you get the part about the seats? Booking hours are 10 to 17."
+            }
+          ],
+          "next": "q3"
+        },
+        {
+          "id": "a2o",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "店は 7時から 19時です。でも、予約は 10時から 17時だけに したいです。",
+              "kana": "みせは しちじから じゅうくじです。でも、よやくは じゅうじから じゅうしちじだけに したいです。",
+              "en": "The café is open 7 to 19. But I want bookings only from 10 to 17."
+            }
+          ],
+          "next": "q3"
+        },
+        {
+          "id": "q3",
+          "say": [],
+          "listen": {
+            "promptEn": "Repeat back the booking hours (10–17). Then ask ③ how many days ahead customers can book — or ④ about cancelling.",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "予約は 10時から 17時までですね。何日 先まで 予約できる ように しますか。",
+            "modelAnswers": [
+              "予約は 10時から 17時までですね。何日 先まで 予約できる ように しますか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_ahead",
+                "whenEn": "Learner asked how far ahead (how many days/weeks in advance) customers can book.",
+                "next": "a3",
+                "exampleJa": "予約は 10時から 17時までですね。何日 先まで 予約できる ように しますか。"
+              },
+              {
+                "id": "asked_cancel",
+                "whenEn": "Learner asked about cancelling first.",
+                "next": "a3c",
+                "exampleJa": "10時から 17時までですね。キャンセルは いつまで できる ように しますか。"
+              }
+            ],
+            "fallback": "a3"
+          }
+        },
+        {
+          "id": "a3",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "2週間 先までで お願いします。それと、キャンセルは どう なりますか。",
+              "kana": "にしゅうかん さきまでで おねがいします。それと、キャンセルは どう なりますか。",
+              "en": "Up to two weeks ahead, please. And what happens with cancellations?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "He asks you about cancelling. Ask him until when customers should be able to cancel — or propose a rule and check it with him.",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "キャンセルは、いつまで できる ように しますか。／前の日まで、で よろしいでしょうか。",
+            "modelAnswers": [
+              "アプリで キャンセル できる ように します。キャンセルは、いつまで できる ように しますか。",
+              "キャンセルは 前の日まで、で よろしいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_until_when",
+                "whenEn": "Learner asked until when / how customers should be able to cancel.",
+                "next": "a4",
+                "exampleJa": "キャンセルは、いつまで できる ように しますか。"
+              },
+              {
+                "id": "proposed",
+                "whenEn": "Learner proposed a concrete cancellation rule (e.g. until the day before) and/or asked if it is OK.",
+                "next": "a4p",
+                "exampleJa": "キャンセルは 前の日まで、で よろしいでしょうか。"
+              }
+            ],
+            "fallback": "a4"
+          }
+        },
+        {
+          "id": "a4",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "前の日まで、アプリで キャンセル できると 助かります。",
+              "kana": "まえの ひまで、アプリで キャンセル できると たすかります。",
+              "en": "It would help if they could cancel in the app until the day before."
+            }
+          ],
+          "next": "q5"
+        },
+        {
+          "id": "a4p",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですね。前の日まで、アプリで できる ように して ください。",
+              "kana": "そうですね。まえの ひまで、アプリで できる ように して ください。",
+              "en": "Let me see… yes. Please make it possible in the app until the day before.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "q5"
+        },
+        {
+          "id": "a3c",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "前の日まで、アプリで できると いいですね。予約は 2週間 先までで。",
+              "kana": "まえの ひまで、アプリで できると いいですね。よやくは にしゅうかん さきまでで。",
+              "en": "Until the day before, in the app, would be good. And bookings up to two weeks ahead."
+            }
+          ],
+          "next": "q5"
+        },
+        {
+          "id": "q5",
+          "say": [],
+          "listen": {
+            "promptEn": "Repeat back (2 weeks ahead; cancel in the app until the day before). Then question ⑤: from when does he want to use the app?",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "2週間 先まで、キャンセルは 前の日までですね。アプリは いつから 使いたいですか。",
+            "modelAnswers": [
+              "予約は 2週間 先まで、キャンセルは 前の日までですね。アプリは いつから 使いたいですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_date",
+                "whenEn": "Learner asked from when / by when he wants the app (a date question).",
+                "next": "a5",
+                "exampleJa": "2週間 先まで、キャンセルは 前の日までですね。アプリは いつから 使いたいですか。"
+              },
+              {
+                "id": "asked_urgent",
+                "whenEn": "Learner asked vaguely, e.g. whether it is urgent or whether he is in a hurry.",
+                "next": "a5v",
+                "exampleJa": "お急ぎですか。"
+              }
+            ],
+            "fallback": "a5"
+          }
+        },
+        {
+          "id": "a5",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "12月1日から 使いたいです。年末は 予約が 多いので。",
+              "kana": "じゅうにがつ ついたちから つかいたいです。ねんまつは よやくが おおいので。",
+              "en": "I'd like to use it from December 1. We get many bookings at year-end.",
+              "tts": "12月ついたちから 使いたいです。年末は 予約が 多いので。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "a5v",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "急ぎでは ないですが、12月1日から 使えると うれしいです。",
+              "kana": "いそぎでは ないですが、じゅうにがつ ついたちから つかえると うれしいです。",
+              "en": "It's not urgent, but I'd be glad if I could use it from December 1.",
+              "tts": "急ぎでは ないですが、12月ついたちから 使えると うれしいです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "12月1日ですね。今日の 内容は、議事録に まとめて お送りします。",
+              "kana": "じゅうにがつ ついたちですね。きょうの ないようは、ぎじろくに まとめて おおくりします。",
+              "en": "December 1, then. We'll put today's points in the minutes and send them to you.",
+              "gesture": "bow_light",
+              "tts": "12月ついたちですね。今日の 内容は、議事録に まとめて お送りします。"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "助かります。さあ、コーヒーを どうぞ。",
+              "kana": "たすかります。さあ、コーヒーを どうぞ。",
+              "en": "That helps. Now, please have some coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b02b",
+      "titleJa": "要件を 聞く（いい感じに）",
+      "titleEn": "The hearing: 'just make it nice'",
+      "scene": "cafe",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "The same hearing, but Sakamoto is busy behind the counter and answers vaguely (「いい感じに」「おまかせします」). Vague words can't be built. Ask for numbers and from–to, and repeat back. You can see 4 tables in the café. When he leaves it to you, propose and check: bookings up to 2 weeks ahead (2週間 先まで), cancel in the app until the day before (前の日まで), release on December 1 (12月1日).",
+      "roleEn": "You are the new engineer from Midori Design. He is not being difficult — he trusts you. Your job is to turn 'nice' into numbers, kindly.",
+      "missionsEn": [
+        {
+          "text": "Ask a concrete question about tables and people",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Repeat back, then pin down the booking hours",
+          "grammar": [
+            "g3",
+            "g2"
+          ]
+        },
+        {
+          "text": "Propose the booking and cancel rules and check them",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Fix the release date",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto",
+        "murakami"
+      ],
+      "positions": {
+        "sakamoto": "counter",
+        "murakami": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いらっしゃい。アプリの 話ですね。",
+              "kana": "いらっしゃい。アプリの はなしですね。",
+              "en": "Welcome. It's about the app, right?",
+              "gesture": "wave"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "むずかしい ことは わからないので、いい感じに お願いします。",
+              "kana": "むずかしい ことは わからないので、いいかんじに おねがいします。",
+              "en": "I don't understand the difficult parts, so just make it nice, please.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "murakami",
+              "ja": "ありがとう ございます。いくつか 具体的に うかがいますね。",
+              "kana": "ありがとう ございます。いくつか ぐたいてきに うかがいますね。",
+              "en": "Thank you. We'll ask you a few concrete things."
+            }
+          ],
+          "focus": "table",
+          "listen": {
+            "promptEn": "「いい感じに」 is not a requirement. Ask a concrete question: how many tables can be booked, and up to how many people per table?",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "予約できる テーブルは ＿＿ ありますか。1つの テーブルは 何人までですか。",
+            "modelAnswers": [
+              "予約できる テーブルは いくつ ありますか。1つの テーブルは 何人までですか。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner asked for a number: how many tables / seats, or how many people per table (a yes/no check like 'four tables?' also counts).",
+                "next": "b1",
+                "exampleJa": "予約できる テーブルは いくつ ありますか。1つの テーブルは 何人までですか。"
+              },
+              {
+                "id": "open",
+                "whenEn": "Learner asked an open or vague question (e.g. what kind of app he wants).",
+                "next": "b1o",
+                "exampleJa": "どんな アプリが いいですか。"
+              }
+            ],
+            "fallback": "b1o"
+          }
+        },
+        {
+          "id": "b1o",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "うーん、お客さんが 便利なら、何でも いいですよ。",
+              "kana": "うーん、おきゃくさんが べんりなら、なんでも いいですよ。",
+              "en": "Hmm, anything is fine as long as it's convenient for customers.",
+              "gesture": "think"
+            },
+            {
+              "who": "murakami",
+              "ja": "たとえば 席の 数です。坂本さん、テーブルは いくつ ありますか。",
+              "kana": "たとえば せきの かずです。さかもとさん、テーブルは いくつ ありますか。",
+              "en": "For example, the number of seats. Sakamoto-san, how many tables are there?"
+            }
+          ],
+          "next": "b1"
+        },
+        {
+          "id": "b1",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ああ、テーブルは 4つです。どれも 4人まで 座れますよ。",
+              "kana": "ああ、テーブルは よっつです。どれも よにんまで すわれますよ。",
+              "en": "Ah, there are four tables. Each seats up to four.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "q2"
+        },
+        {
+          "id": "q2",
+          "say": [],
+          "listen": {
+            "promptEn": "Repeat back (4 tables, up to 4 people). Then ask the booking hours.",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "テーブルは ＿＿、＿＿人までですね。予約は 何時から 何時まで できますか。",
+            "modelAnswers": [
+              "テーブルは 4つ、4人までですね。予約は 何時から 何時まで できますか。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_and_ask",
+                "whenEn": "Learner repeated back the tables/people AND asked about booking hours.",
+                "next": "b2",
+                "exampleJa": "テーブルは 4つ、4人までですね。予約は 何時から 何時まで できますか。"
+              },
+              {
+                "id": "ask_only",
+                "whenEn": "Learner asked about hours without repeating back.",
+                "next": "b2n",
+                "exampleJa": "予約は 何時から できますか。"
+              }
+            ],
+            "fallback": "b2n"
+          }
+        },
+        {
+          "id": "b2",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい。時間は…まあ、忙しくない ときなら いつでも。",
+              "kana": "はい。じかんは…まあ、いそがしくない ときなら いつでも。",
+              "en": "Yes. As for hours… well, any time we're not busy.",
+              "gesture": "think"
+            }
+          ],
+          "next": "q3"
+        },
+        {
+          "id": "b2n",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "席は 4つで 4人ずつ、いいですね。時間は…忙しくない ときなら。",
+              "kana": "せきは よっつで よにんずつ、いいですね。じかんは…いそがしくない ときなら。",
+              "en": "Four tables of four — you've got that, right? Hours… whenever we're not busy.",
+              "gesture": "think"
+            }
+          ],
+          "next": "q3"
+        },
+        {
+          "id": "q3",
+          "say": [],
+          "listen": {
+            "promptEn": "「忙しくない とき」 can't be programmed. Pin it down: ask from what time to what time — or propose hours and check.",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "予約は、何時から 何時までに しますか。",
+            "modelAnswers": [
+              "忙しくない 時間は、何時から 何時までですか。",
+              "予約は、何時から 何時までに しますか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_from_to",
+                "whenEn": "Learner asked for concrete times (from what time to what time / which hours are not busy).",
+                "next": "b3",
+                "exampleJa": "忙しくない 時間は、何時から 何時までですか。"
+              },
+              {
+                "id": "proposed_range",
+                "whenEn": "Learner proposed concrete hours and asked if they are OK (e.g. the opening hours 7–19).",
+                "next": "b3p",
+                "exampleJa": "予約は 7時から 19時まで、で よろしいでしょうか。"
+              }
+            ],
+            "fallback": "b3"
+          }
+        },
+        {
+          "id": "b3",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうだなあ…10時から 17時までなら 大丈夫です。",
+              "kana": "そうだなあ…じゅうじから じゅうしちじまでなら だいじょうぶです。",
+              "en": "Let me think… from 10 to 17 would be fine."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "b3p",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "朝と 夜は 忙しいんです。10時から 17時までに して ください。",
+              "kana": "あさと よるは いそがしいんです。じゅうじから じゅうしちじまでに して ください。",
+              "en": "Mornings and evenings are busy. Please make it 10 to 17.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "あとは おまかせします。いい感じに して ください。",
+              "kana": "あとは おまかせします。いいかんじに して ください。",
+              "en": "I'll leave the rest to you. Make it nice.",
+              "gesture": "laugh"
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat back the hours (10–17). Then don't accept 「おまかせ」 silently — propose the two rules and ask if they are OK: 2 weeks ahead; cancel until the day before.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "10時から 17時までですね。予約は ＿＿ 先まで、キャンセルは ＿＿まで、で よろしいでしょうか。",
+            "modelAnswers": [
+              "10時から 17時までですね。予約は 2週間 先まで、キャンセルは 前の日まで、で よろしいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "proposed_both",
+                "whenEn": "Learner proposed BOTH rules (2 weeks ahead AND cancel until the day before).",
+                "next": "b4",
+                "exampleJa": "予約は 2週間 先まで、キャンセルは 前の日まで、で よろしいでしょうか。"
+              },
+              {
+                "id": "proposed_one",
+                "whenEn": "Learner proposed only one of the two rules.",
+                "next": "b4o",
+                "exampleJa": "予約は 2週間 先まで、で よろしいでしょうか。"
+              },
+              {
+                "id": "asked_open",
+                "whenEn": "Learner proposed nothing: asked him to decide, or just accepted 'up to you'.",
+                "next": "b4m",
+                "exampleJa": "何日 先まで 予約できる ように しますか。"
+              }
+            ],
+            "fallback": "b4m"
+          }
+        },
+        {
+          "id": "b4",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "2週間 先まで、キャンセルは 前の日まで。うん、それで いいです。",
+              "kana": "にしゅうかん さきまで、キャンセルは まえの ひまで。うん、それで いいです。",
+              "en": "Two weeks ahead, cancel until the day before. Yes, that's fine.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "b4o",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いいですね。予約は 2週間 先まで、キャンセルは 前の日までで。",
+              "kana": "いいですね。よやくは にしゅうかん さきまで、キャンセルは まえの ひまでで。",
+              "en": "Sounds good. Bookings two weeks ahead, cancelling until the day before.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "b4m",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "ほかの お店では、2週間 先まで、キャンセルは 前の日までが 多いです。",
+              "kana": "ほかの おみせでは、にしゅうかん さきまで、キャンセルは まえの ひまでが おおいです。",
+              "en": "At other shops it's often two weeks ahead, with cancelling until the day before."
+            },
+            {
+              "who": "sakamoto",
+              "ja": "じゃあ、うちも それで お願いします。",
+              "kana": "じゃあ、うちも それで おねがいします。",
+              "en": "Then the same for us, please.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "それと、できれば 早く 使いたいですね。年末は 忙しいので。",
+              "kana": "それと、できれば はやく つかいたいですね。ねんまつは いそがしいので。",
+              "en": "Also, I'd like to use it soon if possible. Year-end is busy."
+            }
+          ],
+          "listen": {
+            "promptEn": "「早く」 is not a date. Fix the release date: propose December 1 and check — or ask for an exact date.",
+            "grammar": [
+              "g5",
+              "g4"
+            ],
+            "hintJa": "リリースは ＿＿月＿＿日で よろしいでしょうか。",
+            "modelAnswers": [
+              "リリースは 12月1日で よろしいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "proposed_date",
+                "whenEn": "Learner proposed a concrete date (December 1) and/or asked if it is OK.",
+                "next": "b6a",
+                "exampleJa": "リリースは 12月1日で よろしいでしょうか。"
+              },
+              {
+                "id": "asked_date",
+                "whenEn": "Learner asked him for a date (when / by what day) without proposing one.",
+                "next": "b6b",
+                "exampleJa": "いつから 使いたいですか。"
+              }
+            ],
+            "fallback": "b6b"
+          }
+        },
+        {
+          "id": "b6a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "12月1日。いいですね、お願いします。",
+              "kana": "じゅうにがつ ついたち。いいですね、おねがいします。",
+              "en": "December 1. Good, please do that.",
+              "gesture": "nod",
+              "tts": "12月ついたち。いいですね、お願いします。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "b6b",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうだなあ…12月1日から 使えますか。",
+              "kana": "そうだなあ…じゅうにがつ ついたちから つかえますか。",
+              "en": "Let me think… could I use it from December 1?",
+              "gesture": "think",
+              "tts": "そうだなあ…12月ついたちから 使えますか。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、12月1日の リリースで 進めます。議事録を お送りします。",
+              "kana": "では、じゅうにがつ ついたちの リリースで すすめます。ぎじろくを おおくりします。",
+              "en": "Then we'll go ahead with a December 1 release. We'll send you the minutes.",
+              "gesture": "bow_light",
+              "tts": "では、12月ついたちの リリースで 進めます。議事録を お送りします。"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "はっきり 聞いて くれて、助かりました。",
+              "kana": "はっきり きいて くれて、たすかりました。",
+              "en": "Thank you for asking so clearly — that helped.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

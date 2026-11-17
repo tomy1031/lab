@@ -1,0 +1,982 @@
+{
+  "course": "it",
+  "storyJa": "喫茶さかもとの 予約アプリ",
+  "storyEn": "A booking app for Café Sakamoto",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "unit": 6,
+  "episodeJa": "第6話",
+  "episodeEn": "Episode 6",
+  "titleJa": "デモと 仕様変更",
+  "titleEn": "The demo and a change request",
+  "summaryEn": "Show the app in plain words, confirm what the client asks, and answer a change request with an estimate — or take it back to check.",
+  "previouslyEn": "You joined the development team of みどりデザイン two weeks ago. The team is building さかもと予約, a smartphone booking app for 喫茶さかもと: 4 tables of up to 4 people, bookings 10:00–17:00, up to 2 weeks ahead, cancel in the app until the day before, release on 12月1日. You fixed a date-format error with 藤田さん's advice, then reported early that the calendar part needed more time, and the team agreed a new plan with the client. Today you show the app to 坂本さん at his café.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "今日は、〜を お見せします",
+      "meaningEn": "Open a demo: say first what you will show",
+      "exampleJa": "今日は、スマホから 予約する 流れを お見せします。",
+      "exampleEn": "Today I'll show you how to book from a smartphone."
+    },
+    {
+      "id": "g2",
+      "pattern": "まず〜。次に〜。最後に〜",
+      "meaningEn": "Explain steps in order, in plain words",
+      "exampleJa": "まず 日付を 選びます。次に 人数と 時間を 選びます。最後に 「予約する」を 押します。",
+      "exampleEn": "First choose the date. Next choose people and time. Finally press 'Book'."
+    },
+    {
+      "id": "g3",
+      "pattern": "〜と いう ご要望ですね。理由を うかがっても いいですか",
+      "meaningEn": "Repeat the request back (復唱) and ask the reason behind it",
+      "exampleJa": "予約の ときに メモを 書きたい、と いう ご要望ですね。",
+      "exampleEn": "So your request is to write a note when booking."
+    },
+    {
+      "id": "g4",
+      "pattern": "〜ほどで できます。リリースの 日は 変わりません",
+      "meaningEn": "Accept a small change with an estimate and its impact",
+      "exampleJa": "メモの 欄は 半日ほどで できます。リリースの 日は 変わりません。",
+      "exampleEn": "The memo field takes about half a day. The release date does not change."
+    },
+    {
+      "id": "g5",
+      "pattern": "この場では お答え できません。持ち帰って、期間と 費用を 確認します",
+      "meaningEn": "Don't promise on the spot: take it back and check period and cost",
+      "exampleJa": "申し訳 ありません。この場では お答え できません。持ち帰って、期間と 費用を 確認します。",
+      "exampleEn": "I'm sorry, I can't answer here. I'll take it back and check the period and cost."
+    },
+    {
+      "id": "g6",
+      "pattern": "〜までに ご連絡します",
+      "meaningEn": "Promise a date for your answer",
+      "exampleJa": "金曜日までに ご連絡します。",
+      "exampleEn": "I will contact you by Friday."
+    },
+    {
+      "id": "g7",
+      "pattern": "今日 決まった ことを 確認します。〜",
+      "meaningEn": "Close by summing up what was decided",
+      "exampleJa": "今日 決まった ことを 確認します。メモの 欄を 追加します。",
+      "exampleEn": "Let me confirm today's decisions. We will add a memo field."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "デモ",
+      "kana": "デモ",
+      "en": "demo"
+    },
+    {
+      "ja": "お見せします",
+      "kana": "おみせします",
+      "en": "I will show you (polite)"
+    },
+    {
+      "ja": "流れ",
+      "kana": "ながれ",
+      "en": "flow, steps"
+    },
+    {
+      "ja": "選びます",
+      "kana": "えらびます",
+      "en": "to choose"
+    },
+    {
+      "ja": "押します",
+      "kana": "おします",
+      "en": "to press"
+    },
+    {
+      "ja": "人数",
+      "kana": "にんずう",
+      "en": "number of people"
+    },
+    {
+      "ja": "ご要望",
+      "kana": "ごようぼう",
+      "en": "(your) request"
+    },
+    {
+      "ja": "仕様変更",
+      "kana": "しようへんこう",
+      "en": "change of specification"
+    },
+    {
+      "ja": "追加",
+      "kana": "ついか",
+      "en": "addition"
+    },
+    {
+      "ja": "欄",
+      "kana": "らん",
+      "en": "field, box (on a form)"
+    },
+    {
+      "ja": "半日",
+      "kana": "はんにち",
+      "en": "half a day"
+    },
+    {
+      "ja": "支払い",
+      "kana": "しはらい",
+      "en": "payment"
+    },
+    {
+      "ja": "決済",
+      "kana": "けっさい",
+      "en": "payment (settlement)"
+    },
+    {
+      "ja": "期間",
+      "kana": "きかん",
+      "en": "period, time needed"
+    },
+    {
+      "ja": "費用",
+      "kana": "ひよう",
+      "en": "cost"
+    },
+    {
+      "ja": "持ち帰ります",
+      "kana": "もちかえります",
+      "en": "to take (a matter) back"
+    },
+    {
+      "ja": "確認",
+      "kana": "かくにん",
+      "en": "check, confirmation"
+    },
+    {
+      "ja": "ご連絡します",
+      "kana": "ごれんらくします",
+      "en": "I will contact you"
+    },
+    {
+      "ja": "この場",
+      "kana": "このば",
+      "en": "here and now, on the spot"
+    },
+    {
+      "ja": "内容",
+      "kana": "ないよう",
+      "en": "content"
+    },
+    {
+      "ja": "約束",
+      "kana": "やくそく",
+      "en": "promise"
+    }
+  ],
+  "tipsEn": [
+    "At a demo, say first what you will show, then follow the customer's steps — not the order of your code. Avoid technical words.",
+    "Repeat a request back before answering: 「〜と いう ご要望ですね」. Asking the reason often shows what the client really needs.",
+    "Small change: say yes with a number (半日ほどで できます). Big change: never promise on the spot.",
+    "「持ち帰って 確認します」 needs two more things: what you will check (期間と 費用) and when you will answer (金曜日までに)."
+  ],
+  "research": {
+    "sources": [
+      "https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/roudoukijun/shigoto/it/point7.html",
+      "https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/roudoukijun/shigoto/it/point9.html",
+      "https://nativecamp.net/heync/question/153521"
+    ],
+    "notesEn": "The Ministry of Health, Labour and Welfare's guidance for IT projects explains that clients often ask for specification changes mid-project; refusing everything fails the client, accepting everything inflates the work. It recommends agreeing rules for changes, confirming the content of each change on both sides, and re-estimating changes outside the agreed scope. Its companion page describes the steps: make the extra work and cost visible, share them, present a new estimate and let the client decide whether to go ahead. A Japanese-usage Q&A confirms that 持ち帰って 検討する is the standard phrase when a point cannot be answered in a meeting, normally followed by when the reply will come. The variants apply this: a = a small in-scope change accepted with an estimate; b = a large change (online payment) taken back to check period and cost, with a reply date."
+  },
+  "variants": [
+    {
+      "id": "b06a",
+      "titleJa": "デモと 小さな お願い",
+      "titleEn": "The demo and a small request",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Demo day at 喫茶さかもと. You show さかもと予約 on a smartphone to 坂本さん; 村上さん sits with you. How a customer books: choose a date → choose the number of people (up to 4) → choose a time (10:00–17:00) → press 予約する. During the demo 坂本さん will ask for something small. You know: a free-text メモ field takes half a day (半日) and does not change the release date.",
+      "roleEn": "You are the engineer giving the demo. Use plain words, confirm the request by repeating it, and answer with a time estimate.",
+      "missionsEn": [
+        {
+          "text": "Open the demo: say what you will show today",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Explain the booking steps in order, in plain words",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Repeat his request back to confirm it",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Accept with an estimate (半日), then sum up what was decided",
+          "grammar": [
+            "g4",
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto",
+        "murakami"
+      ],
+      "positions": {
+        "sakamoto": "npc1",
+        "murakami": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "坂本さん、今日は アプリの デモです。では、お願いします。",
+              "kana": "さかもとさん、きょうは アプリの デモです。では、おねがいします。",
+              "en": "Sakamoto-san, today is the app demo. Please go ahead.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Open the demo: say what you will show today (how a customer books from a smartphone).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "今日は、＿＿を お見せします。",
+            "modelAnswers": [
+              "今日は、「さかもと予約」で お客さまが スマホから 予約する 流れを お見せします。"
+            ],
+            "branches": [
+              {
+                "id": "agenda",
+                "whenEn": "Learner said what they will show today (the booking app / the booking flow).",
+                "next": "n2a",
+                "exampleJa": "今日は、スマホから 予約する 流れを お見せします。"
+              },
+              {
+                "id": "jump_in",
+                "whenEn": "Learner started explaining or operating a screen without saying what today's demo covers.",
+                "next": "n2b",
+                "exampleJa": "この 画面で 日付を 選びます。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "おお、楽しみですねえ。お願いします。",
+              "kana": "おお、たのしみですねえ。おねがいします。",
+              "en": "Oh, I'm looking forward to it. Please.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ちょっと 待って ください。今日は 何を 見せて くれるんですか。",
+              "kana": "ちょっと まって ください。きょうは なにを みせて くれるんですか。",
+              "en": "Just a moment. What are you showing me today?",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "お客さんは、どう やって 予約するんですか。",
+              "kana": "おきゃくさんは、どう やって よやくするんですか。",
+              "en": "How does a customer make a booking?"
+            }
+          ],
+          "focus": "table",
+          "listen": {
+            "promptEn": "Explain the steps in order: date → number of people → time → press 予約する.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "まず ＿＿を 選びます。次に ＿＿と ＿＿を 選びます。最後に 「予約する」を 押します。",
+            "modelAnswers": [
+              "まず 日付を 選びます。次に 人数と 時間を 選びます。最後に 「予約する」を 押します。"
+            ],
+            "branches": [
+              {
+                "id": "in_order",
+                "whenEn": "Learner explained the steps in order in plain words (date, people, time, press the button).",
+                "next": "n4a",
+                "exampleJa": "まず 日付を 選びます。次に 人数と 時間を 選びます。最後に 「予約する」を 押します。"
+              },
+              {
+                "id": "unclear",
+                "whenEn": "Learner's explanation was partial, out of order, or used technical words.",
+                "next": "n4b",
+                "exampleJa": "カレンダーの データを 保存します。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "日にち、人数、時間の 順番ですね。わかりやすい。",
+              "kana": "ひにち、にんずう、じかんの じゅんばんですね。わかりやすい。",
+              "en": "Date, people, time — in that order. Easy to follow.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "むずかしい 言葉は 苦手でね。日にちと 人数と 時間を 選ぶんですね。",
+              "kana": "むずかしい ことばは にがてでね。ひにちと にんずうと じかんを えらぶんですね。",
+              "en": "I'm not good with difficult words. So you choose date, people and time?",
+              "gesture": "think"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いいですねえ。そうだ、一つ お願いが あるんですが。",
+              "kana": "いいですねえ。そうだ、ひとつ おねがいが あるんですが。",
+              "en": "Very nice. Oh — I have one request."
+            },
+            {
+              "who": "sakamoto",
+              "ja": "アレルギーとか 誕生日とか、ひとこと 書く ところが ほしいんです。",
+              "kana": "アレルギーとか たんじょうびとか、ひとこと かく ところが ほしいんです。",
+              "en": "I'd like a place to write a word about allergies, birthdays and so on."
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat his request back to confirm: a メモ field where customers can write requests when booking.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "予約の ときに、お客さまが ＿＿を 書ける メモの 欄、と いう ご要望ですね。",
+            "modelAnswers": [
+              "予約の ときに、お客さまが アレルギーなどを 書ける メモの 欄、と いう ご要望ですね。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_back",
+                "whenEn": "Learner repeated the request back or asked a clarifying question (a memo field for customers' requests).",
+                "next": "n6a",
+                "exampleJa": "予約の ときに、アレルギーなどを 書ける メモの 欄、と いう ご要望ですね。"
+              },
+              {
+                "id": "accept_at_once",
+                "whenEn": "Learner immediately said yes / can do without confirming what exactly is wanted.",
+                "next": "n6b",
+                "exampleJa": "はい、できます。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうそう、それです。ひとこと 書ければ 十分ですよ。",
+              "kana": "そうそう、それです。ひとこと かければ じゅうぶんですよ。",
+              "en": "Yes, exactly that. A short note is enough.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "先に 内容を 確認しましょう。ひとこと 書ける メモの 欄、ですね。",
+              "kana": "さきに ないようを かくにんしましょう。ひとこと かける メモの らん、ですね。",
+              "en": "Let's confirm the content first. A memo field for a short note, right?"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "これ、すぐ できますか。",
+              "kana": "これ、すぐ できますか。",
+              "en": "Can this be done soon?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept with an estimate: about half a day, and the release date does not change.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "はい、＿＿ほどで できます。リリースの 日は ＿＿。",
+            "modelAnswers": [
+              "はい、メモの 欄は 半日ほどで できます。リリースの 日は 変わりません。"
+            ],
+            "branches": [
+              {
+                "id": "estimate",
+                "whenEn": "Learner accepted AND gave the estimate (half a day) and/or said the release date is unaffected.",
+                "next": "n8a",
+                "exampleJa": "はい、半日ほどで できます。リリースの 日は 変わりません。"
+              },
+              {
+                "id": "yes_only",
+                "whenEn": "Learner accepted without any time estimate.",
+                "next": "n8b",
+                "exampleJa": "はい、できます。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "半日で！ それは ありがたいですねえ。",
+              "kana": "はんにちで！ それは ありがたいですねえ。",
+              "en": "Half a day! I'm grateful for that.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "時間も 伝えましょう。どのくらいで できそうですか。",
+              "kana": "じかんも つたえましょう。どのくらいで できそうですか。",
+              "en": "Let's tell him the time too. How long will it take?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give the estimate: about half a day; the release date stays the same.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿ほどで できます。",
+            "modelAnswers": [
+              "半日ほどで できます。リリースの 日は 変わりません。"
+            ],
+            "branches": [
+              {
+                "id": "half_day",
+                "whenEn": "Learner said about half a day.",
+                "next": "n8a",
+                "exampleJa": "半日ほどで できます。"
+              },
+              {
+                "id": "unsure",
+                "whenEn": "Learner gave no estimate or a different one.",
+                "next": "n8c",
+                "exampleJa": "すみません、まだ わかりません。"
+              }
+            ],
+            "fallback": "n8c"
+          }
+        },
+        {
+          "id": "n8c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "半日ほどの 見込みです。リリースの 日は 変わりません。",
+              "kana": "はんにちほどの みこみです。リリースの ひは かわりません。",
+              "en": "We expect about half a day. The release date does not change."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では 最後に、今日 決まった ことを 確認して ください。",
+              "kana": "では さいごに、きょう きまった ことを かくにんして ください。",
+              "en": "Then, to finish, please confirm what we decided today."
+            }
+          ],
+          "listen": {
+            "promptEn": "Sum up: you will add a メモ field in about half a day, and you'll let him know when it's done.",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "今日 決まった ことを 確認します。＿＿を 追加します。できたら ＿＿。",
+            "modelAnswers": [
+              "今日 決まった ことを 確認します。メモの 欄を 追加します。できたら ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "summary",
+                "whenEn": "Learner summarised the decision (add the memo field) with the timing or a promise to contact him.",
+                "next": "n10a",
+                "exampleJa": "確認します。メモの 欄を 追加します。できたら ご連絡します。"
+              },
+              {
+                "id": "thanks_only",
+                "whenEn": "Learner only thanked him or closed without summarising.",
+                "next": "n10b",
+                "exampleJa": "今日は ありがとう ございました。"
+              }
+            ],
+            "fallback": "n10b"
+          }
+        },
+        {
+          "id": "n10a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、それで お願いします。さあ、コーヒーを いれましょう。",
+              "kana": "はい、それで おねがいします。さあ、コーヒーを いれましょう。",
+              "en": "Yes, please do that. Now, let me make some coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n10b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "決まった ことは、メモの 欄の 追加ですね。できたら ご連絡します。",
+              "kana": "きまった ことは、メモの らんの ついかですね。できたら ごれんらくします。",
+              "en": "What we decided is adding the memo field. We'll contact you when it's done.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b06b",
+      "titleJa": "大きな 仕様変更",
+      "titleEn": "A big change request",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "The demo of さかもと予約 went well. Then 坂本さん asks for something big: online payment (オンライン決済) at the time of booking. This is not a small change: it changes the period (期間) and the cost (費用), and you cannot estimate them here. Do not promise on the spot. Take it back: check the period and cost with the team and contact him by Friday (金曜日). The release itself goes ahead with the current content. 村上さん is next to you.",
+      "roleEn": "You are the engineer. Listen to the reason, don't say yes or no on the spot, and promise a date for your answer.",
+      "missionsEn": [
+        {
+          "text": "Repeat his request back and ask the reason",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Don't promise: take it back to check the period and the cost",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Promise an answer by Friday",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Sum up what was decided today",
+          "grammar": [
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto",
+        "murakami"
+      ],
+      "positions": {
+        "sakamoto": "npc1",
+        "murakami": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いやあ、いい アプリですねえ。ありがとう ございます。",
+              "kana": "いやあ、いい アプリですねえ。ありがとう ございます。",
+              "en": "My, what a nice app. Thank you.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "それでね、予約の ときに 支払いも できるように なりませんか。",
+              "kana": "それでね、よやくの ときに しはらいも できるように なりませんか。",
+              "en": "By the way, could customers also pay when they book?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Don't answer yes or no yet. Repeat the request back (online payment at booking) and ask why he wants it.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "予約の ときに ＿＿も したい、と いう ご要望ですね。理由を うかがっても いいですか。",
+            "modelAnswers": [
+              "予約の ときに オンラインで 支払いも したい、と いう ご要望ですね。理由を うかがっても よろしいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "confirm_or_why",
+                "whenEn": "Learner repeated the request back and/or asked the reason or background.",
+                "next": "n2a",
+                "exampleJa": "オンラインで 支払いも したい、と いう ご要望ですね。理由を うかがっても いいですか。"
+              },
+              {
+                "id": "promise",
+                "whenEn": "Learner immediately said it can be done.",
+                "next": "n2b",
+                "exampleJa": "はい、できます。"
+              },
+              {
+                "id": "refuse",
+                "whenEn": "Learner immediately said it is impossible or difficult.",
+                "next": "n2c",
+                "exampleJa": "それは むずかしいです。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "実は、予約しても 来ない お客さんが いて、困って いるんです。",
+              "kana": "じつは、よやくしても こない おきゃくさんが いて、こまって いるんです。",
+              "en": "Actually, some customers book and don't come, and it's a problem.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "少し お待ち ください。坂本さん、理由を うかがっても いいですか。",
+              "kana": "すこし おまち ください。さかもとさん、りゆうを うかがっても いいですか。",
+              "en": "One moment, please. Sakamoto-san, may we ask the reason?"
+            }
+          ],
+          "next": "n2a"
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか……。予約しても 来ない お客さんが いて、困って いてね。",
+              "kana": "そうですか……。よやくしても こない おきゃくさんが いて、こまって いてね。",
+              "en": "I see… Some customers book and don't come, and it troubles me.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "12月の リリースに、入れられますか。",
+              "kana": "じゅうにがつの リリースに、いれられますか。",
+              "en": "Can you put it into the December release?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Don't promise. Say you can't answer here, that the period and cost change, and that you'll take it back to check.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "申し訳 ありません。この場では お答え できません。持ち帰って、＿＿と ＿＿を 確認します。",
+            "modelAnswers": [
+              "申し訳 ありません。この場では お答え できません。決済は 大きな 変更なので、持ち帰って、期間と 費用を 確認します。"
+            ],
+            "branches": [
+              {
+                "id": "take_back_impact",
+                "whenEn": "Learner said they cannot answer now AND that the period and/or cost must be checked (takes it back).",
+                "next": "n4a",
+                "exampleJa": "この場では お答え できません。持ち帰って、期間と 費用を 確認します。"
+              },
+              {
+                "id": "take_back_only",
+                "whenEn": "Learner said they will check or think about it, without saying what is affected.",
+                "next": "n4b",
+                "exampleJa": "持ち帰って 確認します。"
+              },
+              {
+                "id": "promises",
+                "whenEn": "Learner promised it for the release or said yes on the spot.",
+                "next": "n4d",
+                "exampleJa": "はい、リリースに 入れます。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "なるほど、時間と お金が かかるんですね。わかりました。",
+              "kana": "なるほど、じかんと おかねが かかるんですね。わかりました。",
+              "en": "I see, it takes time and money. I understand.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "確認と いうと、何を 確認するんですか。",
+              "kana": "かくにんと いうと、なにを かくにんするんですか。",
+              "en": "Check — what exactly will you check?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Explain what you'll check: how long it takes (期間) and how much it costs (費用).",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿と ＿＿を 確認します。大きな 変更に なる ためです。",
+            "modelAnswers": [
+              "期間と 費用を 確認します。決済は 大きな 変更に なる ためです。"
+            ],
+            "branches": [
+              {
+                "id": "explains",
+                "whenEn": "Learner said they will check the period and/or the cost.",
+                "next": "n4a",
+                "exampleJa": "期間と 費用を 確認します。"
+              },
+              {
+                "id": "still_vague",
+                "whenEn": "Learner could not say what will be checked.",
+                "next": "n4c",
+                "exampleJa": "いろいろ 確認します。"
+              }
+            ],
+            "fallback": "n4c"
+          }
+        },
+        {
+          "id": "n4c",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "決済は 大きな 変更で、期間と 費用が 変わります。そこを 確認します。",
+              "kana": "けっさいは おおきな へんこうで、きかんと ひようが かわります。そこを かくにんします。",
+              "en": "Payment is a big change; the period and cost change. We'll check those."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4d",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "すみません、ここでは お約束 できません。期間と 費用の 確認が 必要です。",
+              "kana": "すみません、ここでは おやくそく できません。きかんと ひようの かくにんが ひつようです。",
+              "en": "I'm sorry, we can't promise here. We need to check the period and cost.",
+              "gesture": "bow_light"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "返事は、いつごろ もらえますか。",
+              "kana": "へんじは、いつごろ もらえますか。",
+              "en": "When can I have your answer?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Give a deadline for your answer: by Friday.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "＿＿までに ご連絡します。",
+            "modelAnswers": [
+              "金曜日までに ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "deadline",
+                "whenEn": "Learner gave a concrete deadline (by Friday).",
+                "next": "n6a",
+                "exampleJa": "金曜日までに ご連絡します。"
+              },
+              {
+                "id": "no_deadline",
+                "whenEn": "Learner gave no concrete day (e.g. 'as soon as possible').",
+                "next": "n6b",
+                "exampleJa": "なるべく 早く ご連絡します。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "金曜日ですね。待って いますよ。",
+              "kana": "きんようびですね。まって いますよ。",
+              "en": "Friday. I'll be waiting.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "「なるべく 早く」ですか。金曜日までに もらえると 助かります。",
+              "kana": "「なるべく はやく」ですか。きんようびまでに もらえると たすかります。",
+              "en": "\"As soon as possible\"? By Friday would help me."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "では、今日 決まった ことを 確認しましょう。お願いします。",
+              "kana": "では、きょう きまった ことを かくにんしましょう。おねがいします。",
+              "en": "Then let's confirm what was decided today. Go ahead."
+            }
+          ],
+          "listen": {
+            "promptEn": "Sum up: the release goes ahead with the current content; for payment, you check period and cost and contact him by Friday.",
+            "grammar": [
+              "g7",
+              "g6"
+            ],
+            "hintJa": "確認します。リリースは ＿＿で 進めます。決済は、＿＿と ＿＿を 確認して、金曜日までに ご連絡します。",
+            "modelAnswers": [
+              "確認します。リリースは 今の 内容で 進めます。決済は、期間と 費用を 確認して、金曜日までに ご連絡します。"
+            ],
+            "branches": [
+              {
+                "id": "full_summary",
+                "whenEn": "Learner summarised both points: the release continues as is, and the payment answer (period and cost) comes by Friday.",
+                "next": "n8a",
+                "exampleJa": "リリースは 今の 内容で 進めます。決済は、期間と 費用を 確認して、金曜日までに ご連絡します。"
+              },
+              {
+                "id": "partial",
+                "whenEn": "Learner mentioned only one point or only thanked him.",
+                "next": "n8b",
+                "exampleJa": "決済の 件は、金曜日までに ご連絡します。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "よく わかりました。はっきり 言って くれて、安心しました。",
+              "kana": "よく わかりました。はっきり いって くれて、あんしんしました。",
+              "en": "I understand well. I feel at ease because you were clear.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "リリースは 今の 内容で 進めて、決済は 金曜日までに ご連絡、ですね。",
+              "kana": "リリースは いまの ないようで すすめて、けっさいは きんようびまでに ごれんらく、ですね。",
+              "en": "The release goes ahead as is; on payment we'll contact you by Friday."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "よろしく お願いします。さあ、コーヒーを もう 一杯 どうぞ。",
+              "kana": "よろしく おねがいします。さあ、コーヒーを もう いっぱい どうぞ。",
+              "en": "I'm counting on you. Now, have another cup of coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

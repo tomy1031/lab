@@ -1,0 +1,1772 @@
+{
+  "course": "it",
+  "unit": 12,
+  "format": "interview",
+  "storyJa": "就職の 面接",
+  "storyEn": "Job interviews",
+  "episodeJa": "面接②",
+  "episodeEn": "Interview 2",
+  "titleJa": "圧迫面接",
+  "titleEn": "The pressure interview",
+  "summaryEn": "A cold interviewer doubts every answer. Stay calm: accept the point, restate it with a reason and an example, and stay positive.",
+  "levelEn": "Interview Japanese (around JLPT N4–N3): polite です・ます with set interview phrases — 申します, 御社, 〜と 考えて おります — and calm cushion phrases such as おっしゃる とおりです.",
+  "previouslyEn": "",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "失礼します。／＿＿と 申します。本日は よろしく お願いいたします。",
+      "meaningEn": "Entering, giving your name and sitting: the fixed interview phrases",
+      "exampleJa": "リンと 申します。本日は よろしく お願いいたします。",
+      "exampleEn": "My name is Lin. Thank you for seeing me today."
+    },
+    {
+      "id": "g2",
+      "pattern": "御社を 志望した 理由は、〜からです。",
+      "meaningEn": "Reason for applying — conclusion first, linked to the company (御社 when speaking)",
+      "exampleJa": "御社を 志望した 理由は、小さい お店を 助ける システムを 作りたいからです。",
+      "exampleEn": "I applied because I want to build systems that help small shops."
+    },
+    {
+      "id": "g3",
+      "pattern": "おっしゃる とおりです。ただ、〜。／ご指摘 ありがとう ございます。",
+      "meaningEn": "Receive a negative comment calmly, then restate your point (受け止める → 言い直す)",
+      "exampleJa": "おっしゃる とおり、ほかの 会社でも 開発は できます。ただ、御社の お客さまは 小さい お店です。",
+      "exampleEn": "As you say, I could develop software elsewhere too. But your customers are small shops."
+    },
+    {
+      "id": "g4",
+      "pattern": "具体的には、私は 〜を 担当しました。",
+      "meaningEn": "Give evidence: your own role, a number, the result",
+      "exampleJa": "具体的には、私は フロントエンドを 担当しました。",
+      "exampleEn": "Specifically, I was in charge of the front end."
+    },
+    {
+      "id": "g5",
+      "pattern": "まだ 十分では ありませんが、今 〜して います。／今は、〜ように して います。",
+      "meaningEn": "Admit a limit honestly, then say what you are doing about it (前向きに)",
+      "exampleJa": "まだ 十分では ありませんが、今 N2の 合格を 目指して 勉強して います。",
+      "exampleEn": "It isn't good enough yet, but I'm studying to pass N2."
+    },
+    {
+      "id": "g6",
+      "pattern": "恐れ入りますが、私自身の 〜に ついて お話ししても よろしいでしょうか。",
+      "meaningEn": "Politely steer an uncomfortable question back to the job",
+      "exampleJa": "恐れ入りますが、私自身の 経験に ついて お話ししても よろしいでしょうか。",
+      "exampleEn": "Excuse me, but may I talk about my own experience instead?"
+    },
+    {
+      "id": "g7",
+      "pattern": "ご心配は わかります。ただ、〜と 考えて おります。／御社の お役に 立てると 考えて おります。",
+      "meaningEn": "Answer a doubt about you with a plan or a strength, humbly",
+      "exampleJa": "この 強みで、御社の お役に 立てると 考えて おります。",
+      "exampleEn": "I believe I can be useful to your company with this strength."
+    },
+    {
+      "id": "g8",
+      "pattern": "〜に ついて、教えて いただけますか。",
+      "meaningEn": "Ask your own question at the end (逆質問)",
+      "exampleJa": "入社後の 研修に ついて、教えて いただけますか。",
+      "exampleEn": "Could you tell me about the training after joining?"
+    },
+    {
+      "id": "g9",
+      "pattern": "本日は お時間を いただき、ありがとう ございました。失礼いたします。",
+      "meaningEn": "Thank the interviewers and leave",
+      "exampleJa": "本日は お時間を いただき、ありがとう ございました。失礼いたします。",
+      "exampleEn": "Thank you very much for your time today. Excuse me."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "圧迫面接",
+      "kana": "あっぱくめんせつ",
+      "en": "pressure (stress) interview"
+    },
+    {
+      "ja": "面接官",
+      "kana": "めんせつかん",
+      "en": "interviewer"
+    },
+    {
+      "ja": "志望動機",
+      "kana": "しぼうどうき",
+      "en": "reason for applying"
+    },
+    {
+      "ja": "御社",
+      "kana": "おんしゃ",
+      "en": "your company (spoken, in interviews)"
+    },
+    {
+      "ja": "当社",
+      "kana": "とうしゃ",
+      "en": "our company"
+    },
+    {
+      "ja": "履歴書",
+      "kana": "りれきしょ",
+      "en": "CV, résumé"
+    },
+    {
+      "ja": "自己紹介",
+      "kana": "じこしょうかい",
+      "en": "self-introduction"
+    },
+    {
+      "ja": "短所",
+      "kana": "たんしょ",
+      "en": "weak point"
+    },
+    {
+      "ja": "強み",
+      "kana": "つよみ",
+      "en": "strength"
+    },
+    {
+      "ja": "具体的",
+      "kana": "ぐたいてき",
+      "en": "concrete, specific"
+    },
+    {
+      "ja": "根拠",
+      "kana": "こんきょ",
+      "en": "evidence, grounds"
+    },
+    {
+      "ja": "理由",
+      "kana": "りゆう",
+      "en": "reason"
+    },
+    {
+      "ja": "指摘",
+      "kana": "してき",
+      "en": "pointing something out (ご指摘 = your comment)"
+    },
+    {
+      "ja": "担当する",
+      "kana": "たんとうする",
+      "en": "to be in charge of"
+    },
+    {
+      "ja": "採用",
+      "kana": "さいよう",
+      "en": "hiring"
+    },
+    {
+      "ja": "メリット",
+      "kana": "メリット",
+      "en": "advantage, benefit"
+    },
+    {
+      "ja": "研修",
+      "kana": "けんしゅう",
+      "en": "training for new staff"
+    },
+    {
+      "ja": "新人",
+      "kana": "しんじん",
+      "en": "new employee"
+    },
+    {
+      "ja": "在庫管理",
+      "kana": "ざいこかんり",
+      "en": "stock management"
+    },
+    {
+      "ja": "締め切り",
+      "kana": "しめきり",
+      "en": "deadline"
+    },
+    {
+      "ja": "落ち着く",
+      "kana": "おちつく",
+      "en": "to stay calm"
+    },
+    {
+      "ja": "恐れ入りますが",
+      "kana": "おそれいりますが",
+      "en": "excuse me, but… (very polite cushion)"
+    },
+    {
+      "ja": "控える",
+      "kana": "ひかえる",
+      "en": "to refrain from (お答えを 控える = not answer)"
+    },
+    {
+      "ja": "人事",
+      "kana": "じんじ",
+      "en": "HR, personnel"
+    }
+  ],
+  "tipsEn": [
+    "A pressure interview tests how you react, not what they think of you. Treat the cold manner as a role the interviewer is playing.",
+    "Three steps under pressure: 受け止める (おっしゃる とおりです) → 言い直す with a reason or example → finish on something positive.",
+    "Don't argue, don't over-apologise, don't go silent. If you need a moment: 「少し 考える 時間を いただけますか。」",
+    "Family's jobs, birthplace, religion or political party have nothing to do with your ability — Japan's fair-hiring guidelines tell companies not to ask. Reply briefly or steer back to the job; being asked about your work permission (在留資格) is normal.",
+    "Manners count from the knock to the door: 失礼します, wait to be asked to sit, bag on the floor, and a full 本日は ありがとう ございました at the end.",
+    "Say 御社 when speaking and write 貴社 in documents. Never say お疲れさまでした to an interviewer."
+  ],
+  "research": {
+    "sources": [
+      "https://tenshoku.mynavi.jp/knowhow/mensetsu/guide/33/",
+      "https://www.neo-career.co.jp/careertrus/appakumensetu",
+      "https://www.r-agent.com/guide/article12652/",
+      "https://kouseisaiyou.mhlw.go.jp/consider.html",
+      "https://jsite.mhlw.go.jp/osaka-roudoukyoku/hourei_seido_tetsuzuki/shokugyou_shoukai/hourei_seido/kosei/futeki.html"
+    ],
+    "notesEn": "Career guides describe 圧迫面接 as an interview where the interviewer is deliberately negative or cold (rejecting answers, repeated なぜ／具体的には, flat reactions, rapid questions, 「どうせ すぐに 辞めるんでしょ」, 「あなたが 当社に もたらす メリットは」) to see stress tolerance, flexibility and real motivation; they note it is becoming rarer and that deep follow-ups are often just a wish for a clearer answer. The advice is consistent: stay calm, treat it as a role, accept the point first (おっしゃる とおりです) and then explain with evidence, prepare for なぜ, ask for a moment instead of going silent, and never show irritation or argue. The interview itself follows the usual order (knock and 失礼いたします, name and greeting beside the chair, sit when invited, self-introduction, motivation, experience, own questions, thanks and 失礼いたします). The Ministry of Health, Labour and Welfare's fair-hiring pages list 14 matters companies should not ask about — among them the family's occupations, 本籍・出生地, religion and supported party — because they are unrelated to aptitude and ability; the Osaka Labour Bureau gives 「あなたの 家族の 職業を 言って ください」 as an inappropriate question. Variant b uses that one question so the learner can practise a short, calm reply."
+  },
+  "rubric": [
+    "manners",
+    "conclusion",
+    "specific",
+    "company",
+    "keigo",
+    "length",
+    "attitude",
+    "composure"
+  ],
+  "variants": [
+    {
+      "id": "b12a",
+      "titleJa": "否定と 深掘り",
+      "titleEn": "Denial and digging deeper",
+      "scene": "interview",
+      "setup": {
+        "room": "grey",
+        "time": "noon",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "entrance": "knock",
+      "briefEn": "A first interview for an engineer position at Kurogane System, a different company. Kurogane System (株式会社 くろがねシステム) builds stock-management systems (在庫管理システム) for small and mid-size shops. The interviewer, Kuroiwa-san (development manager), is known to be strict: this is a pressure interview. He will reject your answers and keep asking 「なぜ」 and 「具体的には」. Stay calm — accept his point, say it again with a reason and an example, and stay positive. Don't argue, don't over-apologise. Profile you can use (or answer as yourself): final-year IT student at a university in Phnom Penh, Cambodia; studied web development (JavaScript, React, PHP, MySQL); a 3-person team project — a booking website for a local shop — where you built the front end and fixed a bug before the deadline; part-time job at a café (customer service); JLPT N3, studying for N2; strength: careful testing and patience; weakness: shy about asking questions (now you ask early); you want to build apps that help small shops and to become a team leader in 5 years.",
+      "roleEn": "You are the candidate. Answer as yourself, or use the profile. You have just knocked on the door.",
+      "missionsEn": [
+        {
+          "text": "Enter, give your name and sit with the right phrases",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "When he rejects your reason, accept the point and restate it with evidence",
+          "grammar": [
+            "g3",
+            "g2"
+          ]
+        },
+        {
+          "text": "Answer 「具体的には？」 with your own role and a result",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask one question, thank him and leave calmly",
+          "grammar": [
+            "g8",
+            "g9"
+          ]
+        }
+      ],
+      "characters": [
+        "kuroiwa"
+      ],
+      "positions": {
+        "kuroiwa": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "どうぞ。",
+              "kana": "どうぞ。",
+              "en": "Come in."
+            }
+          ],
+          "focus": "door",
+          "listen": {
+            "promptEn": "You knocked and heard 「どうぞ」. Open the door and say the set phrase as you step in.",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners"
+            ],
+            "lookForEn": "A clear 「失礼します」 at the door, before anything else. First impressions are made in these seconds.",
+            "pitfallsEn": "Walking in silently, or saying こんにちは instead of 失礼します.",
+            "hintJa": "＿＿します。",
+            "modelAnswers": [
+              "失礼します。",
+              "失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "shitsurei",
+                "whenEn": "Learner said 失礼します / 失礼いたします.",
+                "next": "n2",
+                "exampleJa": "失礼します。"
+              },
+              {
+                "id": "other_greeting",
+                "whenEn": "Learner greeted in another way (こんにちは, よろしく お願いします …) without 失礼します.",
+                "next": "n2",
+                "exampleJa": "こんにちは。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "お名前を。",
+              "kana": "おなまえを。",
+              "en": "Your name."
+            }
+          ],
+          "learner": "walk",
+          "focus": "chair",
+          "listen": {
+            "promptEn": "Stand beside the chair — don't sit yet. Give your name and the opening greeting.",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners",
+              "keigo"
+            ],
+            "lookForEn": "Name with 〜と 申します, then 本日は よろしく お願いいたします, said calmly even though nobody smiles.",
+            "pitfallsEn": "Using 〜です for your name, forgetting the greeting, or sitting down before being asked.",
+            "hintJa": "＿＿と 申します。本日は よろしく お願いいたします。",
+            "modelAnswers": [
+              "リンと 申します。本日は よろしく お願いいたします。"
+            ],
+            "branches": [
+              {
+                "id": "name_and_greeting",
+                "whenEn": "Learner gave their name AND a greeting such as よろしく お願いいたします.",
+                "next": "n3",
+                "exampleJa": "リンと 申します。本日は よろしく お願いいたします。"
+              },
+              {
+                "id": "name_only",
+                "whenEn": "Learner gave only their name, with no greeting.",
+                "next": "n3",
+                "exampleJa": "リンです。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "開発部長の 黒岩です。おかけください。",
+              "kana": "かいはつぶちょうの くろいわです。おかけください。",
+              "en": "I'm Kuroiwa, the development manager. Sit down, please.",
+              "tts": "開発部長の、黒岩です。おかけください。"
+            }
+          ],
+          "listen": {
+            "promptEn": "You were told to sit. Say the set phrase, then sit down (bag on the floor beside the chair).",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners"
+            ],
+            "lookForEn": "「失礼します」 before sitting — the same phrase as at the door.",
+            "pitfallsEn": "Sitting down without a word, or answering only はい.",
+            "hintJa": "＿＿します。",
+            "modelAnswers": [
+              "失礼します。",
+              "はい、失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "shitsurei",
+                "whenEn": "Learner said 失礼します / 失礼いたします.",
+                "next": "n4",
+                "exampleJa": "失礼します。"
+              },
+              {
+                "id": "thanks_or_yes",
+                "whenEn": "Learner said ありがとう ございます or just はい, without 失礼します.",
+                "next": "n4",
+                "exampleJa": "ありがとう ございます。"
+              }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "履歴書は 読みました。自己紹介は 結構です。",
+              "kana": "りれきしょは よみました。じこしょうかいは けっこうです。",
+              "en": "I've read your CV. You can skip the self-introduction."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "志望動機を 短く どうぞ。",
+              "kana": "しぼうどうきを みじかく どうぞ。",
+              "en": "Your reason for applying. Briefly."
+            }
+          ],
+          "learner": "sit",
+          "focus": "resume",
+          "listen": {
+            "promptEn": "He skips the self-introduction. Say why you want to join: conclusion first, then one reason from your own experience.",
+            "grammar": [
+              "g2"
+            ],
+            "criteria": [
+              "conclusion",
+              "company",
+              "keigo"
+            ],
+            "lookForEn": "The reason in the first sentence (〜からです), linked to what this company makes and to something you actually did.",
+            "pitfallsEn": "Starting with a long story, or giving a reason that fits any company (\"I like Japan\", \"I want to grow\").",
+            "hintJa": "御社を 志望した 理由は、＿＿からです。大学で ＿＿。",
+            "modelAnswers": [
+              "御社を 志望した 理由は、小さい お店を 助ける システムを 作りたいからです。大学では、3人で 近所の お店の 予約サイトを 作りました。その 経験を、御社の 在庫管理システムで 生かしたいと 考えて おります。",
+              "小さい お店の 役に 立つ 仕事が したいからです。御社は お店の 在庫管理システムを 作って います。私も 大学で、お店の 予約サイトを 作りました。"
+            ],
+            "branches": [
+              {
+                "id": "linked_reason",
+                "whenEn": "Learner gave a reason connected to the company's work (systems for shops) or to their own project/experience.",
+                "next": "n5a",
+                "exampleJa": "小さい お店を 助ける システムを 作りたいからです。大学で お店の 予約サイトを 作りました。"
+              },
+              {
+                "id": "general_reason",
+                "whenEn": "Learner gave only a general reason (likes Japan, wants to work in IT, wants to grow) with nothing about this company or their experience.",
+                "next": "n5b",
+                "exampleJa": "日本で 働きたいからです。"
+              }
+            ],
+            "fallback": "n5b"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…そうですか。でも、それは ほかの 会社でも できますね。",
+              "kana": "…そうですか。でも、それは ほかの かいしゃでも できますね。",
+              "en": "...I see. But you could do that at another company too.",
+              "tts": "そうですか。でも、それは ほかの 会社でも できますね。"
+            }
+          ],
+          "next": "n5q"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "それは 理由に なりませんね。日本で 働きたい 人は 多いです。",
+              "kana": "それは りゆうに なりませんね。にほんで はたらきたい ひとは おおいです。",
+              "en": "That isn't a reason. Plenty of people want to work in Japan."
+            }
+          ],
+          "next": "n5q"
+        },
+        {
+          "id": "n5q",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "なぜ、当社ですか。",
+              "kana": "なぜ、とうしゃですか。",
+              "en": "Why this company?"
+            }
+          ],
+          "listen": {
+            "promptEn": "He has just rejected your reason. Stay calm: accept his point first, then give one concrete reason why THIS company, with evidence.",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "criteria": [
+              "composure",
+              "company",
+              "specific"
+            ],
+            "lookForEn": "A calm cushion (おっしゃる とおりです) followed by a reason that only fits this company, backed by your own experience.",
+            "pitfallsEn": "Apologising and repeating the same sentence, arguing that he is wrong, or going silent.",
+            "hintJa": "おっしゃる とおりです。ただ、御社は ＿＿。私も ＿＿ので、＿＿と 考えて おります。",
+            "modelAnswers": [
+              "おっしゃる とおり、ほかの 会社でも 開発は できます。ただ、御社の お客さまは 小さい お店です。私も お店の 予約サイトを 作ったので、その 経験を 一番 生かせると 考えて おります。",
+              "ご指摘 ありがとう ございます。理由は、御社が お店の 在庫管理システムを 作って いるからです。私は カフェで アルバイトを して、お店の 仕事の 大変さを 知って います。"
+            ],
+            "branches": [
+              {
+                "id": "calm_evidence",
+                "whenEn": "Learner stayed calm and gave a reason specific to this company (its customers, its product) and/or evidence from their own experience.",
+                "next": "n6a",
+                "exampleJa": "おっしゃる とおりです。ただ、御社の お客さまは 小さい お店です。私も お店の サイトを 作りました。"
+              },
+              {
+                "id": "apology_or_repeat",
+                "whenEn": "Learner mainly apologised, repeated the same general reason, or said they cannot explain.",
+                "next": "n6b",
+                "exampleJa": "すみません。うまく 言えませんが、御社で 働きたいです。"
+              },
+              {
+                "id": "argued",
+                "whenEn": "Learner argued back or got defensive (said the interviewer is wrong, or criticised other companies).",
+                "next": "n6c",
+                "exampleJa": "いいえ、それは 違うと 思います。ほかの 会社は よくないです。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…わかりました。次。",
+              "kana": "…わかりました。つぎ。",
+              "en": "...All right. Next.",
+              "tts": "わかりました。次。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "謝らなくて いいです。ただ、それでは 答えに なって いませんね。",
+              "kana": "あやまらなくて いいです。ただ、それでは こたえに なって いませんね。",
+              "en": "No need to apologise. But that doesn't answer the question."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6c",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "……。そうですか。次に 行きます。",
+              "kana": "……。そうですか。つぎに いきます。",
+              "en": "... I see. Let's move on.",
+              "gesture": "think",
+              "tts": "そうですか。次に 行きます。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "学生時代に 力を 入れた ことは 何ですか。",
+              "kana": "がくせいじだいに ちからを いれた ことは なんですか。",
+              "en": "What did you work hardest on as a student?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you worked hardest on: what it was, YOUR role, and the result — in three short sentences.",
+            "grammar": [
+              "g4"
+            ],
+            "criteria": [
+              "conclusion",
+              "specific",
+              "length"
+            ],
+            "lookForEn": "One activity named first, then your own part (私は 〜を 担当しました), a number, and what came of it.",
+            "pitfallsEn": "Only 「みんなで がんばりました」 — no own role, no number, no result.",
+            "hintJa": "力を 入れた ことは、＿＿です。＿＿人で ＿＿を 作りました。私は ＿＿を 担当しました。",
+            "modelAnswers": [
+              "力を 入れた ことは、大学の チームプロジェクトです。3人で、近所の お店の 予約サイトを 作りました。私は フロントエンドを 担当して、締め切りの 前に バグを 直しました。"
+            ],
+            "branches": [
+              {
+                "id": "own_role",
+                "whenEn": "Learner named an activity AND their own role, a number or a result.",
+                "next": "n8a",
+                "exampleJa": "大学の チームプロジェクトです。3人で 予約サイトを 作って、私は フロントエンドを 担当しました。"
+              },
+              {
+                "id": "vague_effort",
+                "whenEn": "Learner named an activity only in general terms (we made a site, I studied hard) with no own role or result.",
+                "next": "n8b",
+                "exampleJa": "プログラミングの 勉強を がんばりました。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…なるほど。では、うまく いかなかった ことは。どう しましたか。",
+              "kana": "…なるほど。では、うまく いかなかった ことは。どう しましたか。",
+              "en": "...I see. Then what went wrong? What did you do about it?",
+              "tts": "なるほど。では、うまく いかなかった ことは。どう しましたか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "He digs one level deeper. Name one thing that went wrong, what YOU did, and what you do differently now. Don't blame teammates.",
+            "grammar": [
+              "g4",
+              "g5"
+            ],
+            "criteria": [
+              "composure",
+              "specific",
+              "attitude"
+            ],
+            "lookForEn": "An honest problem, your own action, and a lesson — said plainly, without excuses.",
+            "pitfallsEn": "Saying nothing went wrong, or blaming a teammate or the teacher.",
+            "hintJa": "＿＿が うまく いきませんでした。それで、私は ＿＿ました。今は、＿＿ように して います。",
+            "modelAnswers": [
+              "締め切りの 前に、予約の 画面で バグが 見つかりました。私は 一つずつ テストして 原因を 見つけ、締め切りの 前に 直しました。今は、困ったら 早く 相談するように して います。"
+            ],
+            "branches": [
+              {
+                "id": "problem_and_action",
+                "whenEn": "Learner described a problem AND what they themselves did about it.",
+                "next": "n9a",
+                "exampleJa": "締め切りの 前に バグが 見つかりました。私が 一つずつ テストして、直しました。"
+              },
+              {
+                "id": "no_problem_or_blame",
+                "whenEn": "Learner said nothing went wrong, blamed someone else, or gave no action of their own.",
+                "next": "n9b",
+                "exampleJa": "メンバーが 遅かったので、大変でした。"
+              }
+            ],
+            "fallback": "n9b"
+          }
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "具体的には。あなたは 何を しましたか。",
+              "kana": "ぐたいてきには。あなたは なにを しましたか。",
+              "en": "Specifically? What did you yourself do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your answer was too general. Calmly say it again with specifics: your role, the team size, the result.",
+            "grammar": [
+              "g4"
+            ],
+            "criteria": [
+              "composure",
+              "specific"
+            ],
+            "lookForEn": "A calm 「はい。具体的には…」 and then facts: role, number, result.",
+            "pitfallsEn": "Repeating the same general sentence, or apologising instead of adding facts.",
+            "hintJa": "はい。具体的には、私は ＿＿を 担当しました。＿＿人の チームで、＿＿。",
+            "modelAnswers": [
+              "はい。具体的には、私は フロントエンドを 担当しました。3人の チームで お店の 予約サイトを 作り、締め切りの 前に バグを 直しました。"
+            ],
+            "branches": [
+              {
+                "id": "specific_now",
+                "whenEn": "Learner now gave their own role, a number or a concrete result.",
+                "next": "n9a",
+                "exampleJa": "具体的には、私は フロントエンドを 担当しました。3人の チームです。"
+              },
+              {
+                "id": "still_vague",
+                "whenEn": "Learner is still general, or only apologised.",
+                "next": "n9b",
+                "exampleJa": "すみません。いろいろ がんばりました。"
+              }
+            ],
+            "fallback": "n9b"
+          }
+        },
+        {
+          "id": "n9a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…わかりました。",
+              "kana": "…わかりました。",
+              "en": "...All right.",
+              "gesture": "nod",
+              "tts": "わかりました。"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "聞いて いるのは、あなたが 何を したかです。…次に 行きます。",
+              "kana": "きいて いるのは、あなたが なにを したかです。…つぎに いきます。",
+              "en": "What I'm asking is what you did. ...Moving on."
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "当社の 会議は 全部 日本語です。N3で 本当に 仕事が できますか。",
+              "kana": "とうしゃの かいぎは ぜんぶ にほんごです。エヌさんで ほんとうに しごとが できますか。",
+              "en": "All our meetings are in Japanese. Can you really do the job with N3?",
+              "tts": "とうしゃの かいぎは ぜんぶ にほんごです。エヌさんで ほんとうに しごとが できますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "He doubts your Japanese. Don't argue and don't give up: accept the point, say what you are doing about it, and how you will handle meetings.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "criteria": [
+              "composure",
+              "attitude",
+              "specific"
+            ],
+            "lookForEn": "An honest 「まだ 十分では ありません」 plus evidence of effort (studying for N2) and a working habit (confirm on the spot, take notes).",
+            "pitfallsEn": "「大丈夫です」 with no evidence, a long apology, or 「自信が ありません」 and nothing more.",
+            "hintJa": "おっしゃる とおり、まだ ＿＿。今、＿＿を 勉強して います。わからない ことは、＿＿。",
+            "modelAnswers": [
+              "おっしゃる とおり、まだ 十分では ありません。今、N2の 合格を 目指して、毎日 勉強して います。会議で わからない ことは、その 場で 確認して、メモを 取ります。",
+              "ご指摘 ありがとう ございます。今は N3ですが、N2の 勉強を 続けて います。わからない ときは、すぐに 確認するように します。"
+            ],
+            "branches": [
+              {
+                "id": "accept_and_plan",
+                "whenEn": "Learner accepted that their Japanese is not perfect AND said what they are doing or will do (studying N2, confirming, notes).",
+                "next": "n11a",
+                "exampleJa": "まだ 十分では ありませんが、今 N2を 勉強して います。わからない ことは 確認します。"
+              },
+              {
+                "id": "apology_no_confidence",
+                "whenEn": "Learner mainly apologised or said they have no confidence, with no plan.",
+                "next": "n11b",
+                "exampleJa": "すみません。日本語は まだ 自信が ありません。"
+              },
+              {
+                "id": "overclaim_or_argue",
+                "whenEn": "Learner insisted there is no problem without evidence, or argued that N3 is enough.",
+                "next": "n11c",
+                "exampleJa": "大丈夫です。N3でも 問題 ありません。"
+              }
+            ],
+            "fallback": "n11b"
+          }
+        },
+        {
+          "id": "n11a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…そうですか。わかりました。",
+              "kana": "…そうですか。わかりました。",
+              "en": "...I see. All right.",
+              "tts": "そうですか。わかりました。"
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "id": "n11b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "謝る 必要は ありません。できる ことを 聞いて います。",
+              "kana": "あやまる ひつようは ありません。できる ことを きいて います。",
+              "en": "There's no need to apologise. I'm asking what you can do."
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "id": "n11c",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "……。根拠が ありませんね。まあ、いいです。",
+              "kana": "……。こんきょが ありませんね。まあ、いいです。",
+              "en": "... You've given no evidence. Well, never mind.",
+              "gesture": "think",
+              "tts": "根拠が ありませんね。まあ、いいです。"
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "id": "n12",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "最後です。何か 質問は ありますか。",
+              "kana": "さいごです。なにか しつもんは ありますか。",
+              "en": "Last one. Do you have any questions?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your turn to ask. Ask one question about the work, the team or the training — it shows you still want the job.",
+            "grammar": [
+              "g8"
+            ],
+            "criteria": [
+              "attitude",
+              "company",
+              "keigo"
+            ],
+            "lookForEn": "One question about the job itself, asked politely (〜に ついて、教えて いただけますか) — still interested after a hard interview.",
+            "pitfallsEn": "「特に ありません」, or asking only about salary and holidays.",
+            "hintJa": "はい、一つ あります。＿＿に ついて、教えて いただけますか。",
+            "modelAnswers": [
+              "はい、一つ あります。入社後の 研修に ついて、教えて いただけますか。",
+              "はい。新人は 最初に どんな 仕事を 担当しますか。"
+            ],
+            "branches": [
+              {
+                "id": "work_question",
+                "whenEn": "Learner asked about the work, the team, training or what a new hire does.",
+                "next": "n13a",
+                "exampleJa": "入社後の 研修に ついて、教えて いただけますか。"
+              },
+              {
+                "id": "no_question",
+                "whenEn": "Learner said they have no questions.",
+                "next": "n13b",
+                "exampleJa": "いいえ、特に ありません。"
+              },
+              {
+                "id": "conditions_only",
+                "whenEn": "Learner asked only about salary, holidays or overtime.",
+                "next": "n13c",
+                "exampleJa": "休みは 一年に 何日 ありますか。"
+              }
+            ],
+            "fallback": "n13b"
+          }
+        },
+        {
+          "id": "n13a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "入社後 3か月は 研修です。その あと、先輩と チームで 開発します。",
+              "kana": "にゅうしゃご さんかげつは けんしゅうです。その あと、せんぱいと チームで かいはつします。",
+              "en": "The first three months are training. After that you develop in a team with a senior.",
+              "tts": "にゅうしゃご さんかげつは けんしゅうです。その あと、せんぱいと チームで かいはつします。"
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n13b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "ありませんか。当社に 興味が ないように 見えますよ。",
+              "kana": "ありませんか。とうしゃに きょうみが ないように みえますよ。",
+              "en": "None? That looks as if you aren't interested in us."
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n13c",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "それは 人事に 聞いて ください。仕事の 質問は ないのですね。",
+              "kana": "それは じんじに きいて ください。しごとの しつもんは ないのですね。",
+              "en": "Ask HR about that. So you have no question about the work."
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n14",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "以上です。…実は、今日は わざと 厳しく 質問しました。",
+              "kana": "いじょうです。…じつは、きょうは わざと きびしく しつもんしました。",
+              "en": "That's all. ...Actually, I was strict on purpose today."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "お客さまの 前でも 落ち着いて 話せるかを、見たかったのです。",
+              "kana": "おきゃくさまの まえでも おちついて はなせるかを、みたかったのです。",
+              "en": "I wanted to see whether you can stay calm in front of a customer."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "否定されても、落ち着いて 理由と 例を 言う。それが 一番 大事です。",
+              "kana": "ひていされても、おちついて りゆうと れいを いう。それが いちばん だいじです。",
+              "en": "Even when you're contradicted, calmly give your reason and an example. That matters most."
+            }
+          ],
+          "listen": {
+            "promptEn": "The interview is over. Thank them for their time, then say the leaving phrase.",
+            "grammar": [
+              "g9"
+            ],
+            "criteria": [
+              "manners",
+              "keigo",
+              "composure"
+            ],
+            "lookForEn": "A full お礼 — 本日は ありがとう ございました — and 失礼いたします, in the same calm voice as at the start.",
+            "pitfallsEn": "Saying お疲れさまでした to the interviewer, a casual ありがとう, or leaving in a hurry because the interview was hard.",
+            "hintJa": "本日は お時間を いただき、＿＿。失礼いたします。",
+            "modelAnswers": [
+              "本日は お時間を いただき、ありがとう ございました。失礼いたします。",
+              "本日は ありがとう ございました。失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "full_thanks",
+                "whenEn": "Learner thanked them politely (ありがとう ございました), with or without 失礼いたします.",
+                "next": "n15a",
+                "exampleJa": "本日は ありがとう ございました。失礼いたします。"
+              },
+              {
+                "id": "short_or_casual",
+                "whenEn": "Learner said only はい / 失礼します / お疲れさまでした, or a casual ありがとう, with no polite thanks.",
+                "next": "n15b",
+                "exampleJa": "はい、失礼します。"
+              }
+            ],
+            "fallback": "n15b"
+          }
+        },
+        {
+          "id": "n15a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "お疲れさまでした。結果は 1週間以内に 連絡します。",
+              "kana": "おつかれさまでした。けっかは いっしゅうかんいないに れんらくします。",
+              "en": "Thank you for coming. We'll contact you with the result within a week.",
+              "tts": "おつかれさまでした。けっかは いっしゅうかんいないに れんらくします。",
+              "gesture": "nod"
+            }
+          ],
+          "learner": "stand",
+          "focus": "door",
+          "end": true
+        },
+        {
+          "id": "n15b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…最後の あいさつまでが 面接です。お疲れさまでした。",
+              "kana": "…さいごの あいさつまでが めんせつです。おつかれさまでした。",
+              "en": "...The interview lasts until the final greeting. Thank you for coming.",
+              "tts": "最後の あいさつまでが 面接です。お疲れさまでした。"
+            }
+          ],
+          "learner": "stand",
+          "focus": "door",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b12b",
+      "titleJa": "答えにくい 質問",
+      "titleEn": "Uncomfortable questions",
+      "scene": "interview",
+      "setup": {
+        "room": "grey",
+        "time": "evening",
+        "season": "winter",
+        "weather": "rain"
+      },
+      "entrance": "knock",
+      "briefEn": "A second interview at Kurogane System — two against one. Kurogane System (株式会社 くろがねシステム) builds stock-management systems (在庫管理システム) for small and mid-size shops. Shiraishi-san from HR reads questions from a sheet and watches the clock; Kuroiwa-san, the development manager, cuts in. Expect interruptions and uncomfortable questions: your weak point, whether you will quit soon, what they gain by hiring you — and one question about your family that companies in Japan are not supposed to ask. For that one, answer in a single short sentence or politely steer back to your own skills (if you choose to answer: your family lives in Phnom Penh and your parents run a small shop). Stay calm and brief throughout. Profile you can use (or answer as yourself): final-year IT student at a university in Phnom Penh, Cambodia; studied web development (JavaScript, React, PHP, MySQL); a 3-person team project — a booking website for a local shop — where you built the front end and fixed a bug before the deadline; part-time job at a café (customer service); JLPT N3, studying for N2; strength: careful testing and patience; weakness: shy about asking questions (now you ask early); you want to build apps that help small shops and to become a team leader in 5 years.",
+      "roleEn": "You are the candidate. Answer as yourself, or use the profile. You have just knocked on the door.",
+      "missionsEn": [
+        {
+          "text": "Introduce yourself and give your reason for applying within one minute",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Handle the family question calmly: answer briefly or steer back to the job",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Answer doubts about you with a plan and a strength",
+          "grammar": [
+            "g3",
+            "g5",
+            "g7"
+          ]
+        },
+        {
+          "text": "Ask one question, thank them and leave calmly",
+          "grammar": [
+            "g8",
+            "g9"
+          ]
+        }
+      ],
+      "characters": [
+        "kuroiwa",
+        "shiraishi"
+      ],
+      "positions": {
+        "kuroiwa": "npc1",
+        "shiraishi": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "どうぞ、お入りください。",
+              "kana": "どうぞ、おはいりください。",
+              "en": "Come in, please."
+            }
+          ],
+          "focus": "door",
+          "listen": {
+            "promptEn": "You knocked and heard 「どうぞ」. Open the door and say the set phrase as you step in.",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners"
+            ],
+            "lookForEn": "A clear 「失礼します」 at the door, before anything else. First impressions are made in these seconds.",
+            "pitfallsEn": "Walking in silently, or saying こんにちは instead of 失礼します.",
+            "hintJa": "＿＿します。",
+            "modelAnswers": [
+              "失礼します。",
+              "失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "shitsurei",
+                "whenEn": "Learner said 失礼します / 失礼いたします.",
+                "next": "n2",
+                "exampleJa": "失礼します。"
+              },
+              {
+                "id": "other_greeting",
+                "whenEn": "Learner greeted in another way (こんにちは, よろしく お願いします …) without 失礼します.",
+                "next": "n2",
+                "exampleJa": "こんにちは。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "お名前を お願いします。",
+              "kana": "おなまえを おねがいします。",
+              "en": "Your name, please."
+            }
+          ],
+          "learner": "walk",
+          "focus": "chair",
+          "listen": {
+            "promptEn": "Stand beside the chair — don't sit yet. Give your name and the opening greeting.",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners",
+              "keigo"
+            ],
+            "lookForEn": "Name with 〜と 申します, then 本日は よろしく お願いいたします, said calmly even though nobody smiles.",
+            "pitfallsEn": "Using 〜です for your name, forgetting the greeting, or sitting down before being asked.",
+            "hintJa": "＿＿と 申します。本日は よろしく お願いいたします。",
+            "modelAnswers": [
+              "リンと 申します。本日は よろしく お願いいたします。"
+            ],
+            "branches": [
+              {
+                "id": "name_and_greeting",
+                "whenEn": "Learner gave their name AND a greeting such as よろしく お願いいたします.",
+                "next": "n3",
+                "exampleJa": "リンと 申します。本日は よろしく お願いいたします。"
+              },
+              {
+                "id": "name_only",
+                "whenEn": "Learner gave only their name, with no greeting.",
+                "next": "n3",
+                "exampleJa": "リンです。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "人事の 白石です。こちらは 開発部長の 黒岩です。",
+              "kana": "じんじの しらいしです。こちらは かいはつぶちょうの くろいわです。",
+              "en": "I'm Shiraishi from HR. This is Kuroiwa, the development manager."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "おかけください。",
+              "kana": "おかけください。",
+              "en": "Sit down, please."
+            }
+          ],
+          "listen": {
+            "promptEn": "You were told to sit. Say the set phrase, then sit down (bag on the floor beside the chair).",
+            "grammar": [
+              "g1"
+            ],
+            "criteria": [
+              "manners"
+            ],
+            "lookForEn": "「失礼します」 before sitting — the same phrase as at the door.",
+            "pitfallsEn": "Sitting down without a word, or answering only はい.",
+            "hintJa": "＿＿します。",
+            "modelAnswers": [
+              "失礼します。",
+              "はい、失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "shitsurei",
+                "whenEn": "Learner said 失礼します / 失礼いたします.",
+                "next": "n4",
+                "exampleJa": "失礼します。"
+              },
+              {
+                "id": "thanks_or_yes",
+                "whenEn": "Learner said ありがとう ございます or just はい, without 失礼します.",
+                "next": "n4",
+                "exampleJa": "ありがとう ございます。"
+              }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "自己紹介と 志望動機を、合わせて 1分で お願いします。",
+              "kana": "じこしょうかいと しぼうどうきを、あわせて いっぷんで おねがいします。",
+              "en": "Your self-introduction and your reason for applying — one minute in total, please.",
+              "tts": "自己紹介と、志望動機を 合わせて、1分で お願いします。"
+            }
+          ],
+          "learner": "sit",
+          "focus": "clock",
+          "listen": {
+            "promptEn": "One minute for both: who you are (university, what you study) and why you want to join. Short sentences, reason included.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "criteria": [
+              "conclusion",
+              "length",
+              "company",
+              "keigo"
+            ],
+            "lookForEn": "Name, university and field in two sentences, then the reason for applying linked to the company — all inside a minute.",
+            "pitfallsEn": "Spending the whole minute on the self-introduction and never reaching the reason.",
+            "hintJa": "＿＿と 申します。＿＿大学の 4年生で、＿＿を 勉強して います。＿＿ので、御社を 志望しました。",
+            "modelAnswers": [
+              "リンと 申します。プノンペンの 大学の 4年生で、Web開発を 勉強して います。小さい お店を 助ける システムを 作りたいので、御社を 志望しました。どうぞ よろしく お願いいたします。"
+            ],
+            "branches": [
+              {
+                "id": "intro_and_reason",
+                "whenEn": "Learner introduced themselves AND gave a reason for applying.",
+                "next": "n5a",
+                "exampleJa": "リンと 申します。プノンペンの 大学で Web開発を 勉強して います。お店を 助ける システムを 作りたいので、志望しました。"
+              },
+              {
+                "id": "intro_only",
+                "whenEn": "Learner only introduced themselves (name, university, studies) with no reason for applying.",
+                "next": "n5b",
+                "exampleJa": "リンと 申します。プノンペンの 大学の 4年生です。"
+              }
+            ],
+            "fallback": "n5b"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "そこまでで 結構です。時間が ありません。",
+              "kana": "そこまでで けっこうです。じかんが ありません。",
+              "en": "That's enough. We're short of time."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "志望動機が ありませんでしたね。…まあ、いいです。",
+              "kana": "しぼうどうきが ありませんでしたね。…まあ、いいです。",
+              "en": "You gave no reason for applying. ...Well, never mind."
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "あなたの 短所は 何ですか。",
+              "kana": "あなたの たんしょは なんですか。",
+              "en": "What is your weak point?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Name one real weak point and what you are doing about it. Honest, short, forward-looking.",
+            "grammar": [
+              "g5"
+            ],
+            "criteria": [
+              "conclusion",
+              "specific",
+              "attitude"
+            ],
+            "lookForEn": "One honest weak point, a short example, and the habit you now use to manage it.",
+            "pitfallsEn": "「短所は ありません」, a weak point with no improvement, or one that makes the job impossible.",
+            "hintJa": "短所は、＿＿ところです。今は、＿＿ように して います。",
+            "modelAnswers": [
+              "短所は、質問するのが 苦手な ところです。前は 一人で 考えすぎて、時間が かかりました。今は、困ったら 早く 聞くように して います。"
+            ],
+            "branches": [
+              {
+                "id": "weakness_and_fix",
+                "whenEn": "Learner named a weak point AND what they do to improve it.",
+                "next": "n7a",
+                "exampleJa": "短所は、質問するのが 苦手な ところです。今は、早く 聞くように して います。"
+              },
+              {
+                "id": "weakness_only",
+                "whenEn": "Learner named a weak point but no improvement.",
+                "next": "n7b",
+                "exampleJa": "短所は、質問するのが 苦手な ところです。"
+              },
+              {
+                "id": "no_weakness",
+                "whenEn": "Learner said they have no weak point, or avoided the question.",
+                "next": "n7b",
+                "exampleJa": "短所は 特に ありません。"
+              }
+            ],
+            "fallback": "n7b"
+          }
+        },
+        {
+          "id": "n7a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…直して いる 途中、という ことですね。わかりました。",
+              "kana": "…なおして いる とちゅう、という ことですね。わかりました。",
+              "en": "...So you're still working on it. All right.",
+              "tts": "直して いる 途中、という ことですね。わかりました。"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "それを どう 直すのかが、ありませんね。…白石さん。",
+              "kana": "それを どう なおすのかが、ありませんね。…しらいしさん。",
+              "en": "You haven't said how you'll fix it. ...Ms Shiraishi."
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "次の 質問です。ご家族は どんな お仕事を されて いますか。",
+              "kana": "つぎの しつもんです。ごかぞくは どんな おしごとを されて いますか。",
+              "en": "Next question. What kind of work does your family do?"
+            }
+          ],
+          "focus": "resume",
+          "listen": {
+            "promptEn": "This question has nothing to do with your ability — companies in Japan are not supposed to ask it. Stay calm and polite: answer in one short sentence, or politely steer back to your own skills. Don't accuse them.",
+            "grammar": [
+              "g6"
+            ],
+            "criteria": [
+              "composure",
+              "keigo",
+              "length"
+            ],
+            "lookForEn": "A calm, short reply that does not get pulled into family details and brings the talk back to your own experience.",
+            "pitfallsEn": "A long explanation about your family, an angry 「それは 違法です」, or a shocked silence.",
+            "hintJa": "家族は ＿＿。恐れ入りますが、私自身の ＿＿に ついて お話ししても よろしいでしょうか。",
+            "modelAnswers": [
+              "家族は プノンペンで 元気に 暮らして おります。恐れ入りますが、私自身の 経験に ついて お話ししても よろしいでしょうか。",
+              "恐れ入りますが、家族の ことは お答えを 控えさせて ください。仕事に ついての ご質問には、何でも お答えします。",
+              "両親は プノンペンで 小さい 店を して います。それを 見て、お店を 助ける システムを 作りたいと 思いました。"
+            ],
+            "branches": [
+              {
+                "id": "brief_then_back",
+                "whenEn": "Learner answered briefly about their family and/or connected it back to themselves or the job.",
+                "next": "n9a",
+                "exampleJa": "両親は プノンペンで 小さい 店を して います。それで、お店を 助ける 仕事が したいです。"
+              },
+              {
+                "id": "polite_redirect",
+                "whenEn": "Learner politely declined or steered back to their own experience without giving family details.",
+                "next": "n9b",
+                "exampleJa": "恐れ入りますが、私自身の 経験に ついて お話ししても よろしいでしょうか。"
+              },
+              {
+                "id": "accused",
+                "whenEn": "Learner got angry, called the question illegal or rude, or flatly refused.",
+                "next": "n9c",
+                "exampleJa": "その 質問は 失礼です。答えません。"
+              }
+            ],
+            "fallback": "n9a"
+          }
+        },
+        {
+          "id": "n9a",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "そうですか。わかりました。",
+              "kana": "そうですか。わかりました。",
+              "en": "I see. All right."
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…いいでしょう。仕事の 話を 続けます。",
+              "kana": "…いいでしょう。しごとの はなしを つづけます。",
+              "en": "...Very well. Let's go on with the job.",
+              "tts": "いいでしょう。仕事の 話を 続けます。"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9c",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "……。わかりました。次に 行きます。",
+              "kana": "……。わかりました。つぎに いきます。",
+              "en": "... All right. Let's move on.",
+              "gesture": "think",
+              "tts": "わかりました。次に 行きます。"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "新人を 育てるのに、3年 かかります。",
+              "kana": "しんじんを そだてるのに、さんねん かかります。",
+              "en": "It takes three years to train a new hire.",
+              "tts": "しんじんを そだてるのに、さんねん かかります。"
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "あなたは、2、3年で 辞めるのでは ありませんか。",
+              "kana": "あなたは、に、さんねんで やめるのでは ありませんか。",
+              "en": "Won't you quit after two or three years?",
+              "tts": "あなたは、に、さんねんで やめるのでは ありませんか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "He doubts you will stay. Don't just say 「いいえ」: accept the worry, then give your plan — how long, and what you want to become here.",
+            "grammar": [
+              "g3",
+              "g7"
+            ],
+            "criteria": [
+              "composure",
+              "attitude",
+              "company"
+            ],
+            "lookForEn": "A cushion (ご心配は わかります), a clear wish to stay, and a concrete picture such as team leader in five years.",
+            "pitfallsEn": "A flat 「辞めません」 with no plan, or 「まだ わかりません」.",
+            "hintJa": "ご心配は わかります。ただ、私は ＿＿と 考えて おります。＿＿年後には、＿＿。",
+            "modelAnswers": [
+              "ご心配は よく わかります。ただ、私は 御社で 長く 働きたいと 考えて おります。5年後には チームリーダーに なって、後輩を 助けたいです。"
+            ],
+            "branches": [
+              {
+                "id": "long_term_plan",
+                "whenEn": "Learner said they want to stay AND gave a plan, a time frame or a goal at the company.",
+                "next": "n11a",
+                "exampleJa": "ご心配は わかります。ただ、長く 働きたいです。5年後には チームリーダーに なりたいです。"
+              },
+              {
+                "id": "no_plan",
+                "whenEn": "Learner only denied it, said they don't know, or said がんばります with no plan.",
+                "next": "n11b",
+                "exampleJa": "いいえ、辞めません。がんばります。"
+              }
+            ],
+            "fallback": "n11b"
+          }
+        },
+        {
+          "id": "n11a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…口で 言うのは 簡単です。でも、覚えて おきます。",
+              "kana": "…くちで いうのは かんたんです。でも、おぼえて おきます。",
+              "en": "...Saying it is easy. But I'll remember it.",
+              "tts": "口で 言うのは 簡単です。でも、覚えて おきます。"
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "id": "n11b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "計画が ありませんね。それでは、こちらも 決められません。",
+              "kana": "けいかくが ありませんね。それでは、こちらも きめられません。",
+              "en": "You have no plan. Then we can't decide either."
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "id": "n12",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "時間です。最後に、何か 質問は…",
+              "kana": "じかんです。さいごに、なにか しつもんは…",
+              "en": "Time is up. Finally, do you have any ques—"
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "その 前に、一つ。あなたを 採用する メリットは 何ですか。",
+              "kana": "その まえに、ひとつ。あなたを さいようする メリットは なんですか。",
+              "en": "Before that, one thing. What do we gain by hiring you?"
+            }
+          ],
+          "listen": {
+            "promptEn": "He cuts in with the hardest question. Conclusion first: one strength, the evidence for it, and how it helps this company.",
+            "grammar": [
+              "g7",
+              "g4"
+            ],
+            "criteria": [
+              "composure",
+              "conclusion",
+              "specific",
+              "company"
+            ],
+            "lookForEn": "One strength stated first, proof from the project, and a link to the company's work — no boasting, no excess modesty.",
+            "pitfallsEn": "「まだ 何も できません」, or only 「がんばります」「何でも します」.",
+            "hintJa": "メリットは、＿＿ことです。大学の プロジェクトでも、＿＿。この 強みで、御社の お役に 立てると 考えて おります。",
+            "modelAnswers": [
+              "メリットは、ていねいな テストで 品質を 守れる ことです。大学の プロジェクトでも、締め切りの 前に バグを 見つけて 直しました。この 強みで、御社の お役に 立てると 考えて おります。"
+            ],
+            "branches": [
+              {
+                "id": "strength_evidence",
+                "whenEn": "Learner named a concrete strength AND evidence or how it helps the company.",
+                "next": "n13a",
+                "exampleJa": "ていねいに テストできる ことです。プロジェクトでも バグを 見つけて 直しました。"
+              },
+              {
+                "id": "too_modest",
+                "whenEn": "Learner said they have no merit yet, or only apologised.",
+                "next": "n13b",
+                "exampleJa": "すみません。まだ 何も できません。"
+              },
+              {
+                "id": "enthusiasm_only",
+                "whenEn": "Learner gave only enthusiasm (will work hard, will do anything) with no concrete strength.",
+                "next": "n13c",
+                "exampleJa": "一生懸命 がんばります。何でも します。"
+              }
+            ],
+            "fallback": "n13b"
+          }
+        },
+        {
+          "id": "n13a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "…わかりました。白石さん、どうぞ。",
+              "kana": "…わかりました。しらいしさん、どうぞ。",
+              "en": "...All right. Go ahead, Ms Shiraishi.",
+              "tts": "わかりました。白石さん、どうぞ。"
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n13b",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "それでは、採用する 理由が ありませんね。…白石さん。",
+              "kana": "それでは、さいようする りゆうが ありませんね。…しらいしさん。",
+              "en": "Then we have no reason to hire you. ...Ms Shiraishi."
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n13c",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "がんばるのは、全員 同じです。…白石さん、どうぞ。",
+              "kana": "がんばるのは、ぜんいん おなじです。…しらいしさん、どうぞ。",
+              "en": "Everyone works hard. ...Go ahead, Ms Shiraishi."
+            }
+          ],
+          "next": "n14"
+        },
+        {
+          "id": "n14",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "あと 2分です。何か 質問は ありますか。",
+              "kana": "あと にふんです。なにか しつもんは ありますか。",
+              "en": "Two minutes left. Do you have any questions?",
+              "tts": "あと にふんです。なにか しつもんは ありますか。"
+            }
+          ],
+          "focus": "clock",
+          "listen": {
+            "promptEn": "Two minutes left. Ask one short question about the work — it shows you still want the job.",
+            "grammar": [
+              "g8"
+            ],
+            "criteria": [
+              "attitude",
+              "company",
+              "keigo"
+            ],
+            "lookForEn": "One short, polite question about the job (first tasks, training, the team).",
+            "pitfallsEn": "「特に ありません」, or a long question when you were told two minutes are left.",
+            "hintJa": "はい、一つ あります。＿＿に ついて、教えて いただけますか。",
+            "modelAnswers": [
+              "はい、一つ あります。新人は 最初に どんな 仕事を 担当しますか。",
+              "はい。入社までに 勉強して おく ことを、教えて いただけますか。"
+            ],
+            "branches": [
+              {
+                "id": "work_question",
+                "whenEn": "Learner asked a question about the work, training, the team or how to prepare.",
+                "next": "n15a",
+                "exampleJa": "新人は 最初に どんな 仕事を 担当しますか。"
+              },
+              {
+                "id": "no_question",
+                "whenEn": "Learner said they have no questions.",
+                "next": "n15b",
+                "exampleJa": "いいえ、特に ありません。"
+              }
+            ],
+            "fallback": "n15b"
+          }
+        },
+        {
+          "id": "n15a",
+          "say": [
+            {
+              "who": "kuroiwa",
+              "ja": "入社後は、まず テストを 担当します。そこで 製品を 覚えます。",
+              "kana": "にゅうしゃごは、まず テストを たんとうします。そこで せいひんを おぼえます。",
+              "en": "After joining, you start with testing. That's how you learn the product."
+            }
+          ],
+          "next": "n16"
+        },
+        {
+          "id": "n15b",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "ありませんか。…わかりました。",
+              "kana": "ありませんか。…わかりました。",
+              "en": "None? ...All right."
+            }
+          ],
+          "next": "n16"
+        },
+        {
+          "id": "n16",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "面接は 以上です。",
+              "kana": "めんせつは いじょうです。",
+              "en": "That is the end of the interview."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "実は、今日は わざと 厳しく 質問しました。",
+              "kana": "じつは、きょうは わざと きびしく しつもんしました。",
+              "en": "Actually, we were strict on purpose today."
+            }
+          ],
+          "next": "n17"
+        },
+        {
+          "id": "n17",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "家族の 仕事は、本当は 面接で 聞いては いけない 質問です。",
+              "kana": "かぞくの しごとは、ほんとうは めんせつで きいては いけない しつもんです。",
+              "en": "Your family's work is really a question that must not be asked in an interview."
+            },
+            {
+              "who": "kuroiwa",
+              "ja": "困る 質問にも、落ち着いて 短く 答える。それが できれば 十分です。",
+              "kana": "こまる しつもんにも、おちついて みじかく こたえる。それが できれば じゅうぶんです。",
+              "en": "Answer even awkward questions calmly and briefly. If you can do that, it's enough."
+            }
+          ],
+          "listen": {
+            "promptEn": "The interview is over. Thank them for their time, then say the leaving phrase.",
+            "grammar": [
+              "g9"
+            ],
+            "criteria": [
+              "manners",
+              "keigo",
+              "composure"
+            ],
+            "lookForEn": "A full お礼 — 本日は ありがとう ございました — and 失礼いたします, in the same calm voice as at the start.",
+            "pitfallsEn": "Saying お疲れさまでした to the interviewer, a casual ありがとう, or leaving in a hurry because the interview was hard.",
+            "hintJa": "本日は お時間を いただき、＿＿。失礼いたします。",
+            "modelAnswers": [
+              "本日は お時間を いただき、ありがとう ございました。失礼いたします。",
+              "本日は ありがとう ございました。失礼いたします。"
+            ],
+            "branches": [
+              {
+                "id": "full_thanks",
+                "whenEn": "Learner thanked them politely (ありがとう ございました), with or without 失礼いたします.",
+                "next": "n18a",
+                "exampleJa": "本日は ありがとう ございました。失礼いたします。"
+              },
+              {
+                "id": "short_or_casual",
+                "whenEn": "Learner said only はい / 失礼します / お疲れさまでした, or a casual ありがとう, with no polite thanks.",
+                "next": "n18b",
+                "exampleJa": "はい、失礼します。"
+              }
+            ],
+            "fallback": "n18b"
+          }
+        },
+        {
+          "id": "n18a",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "お疲れさまでした。結果は 1週間以内に メールで ご連絡します。",
+              "kana": "おつかれさまでした。けっかは いっしゅうかんいないに メールで ごれんらくします。",
+              "en": "Thank you for coming. We'll email you the result within a week.",
+              "tts": "おつかれさまでした。けっかは いっしゅうかんいないに メールで ごれんらくします。",
+              "gesture": "bow_light"
+            }
+          ],
+          "learner": "stand",
+          "focus": "door",
+          "end": true
+        },
+        {
+          "id": "n18b",
+          "say": [
+            {
+              "who": "shiraishi",
+              "ja": "…はい。結果は 1週間以内に ご連絡します。出口は あちらです。",
+              "kana": "…はい。けっかは いっしゅうかんいないに ごれんらくします。でぐちは あちらです。",
+              "en": "...Yes. We'll contact you within a week. The exit is over there.",
+              "tts": "はい。結果は 1週間以内に ご連絡します。出口は あちらです。",
+              "gesture": "point",
+              "target": "door"
+            }
+          ],
+          "learner": "stand",
+          "focus": "door",
+          "end": true
+        }
+      ]
+    }
+  ]
+}

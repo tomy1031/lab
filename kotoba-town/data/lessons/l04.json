@@ -1,0 +1,1239 @@
+{
+  "lesson": 4,
+  "titleJa": "なんじから なんじまで",
+  "titleEn": "From what time to what time?",
+  "summaryEn": "Tell the time, ask opening hours and closed days, and talk about your daily routine: getting up, working, resting, yesterday and today.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "いま ～じ ～ふんです",
+      "meaningEn": "It is … o'clock … minutes now",
+      "exampleJa": "いま 4じ40ぷんです。",
+      "exampleEn": "It is 4:40 now."
+    },
+    {
+      "id": "g2",
+      "pattern": "Vます／Vません",
+      "meaningEn": "Polite verb: habit or future, and its negative",
+      "exampleJa": "どようびは はたらきません。",
+      "exampleEn": "I don't work on Saturdays."
+    },
+    {
+      "id": "g3",
+      "pattern": "Vました／Vませんでした",
+      "meaningEn": "Polite past and negative past",
+      "exampleJa": "きのう やすみました。はたらきませんでした。",
+      "exampleEn": "I rested yesterday. I didn't work."
+    },
+    {
+      "id": "g4",
+      "pattern": "N(じかん)に V",
+      "meaningEn": "Do something at a clock time / on a day (に); not after きのう, まいあさ, いま",
+      "exampleJa": "まいあさ 6じはんに おきます。",
+      "exampleEn": "I get up at 6:30 every morning."
+    },
+    {
+      "id": "g5",
+      "pattern": "N1から N2まで",
+      "meaningEn": "From N1 until N2 (either half can stand alone)",
+      "exampleJa": "びじゅつかんは 9じはんから 5じまでです。",
+      "exampleEn": "The museum is open from 9:30 to 5:00."
+    },
+    {
+      "id": "g6",
+      "pattern": "N1と N2",
+      "meaningEn": "N1 and N2 (joins nouns)",
+      "exampleJa": "やすみは どようびと にちようびです。",
+      "exampleEn": "My days off are Saturday and Sunday."
+    },
+    {
+      "id": "g7",
+      "pattern": "～ね",
+      "meaningEn": "Sentence-final ね: confirming what you heard, or showing sympathy",
+      "exampleJa": "5じまでですね。／たいへんですね。",
+      "exampleEn": "Until 5, right? / That must be hard."
+    },
+    {
+      "id": "g8",
+      "pattern": "なんじ／なんようび／なんばん",
+      "meaningEn": "What time / which day of the week / what number",
+      "exampleJa": "やすみは なんようびですか。",
+      "exampleEn": "Which day is it closed?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "今",
+      "kana": "いま",
+      "en": "now"
+    },
+    {
+      "ja": "～時／～分／半",
+      "kana": "～じ／～ふん・ぷん／はん",
+      "en": "… o'clock / … minutes / half past"
+    },
+    {
+      "ja": "午前／午後",
+      "kana": "ごぜん／ごご",
+      "en": "a.m. / p.m."
+    },
+    {
+      "ja": "朝／夜",
+      "kana": "あさ／よる",
+      "en": "morning / night"
+    },
+    {
+      "ja": "きのう／きょう／あした",
+      "kana": "きのう／きょう／あした",
+      "en": "yesterday / today / tomorrow"
+    },
+    {
+      "ja": "毎朝／毎晩",
+      "kana": "まいあさ／まいばん",
+      "en": "every morning / every night"
+    },
+    {
+      "ja": "起きます",
+      "kana": "おきます",
+      "en": "get up"
+    },
+    {
+      "ja": "寝ます",
+      "kana": "ねます",
+      "en": "go to bed, sleep"
+    },
+    {
+      "ja": "働きます",
+      "kana": "はたらきます",
+      "en": "work"
+    },
+    {
+      "ja": "休みます",
+      "kana": "やすみます",
+      "en": "rest, take a day off"
+    },
+    {
+      "ja": "勉強します",
+      "kana": "べんきょうします",
+      "en": "study"
+    },
+    {
+      "ja": "終わります",
+      "kana": "おわります",
+      "en": "finish, end"
+    },
+    {
+      "ja": "休み",
+      "kana": "やすみ",
+      "en": "day off, closed day"
+    },
+    {
+      "ja": "昼休み",
+      "kana": "ひるやすみ",
+      "en": "lunch break"
+    },
+    {
+      "ja": "美術館",
+      "kana": "びじゅつかん",
+      "en": "art museum"
+    },
+    {
+      "ja": "月曜日",
+      "kana": "げつようび",
+      "en": "Monday"
+    },
+    {
+      "ja": "土曜日",
+      "kana": "どようび",
+      "en": "Saturday"
+    },
+    {
+      "ja": "日曜日",
+      "kana": "にちようび",
+      "en": "Sunday"
+    },
+    {
+      "ja": "何曜日",
+      "kana": "なんようび",
+      "en": "which day of the week"
+    },
+    {
+      "ja": "電話番号",
+      "kana": "でんわばんごう",
+      "en": "telephone number"
+    },
+    {
+      "ja": "何番",
+      "kana": "なんばん",
+      "en": "what number"
+    },
+    {
+      "ja": "そちら",
+      "kana": "そちら",
+      "en": "your place, your side (on the phone)"
+    },
+    {
+      "ja": "たいへんですね",
+      "kana": "たいへんですね",
+      "en": "That must be hard."
+    },
+    {
+      "ja": "チケット",
+      "kana": "チケット",
+      "en": "ticket"
+    }
+  ],
+  "tipsEn": [
+    "Many Japanese museums close on Mondays. It is worth a quick call or a look at the sign before you go.",
+    "On the phone, repeat times and numbers back with ～ですね. Everyone does it, and it catches mistakes.",
+    "Careful with 4時 (よじ), 7時 (しちじ) and 9時 (くじ). Minutes switch between ふん and ぷん: 5ふん, 10ぷん."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-04/grammar/",
+      "https://jpdb.io/textbook/9/minna-no-nihongo-i/4/lesson-4/vocabulary-list",
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-4.html",
+      "https://jepang.org/en/tutorial/telling-time-in-japanese"
+    ],
+    "notesEn": "Lesson 4 introduces clock time (いま ～じ ～ふんです), the first verbs in ます form with all four polite endings (ます, ません, ました, ませんでした), time + に, から／まで, と joining nouns, sentence-final ね, and the question words なんじ, なんようび and なんばん. The only verbs are おきます, ねます, はたらきます, やすみます, べんきょうします and おわります, so scenes stay with schedules and routines. Real situations: phoning a museum, bank or library about hours and closed days, reading an opening-hours sign, and small talk about when you get up, work and rest. Typical slips: よじ／しちじ／くじ, ふん vs ぷん, adding に after きのう or まいあさ, dropping に after a clock time, saying ませんました for ませんでした, and using ます for something that happened yesterday."
+  },
+  "variants": [
+    {
+      "id": "l04a",
+      "titleJa": "びじゅつかんは なんじまで",
+      "titleEn": "Calling the art museum",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": true,
+      "briefEn": "It is Friday evening at your desk. You would like to see the exhibition at Midori Art Museum this weekend, so you phone to check when it is open.",
+      "roleEn": "You are the caller. The receptionist, Ueda-san, answers the phone.",
+      "missionsEn": [
+        {
+          "text": "Ask the opening hours",
+          "grammar": [
+            "g5",
+            "g8"
+          ]
+        },
+        {
+          "text": "Ask which day it is closed",
+          "grammar": [
+            "g8"
+          ]
+        },
+        {
+          "text": "Confirm what you heard with ～ね",
+          "grammar": [
+            "g7",
+            "g6"
+          ]
+        },
+        {
+          "text": "Ask the café's hours or phone number",
+          "grammar": [
+            "g8",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "ueda"
+      ],
+      "positions": {
+        "ueda": "phone"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "はい、みどり美術館で ございます。",
+              "kana": "はい、みどりびじゅつかんで ございます。",
+              "en": "Hello, Midori Art Museum.",
+              "gesture": "phone"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask the opening hours: from what time to what time?",
+            "grammar": [
+              "g5",
+              "g8"
+            ],
+            "hintJa": "すみません。そちらは なんじから ＿＿ですか。",
+            "modelAnswers": [
+              "すみません。そちらは なんじから なんじまでですか。",
+              "びじゅつかんは なんじまでですか。"
+            ],
+            "branches": [
+              {
+                "id": "from_to",
+                "whenEn": "Learner asked both: from what time and until what time.",
+                "next": "n2",
+                "exampleJa": "すみません。そちらは なんじから なんじまでですか。"
+              },
+              {
+                "id": "until_only",
+                "whenEn": "Learner asked only until what time (closing time).",
+                "next": "n2_until",
+                "exampleJa": "びじゅつかんは なんじまでですか。"
+              },
+              {
+                "id": "from_only",
+                "whenEn": "Learner asked only from what time (opening time).",
+                "next": "n2_from",
+                "exampleJa": "びじゅつかんは なんじからですか。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "9時半から 5時までです。",
+              "kana": "くじはんから ごじまでです。",
+              "en": "From 9:30 to 5:00.",
+              "tts": "くじはんから ごじまでです。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_until",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "午後 5時までです。朝は 9時半からです。",
+              "kana": "ごご ごじまでです。あさは くじはんからです。",
+              "en": "Until 5 p.m. In the morning we open at 9:30.",
+              "tts": "ごご ごじまでです。あさは くじはんからです。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_from",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "朝 9時半からです。午後 5時までです。",
+              "kana": "あさ くじはんからです。ごご ごじまでです。",
+              "en": "From 9:30 in the morning, until 5 p.m.",
+              "tts": "あさ くじはんからです。ごご ごじまでです。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "listen": {
+            "promptEn": "Now ask which day of the week the museum is closed.",
+            "grammar": [
+              "g8"
+            ],
+            "hintJa": "やすみは なん＿＿ですか。",
+            "modelAnswers": [
+              "やすみは なんようびですか。",
+              "にちようびは やすみですか。"
+            ],
+            "branches": [
+              {
+                "id": "which_day",
+                "whenEn": "Learner asked which day is the closed day, or asked whether Monday is closed.",
+                "next": "n4",
+                "exampleJa": "やすみは なんようびですか。"
+              },
+              {
+                "id": "specific_day",
+                "whenEn": "Learner asked whether a particular day other than Monday (e.g. Sunday, tomorrow) is closed.",
+                "next": "n4_no",
+                "exampleJa": "にちようびは やすみですか。"
+              }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "はい、休みは 月曜日です。",
+              "kana": "はい、やすみは げつようびです。",
+              "en": "Yes, we are closed on Mondays."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "いいえ、休みは 月曜日です。",
+              "kana": "いいえ、やすみは げつようびです。",
+              "en": "No, our closed day is Monday."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "土曜日と 日曜日は 夜 8時までです。",
+              "kana": "どようびと にちようびは よる はちじまでです。",
+              "en": "On Saturdays and Sundays we are open until 8 at night.",
+              "tts": "どようびと にちようびは よる はちじまでです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Good news for your weekend! Confirm what you heard by repeating it with ～ね.",
+            "grammar": [
+              "g7",
+              "g6"
+            ],
+            "hintJa": "どようびと ＿＿は ＿＿までですね。",
+            "modelAnswers": [
+              "どようびと にちようびは 8じまでですね。"
+            ],
+            "branches": [
+              {
+                "id": "confirmed",
+                "whenEn": "Learner repeated the weekend hours to confirm (～ですね), or reacted that they understood.",
+                "next": "n6",
+                "exampleJa": "どようびと にちようびは 8じまでですね。"
+              },
+              {
+                "id": "asked_day",
+                "whenEn": "Learner instead asked about tomorrow or about Saturday in particular.",
+                "next": "n6_sat",
+                "exampleJa": "あしたは なんじまでですか。"
+              }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "はい、そうです。",
+              "kana": "はい、そうです。",
+              "en": "Yes, that's right."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_sat",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "あしたは 土曜日です。夜 8時までです。",
+              "kana": "あしたは どようびです。よる はちじまでです。",
+              "en": "Tomorrow is Saturday. We are open until 8 at night.",
+              "tts": "あしたは どようびです。よる はちじまでです。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "listen": {
+            "promptEn": "You would like lunch at the museum café. Ask the café's hours, or ask for its phone number.",
+            "grammar": [
+              "g8",
+              "g5"
+            ],
+            "hintJa": "カフェは なんじから ＿＿ですか。／カフェの でんわばんごうは ＿＿ですか。",
+            "modelAnswers": [
+              "カフェは なんじから なんじまでですか。",
+              "カフェの でんわばんごうは なんばんですか。"
+            ],
+            "branches": [
+              {
+                "id": "cafe_hours",
+                "whenEn": "Learner asked about the café's opening hours.",
+                "next": "n8_hours",
+                "exampleJa": "カフェは なんじから なんじまでですか。"
+              },
+              {
+                "id": "cafe_number",
+                "whenEn": "Learner asked for the café's telephone number.",
+                "next": "n8_number",
+                "exampleJa": "カフェの でんわばんごうは なんばんですか。"
+              }
+            ],
+            "fallback": "n8_hours"
+          }
+        },
+        {
+          "id": "n8_hours",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "カフェは 11時から 4時半までです。",
+              "kana": "カフェは じゅういちじから よじはんまでです。",
+              "en": "The café is open from 11:00 to 4:30.",
+              "tts": "カフェは じゅういちじから よじはんまでです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_number",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "カフェは 555の 0142です。",
+              "kana": "カフェは ごごごの ゼロいちよんにです。",
+              "en": "The café's number is 555-0142.",
+              "tts": "カフェは、ごーごーごーの、ゼロ、いち、よん、に、です。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "お電話 ありがとう ございました。",
+              "kana": "おでんわ ありがとう ございました。",
+              "en": "Thank you for calling."
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l04b",
+      "titleJa": "きょうは 5じまで",
+      "titleEn": "Twenty minutes to closing",
+      "scene": "museum",
+      "setup": {
+        "time": "evening",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Thursday, late afternoon. Your phone battery is dead and you have no idea what time it is. You hurry up to the art museum counter.",
+      "roleEn": "You are a visitor. Ueda-san is at the ticket counter.",
+      "missionsEn": [
+        {
+          "text": "Ask the time, or when the museum closes today",
+          "grammar": [
+            "g1",
+            "g8"
+          ]
+        },
+        {
+          "text": "Ask about tomorrow or the weekend",
+          "grammar": [
+            "g5",
+            "g8"
+          ]
+        },
+        {
+          "text": "Ask about the café or the closed day",
+          "grammar": [
+            "g8",
+            "g5"
+          ]
+        },
+        {
+          "text": "Decide: a ticket today, or another day",
+          "grammar": [
+            "g7",
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "ueda"
+      ],
+      "positions": {
+        "ueda": "counter"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "hours_sign",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "いらっしゃいませ。",
+              "kana": "いらっしゃいませ。",
+              "en": "Welcome.",
+              "gesture": "bow_light",
+              "alts": [
+                {
+                  "ja": "こんにちは。いらっしゃいませ。",
+                  "kana": "こんにちは。いらっしゃいませ。",
+                  "en": "Hello, welcome."
+                }
+              ]
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask what time it is now, or until what time the museum is open today.",
+            "grammar": [
+              "g1",
+              "g8",
+              "g5"
+            ],
+            "hintJa": "すみません。いま ＿＿ですか。／きょうは なんじ＿＿ですか。",
+            "modelAnswers": [
+              "すみません。いま なんじですか。",
+              "きょうは なんじまでですか。"
+            ],
+            "branches": [
+              {
+                "id": "time_now",
+                "whenEn": "Learner asked what time it is now.",
+                "next": "n2_now",
+                "exampleJa": "すみません。いま なんじですか。"
+              },
+              {
+                "id": "closing",
+                "whenEn": "Learner asked until what time (or what hours) the museum is open today.",
+                "next": "n2_close",
+                "exampleJa": "きょうは なんじまでですか。"
+              }
+            ],
+            "fallback": "n2_now"
+          }
+        },
+        {
+          "id": "n2_now",
+          "focus": "clock",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "今 4時40分です。美術館は 5時までです。",
+              "kana": "いま よじ よんじゅっぷんです。びじゅつかんは ごじまでです。",
+              "en": "It is 4:40 now. The museum is open until 5.",
+              "gesture": "point",
+              "target": "clock",
+              "tts": "いま よじ よんじゅっぷんです。びじゅつかんは ごじまでです。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_close",
+          "focus": "hours_sign",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "きょうは 5時までです。今 4時40分です。",
+              "kana": "きょうは ごじまでです。いま よじ よんじゅっぷんです。",
+              "en": "Today we are open until 5. It is 4:40 now.",
+              "gesture": "point",
+              "target": "hours_sign",
+              "tts": "きょうは ごじまでです。いま よじ よんじゅっぷんです。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "listen": {
+            "promptEn": "Only twenty minutes left! Ask about another day: tomorrow, or the weekend.",
+            "grammar": [
+              "g5",
+              "g8"
+            ],
+            "hintJa": "＿＿は なんじから なんじまでですか。",
+            "modelAnswers": [
+              "あしたは なんじから なんじまでですか。",
+              "どようびは なんじまでですか。"
+            ],
+            "branches": [
+              {
+                "id": "tomorrow",
+                "whenEn": "Learner asked about tomorrow (or Friday).",
+                "next": "n4_tomorrow",
+                "exampleJa": "あしたは なんじから なんじまでですか。"
+              },
+              {
+                "id": "weekend",
+                "whenEn": "Learner asked about Saturday, Sunday or the weekend.",
+                "next": "n4_weekend",
+                "exampleJa": "どようびは なんじまでですか。"
+              }
+            ],
+            "fallback": "n4_weekend"
+          }
+        },
+        {
+          "id": "n4_tomorrow",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "あしたは 9時半から 5時までです。",
+              "kana": "あしたは くじはんから ごじまでです。",
+              "en": "Tomorrow we are open from 9:30 to 5:00.",
+              "tts": "あしたは くじはんから ごじまでです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_weekend",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "土曜日と 日曜日は 夜 8時までです。",
+              "kana": "どようびと にちようびは よる はちじまでです。",
+              "en": "On Saturdays and Sundays we are open until 8 at night.",
+              "tts": "どようびと にちようびは よる はちじまでです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "cafe_sign",
+          "listen": {
+            "promptEn": "Ask one more thing: the café's hours, or which day the museum is closed.",
+            "grammar": [
+              "g8",
+              "g5"
+            ],
+            "hintJa": "カフェは なんじ＿＿ですか。／やすみは ＿＿ですか。",
+            "modelAnswers": [
+              "カフェは なんじまでですか。",
+              "やすみは なんようびですか。"
+            ],
+            "branches": [
+              {
+                "id": "cafe",
+                "whenEn": "Learner asked about the café (hours, or whether it is open).",
+                "next": "n6_cafe",
+                "exampleJa": "カフェは なんじまでですか。"
+              },
+              {
+                "id": "closed_day",
+                "whenEn": "Learner asked which day the museum is closed.",
+                "next": "n6_closed",
+                "exampleJa": "やすみは なんようびですか。"
+              }
+            ],
+            "fallback": "n6_closed"
+          }
+        },
+        {
+          "id": "n6_cafe",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "カフェは 11時から 4時半までです。",
+              "kana": "カフェは じゅういちじから よじはんまでです。",
+              "en": "The café is open from 11:00 to 4:30.",
+              "tts": "カフェは じゅういちじから よじはんまでです。"
+            },
+            {
+              "who": "ueda",
+              "ja": "すみません、きょうは 4時半に 終わりました。",
+              "kana": "すみません、きょうは よじはんに おわりました。",
+              "en": "I'm sorry, it closed at 4:30 today.",
+              "gesture": "bow_light",
+              "tts": "すみません、きょうは よじはんに おわりました。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_closed",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "休みは 月曜日です。",
+              "kana": "やすみは げつようびです。",
+              "en": "We are closed on Mondays."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "ticket",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "きょうの チケットですか。",
+              "kana": "きょうの チケットですか。",
+              "en": "Would you like a ticket for today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Decide: go in for the last twenty minutes, or come back another day. Tell her.",
+            "grammar": [
+              "g7",
+              "g4"
+            ],
+            "hintJa": "はい、きょうの ＿＿を ください。／いいえ、＿＿に おねがいします。",
+            "modelAnswers": [
+              "はい、きょうの チケットを ください。5じまでですね。",
+              "いいえ、どようびに おねがいします。8じまでですね。"
+            ],
+            "branches": [
+              {
+                "id": "today",
+                "whenEn": "Learner wants a ticket for today / to go in now.",
+                "next": "end_today",
+                "exampleJa": "はい、きょうの チケットを ください。"
+              },
+              {
+                "id": "another_day",
+                "whenEn": "Learner declined today and prefers another day.",
+                "next": "end_later",
+                "exampleJa": "いいえ、どようびに おねがいします。"
+              }
+            ],
+            "fallback": "end_later"
+          }
+        },
+        {
+          "id": "end_today",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "はい、1,200円です。5時までですね。どうぞ。",
+              "kana": "はい、せんにひゃくえんです。ごじまでですね。どうぞ。",
+              "en": "That's 1,200 yen. Until 5, remember. Here you are.",
+              "gesture": "offer",
+              "tts": "はい、せんにひゃくえんです。ごじまでですね。どうぞ。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_later",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "わかりました。じゃ、また どうぞ。",
+              "kana": "わかりました。じゃ、また どうぞ。",
+              "en": "Certainly. Please come again.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l04c",
+      "titleJa": "げつようびの あさ",
+      "titleEn": "Monday morning coffee",
+      "scene": "cafe",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Monday, a little before nine. You are having a coffee at Sakamoto's café before work when your colleague Fujita-san drops into the seat across from you, looking tired.",
+      "roleEn": "You are his colleague. Answer with your own real routine.",
+      "missionsEn": [
+        {
+          "text": "Sympathise and say what you did yesterday",
+          "grammar": [
+            "g7",
+            "g3"
+          ]
+        },
+        {
+          "text": "Say when you get up or go to bed",
+          "grammar": [
+            "g2",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say whether you work on Saturdays",
+          "grammar": [
+            "g2",
+            "g6"
+          ]
+        },
+        {
+          "text": "Ask about lunch break or finishing time",
+          "grammar": [
+            "g8",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita"
+      ],
+      "positions": {
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Good morning.",
+              "gesture": "wave"
+            },
+            {
+              "who": "fujita",
+              "ja": "わたしは きのう 夜 11時まで 働きました。",
+              "kana": "わたしは きのう よる じゅういちじまで はたらきました。",
+              "en": "I worked until 11 last night.",
+              "tts": "わたしは きのう よる じゅういちじまで はたらきました。"
+            }
+          ],
+          "listen": {
+            "promptEn": "On a Sunday! Show sympathy, then tell him whether you worked or rested yesterday.",
+            "grammar": [
+              "g7",
+              "g3"
+            ],
+            "hintJa": "たいへんですね。わたしは きのう ＿＿ました。",
+            "modelAnswers": [
+              "たいへんですね。わたしは きのう やすみました。",
+              "たいへんですね。わたしも きのう はたらきました。",
+              "わたしは きのう はたらきませんでした。べんきょうしました。"
+            ],
+            "branches": [
+              {
+                "id": "worked",
+                "whenEn": "Learner said they also worked yesterday.",
+                "next": "n2_worked",
+                "exampleJa": "たいへんですね。わたしも きのう はたらきました。"
+              },
+              {
+                "id": "rested",
+                "whenEn": "Learner said they rested, studied or did not work yesterday (or only showed sympathy).",
+                "next": "n2_rested",
+                "exampleJa": "たいへんですね。わたしは きのう やすみました。"
+              }
+            ],
+            "fallback": "n2_rested"
+          }
+        },
+        {
+          "id": "n2_worked",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、そうですか。たいへんですね。",
+              "kana": "えっ、そうですか。たいへんですね。",
+              "en": "What, really? That must be hard.",
+              "gesture": "surprised"
+            }
+          ],
+          "nextRandom": [
+            "n3_wake",
+            "n3_sleep"
+          ]
+        },
+        {
+          "id": "n2_rested",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。わたしは 土曜日も 働きました。",
+              "kana": "そうですか。わたしは どようびも はたらきました。",
+              "en": "I see. I worked on Saturday too.",
+              "gesture": "think"
+            }
+          ],
+          "nextRandom": [
+            "n3_wake",
+            "n3_sleep"
+          ]
+        },
+        {
+          "id": "n3_wake",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "毎朝 何時に 起きますか。",
+              "kana": "まいあさ なんじに おきますか。",
+              "en": "What time do you get up every morning?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what time you get up every morning.",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "まいあさ ＿＿じに おきます。",
+            "modelAnswers": [
+              "まいあさ 6じはんに おきます。",
+              "7じに おきます。"
+            ],
+            "branches": [
+              {
+                "id": "early",
+                "whenEn": "The time the learner gave is before 7:00.",
+                "next": "n4_wake_early",
+                "exampleJa": "まいあさ 6じに おきます。"
+              },
+              {
+                "id": "late",
+                "whenEn": "The time the learner gave is 7:00 or later.",
+                "next": "n4_wake_late",
+                "exampleJa": "まいあさ 7じはんに おきます。"
+              }
+            ],
+            "fallback": "n4_wake_late"
+          }
+        },
+        {
+          "id": "n4_wake_early",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、たいへんですね。わたしは 毎朝 8時に 起きます。",
+              "kana": "えっ、たいへんですね。わたしは まいあさ はちじに おきます。",
+              "en": "Wow, that is tough. I get up at 8 every morning.",
+              "gesture": "surprised",
+              "tts": "えっ、たいへんですね。わたしは まいあさ はちじに おきます。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_wake_late",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。わたしは 8時です。会社は 9時からです。",
+              "kana": "そうですか。わたしは はちじです。かいしゃは くじからです。",
+              "en": "I see. For me it is 8. Work starts at 9.",
+              "gesture": "nod",
+              "tts": "そうですか。わたしは はちじです。かいしゃは くじからです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n3_sleep",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "毎晩 何時に 寝ますか。",
+              "kana": "まいばん なんじに ねますか。",
+              "en": "What time do you go to bed every night?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what time you go to bed every night.",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "まいばん ＿＿じに ねます。",
+            "modelAnswers": [
+              "まいばん 11じに ねます。",
+              "12じはんに ねます。"
+            ],
+            "branches": [
+              {
+                "id": "before_midnight",
+                "whenEn": "The bedtime the learner gave is before midnight (before 12).",
+                "next": "n4_sleep_early",
+                "exampleJa": "まいばん 11じに ねます。"
+              },
+              {
+                "id": "after_midnight",
+                "whenEn": "The bedtime the learner gave is midnight (12) or later.",
+                "next": "n4_sleep_late",
+                "exampleJa": "まいばん 12じはんに ねます。"
+              }
+            ],
+            "fallback": "n4_sleep_early"
+          }
+        },
+        {
+          "id": "n4_sleep_early",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。わたしは 毎晩 1時に 寝ます。",
+              "kana": "そうですか。わたしは まいばん いちじに ねます。",
+              "en": "I see. I go to bed at 1 every night.",
+              "tts": "そうですか。わたしは まいばん いちじに ねます。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_sleep_late",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、わたしもです。毎晩 1時に 寝ます。",
+              "kana": "えっ、わたしもです。まいばん いちじに ねます。",
+              "en": "Oh, me too. I go to bed at 1 every night.",
+              "gesture": "laugh",
+              "tts": "えっ、わたしもです。まいばん いちじに ねます。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "土曜日は 働きますか。",
+              "kana": "どようびは はたらきますか。",
+              "en": "Do you work on Saturdays?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him whether you work on Saturdays. You can add which days you have off.",
+            "grammar": [
+              "g2",
+              "g6"
+            ],
+            "hintJa": "はい、＿＿ます。／いいえ、＿＿ません。",
+            "modelAnswers": [
+              "いいえ、はたらきません。やすみは どようびと にちようびです。",
+              "はい、はたらきます。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner works on Saturdays.",
+                "next": "n6_yes",
+                "exampleJa": "はい、はたらきます。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner does not work on Saturdays.",
+                "next": "n6_no",
+                "exampleJa": "いいえ、はたらきません。"
+              }
+            ],
+            "fallback": "n6_no"
+          }
+        },
+        {
+          "id": "n6_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしもです。土曜日も 働きます。",
+              "kana": "わたしもです。どようびも はたらきます。",
+              "en": "Me too. I work on Saturdays as well.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。土曜日と 日曜日は 休みですね。",
+              "kana": "そうですか。どようびと にちようびは やすみですね。",
+              "en": "I see. So Saturday and Sunday are your days off.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "listen": {
+            "promptEn": "Your turn to ask. Find out when lunch break is, or what time work finishes today.",
+            "grammar": [
+              "g8",
+              "g5",
+              "g4"
+            ],
+            "hintJa": "ひるやすみは なんじから ＿＿ですか。／かいしゃは なんじに ＿＿ますか。",
+            "modelAnswers": [
+              "ひるやすみは なんじから なんじまでですか。",
+              "きょう かいしゃは なんじに おわりますか。"
+            ],
+            "branches": [
+              {
+                "id": "lunch",
+                "whenEn": "Learner asked about lunch break.",
+                "next": "n8_lunch",
+                "exampleJa": "ひるやすみは なんじから なんじまでですか。"
+              },
+              {
+                "id": "finish",
+                "whenEn": "Learner asked what time work or the company finishes.",
+                "next": "n8_finish",
+                "exampleJa": "きょう かいしゃは なんじに おわりますか。"
+              }
+            ],
+            "fallback": "n8_lunch"
+          }
+        },
+        {
+          "id": "n8_lunch",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "昼休みは 12時から 1時までです。",
+              "kana": "ひるやすみは じゅうにじから いちじまでです。",
+              "en": "Lunch break is from 12 to 1.",
+              "tts": "ひるやすみは じゅうにじから いちじまでです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_finish",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "会社は 6時に 終わります。",
+              "kana": "かいしゃは ろくじに おわります。",
+              "en": "Work finishes at 6.",
+              "tts": "かいしゃは ろくじに おわります。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あ、今 8時55分です。じゃ、また 昼休みに。",
+              "kana": "あ、いま はちじ ごじゅうごふんです。じゃ、また ひるやすみに。",
+              "en": "Oh, it's 8:55 now. See you at lunch break, then.",
+              "gesture": "wave",
+              "tts": "あ、いま はちじ ごじゅうごふんです。じゃ、また ひるやすみに。"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

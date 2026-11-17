@@ -1,0 +1,1004 @@
+{
+  "course": "it",
+  "unit": 9,
+  "storyJa": "デパートの ネットショップ トラブル",
+  "storyEn": "Trouble at the department store's online shop",
+  "episodeJa": "第9話",
+  "episodeEn": "Episode 9",
+  "titleJa": "お客さまに 説明する",
+  "titleEn": "Explain to the customer",
+  "summaryEn": "Apologise, then explain in plain words: the cause, what was done, and how you will prevent it.",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "previouslyEn": "On the morning of December 10 the department store's online shop had trouble. You took the first call and reported to the manager; the team found the cause around 11:00 and fixed it at 11:30. In the afternoon you go to the department store with Murakami-san.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "この たびは、ご迷惑を おかけして、申し訳 ございませんでした。",
+      "meaningEn": "Apologise first, before any explanation",
+      "exampleJa": "この たびは、ご迷惑を おかけして、申し訳 ございませんでした。",
+      "exampleEn": "We are very sorry for the trouble this has caused you."
+    },
+    {
+      "id": "g2",
+      "pattern": "原因は、〜した ときに、〜して しまった ことです。",
+      "meaningEn": "Explain the cause in plain words (no jargon, no excuses)",
+      "exampleJa": "原因は、価格の データを 更新した ときに、ちがう ファイルを 使って しまった ことです。",
+      "exampleEn": "The cause is that we used the wrong file when we updated the price data."
+    },
+    {
+      "id": "g3",
+      "pattern": "〜時に 〜を 直しました。今は 〜。",
+      "meaningEn": "What was done and how things are now",
+      "exampleJa": "11時半に 正しい 価格に 直しました。15件 全部 確認しました。",
+      "exampleEn": "We corrected the prices at 11:30 and checked all 15 items."
+    },
+    {
+      "id": "g4",
+      "pattern": "これからは、〜の 前に 〜します。",
+      "meaningEn": "Prevention: a concrete change from now on",
+      "exampleJa": "これからは、更新の 前に 2人で 確認します。",
+      "exampleEn": "From now on, two people will check before every update."
+    },
+    {
+      "id": "g5",
+      "pattern": "よろしければ、こちらで 〜します。／お手数を おかけします。",
+      "meaningEn": "Cushion phrase + an offer of support",
+      "exampleJa": "よろしければ、こちらで お知らせの 下書きを 作ります。",
+      "exampleEn": "If you like, we'll write a draft of the notice."
+    },
+    {
+      "id": "g6",
+      "pattern": "〜しては いかがでしょうか。",
+      "meaningEn": "Make a polite suggestion to a customer",
+      "exampleJa": "ネットショップに お知らせを 出しては いかがでしょうか。",
+      "exampleEn": "How about posting a notice in the online shop?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "お詫び",
+      "kana": "おわび",
+      "en": "apology"
+    },
+    {
+      "ja": "ご迷惑",
+      "kana": "ごめいわく",
+      "en": "trouble (caused to you)"
+    },
+    {
+      "ja": "原因",
+      "kana": "げんいん",
+      "en": "cause"
+    },
+    {
+      "ja": "対応",
+      "kana": "たいおう",
+      "en": "handling, what was done"
+    },
+    {
+      "ja": "再発防止",
+      "kana": "さいはつぼうし",
+      "en": "preventing it from happening again"
+    },
+    {
+      "ja": "価格",
+      "kana": "かかく",
+      "en": "price"
+    },
+    {
+      "ja": "データ",
+      "kana": "データ",
+      "en": "data"
+    },
+    {
+      "ja": "更新する",
+      "kana": "こうしんする",
+      "en": "to update"
+    },
+    {
+      "ja": "ファイル",
+      "kana": "ファイル",
+      "en": "file"
+    },
+    {
+      "ja": "決済サービス",
+      "kana": "けっさいサービス",
+      "en": "payment service"
+    },
+    {
+      "ja": "設定",
+      "kana": "せってい",
+      "en": "setting"
+    },
+    {
+      "ja": "期限",
+      "kana": "きげん",
+      "en": "expiry date, deadline"
+    },
+    {
+      "ja": "切れる",
+      "kana": "きれる",
+      "en": "to expire"
+    },
+    {
+      "ja": "管理する",
+      "kana": "かんりする",
+      "en": "to manage, keep track of"
+    },
+    {
+      "ja": "確認する",
+      "kana": "かくにんする",
+      "en": "to check"
+    },
+    {
+      "ja": "お知らせ",
+      "kana": "おしらせ",
+      "en": "notice"
+    },
+    {
+      "ja": "下書き",
+      "kana": "したがき",
+      "en": "draft"
+    },
+    {
+      "ja": "注文",
+      "kana": "ちゅうもん",
+      "en": "order"
+    },
+    {
+      "ja": "安心する",
+      "kana": "あんしんする",
+      "en": "to feel relieved"
+    },
+    {
+      "ja": "お手数",
+      "kana": "おてすう",
+      "en": "trouble (for you to do something)"
+    },
+    {
+      "ja": "よろしければ",
+      "kana": "よろしければ",
+      "en": "if you like"
+    },
+    {
+      "ja": "正直",
+      "kana": "しょうじき",
+      "en": "honest"
+    }
+  ],
+  "tipsEn": [
+    "Apologise first. An explanation that comes before the apology sounds like an excuse (言い訳).",
+    "Order: お詫び → 原因 → 対応 → 再発防止. Explain the cause in words the customer uses, not in engineering terms.",
+    "「気を つけます」 is not prevention. Say what will change: who checks, when, with what.",
+    "Say 'our mistake', never a person's name. To a customer the company speaks as one."
+  ],
+  "research": {
+    "sources": [
+      "https://www.biz.ne.jp/subject/blog/2007221/",
+      "https://biz.moneyforward.com/work-efficiency/basic/?p=12010",
+      "https://www.ai-agent-x.com/media/saas-incident-status-page-communication/",
+      "https://hugkum.sho.jp/241076",
+      "https://imitsu.jp/matome/customer-service/complaint-response-phone",
+      "https://line-works.com/aicall/column/phone-complaints/"
+    ],
+    "notesEn": "Japanese guides to business apologies give the same order: say exactly what you are apologising for, then the cause and how it happened, then what was done and the concrete prevention; apologies without a cause read as avoiding responsibility, and excuses or blaming are the main NG. Incident guides add that customers should hear the cause in plain words, plus what they themselves need to do and what impact remains. Cushion phrases (恐れ入りますが, お手数を おかけしますが, よろしければ) soften requests and offers but should not be overused. Complaint guides recommend offering an alternative or support rather than only explaining. Variant a is a calm explanation of the wrong price file; variant b adds a worried customer and the suggestion of a shop notice."
+  },
+  "variants": [
+    {
+      "id": "b09a",
+      "titleJa": "お詫びと ご説明",
+      "titleEn": "Apology and explanation",
+      "scene": "depato",
+      "setup": {
+        "time": "noon",
+        "season": "winter",
+        "weather": "clear"
+      },
+      "briefEn": "December 10, 2 p.m. You and Murakami-san visit Nishimura-san at the department store to apologise and explain this morning's trouble. Facts: from about 9:00, 15 items showed 0円. Cause: when we updated the price data this morning, the wrong file was used (our mistake). Fixed at 11:30, all 15 items checked. Prevention: from now on two people check before every update (更新の 前に 2人で 確認する). Three orders came in at 0円; you can send her the list today.",
+      "roleEn": "You are the engineer who took her call. You explain; Murakami-san, your project leader, stands beside you.",
+      "missionsEn": [
+        {
+          "text": "Apologise before explaining",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Explain the cause in plain words (wrong file)",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say what was done (11:30, all 15 checked) and the prevention",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Offer to send the list of the 3 orders",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "nishimura",
+        "murakami"
+      ],
+      "positions": {
+        "nishimura": "clerk",
+        "murakami": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "西村さん、お時間を いただき、ありがとう ございます。",
+              "kana": "にしむらさん、おじかんを いただき、ありがとう ございます。",
+              "en": "Nishimura-san, thank you for making time for us.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "nishimura",
+              "ja": "いえいえ、わざわざ 来て いただいて、ありがとう ございます。",
+              "kana": "いえいえ、わざわざ きて いただいて、ありがとう ございます。",
+              "en": "Not at all. Thank you for coming all the way here.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Before any explanation, apologise for this morning's trouble.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "この たびは、ご迷惑を おかけして、＿＿でした。",
+            "modelAnswers": [
+              "この たびは、ご迷惑を おかけして、申し訳 ございませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "apology_first",
+                "whenEn": "Learner apologised for the trouble (before or without explaining).",
+                "next": "n2a",
+                "exampleJa": "この たびは、ご迷惑を おかけして、申し訳 ございませんでした。"
+              },
+              {
+                "id": "explained_first",
+                "whenEn": "Learner started with the cause or the fix, without an apology.",
+                "next": "n2b",
+                "exampleJa": "けさの 件は、価格の データが 原因でした。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "いえ、すぐに 直して いただいて、助かりました。原因は 何だったんでしょうか。",
+              "kana": "いえ、すぐに なおして いただいて、たすかりました。げんいんは なんだったんでしょうか。",
+              "en": "No, it helped that you fixed it so quickly. What was the cause?"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "西村さん、まず、ご迷惑を おかけして 申し訳 ございませんでした。",
+              "kana": "にしむらさん、まず、ごめいわくを おかけして もうしわけ ございませんでした。",
+              "en": "Nishimura-san, first of all, we are very sorry for the trouble.",
+              "gesture": "bow"
+            },
+            {
+              "who": "nishimura",
+              "ja": "いえ……。それで、原因は 何だったんでしょうか。",
+              "kana": "いえ……。それで、げんいんは なんだったんでしょうか。",
+              "en": "No… So, what was the cause?"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [],
+          "listen": {
+            "promptEn": "Explain the cause in plain words: when we updated the price data this morning, we used the wrong file. It was our mistake.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "原因は、価格の データを 更新した ときに、ちがう ＿＿を 使って しまった ことです。",
+            "modelAnswers": [
+              "原因は、けさ 価格の データを 更新した ときに、ちがう ファイルを 使って しまった ことです。こちらの ミスです。"
+            ],
+            "branches": [
+              {
+                "id": "plain_cause",
+                "whenEn": "Learner explained that the wrong file was used when the price data was updated.",
+                "next": "n4a",
+                "exampleJa": "価格の データを 更新した ときに、ちがう ファイルを 使って しまいました。"
+              },
+              {
+                "id": "vague_cause",
+                "whenEn": "Learner gave a vague or technical cause (a data mistake, a bug, a system problem) without the wrong file.",
+                "next": "n4b",
+                "exampleJa": "データの ミスが 原因です。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ちがう ファイルだったんですね。よく わかりました。",
+              "kana": "ちがう ファイルだったんですね。よく わかりました。",
+              "en": "So it was the wrong file. I understand well now.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "けさ 価格を 更新した とき、ちがう ファイルを 使って しまいました。",
+              "kana": "けさ かかくを こうしんした とき、ちがう ファイルを つかって しまいました。",
+              "en": "When we updated the prices this morning, we used the wrong file."
+            },
+            {
+              "who": "nishimura",
+              "ja": "そういう ことだったんですね。わかりました。",
+              "kana": "そういう ことだったんですね。わかりました。",
+              "en": "So that's what happened. I see."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "今は もう 大丈夫でしょうか。",
+              "kana": "いまは もう だいじょうぶでしょうか。",
+              "en": "Is everything all right now?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what was done: at 11:30 the prices were corrected, and all 15 items were checked.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿時半に 正しい 価格に 直しました。＿＿件 全部 確認しました。",
+            "modelAnswers": [
+              "はい。11時半に 正しい 価格に 直しました。15件 全部 確認しました。"
+            ],
+            "branches": [
+              {
+                "id": "fixed_checked",
+                "whenEn": "Learner said it was fixed AND gave the time (11:30) or said all 15 items were checked.",
+                "next": "n6a",
+                "exampleJa": "11時半に 正しい 価格に 直しました。15件 全部 確認しました。"
+              },
+              {
+                "id": "fixed_only",
+                "whenEn": "Learner said only that it is fixed / fine now.",
+                "next": "n6b",
+                "exampleJa": "はい、もう 直りました。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "11時半に 直って、全部 確認済みですね。安心しました。",
+              "kana": "じゅういちじはんに なおって、ぜんぶ かくにんずみですね。あんしんしました。",
+              "en": "Fixed at 11:30 and all checked. That's a relief.",
+              "tts": "じゅういちじはんに なおって、ぜんぶ かくにんずみですね。あんしんしました。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "15件 全部 直った、という ことで よろしいですね。安心しました。",
+              "kana": "じゅうごけん ぜんぶ なおった、という ことで よろしいですね。あんしんしました。",
+              "en": "So all fifteen items are fixed. That's a relief.",
+              "tts": "じゅうごけん ぜんぶ なおった、という ことで よろしいですね。あんしんしました。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ただ、また 同じ ことが 起きないか、少し 心配です。",
+              "kana": "ただ、また おなじ ことが おきないか、すこし しんぱいです。",
+              "en": "But I'm a little worried it might happen again."
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her the prevention: from now on, two people check before every update.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "これからは、更新の 前に ＿＿で 確認します。",
+            "modelAnswers": [
+              "これからは、更新の 前に 2人で 確認します。"
+            ],
+            "branches": [
+              {
+                "id": "concrete",
+                "whenEn": "Learner gave the concrete measure: two people check before an update.",
+                "next": "n8a",
+                "exampleJa": "これからは、更新の 前に 2人で 確認します。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only promised to be careful or that it will not happen again.",
+                "next": "n8b",
+                "exampleJa": "これからは 気を つけます。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ありがとう ございます。具体的には、何が 変わりますか。",
+              "kana": "ありがとう ございます。ぐたいてきには、なにが かわりますか。",
+              "en": "Thank you. Concretely, what will change?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say concretely what changes: two people check before every update.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "更新の 前に、＿＿で 確認します。",
+            "modelAnswers": [
+              "更新の 前に、かならず 2人で 確認します。"
+            ],
+            "branches": [
+              {
+                "id": "two_people",
+                "whenEn": "Learner said two people will check before an update.",
+                "next": "n8a",
+                "exampleJa": "更新の 前に、かならず 2人で 確認します。"
+              },
+              {
+                "id": "other_measure",
+                "whenEn": "Learner gave another measure or stayed vague.",
+                "next": "n8a",
+                "exampleJa": "更新の あとで、もう一度 確認します。"
+              }
+            ],
+            "fallback": "n8a"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "2人で 確認して くださるんですね。それなら 安心です。",
+              "kana": "ふたりで かくにんして くださるんですね。それなら あんしんです。",
+              "en": "So two people will check. Then I feel safe.",
+              "tts": "ふたりで かくにんして くださるんですね。それなら あんしんです。",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "0円で 入った 3件の 注文は、こちらから お客さまに ご連絡します。",
+              "kana": "ゼロえんで はいった さんけんの ちゅうもんは、こちらから おきゃくさまに ごれんらくします。",
+              "en": "We will contact the customers of the three orders that came in at 0 yen.",
+              "tts": "ゼロえんで はいった さんけんの ちゅうもんは、こちらから おきゃくさまに ごれんらくします。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Thank her for the trouble, and offer support: you will send the list of the 3 orders today.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "お手数を おかけします。3件の 注文の ＿＿を、今日中に お送りします。",
+            "modelAnswers": [
+              "お手数を おかけします。よろしければ、3件の 注文の リストを、今日中に お送りします。"
+            ],
+            "branches": [
+              {
+                "id": "offered_list",
+                "whenEn": "Learner offered to send the list of the 3 orders (or other concrete support).",
+                "next": "end_a",
+                "exampleJa": "お手数を おかけします。3件の 注文の リストを、今日中に お送りします。"
+              },
+              {
+                "id": "thanks_only",
+                "whenEn": "Learner only thanked or apologised, with no offer.",
+                "next": "end_b",
+                "exampleJa": "お手数を おかけします。申し訳 ございません。"
+              }
+            ],
+            "fallback": "end_b"
+          }
+        },
+        {
+          "id": "end_a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "リストが あると 助かります。ていねいな ご説明で、安心しました。",
+              "kana": "リストが あると たすかります。ていねいな ごせつめいで、あんしんしました。",
+              "en": "The list would help. Your careful explanation has put me at ease."
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end_b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "いえいえ。3件の 注文の リストを 送って いただけると、助かります。",
+              "kana": "いえいえ。さんけんの ちゅうもんの リストを おくって いただけると、たすかります。",
+              "en": "Not at all. It would help if you could send the list of the three orders.",
+              "tts": "いえいえ。さんけんの ちゅうもんの リストを おくって いただけると、たすかります。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "これからも どうぞ よろしく お願いいたします。",
+              "kana": "これからも どうぞ よろしく おねがいいたします。",
+              "en": "We look forward to working with you from now on too.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b09b",
+      "titleJa": "お客さまに 何と 伝えますか",
+      "titleEn": "\"What do I tell my customers?\"",
+      "scene": "depato",
+      "setup": {
+        "time": "noon",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "briefEn": "December 10, 2 p.m. You and Murakami-san visit Nishimura-san at the department store to apologise and explain. Facts: from about 9:15 customers could not pay; about 30 orders failed. Cause, in plain words: the setting for using the payment service has an expiry date, and it expired this morning (our side did not keep track of it). The setting was renewed at 11:30 and payment works now. Prevention: expiry dates are managed in a calendar (期限を カレンダーで 管理する). She worries about her customers: suggest a notice (お知らせ) in the shop and offer to write the draft by 3 p.m. today.",
+      "roleEn": "You are the engineer who took her call. You explain; Murakami-san, your project leader, stands beside you.",
+      "missionsEn": [
+        {
+          "text": "Apologise before explaining",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Explain the cause in plain words (expired setting)",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say what was done and the prevention (calendar)",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Suggest a notice and offer to write the draft by 3:00",
+          "grammar": [
+            "g6",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "nishimura",
+        "murakami"
+      ],
+      "positions": {
+        "nishimura": "clerk",
+        "murakami": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "西村さん、お時間を いただき、ありがとう ございます。",
+              "kana": "にしむらさん、おじかんを いただき、ありがとう ございます。",
+              "en": "Nishimura-san, thank you for making time for us.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "nishimura",
+              "ja": "いえ……。けさは お客さまからの 電話が 多くて、大変でした。",
+              "kana": "いえ……。けさは おきゃくさまからの でんわが おおくて、たいへんでした。",
+              "en": "No… This morning we had so many calls from customers. It was hard."
+            }
+          ],
+          "listen": {
+            "promptEn": "Before any explanation, apologise for the trouble to her and her customers.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "この たびは、ご迷惑を おかけして、＿＿でした。",
+            "modelAnswers": [
+              "この たびは、西村さんと お客さまに ご迷惑を おかけして、申し訳 ございませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "apology_first",
+                "whenEn": "Learner apologised for the trouble (before or without explaining).",
+                "next": "n2a",
+                "exampleJa": "この たびは、ご迷惑を おかけして、申し訳 ございませんでした。"
+              },
+              {
+                "id": "explained_first",
+                "whenEn": "Learner started with the cause or the fix, without an apology.",
+                "next": "n2b",
+                "exampleJa": "けさの 件は、決済サービスの 設定が 原因でした。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "……はい。それで、原因は 何だったんでしょうか。",
+              "kana": "……はい。それで、げんいんは なんだったんでしょうか。",
+              "en": "…Yes. So, what was the cause?"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "まず、ご迷惑を おかけして、本当に 申し訳 ございませんでした。",
+              "kana": "まず、ごめいわくを おかけして、ほんとうに もうしわけ ございませんでした。",
+              "en": "First of all, we are truly sorry for the trouble.",
+              "gesture": "bow"
+            },
+            {
+              "who": "nishimura",
+              "ja": "はい。原因を 教えて いただけますか。",
+              "kana": "はい。げんいんを おしえて いただけますか。",
+              "en": "Yes. Could you tell me the cause?"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [],
+          "listen": {
+            "promptEn": "Explain the cause in plain words: the setting for using the payment service has an expiry date, and it expired this morning.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "決済サービスを 使う ための 設定に 期限が あって、けさ ＿＿て しまいました。",
+            "modelAnswers": [
+              "決済サービスを 使う ための 設定に 期限が あって、けさ 切れて しまいました。こちらの 管理の ミスです。"
+            ],
+            "branches": [
+              {
+                "id": "plain_cause",
+                "whenEn": "Learner explained in plain words that a setting of the payment service had an expiry date and expired.",
+                "next": "n4a",
+                "exampleJa": "決済サービスの 設定に 期限が あって、けさ 切れて しまいました。"
+              },
+              {
+                "id": "jargon_cause",
+                "whenEn": "Learner gave a vague or technical cause (a setting error, a system problem, technical terms) without the expiry.",
+                "next": "n4b",
+                "exampleJa": "決済サービスの 設定の エラーです。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "すみません、むずかしくて……。つまり、どういう ことでしょうか。",
+              "kana": "すみません、むずかしくて……。つまり、どういう ことでしょうか。",
+              "en": "I'm sorry, that's difficult for me… What does it mean, in short?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say it more simply: the setting had a deadline, and the deadline passed this morning.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "設定に 期限が あって、けさ その 期限が ＿＿ました。",
+            "modelAnswers": [
+              "設定に 期限が あって、けさ その 期限が 切れました。それで、お支払いが できませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "simple",
+                "whenEn": "Learner said simply that the setting had an expiry date and it expired.",
+                "next": "n4a",
+                "exampleJa": "設定に 期限が あって、けさ その 期限が 切れました。"
+              },
+              {
+                "id": "still_hard",
+                "whenEn": "Learner still explained it in a vague or technical way.",
+                "next": "n4a",
+                "exampleJa": "設定が 古く なって、使えなく なりました。"
+              }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "設定の 期限が 切れた、という ことですね。",
+              "kana": "せっていの きげんが きれた、という ことですね。",
+              "en": "So the setting had expired."
+            },
+            {
+              "who": "nishimura",
+              "ja": "今は もう 使えますか。また 起きませんか。",
+              "kana": "いまは もう つかえますか。また おきませんか。",
+              "en": "Does it work now? Won't it happen again?"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [],
+          "listen": {
+            "promptEn": "Say what was done and the prevention: the setting was renewed at 11:30 and payment works now; from now on the expiry dates are managed in a calendar.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿時半に 設定を 更新して、今は 使えます。これからは、期限を ＿＿で 管理します。",
+            "modelAnswers": [
+              "11時半に 設定を 更新して、今は 使えます。これからは、期限を カレンダーで 管理します。"
+            ],
+            "branches": [
+              {
+                "id": "fix_and_prevention",
+                "whenEn": "Learner said it works now AND gave the prevention (expiry dates managed in a calendar).",
+                "next": "n6a",
+                "exampleJa": "11時半に 設定を 更新しました。これからは、期限を カレンダーで 管理します。"
+              },
+              {
+                "id": "fix_only",
+                "whenEn": "Learner said only that it was fixed / works now.",
+                "next": "n6b",
+                "exampleJa": "11時半に 設定を 更新して、今は 使えます。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "カレンダーで 管理して くださるんですね。わかりました。",
+              "kana": "カレンダーで かんりして くださるんですね。わかりました。",
+              "en": "So you'll manage them in a calendar. I understand.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "今は 使えるんですね。これからは、期限の 管理も お願いいたします。",
+              "kana": "いまは つかえるんですね。これからは、きげんの かんりも おねがいいたします。",
+              "en": "So it works now. From now on, please keep track of the expiry dates too."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ただ、買えなかった お客さまが 30人ぐらい います。何と お伝えしたら……。",
+              "kana": "ただ、かえなかった おきゃくさまが さんじゅうにんぐらい います。なんと おつたえしたら……。",
+              "en": "But about 30 customers couldn't buy. What should I tell them…?",
+              "tts": "ただ、かえなかった おきゃくさまが さんじゅうにんぐらい います。なんと おつたえしたら……。",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Suggest a notice (お知らせ) in the online shop.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "ネットショップに ＿＿を 出しては いかがでしょうか。",
+            "modelAnswers": [
+              "ネットショップに お知らせを 出しては いかがでしょうか。「今は お支払い できます」と 書きます。"
+            ],
+            "branches": [
+              {
+                "id": "proposed_notice",
+                "whenEn": "Learner suggested posting a notice (or sending a message) to customers.",
+                "next": "n8a",
+                "exampleJa": "ネットショップに お知らせを 出しては いかがでしょうか。"
+              },
+              {
+                "id": "no_proposal",
+                "whenEn": "Learner made no suggestion: only apologised, or said they would think about it.",
+                "next": "n8b",
+                "exampleJa": "申し訳 ございません。考えて みます。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "お知らせですね。いいと 思います。でも、文を 書く 時間が なくて……。",
+              "kana": "おしらせですね。いいと おもいます。でも、ぶんを かく じかんが なくて……。",
+              "en": "A notice. I think that's good. But I have no time to write the text…"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "murakami",
+              "ja": "ネットショップに お知らせを 出しては いかがでしょうか。",
+              "kana": "ネットショップに おしらせを だしては いかがでしょうか。",
+              "en": "How about posting a notice in the online shop?"
+            },
+            {
+              "who": "nishimura",
+              "ja": "そうですね。でも、文を 書く 時間が なくて……。",
+              "kana": "そうですね。でも、ぶんを かく じかんが なくて……。",
+              "en": "Yes, that's true. But I have no time to write the text…"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [],
+          "listen": {
+            "promptEn": "Offer support: your team will write a draft of the notice and send it by 3 o'clock today.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "よろしければ、こちらで ＿＿を 作ります。今日の ＿＿時までに お送りします。",
+            "modelAnswers": [
+              "よろしければ、こちらで お知らせの 下書きを 作ります。今日の 3時までに お送りします。"
+            ],
+            "branches": [
+              {
+                "id": "offer_with_time",
+                "whenEn": "Learner offered to write the draft AND said when (by 3 o'clock / today).",
+                "next": "end_a",
+                "exampleJa": "よろしければ、こちらで 下書きを 作ります。今日の 3時までに お送りします。"
+              },
+              {
+                "id": "offer_no_time",
+                "whenEn": "Learner offered to write the draft or to help, without saying when.",
+                "next": "end_b",
+                "exampleJa": "よろしければ、こちらで 下書きを 作ります。"
+              }
+            ],
+            "fallback": "end_b"
+          }
+        },
+        {
+          "id": "end_a",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "3時までに いただけるんですね。とても 助かります。",
+              "kana": "さんじまでに いただけるんですね。とても たすかります。",
+              "en": "I'll have it by three. That helps a lot.",
+              "tts": "さんじまでに いただけるんですね。とても たすかります。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end_b",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "助かります。できれば、今日中に いただけますか。",
+              "kana": "たすかります。できれば、きょうじゅうに いただけますか。",
+              "en": "That helps. Could I have it today, if possible?"
+            },
+            {
+              "who": "murakami",
+              "ja": "はい。今日の 3時までに お送りします。",
+              "kana": "はい。きょうの さんじまでに おおくりします。",
+              "en": "Yes. We'll send it by three o'clock today.",
+              "tts": "はい。きょうの さんじまでに おおくりします。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "正直に 説明して いただいて、安心しました。これからも よろしく お願いします。",
+              "kana": "しょうじきに せつめいして いただいて、あんしんしました。これからも よろしく おねがいします。",
+              "en": "Your honest explanation has put me at ease. I look forward to working with you.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

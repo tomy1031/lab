@@ -1,0 +1,104 @@
+{
+  "about": "Real-API check of interview judging: one Live session (Extended Thinking first), four synthesized answers with a foreign accent, then the interview report. Run by nexmax-academy's 'Kotoba Town voices' workflow (run.json interviewCheck).",
+  "lesson": {
+    "course": "it", "unit": 11, "format": "interview",
+    "storyJa": "就職の 面接", "storyEn": "Job interviews",
+    "titleJa": "ふつうの 面接", "titleEn": "A normal job interview",
+    "summaryEn": "A first interview at Midori Design: introduce yourself, explain why you want to join, talk about your strengths, ask a question at the end.",
+    "levelEn": "Interview Japanese for a junior engineer (around JLPT N4–N3).",
+    "rubric": ["manners", "conclusion", "specific", "company", "keigo", "length", "attitude"],
+    "grammar": [
+      { "id": "g1", "pattern": "〜と 申します", "meaningEn": "My name is … (humble)", "exampleJa": "リンと 申します。", "exampleEn": "My name is Lin." },
+      { "id": "g2", "pattern": "〜からです / 〜と 考えて おります", "meaningEn": "Giving a reason / a considered view", "exampleJa": "小さな お店を 助ける アプリを 作りたいからです。", "exampleEn": "Because I want to build apps that help small shops." },
+      { "id": "g3", "pattern": "結論 → 例 → まとめ", "meaningEn": "Answer first, then an example", "exampleJa": "わたしの 強みは ていねいな テストです。", "exampleEn": "My strength is careful testing." }
+    ],
+    "vocab": [
+      { "ja": "御社", "kana": "おんしゃ", "en": "your company (spoken)" },
+      { "ja": "志望動機", "kana": "しぼうどうき", "en": "reason for applying" },
+      { "ja": "強み", "kana": "つよみ", "en": "strength" },
+      { "ja": "予約サイト", "kana": "よやくサイト", "en": "booking website" },
+      { "ja": "プノンペン", "kana": "プノンペン", "en": "Phnom Penh" }
+    ]
+  },
+  "variant": {
+    "id": "interview_check",
+    "briefEn": "A first job interview at みどりデザイン (a small company that builds websites and apps for local shops). Profile: final-year IT student at a university in Phnom Penh, Cambodia; studied JavaScript, React, PHP; a 3-person team project — a booking website for a local shop (you built the front end); part-time job at a café; JLPT N3.",
+    "roleEn": "You are the candidate. Answer as yourself or use the profile.",
+    "characters": ["murakami", "fujita"]
+  },
+  "character": {
+    "id": "murakami", "nameJa": "村上 なおみ", "kana": "むらかみ なおみ", "roleEn": "Project leader at Midori Design (interviewer)",
+    "voice": "Callirrhoe", "personaJa": "30代の プロジェクトリーダー。面接官。落ち着いて いて、ていねいに 質問する。"
+  },
+  "turns": [
+    {
+      "npcLines": [{ "ja": "では、まず 自己紹介を お願いします。", "en": "First, please introduce yourself." }],
+      "listen": {
+        "promptEn": "Introduce yourself in 20–40 seconds: name, school and major, one thing you did, a closing line.",
+        "criteria": ["conclusion", "specific", "keigo", "length"],
+        "lookForEn": "Name, school and major, one concrete experience, and a polite closing — in about 30 seconds.",
+        "pitfallsEn": "Only giving your name, or reading out your whole résumé.",
+        "grammar": ["g1"],
+        "modelAnswers": ["リンと 申します。プノンペンの 大学で ITを 勉強して います。チームで お店の 予約サイトを 作りました。本日は よろしく お願いいたします。"],
+        "branches": [
+          { "id": "full", "whenEn": "Gave name, school/major and at least one experience.", "exampleJa": "リンと 申します。プノンペンの 大学で ITを 勉強して います。" },
+          { "id": "short", "whenEn": "Only the name or very little.", "exampleJa": "リンです。よろしく お願いします。" }
+        ]
+      },
+      "say": "リンと 申します。プノンペンの 大学で ITを 勉強して います。三人の チームで、お店の 予約サイトを 作りました。わたしは 画面を 担当しました。本日は よろしく お願いいたします。",
+      "expectBranch": ["full"], "expectMissed": []
+    },
+    {
+      "npcLines": [{ "ja": "ありがとう ございます。では、志望動機を 教えて ください。", "en": "Thank you. Please tell us why you are applying." }],
+      "listen": {
+        "promptEn": "Say why you want to work at Midori Design.",
+        "criteria": ["conclusion", "company", "specific", "attitude"],
+        "lookForEn": "A reason tied to THIS company (apps for local shops) and what you can contribute.",
+        "pitfallsEn": "A reason that fits any company, e.g. only 'I want to work in Japan'.",
+        "grammar": ["g2"],
+        "modelAnswers": ["御社は 町の お店の アプリを 作って いるからです。わたしも 予約サイトを 作った とき、お店の 人に 喜ばれて、うれしかったです。"],
+        "branches": [
+          { "id": "linked", "whenEn": "Gave a reason linked to this company or its work.", "exampleJa": "御社は 町の お店の アプリを 作って いるからです。" },
+          { "id": "generic", "whenEn": "Gave a general reason that fits any company.", "exampleJa": "日本で 働きたいからです。" }
+        ]
+      },
+      "say": "日本で 働きたいからです。日本の 会社は いいと 思います。",
+      "expectBranch": ["generic"], "expectMissed": ["company"]
+    },
+    {
+      "npcLines": [{ "ja": "なるほど。あなたの 強みは 何ですか。", "en": "I see. What is your strength?" }],
+      "listen": {
+        "promptEn": "Name one strength and give a concrete example.",
+        "criteria": ["conclusion", "specific", "attitude"],
+        "lookForEn": "The strength first, then a short real example with a result.",
+        "pitfallsEn": "Listing many strengths without any example.",
+        "grammar": ["g3"],
+        "modelAnswers": ["わたしの 強みは ていねいな テストです。予約サイトでは しめきりの 前に バグを 見つけて、直しました。"],
+        "branches": [
+          { "id": "with_example", "whenEn": "Named a strength and gave an example.", "exampleJa": "強みは ていねいな テストです。バグを 見つけて 直しました。" },
+          { "id": "no_example", "whenEn": "Named strengths but no example.", "exampleJa": "まじめで、がんばります。" }
+        ]
+      },
+      "say": "わたしの 強みは ていねいな テストです。予約サイトを 作った とき、しめきりの 前に 大きな バグを 見つけて、チームで 直しました。",
+      "expectBranch": ["with_example"], "expectMissed": []
+    },
+    {
+      "npcLines": [{ "ja": "最後に、何か 質問は ありますか。", "en": "Finally, do you have any questions?" }],
+      "listen": {
+        "promptEn": "Ask the interviewers one good question about the work or the team.",
+        "criteria": ["attitude", "company"],
+        "lookForEn": "A real question about the job, the team or how new engineers learn — it shows interest.",
+        "pitfallsEn": "Saying 'no questions' (it can sound like low interest) or asking only about holidays.",
+        "grammar": ["g2"],
+        "modelAnswers": ["はい。新しい エンジニアは、入社して 最初に どんな 仕事を しますか。"],
+        "branches": [
+          { "id": "good_question", "whenEn": "Asked a question about the job, team or learning.", "exampleJa": "最初に どんな 仕事を しますか。" },
+          { "id": "no_question", "whenEn": "Said they have no questions.", "exampleJa": "特に ありません。" }
+        ]
+      },
+      "say": "いいえ、特に ありません。",
+      "expectBranch": ["no_question"], "expectMissed": ["attitude"]
+    }
+  ],
+  "learnerStyle": "日本語を 勉強中の カンボジア人の 学生として、少し ゆっくり、外国の なまりの ある 日本語で 読んで ください。"
+}

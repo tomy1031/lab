@@ -1,0 +1,43 @@
+{
+  "about": "Live self-check for Kotoba Town: synthesize a learner answer, stream it into LiveBrain exactly like the headset mic does, and record the judge_reply verdict. Run by nexmax-academy's 'Kotoba Town voices' workflow.",
+  "lesson": {
+    "lesson": 1,
+    "titleEn": "Nice to meet you",
+    "summaryEn": "Introduce yourself: name, country, job. Ask others about theirs.",
+    "grammar": [
+      { "id": "g1", "pattern": "N1は N2です", "meaningEn": "N1 is N2 (topic marker は)", "exampleJa": "わたしは アナです。", "exampleEn": "I am Ana." },
+      { "id": "g2", "pattern": "N1は N2じゃ ありません", "meaningEn": "N1 is not N2", "exampleJa": "わたしは がくせいじゃ ありません。", "exampleEn": "I am not a student." },
+      { "id": "g3", "pattern": "N1は N2ですか", "meaningEn": "Is N1 N2? (question)", "exampleJa": "あおきさんは デザイナーですか。", "exampleEn": "Are you a designer, Ms Aoki?" }
+    ]
+  },
+  "variant": {
+    "id": "selfcheck",
+    "briefEn": "It's your first day at a design company in Tokyo. Your new colleague meets you in the lobby.",
+    "roleEn": "You are a new employee from abroad. Use your own name and country."
+  },
+  "character": {
+    "id": "aoki", "nameJa": "青木 みお", "kana": "あおき みお", "roleEn": "Colleague, designer at the company",
+    "voice": "Laomedeia", "personaJa": "26さいの デザイナー。明るくて よく 笑う。新しい 人に 親切。"
+  },
+  "turn": {
+    "npcLines": [
+      { "ja": "はじめまして。青木です。", "en": "Nice to meet you. I'm Aoki." },
+      { "ja": "おなまえは？ おくには どちらですか。", "en": "Your name? Where are you from?" }
+    ],
+    "listen": {
+      "promptEn": "Introduce yourself: your name and your country.",
+      "grammar": ["g1"],
+      "modelAnswers": ["はじめまして。わたしは リンです。ベトナムじんです。どうぞ よろしく おねがいします。"],
+      "branches": [
+        { "id": "full", "whenEn": "Learner said their name AND their nationality or country.", "exampleJa": "わたしは リンです。ベトナムじんです。" },
+        { "id": "name_only", "whenEn": "Learner said only their name.", "exampleJa": "リンです。" }
+      ]
+    }
+  },
+  "cases": [
+    { "say": "はじめまして。わたしは リンです。ベトナムじんです。どうぞ よろしく おねがいします。", "voice": "Puck", "expect": ["full"], "decide": "nothing" },
+    { "say": "リンです。よろしく おねがいします。", "voice": "Kore", "expect": ["name_only"], "decide": "nothing" },
+    { "say": "すみません、もう いちど おねがいします。", "voice": "Puck", "expect": ["repeat"], "decide": "nothing" },
+    { "say": "あおきさんは デザイナーですか。", "voice": "Kore", "expect": ["asks_npc", "off_topic"], "decide": "react" }
+  ]
+}
