@@ -13,7 +13,7 @@ const PAGES = [
 const SLOTS = ['backR', 'backL', 'hipR', 'hipL', 'chest', 'belt'];
 const SLOT_NAMES = { backR: '右肩', backL: '左肩', hipR: '右腰', hipL: '左腰', chest: '胸', belt: '腹' };
 const SETTING_ORDER = ['turnMode', 'snapAngle', 'smoothTurnSpeed', 'vignette', 'moveDirection', 'stepSensitivity', 'strideScale', 'armAssist',
-  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
+  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'combatFreq', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
   'weightKg', 'volMaster', 'volSfx', 'volMusic', 'runBeat', 'haptics'];
 const STEP_OVERRIDE = { strideScale: 0.1, weightKg: 5, volMaster: 0.1, volSfx: 0.1, volMusic: 0.1, haptics: 0.25, smoothTurnSpeed: 30 };
 const FALLBACK_DEFS = {
@@ -27,6 +27,7 @@ const FALLBACK_DEFS = {
   quality: { options: ['auto', 'low', 'mid', 'high'], label: '画質', en: 'QUALITY' }, weightKg: { min: 25, max: 200, label: '体重 kg', en: 'WEIGHT' },
   volMaster: { min: 0, max: 1, label: '音量', en: 'VOLUME' }, volSfx: { min: 0, max: 1, label: '効果音', en: 'SFX' }, volMusic: { min: 0, max: 1, label: '音楽', en: 'MUSIC' },
   runBeat: { label: '走りの拍', en: 'RUN BEAT' }, haptics: { min: 0, max: 1, label: '振動', en: 'HAPTICS' },
+  combatFreq: { options: ['low', 'normal', 'high'], label: '戦いの頻度', en: 'COMBAT', names: { low: '少なめ', normal: 'ふつう', high: '多め' } },
 };
 const VALUE_NAMES = { snap: 'スナップ', smooth: 'スムーズ', head: '頭', hands: '手', mid: '中', low: '低', high: '高', normal: 'ふつう', shallow: '浅い',
   right: '右', left: '左', float: 'うく板', wrist: '腕輪', auto: '自動' };
@@ -225,8 +226,10 @@ export function createWrist(ctx, S, ui) {
         btn(400, y + 3, 212, 32, fmt(k, v, d), () => cycle(k, d), { size: 18, r: 10, color: C.gold });
       }
     });
-    btn(24, 580, 290, 50, settingsCol ? '← 前のページ' : '次のページ →', () => { settingsCol = settingsCol ? 0 : 1; dirty = true; }, { size: 20 });
-    text(g, `${settingsCol + 1} / 2`, 470, 612, { size: 20, color: C.dim, align: 'center' });
+    const pages = Math.max(1, Math.ceil(keys.length / per));
+    if (settingsCol >= pages) settingsCol = 0;
+    btn(24, 580, 290, 50, settingsCol === pages - 1 ? '← 最初のページ' : '次のページ →', () => { settingsCol = (settingsCol + 1) % pages; dirty = true; }, { size: 20 });
+    text(g, `${settingsCol + 1} / ${pages}`, 470, 612, { size: 20, color: C.dim, align: 'center' });
   }
   function cycle(k, d) {
     const set = ctx.settings, v = set.get(k);

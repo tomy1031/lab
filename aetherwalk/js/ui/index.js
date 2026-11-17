@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { createHud, createToasts } from './hud.js';
 import { createTutorial } from './tutorial.js';
 import { createLabels } from './labels.js';
+import { createCombatCues } from './combat.js';
 import { createWrist } from './wrist.js';
 import { createOverlay } from './overlay.js';
 
@@ -18,7 +19,7 @@ export async function createUI(ctx) {
     cadence: 0, gait: 'idle', stepsToday: 0, kcalToday: 0, kmToday: 0, activeToday: 0,
     objective: null, objDist: null, objBearing: 0,
     trial: null, trialT: 0, boss: null, cooldown: null,
-    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null,
+    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null, combo: 0, comboT: 0,
     hudVisible: true, domMenu: null,
   };
   const forceVR = !!(ctx.params && ctx.params.has && ctx.params.has('vrhud'));
@@ -65,7 +66,7 @@ export async function createUI(ctx) {
       S.hudVisible = !!b;
       document.body.classList.toggle('aw-nohud', !b);
       // hide every board at once (the wrist band lives on the left hand) — ART_REVIEW B-P3-1
-      if (!b) { hud.hideAll(); toasts.hideAll(); ui.tutorial.hideAll(); ui.labels.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
+      if (!b) { hud.hideAll(); toasts.hideAll(); ui.tutorial.hideAll(); ui.labels.hideAll(); ui.combat.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
     },
     toast, title,
     openMenu(page = 'map') {
@@ -90,6 +91,7 @@ export async function createUI(ctx) {
   ui.overlay = createOverlay(ctx, S, ui);
   ui.tutorial = createTutorial(ctx, S, ui);
   ui.labels = createLabels(ctx, S, ui);
+  ui.combat = createCombatCues(ctx, S, ui);
   ui.hud = hud;
 
   function isVR() { return !!(ctx.renderer && ctx.renderer.xr && ctx.renderer.xr.isPresenting) || !!(ctx.flags && ctx.flags.xr); }
@@ -251,6 +253,7 @@ export async function createUI(ctx) {
     toasts.update(dt, vr);
     ui.tutorial.update(dt, vr);
     ui.labels.update(dt, vr);
+    ui.combat.update(dt, vr);
     ui.wrist.update(dt, vr);
     ui.overlay.update(dt, isVR() || forceVR);   // ?vrhud shows what the headset shows (no PC overlay)
     // fade

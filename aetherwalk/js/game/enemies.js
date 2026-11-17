@@ -11,6 +11,8 @@ const MAX_BOLTS = 8, TELE_SLOTS = 3, MAX_SHADOWS = 10;
 const FX_DUST3 = { count: 3, color: 0xe8b27a, speed: 1 }, FX_DUST2 = { count: 2, color: 0xe8c79a }, FX_EMBER = { count: 6 };
 const FX_POOF = { count: 22 }, FX_SHARD = { count: 6, color: 0xffd76a }, FX_FLASH = { color: 0xc23bff, size: 1.2, life: 0.3 };
 const DIE_T = 0.35;
+const FX_RECOIL = { count: 10, color: 0xd9d4e6, speed: 1.4 };
+const STRONG_SPEED = 4.5, HIT_STOP = 0.045;     // a strong swing (m/s, as items/melee) freezes the enemy ~45 ms
 const FX_RING = { color: 0xd9d4e6, size: 1.0 }, FX_RING_BIG = { color: 0xd9d4e6, size: 1.6 };   // 'ring' size = radius (m)
 
 export function createEnemies(ctx, G) {
@@ -98,6 +100,9 @@ export function createEnemies(ctx, G) {
     stagger: (e, sec) => stagger(e, sec),
     hitTestPlayer,
     telegraphShow, telegraphHide,
+    /** living, non-boss enemies (the encounter director only starts one when this is 0) */
+    get alive() { return aliveCount(); },
+    MAX_ACTIVE,
     spawnBolt,
     update,
     loadGroups,
@@ -142,6 +147,7 @@ export function createEnemies(ctx, G) {
       }
       if (g.cleared || d > ACTIVE_R) continue;
       if (sp.night && !night) continue;
+      if (G.safe && G.safe.at(sp.x, sp.z, (sp.radius || 4) + 3)) continue;     // the Nagi keep away from fire
       if (stage >= 6 && !sp.night) continue;      // after the ending, the Nagi only walk at night (§8.1)
       // the warm-up walk from the stone stage to the camp has no enemies (§2.6)
       if (stage <= 1 && start && Math.hypot(sp.x - start.x, sp.z - start.z) < 140) continue;
@@ -184,6 +190,7 @@ export function createEnemies(ctx, G) {
       group: opts.group || null, extraDrops: opts.drops || null, tag: opts.tag || null, noDrops: !!opts.noDrops,
       atk: null, atkCd: 0.6 + rnd() * 0.8, token: false, teleSlot: null,
       burnT: 0, burnTick: 0, fireZone: null, firePos: new THREE.Vector3(), meltT: 0, staggerT: 0, flipT: 0, hurtT: 0,
+      recoilT: 0, hitStopT: 0, zoneWaitT: 0, enc: opts.enc || null,     // safe zones / hit-stop / encounter kind ('first' | 'amb')
       burrowed: !!def.burrows, rise: def.burrows ? 0 : 1, speedNow: 0, side: rnd() < 0.5 ? -1 : 1, wanderT: 0, wx: x, wz: z,
       stuckT: 0, lastX: x, lastZ: z, leap: null, charge: null, blastFrame: -10, dyingT: 0, vel: new THREE.Vector3(),
       aimX: 0, aimZ: 0, alerted: false, boltIdx: -1, anim: 0,
@@ -259,6 +266,7 @@ export function createEnemies(ctx, G) {
     if (part === 'armor') fx(ctx, 'spark', point, { count: 10, color: 0xdff6ff, speed: 3 });
     else fx(ctx, 'spark', point, { count: 6, color: 0xfffbe8, speed: 2 });
     const killed = damageEnemy(e, dmg, hit.itemId || hit.type || 'player', hit);
+    if (!killed && dmg > 0 && hit.speed != null && hit.speed >= STRONG_SPEED && !e.def.boss) e.hitStopT = HIT_STOP;
     return { applied: dmg, killed, blocked: part === 'armor' };
   }
 
@@ -273,8 +281,10 @@ export function createEnemies(ctx, G) {
     const strong = dmg >= 6;
     if (!e.def.heavy && (e.def.light || strong)) {
       if (e.state === 'windup' && (e.def.light || dmg >= 8)) cancelAttack(e);
-      if (hit && hit.dir && e.type !== 'lurker') { e.vel.x += hit.dir.x * (e.def.light ? 3 : 1.5); e.vel.z += hit.dir.z * (e.def.light ? 3 : 1.5); }
-      if (e.state !== 'windup' && e.state !== 'attack') stagger(e, e.def.light ? 0.5 : 0.3);
+      const hard = !!(hit && hit.speed != null && hit.speed >= STRONG_SPEED);
+      const kb = (e.def.light ? 3 : 1.5) * (hard ? 1.6 : 1);
+      if (hit && hit.dir && e.type !== 'lurker') { e.vel.x += hit.dir.x * kb; e.vel.z += hit.dir.z * kb; }
+      if (e.state !== 'windup' && e.state !== 'attack') stagger(e, (e.def.light ? 0.5 : 0.3) * (hard ? 1.4 : 1));
     }
     return false;
   }
@@ -406,7 +416,7 @@ export function createEnemies(ctx, G) {
     const pl = ctx.player;
     if (!pl || !pl.pos || (G.vitals && G.vitals.dead)) return 'none';
     const inReach = opts.inReach !== false;
-    if (!inReach || !hitTestPlayer(shape)) {
+    if (!inReach || (shape.kind === 'high' && pl.ducking) || !hitTestPlayer(shape)) {
       emit(ctx, 'player:dodge', { kind: shape.kind === 'high' ? 'duck' : 'side', enemyId: src.id, attack: atk.id });
       return 'dodge';
     }
@@ -570,6 +580,8 @@ export function createEnemies(ctx, G) {
     }
     const night = isNight(ctx);
     const notice = night ? NOTICE_NIGHT : NOTICE_DAY;
+    SZ = G.safe || null;
+    playerSafe = !!(SZ && SZ.at(px, pz));
 
     for (let i = list.length - 1; i >= 0; i--) {
       const e = list[i];
@@ -596,6 +608,10 @@ export function createEnemies(ctx, G) {
       if (d > DESPAWN_R && !e.group && !e.tag) { removeEnemy(e); continue; }
       tickStatus(e, dt);
       if (e.state === 'dead') continue;
+      // caught inside a fire's reach (a camp was lit next to it): the fire drives it off
+      if (SZ && safeAware(e) && SZ.at(e.pos.x, e.pos.z, -1.5)) { banish(e); continue; }
+      // a strong blow freezes it for a moment (hit-stop: no extra draw calls)
+      if (e.hitStopT > 0) { e.hitStopT -= dt; continue; }
       think(e, dt, d, dx, dz, notice);
       moveEnemy(e, dt);
       placeModel(e, dt);
@@ -606,7 +622,31 @@ export function createEnemies(ctx, G) {
     shadowsTick();
   }
 
+  // ── fire safe zones (safezones.js): world groups and encounters keep out; the boss and its wisps do not ──
+  let SZ = null, playerSafe = false;
+  function safeAware(e) { return !e.ctrl && !e.def.boss && !!(e.group || e.enc); }
+  /** may not start a chase now (the player stands by a fire, or it just recoiled from one) */
+  function noChase(e) { return safeAware(e) && (playerSafe || e.recoilT > 0); }
+  /** reached a fire's edge: a hiss and a puff, a hop back, and home */
+  function recoil(e, z) {
+    cancelAttack(e);
+    e.recoilT = 5;
+    const ux = e.pos.x - z.x, uz = e.pos.z - z.z, L = Math.hypot(ux, uz) || 1;
+    e.vel.x = ux / L * 3.5; e.vel.z = uz / L * 3.5;
+    e.yaw = yawTo(ux, uz);
+    fx(ctx, 'smoke', e.center, FX_RECOIL);
+    fx(ctx, 'ember', e.center, FX_EMBER);
+    emit(ctx, 'enemy:recoil', { id: e.id, type: e.type, pos: e.center, zone: z.id });
+    setState(e, 'return');
+  }
+  function banish(e) {
+    fx(ctx, 'poof', e.center, FX_POOF);
+    emit(ctx, 'enemy:recoil', { id: e.id, type: e.type, pos: e.center, banished: true });
+    removeEnemy(e);
+  }
+
   function tickStatus(e, dt) {
+    if (e.recoilT > 0) e.recoilT -= dt;
     if (e.hurtT > 0) { e.hurtT -= dt; if (e.hurtT <= 0) e.model.setHurt(false); }
     if (e.meltT > 0) { e.meltT -= dt; if (e.meltT <= 0) e.model.setMelt(false); }
     if (e.flipT > 0) e.flipT -= dt;
@@ -647,11 +687,11 @@ export function createEnemies(ctx, G) {
     const leashD = Math.hypot(e.pos.x - e.home.x, e.pos.z - e.home.z);
     switch (e.state) {
       case 'sleep':
-        if (d < notice * 0.5) setState(e, 'notice');
+        if (d < notice * 0.5 && !noChase(e)) setState(e, 'notice');
         break;
       case 'idle':
       case 'wander': {
-        if (d < notice && !(G.vitals && G.vitals.dead)) { setState(e, 'notice'); break; }
+        if (d < notice && !(G.vitals && G.vitals.dead) && !noChase(e)) { setState(e, 'notice'); break; }
         e.wanderT -= dt;
         if (e.wanderT <= 0) {
           e.wanderT = 3 + rnd() * 4;
@@ -666,6 +706,7 @@ export function createEnemies(ctx, G) {
         break;
       }
       case 'notice':
+        if (noChase(e)) { setState(e, 'return'); break; }
         turnTo(e, yawToP, dt * 1.5);
         if (e.t > (def.light ? 0.25 : 0.45)) setState(e, 'chase');
         break;
@@ -674,7 +715,7 @@ export function createEnemies(ctx, G) {
         if (Math.hypot(hx, hz) < 1.5) { e.hp = e.maxHp; setState(e, 'idle'); break; }
         turnTo(e, yawTo(hx, hz), dt);
         e.speedNow = def.speed * 0.8;
-        if (d < notice * 0.5 && leashD < LEASH * 0.6) setState(e, 'chase');
+        if (d < notice * 0.5 && leashD < LEASH * 0.6 && !noChase(e)) setState(e, 'chase');
         break;
       }
       case 'chase': {
@@ -699,7 +740,13 @@ export function createEnemies(ctx, G) {
           e.speedNow = 0;                       // circle slowly while waiting
           e.strafe = 0.6 * e.side;
         }
-        if (atk && e.token && e.atkCd <= 0 && Math.abs(angDiff(e.yaw, yawToP)) < 35 * DEG) startWindup(e, atk, d, dx, dz);
+        if (atk && e.token && e.atkCd <= 0 && Math.abs(angDiff(e.yaw, yawToP)) < 35 * DEG && !(safeAware(e) && playerSafe)) startWindup(e, atk, d, dx, dz);
+        // the player stands by a fire: walkers come on until the edge turns them (moveEnemy); one that holds
+        // back (a wisp at its distance, one waiting for its turn) gives up after a moment
+        if (safeAware(e) && playerSafe && e.speedNow < def.speed * 0.3) {
+          e.zoneWaitT += dt;
+          if (e.zoneWaitT > 2.5) { e.zoneWaitT = 0; e.recoilT = 4; releaseToken(e); setState(e, 'return'); }
+        } else e.zoneWaitT = 0;
         break;
       }
       case 'windup':
@@ -751,7 +798,9 @@ export function createEnemies(ctx, G) {
     if (kind === 'high' && seated) kind = 'sphere';     // seated play: ducks become shield-able hits (§2.5)
     e.atkKind = kind;
     if (kind === 'high') {
-      e.shapeHigh.y = gy + stand * 0.80;
+      // the hit line sits just above the player's own duck threshold (0.78, or 0.86 for the shallow setting)
+      const duckK = setting(ctx, 'duckDepth', 'normal') === 'shallow' ? 0.86 : 0.78;
+      e.shapeHigh.y = gy + stand * (duckK + 0.02);
       telegraphShow(e, 'high', { x: e.pos.x, y: e.shapeHigh.y, z: e.pos.z, yaw: e.aimYaw, reach: (atk.range ? atk.range[1] : 2.3) + 0.2, arc: (atk.arc || 80) + 24, dur: atk.windup });
     } else if (kind === 'line') {
       const len = atk.length || (d + (atk.extra || 2));
@@ -782,6 +831,7 @@ export function createEnemies(ctx, G) {
   function windupTick(e, dt, d, dx, dz) {
     const atk = e.atk;
     if (!atk) { setState(e, 'chase'); return; }
+    if (safeAware(e) && playerSafe) { cancelAttack(e); setState(e, 'chase'); return; }   // no blows (or bolts) into a fire's reach
     // thornlings and wisps keep tracking a little; heavy blows are locked (fair dodges)
     if (e.type === 'wisp') turnTo(e, yawTo(dx, dz), dt);
     if (e.t >= atk.windup) {
@@ -907,6 +957,17 @@ export function createEnemies(ctx, G) {
       try { if (w.resolveCircle(nx, nz, e.def.radius, _res)) { nx = _res.x; nz = _res.z; } } catch (err) { /* ignore */ }
     }
     if (w && typeof w.waterDepthAt === 'function' && !e.def.float && w.waterDepthAt(nx, nz) > 0.9) { nx = e.pos.x; nz = e.pos.z; }
+    if (SZ && safeAware(e)) {
+      const z = SZ.at(nx, nz, e.def.radius);
+      if (z && !SZ.at(e.pos.x, e.pos.z, e.def.radius - 0.05)) {
+        nx = e.pos.x; nz = e.pos.z;
+        if (e.state === 'chase' || e.state === 'notice' || e.state === 'recover') { recoil(e, z); return; }
+        if (e.state === 'return') { e.home.x = e.pos.x; e.home.z = e.pos.z; }   // home within the fire's reach: wait here
+        else e.wanderT = 0;
+        e.vel.set(0, 0, 0);
+        return;
+      }
+    }
     // stuck → slide sideways around the obstacle (no path finding, §5.4)
     const moved = Math.hypot(nx - e.pos.x, nz - e.pos.z);
     if (Math.abs(sp) > 0.2 && moved < Math.abs(sp) * dt * 0.3) {

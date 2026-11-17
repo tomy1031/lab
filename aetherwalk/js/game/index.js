@@ -14,6 +14,8 @@ import { createProps } from './props.js';
 import { createShrines } from './shrines.js';
 import { createSeeds } from './seeds.js';
 import { createBot } from './bot.js';
+import { createSafeZones } from './safezones.js';
+import { createEncounters } from './encounters.js';
 import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
@@ -38,6 +40,8 @@ export async function createGame(ctx) {
   G.shrines = createShrines(ctx, G);
   G.seeds = createSeeds(ctx, G);
   G.bot = createBot(ctx, G);
+  G.safe = createSafeZones(ctx, G);           // fire safe zones (the Nagi keep away)
+  G.encounters = createEncounters(ctx, G);    // the first fight + the encounter director
   G.itemInfo = (id) => G.inventory.def(id) || ITEM_INFO[id] || null;
   /** [jp, en] one-line usage hint, or null */
   G.itemHint = (id) => ITEM_HINTS[id] || null;
@@ -254,6 +258,8 @@ export async function createGame(ctx) {
     ['props', (dt) => G.props.update(dt)],
     ['shrines', (dt) => G.shrines.update(dt)],
     ['seeds', (dt) => G.seeds.update(dt)],
+    ['safe', (dt) => G.safe.update(dt)],
+    ['encounters', (dt) => G.encounters.update(dt)],
     ['enemies', (dt) => G.enemies.update(dt)],
     ['boss', (dt) => G.boss.update(dt)],
     ['pickups', (dt) => G.pickups.update(dt)],
