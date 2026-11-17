@@ -317,7 +317,10 @@ export class Board {
       let tx = 470;
       for (const c of courses) {
         const on = c.id === course.id;
-        p.button(`tab-${c.id}`, tx, 36, 560, 78, `${c.titleJa} · ${c.titleEn}`, () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink, size: 30 });
+        const label = `${c.titleJa} · ${c.titleEn}`;
+        let tsz = 30; g.font = font(tsz, 800);
+        while (tsz > 20 && g.measureText(label).width > 560 - 78 * 0.5) { tsz -= 1; g.font = font(tsz, 800); }
+        p.button(`tab-${c.id}`, tx, 36, 560, 78, label, () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink, size: tsz });
         tx += 590;
       }
       const cols = course.units.length > 10 ? 6 : 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 380;
@@ -336,8 +339,11 @@ export class Board {
           g.font = font(22, 800); g.fillStyle = THEME.soft;
           g.fillText(`${L.storyKey}  ${L.episodeJa || ''}`, x + 124, y + 56);
         }
-        text(g, L.titleJa, x + 26, y + 132, cw - 52, 36, { weight: 800, maxLines: 2 });
-        text(g, L.titleEn, x + 26, y + 222, cw - 52, 24, { color: THEME.soft, maxLines: 2, weight: 500 });
+        // titles in full: smaller type for long ones
+        const tf = fitWrap(g, L.titleJa, cw - 52, 100, [36, 31, 27, 24], { weight: 800 });
+        const ty = text(g, L.titleJa, x + 26, y + 124, cw - 52, tf.px, { weight: 800 });
+        const ef = fitWrap(g, L.titleEn, cw - 52, y + ch - 96 - (ty + 6), [24, 21, 19, 17], { weight: 500 });
+        text(g, L.titleEn, x + 26, ty + 6, cw - 52, ef.px, { color: THEME.soft, weight: 500 });
         const max = L.variants.length * 3;
         const sx = cols > 5 ? 132 : 150; const step = Math.min(22, (cw - sx - 18) / max); const sr = Math.min(9, step * 0.42);
         g.font = font(cols > 5 ? 18 : 20, 800); g.fillStyle = THEME.leafDark; g.fillText('れんしゅう', x + 22, y + ch - 82);
