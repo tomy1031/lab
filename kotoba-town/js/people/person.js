@@ -4,6 +4,8 @@
 // Animation: breathing, idle sway, blinking, look-at, lip-sync and gestures (bows, nods, pointing …).
 // Root at the feet, facing +z.
 import * as THREE from 'three';
+import { makeFace, shapeHead, FACE, SKIN_GLOW } from './face.js';
+import { buildHair } from './hair.js';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -19,7 +21,7 @@ const JACKETS = new Set(['suit', 'station_uniform', 'museum_uniform', 'store_uni
 const BUCKET_MATS = {};
 function bucketMaterial(b) {
   if (!BUCKET_MATS[b]) {
-    BUCKET_MATS[b] = new THREE.MeshStandardMaterial({
+    const m = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: b === 'gloss' ? 0.32 : b === 'hair' ? 0.5 : 0.78,
       metalness: 0,
@@ -27,6 +29,13 @@ function bucketMaterial(b) {
       opacity: b === 'trans' ? 0.22 : 1,
       depthWrite: b !== 'trans',
     });
+    if (b === 'skin') {
+      m.onBeforeCompile = (sh) => {
+        sh.fragmentShader = sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', `vec3 totalEmissiveRadiance = emissive + vColor.rgb * ${SKIN_GLOW.toFixed(3)};`);
+      };
+      m.customProgramCacheKey = () => 'kotoba-skin-v1';
+    }
+    BUCKET_MATS[b] = m;
   }
   return BUCKET_MATS[b];
 }
@@ -82,7 +91,7 @@ export class Person {
     const old = age >= 60;
     const type = L.outfit?.type || 'shirt';
     const extras = new Set(L.extras || []);
-    const skin = C(L.skin || '#e8bfa0');
+    const skin = C(L.skin || '#e8bfa0', 'skin');
     const top = C(L.outfit?.top || '#6d8fb3');
     const bottom = C(L.outfit?.bottom || '#3b3f4a');
     const accent = C(L.outfit?.accent || '#ffffff');
@@ -96,7 +105,7 @@ export class Person {
     const hipY = H * 0.505;
     const torsoLen = H * 0.3;
     const sw = H * (f ? 0.106 : 0.122) * b; // half shoulder width
-    const headR = H * 0.071;
+    const headR = H * 0.09; // larger than life: friendlier, and the face reads from further away
     const upperArm = H * 0.17; const foreArm = H * 0.148;
     const thigh = hipY * 0.5; const shin = hipY * 0.44;
     const lathe = (pts, matl, bone, y0, len, zScale, segs = 22) => {
@@ -204,112 +213,45 @@ export class Person {
     // ---- neck & head
     this.neck = this.bone(this.chest, [0, torsoLen * 0.97, -H * 0.004], 'neck');
     taper(H * 0.025, H * 0.028, H * 0.06, skin, this.neck, H * 0.06);
-    this.head = this.bone(this.neck, [0, H * 0.045, 0], 'head');
+    this.head = this.bone(this.neck, [0, H * 0.032, 0], 'head');
     const hcy = headR * 1.02;
     this.headCentre = V(0, hcy, 0);
-    ball(headR, skin, this.head, [0, hcy, 0], [0.9, 1.07, 0.98], 26);
-    ball(headR * 0.72, skin, this.head, [0, hcy - headR * 0.42, headR * 0.16], [0.9, 0.74, 0.9], 16);
-    for (const s of [-1, 1]) ball(headR * 0.2, skin, this.head, [s * headR * 0.89, hcy - headR * 0.04, -headR * 0.02], [0.45, 1, 0.75], 8);
-    ball(headR * 0.12, C(L.skin || '#e8bfa0'), this.head, [0, hcy - headR * 0.18, headR * 0.98], [0.8, 1.15, 0.95], 10);
-    for (const s of [-1, 1]) this.add(new THREE.CircleGeometry(headR * 0.17, 14), C('#f09a9a', 'trans'), this.head, [s * headR * 0.5, hcy - headR * 0.3, headR * 0.87], [0, s * 0.5, 0], [1, 0.7, 1]);
-    // eyes
-    this.eyes = [];
-    const eyeY = hcy + headR * 0.04;
-    for (const s of [-1, 1]) {
-      const eg = this.bone(this.head, [s * headR * 0.35, eyeY, headR * 0.84], 'eye');
-      this.add(new THREE.SphereGeometry(headR * 0.15, 14, 10), C('#fbfaf6', 'gloss'), eg, [0, 0, 0], [0, 0, 0], [1, 0.82, 0.45]);
-      const iris = this.bone(eg, [0, -headR * 0.005, headR * 0.068], 'iris');
-      this.add(new THREE.CircleGeometry(headR * 0.105, 18), C(L.eyes || '#3d2817', 'gloss'), iris);
-      this.add(new THREE.CircleGeometry(headR * 0.05, 14), C('#0d0a08', 'gloss'), iris, [0, 0, 0.0008]);
-      this.add(new THREE.CircleGeometry(headR * 0.024, 8), C('#ffffff', 'gloss'), iris, [headR * 0.03, headR * 0.032, 0.0016]);
-      const lid = this.animPart(new THREE.SphereGeometry(headR * 0.168, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), skin, eg, [0, -headR * 0.01, 0.003], [0, 0, 0], [1.02, 0.42, 0.56], 'lid');
-      this.add(new THREE.TorusGeometry(headR * 0.15, headR * 0.022, 4, 16, Math.PI), C(old ? '#3a3330' : '#1a1210'), eg, [0, headR * 0.0, headR * 0.06], [0.25, 0, 0], [1, 0.5, 1]);
-      this.eyes.push({ eg, iris, lid });
-    }
-    this.brows = [];
-    for (const s of [-1, 1]) {
-      const br = this.animPart(new THREE.BoxGeometry(headR * 0.36, headR * (f ? 0.045 : 0.07), headR * 0.05), hair, this.head, [s * headR * 0.35, eyeY + headR * 0.27, headR * 0.87], [0, -s * 0.2, s * -0.08], [1, 1, 1], 'brow');
-      br.userData.y0 = br.position.y;
-      this.brows.push(br);
-    }
-    // mouth
-    const lip = C(f ? '#cf8a86' : '#bf8f7e');
-    this.mouthB = this.bone(this.head, [0, hcy - headR * 0.47, headR * 0.86], 'mouth');
-    this.mouthInner = this.animPart(new THREE.SphereGeometry(headR * 0.16, 14, 8), C('#5a2028'), this.mouthB, [0, 0, 0], [0, 0, 0], [1, 0.12, 0.35], 'mouthInner');
-    this.lipU = this.animPart(new THREE.CapsuleGeometry(headR * 0.022, headR * 0.2, 3, 8), lip, this.mouthB, [0, headR * 0.026, headR * 0.035], [0, 0, Math.PI / 2], [1, 1, 0.55], 'lipU');
-    this.lipL = this.animPart(new THREE.CapsuleGeometry(headR * 0.03, headR * 0.16, 3, 8), lip, this.mouthB, [0, -headR * 0.034, headR * 0.03], [0, 0, Math.PI / 2], [1, 1, 0.55], 'lipL');
-    this.lipU.userData.y0 = this.lipU.position.y;
-    this.lipL.userData.y0 = this.lipL.position.y;
+    this.add(shapeHead(new THREE.SphereGeometry(headR, 32, 24), headR), skin, this.head, [0, hcy, 0]);
+    for (const s of [-1, 1]) ball(headR * 0.19, skin, this.head, [s * headR * 0.93, hcy - headR * 0.1, -headR * 0.04], [0.42, 1, 0.72], 10);
+    // a small nose; the eyes, brows, mouth and blush are painted on the face patch (face.js)
+    ball(headR * 0.07, skin, this.head, [0, hcy + headR * (FACE.nose[1] + 0.03), headR * 0.925], [0.8, 1.0, 0.75], 10);
+    this.face = makeFace(headR, L, { browWeight: old ? 0.9 : 1 });
+    this.face.mesh.position.set(0, hcy, 0);
+    this.head.add(this.face.mesh);
+    this.headR = headR;
+    this.headTop = hcy + headR * 1.12;
 
-    this._hair(hair, headR, hcy, L.hair?.style || 'short');
+    const hairStyle = L.hair?.style || 'short';
+    const atHead = new THREE.Matrix4().makeTranslation(0, hcy, 0);
+    buildHair({ add: (geo, mat) => this.parts.push({ geo, mat: { ...mat, color: mat.color instanceof THREE.Color ? mat.color : new THREE.Color(mat.color) }, bone: this.head, m: atHead }), R: headR, style: hairStyle, color: L.hair?.color || '#2b1d14', sex: L.sex, extras, name: this.name });
+    if (hairStyle === 'ponytail') this._ponytail(hair, headR, hcy);
     this._extras(extras, headR, hcy, hair, L);
     this.restArm = f ? 0.07 : 0.09;
     this.H = H;
   }
 
-  _hair(m, R, hcy, style) {
-    const h = this.head;
-    const add = (geo, pos, rot, scale) => this.add(geo, m, h, pos, rot, scale);
-    const cap = (scale = 1.08, theta = Math.PI * 0.52, y = 0.06) =>
-      add(new THREE.SphereGeometry(R * scale, 24, 14, 0, Math.PI * 2, 0, theta), [0, hcy + R * y, -R * 0.03], [-0.28, 0, 0], [0.95, 1.0, 1.02]);
-    const back = (len = 1, width = 1.04, y0 = 0.05) =>
-      add(new THREE.SphereGeometry(R * width, 20, 12, Math.PI * 0.15, Math.PI * 0.7, Math.PI * 0.25, Math.PI * 0.5), [0, hcy - R * y0, -R * 0.02], [0, Math.PI, 0], [0.98, len, 1.02]);
-    const fringe = (w = 1, tilt = 0, drop = 0.12) =>
-      add(new THREE.SphereGeometry(R * 1.03, 20, 8, -Math.PI * 0.3 * w, Math.PI * 0.6 * w, 0, Math.PI * 0.27), [0, hcy + R * drop, R * 0.04], [-0.1, tilt, 0], [0.97, 1.0, 1.0]);
-    const sides = (len = 1.05) =>
-      add(new THREE.SphereGeometry(R * 1.12, 22, 12, Math.PI * 0.1, Math.PI * 0.8, Math.PI * 0.22, Math.PI * 0.55), [0, hcy - R * 0.1, -R * 0.02], [0, Math.PI, 0], [1.0, len, 1.02]);
-    switch (style) {
-      case 'bald_top':
-        add(new THREE.TorusGeometry(R * 0.86, R * 0.2, 8, 24, Math.PI * 1.1), [0, hcy - R * 0.02, -R * 0.04], [Math.PI / 2 - 0.12, 0, Math.PI * 0.95], [0.98, 1.05, 1.6]);
-        break;
-      case 'crew':
-        cap(1.04, Math.PI * 0.5, 0.03);
-        break;
-      case 'gray_short': case 'short':
-        cap(1.07, Math.PI * 0.55, 0.05); back(); fringe(0.9);
-        break;
-      case 'side_part':
-        cap(1.07, Math.PI * 0.55, 0.06); back(); fringe(0.8, 0.25);
-        break;
-      case 'wavy':
-        cap(1.09, Math.PI * 0.58, 0.06); back(1.15, 1.06, 0.1); fringe(1);
-        for (let i = 0; i < 9; i++) {
-          const a = (i / 9) * Math.PI * 1.6 - Math.PI * 0.8;
-          add(new THREE.SphereGeometry(R * 0.26, 10, 8), [Math.sin(a) * R * 0.95, hcy + R * 0.3 + Math.cos(i) * R * 0.08, -Math.cos(a) * R * 0.75], [0, 0, 0], [1, 1, 1]);
-        }
-        break;
-      case 'bob':
-        cap(1.1, Math.PI * 0.6, 0.06); fringe(1.05); sides(1.05);
-        break;
-      case 'long':
-        cap(1.09, Math.PI * 0.52, 0.06); fringe(0.95, 0.12, 0.2); sides(1.05);
-        add(new THREE.CapsuleGeometry(R * 0.55, R * 1.6, 4, 12), [0, hcy - R * 1.35, -R * 0.55], [0.1, 0, 0], [1.45, 1, 0.45]);
-        break;
-      case 'ponytail': {
-        cap(1.07, Math.PI * 0.56, 0.06); back(); fringe(1, 0.1);
-        const tail = this.bone(h, [0, hcy + R * 0.25, -R * 1.0], 'tail');
-        this.add(new THREE.SphereGeometry(R * 0.14, 8, 6), C('#8a3a3a'), tail);
-        this.add(new THREE.CapsuleGeometry(R * 0.2, R * 1.1, 4, 8), m, tail, [0, -R * 0.65, -R * 0.12], [0.2, 0, 0]);
-        this.tail = tail;
-        break;
-      }
-      case 'bun':
-        cap(1.07, Math.PI * 0.56, 0.06); back(); fringe(0.85, -0.1);
-        add(new THREE.SphereGeometry(R * 0.38, 14, 12), [0, hcy + R * 0.5, -R * 0.82], [0, 0, 0], [1, 1, 1]);
-        break;
-      default:
-        cap(); back();
-    }
+  _ponytail(m, R, hcy) {
+    const tail = this.bone(this.head, [0, hcy + R * 0.3, -R * 1.02], 'tail');
+    this.add(new THREE.TorusGeometry(R * 0.11, R * 0.045, 6, 12), C('#8a3a3a'), tail, [0, 0, 0], [0.3, 0, 0]);
+    this.add(new THREE.CapsuleGeometry(R * 0.2, R * 0.9, 4, 10), m, tail, [0, -R * 0.55, -R * 0.16], [0.28, 0, 0], [1.1, 1, 0.8]);
+    this.add(new THREE.ConeGeometry(R * 0.2, R * 0.45, 10), m, tail, [0, -R * 1.2, -R * 0.33], [Math.PI + 0.28, 0, 0], [1.1, 1, 0.8]);
+    this.tail = tail;
   }
 
   _extras(ex, R, hcy, hairC, L) {
     const h = this.head;
     if (ex.has('glasses')) {
       const gm = C('#2a2a2e', 'gloss');
-      for (const s of [-1, 1]) this.add(new THREE.TorusGeometry(R * 0.2, R * 0.022, 6, 20), gm, h, [s * R * 0.36, hcy + R * 0.04, R * 0.98], [0, 0, 0], [1, 0.82, 1]);
-      this.add(new THREE.BoxGeometry(R * 0.2, R * 0.03, R * 0.03), gm, h, [0, hcy + R * 0.08, R * 1.0]);
-      for (const s of [-1, 1]) this.add(new THREE.BoxGeometry(R * 0.03, R * 0.03, R * 0.9), gm, h, [s * R * 0.56, hcy + R * 0.06, R * 0.55]);
-      for (const s of [-1, 1]) this.add(new THREE.CircleGeometry(R * 0.19, 16), C('#cfe6ff', 'trans'), h, [s * R * 0.36, hcy + R * 0.04, R * 0.99], [0, 0, 0], [1, 0.82, 1]);
+      const [ex, ey] = FACE.eye;
+      for (const s of [-1, 1]) this.add(new THREE.TorusGeometry(R * 0.225, R * 0.02, 6, 24), gm, h, [s * R * ex, hcy + R * ey, R * 1.0], [0, s * 0.3, 0], [1.05, 0.86, 1]);
+      this.add(new THREE.BoxGeometry(R * 0.16, R * 0.026, R * 0.026), gm, h, [0, hcy + R * (ey + 0.06), R * 1.04]);
+      for (const s of [-1, 1]) this.add(new THREE.BoxGeometry(R * 0.026, R * 0.026, R * 0.85), gm, h, [s * R * 0.6, hcy + R * (ey + 0.04), R * 0.52], [0, s * 0.12, 0]);
+      for (const s of [-1, 1]) this.add(new THREE.CircleGeometry(R * 0.21, 20), C('#cfe6ff', 'trans'), h, [s * R * ex, hcy + R * ey, R * 1.0], [0, s * 0.3, 0], [1.05, 0.86, 1]);
     }
     if (ex.has('cap')) {
       const cm = C(L.outfit?.top || '#1f2a44');
@@ -317,9 +259,8 @@ export class Person {
       this.add(new THREE.CylinderGeometry(R * 1.12, R * 1.12, R * 0.08, 22, 1, false, -Math.PI / 2, Math.PI), C('#151515', 'gloss'), h, [0, hcy + R * 0.38, R * 0.2], [-0.12, 0, 0], [1, 1, 1.3]);
       this.add(new THREE.CylinderGeometry(R * 1.04, R * 1.04, R * 0.08, 22), C(L.outfit?.accent || '#c9a54a', 'gloss'), h, [0, hcy + R * 0.45, -R * 0.02], [-0.08, 0, 0]);
     }
-    if (ex.has('beard')) this.add(new THREE.SphereGeometry(R * 0.68, 16, 12, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.55), hairC, h, [0, hcy - R * 0.35, R * 0.22], [0.15, 0, 0]);
-    if (ex.has('beard') || ex.has('mustache')) this.add(new THREE.CapsuleGeometry(R * 0.06, R * 0.38, 3, 8), hairC, h, [0, hcy - R * 0.36, R * 0.93], [0, 0, Math.PI / 2], [1, 1, 0.7]);
-    if (ex.has('earrings')) for (const s of [-1, 1]) this.add(new THREE.SphereGeometry(R * 0.05, 8, 6), C('#e8c45a', 'gloss'), h, [s * R * 0.92, hcy - R * 0.3, 0]);
+    // beard and moustache are painted on the face patch (face.js)
+    if (ex.has('earrings')) for (const s of [-1, 1]) this.add(new THREE.SphereGeometry(R * 0.05, 8, 6), C('#e8c45a', 'gloss'), h, [s * R * 0.95, hcy - R * 0.32, -R * 0.04]);
   }
 
   /** Merge every shape into skinned meshes (one per material bucket). */
@@ -423,16 +364,16 @@ export class Person {
     this.head.rotation.y += (this.headYaw - this.bodyYaw * 0.6) * 0.55;
     this.head.rotation.x += this.headPitch * 0.75;
     this.neck.rotation.x += this.headPitch * 0.25;
-    for (const e of this.eyes) e.iris.position.x = THREE.MathUtils.clamp((tgtYaw - this.headYaw) * 0.02, -0.005, 0.005);
+    // eyes lead the head a little, plus small glances now and then
+    this.saccT -= dt;
+    if (!(this.saccT > 0)) { this.saccT = 0.8 + Math.random() * 2.2; this.sacc = [(Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.08]; }
+    const gazeX = THREE.MathUtils.clamp((tgtYaw - this.headYaw) * 0.9 + this.sacc[0], -0.32, 0.32);
+    const gazeY = THREE.MathUtils.clamp(-(tgtPitch - this.headPitch) * 0.7 + this.sacc[1], -0.16, 0.12);
 
     this.level += (level - this.level) * (level > this.level ? 0.7 : 0.3);
     const talking = this.level > 0.05;
     const open = talking ? Math.min(1, this.level * 1.3) * (0.65 + 0.35 * Math.abs(Math.sin(t * 17))) : 0;
     this.mouth += (open - this.mouth) * 0.5;
-    this.mouthInner.scale.set(1 - this.mouth * 0.15, 1 + this.mouth * 7, 1);
-    const R0 = H * 0.066;
-    this.lipL.position.y = this.lipL.userData.y0 - R0 * this.mouth * 0.13;
-    this.lipU.position.y = this.lipU.userData.y0 + R0 * this.mouth * 0.03;
     const browUp = talking ? this.level * 0.003 : 0;
     if (talking) {
       this.head.rotation.x += Math.sin(t * 3.1) * 0.025 * this.level;
@@ -444,8 +385,8 @@ export class Person {
     let browExtra = 0;
 
     this.blinkT -= dt;
-    if (this.blinkT < 0) { this.blink = 0.14; this.blinkT = 2 + Math.random() * 4; }
-    const closed = this.blink > 0 ? 1 : 0;
+    if (this.blinkT < 0) { this.blink = 0.16; this.blinkT = 2 + Math.random() * 4; }
+    const closed = this.blink > 0 ? Math.sin(Math.PI * (1 - this.blink / 0.16)) : 0;
     this.blink = Math.max(0, this.blink - dt);
     let squint = 0;
 
@@ -458,8 +399,7 @@ export class Person {
       if (r?.brow) browExtra = Math.max(browExtra, r.brow);
     }
     this.gestures = this.gestures.filter((g) => g.t < g.dur);
-    for (const e of this.eyes) e.lid.scale.y = 1 + closed * 3 + squint * 1.4;
-    for (const b of this.brows) b.position.y = b.userData.y0 + browUp + browExtra;
+    this.face.set({ blink: closed, squint, mouth: this.mouth, brow: (browUp + browExtra) / this.headR, gazeX, gazeY });
   }
 
   _phonePose() {
@@ -537,12 +477,14 @@ export class Person {
   get voiceAnchor() { return this.head; }
 
   topWorld(target = new THREE.Vector3()) {
-    this.head.getWorldPosition(target);
-    target.y += this.H * 0.16;
-    return target;
+    return this.head.localToWorld(target.set(0, this.headTop + this.headR * 0.15, 0));
   }
 
-  dispose() { for (const m of this.meshes || []) m.geometry.dispose(); }
+  dispose() {
+    for (const m of this.meshes || []) m.geometry.dispose();
+    this.face?.mesh.geometry.dispose();
+    this.face?.mesh.material.dispose();
+  }
 }
 
 function shadeHex(hex, k) { const c = new THREE.Color(hex); c.multiplyScalar(k); return `#${c.getHexString()}`; }
