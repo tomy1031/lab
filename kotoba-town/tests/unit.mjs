@@ -153,4 +153,23 @@ await test('Live: a verdict that copies an example (not what was heard) is flagg
   assert.match(judged.heard, /ログイン/);
 });
 
+await test('Live: no function call but the app wants a reply → the reply is requested in a note', async () => {
+  const { WS, sent } = fakeLive({ skipTool: true });
+  let judged = null;
+  const b = new LiveBrain({ apiKey: 'k', lesson: fx.lesson, variant: fx.variant, character: fx.character, WebSocketImpl: WS, on: { judge: (r) => { judged = r; return 'react'; } } });
+  await b.connect();
+  b.setTurn('[TURN 1]', ['full', 'name_only']);
+  for (let i = 0; i < 4; i++) b.audio('AAAA');
+  await new Promise((r) => setTimeout(r, 60));
+  b.close();
+  assert.equal(judged.branch, 'unjudged');
+  const note = sent.find((m) => m.clientContent?.turns?.[0]?.parts?.[0]?.text?.startsWith('[REPLY]'));
+  assert.ok(note && note.clientContent.turnComplete === true);
+  assert.match(note.clientContent.turns[0].parts[0].text, /リンです/);
+});
+
+await test('base64 silence is exactly 100 ms at 16 kHz', () => {
+  assert.equal(Buffer.from(`${'A'.repeat(4267)}=`, 'base64').length, 3200);
+});
+
 console.log(`\n${pass} passed`);

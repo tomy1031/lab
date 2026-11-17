@@ -114,6 +114,7 @@ export class LiveBrain {
     this.session = res.session;
     this.model = res.model;
     this.on.status('live', res.model);
+    this.keepAlive();
     return true;
   }
 
@@ -142,7 +143,17 @@ export class LiveBrain {
   }
 
   /** 16 kHz PCM16 base64 from the mic (only while the learner may talk). */
-  audio(b64) { this.session?.sendAudio(b64); }
+  audio(b64) { this.lastSent = Date.now(); this.session?.sendAudio(b64); }
+
+  /** Live closes a session after ~20 s without client messages: send 100 ms of silence every 8 s. */
+  keepAlive() {
+    clearInterval(this.keepTimer);
+    const silence = `${'A'.repeat(4267)}=`; // base64 of 3200 zero bytes = 100 ms at 16 kHz
+    this.keepTimer = setInterval(() => {
+      if (this.closed || !this.live) return;
+      if (Date.now() - (this.lastSent || 0) > 8000) { this.lastSent = Date.now(); this.session.sendAudio(silence); }
+    }, 2000);
+  }
 
   /** The mic stops sending (NPC talking). */
   micPause() { this.session?.sendAudioStreamEnd(); }
@@ -219,7 +230,21 @@ export class LiveBrain {
       const heard = this.heardText.trim();
       this.heardText = '';
       this.awaitingJudge = false;
-      this.on.judge({ heard, branch: 'unjudged', score: 1, grammarUsed: [], correction: '', tipEn: '', source: 'transcript' });
+      this.judgeAt = Date.now();
+      let say = 'nothing';
+      try { say = this.on.judge({ heard, branch: 'unjudged', score: 1, grammarUsed: [], correction: '', tipEn: '', source: 'transcript' }) || 'nothing'; } catch (e) { console.error(e); }
+      this.trace(`fallback judge → ${say}`);
+      if (say !== 'nothing') {
+        // there is no function call to answer, so ask for the reply in a note
+        this.gate = 'armed';
+        this.played = 0;
+        this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8);
+        clearTimeout(this.armTimer);
+        this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
+        this.session?.sendText(say === 'chat'
+          ? `[REPLY] The learner said 「${heard}」. Reply in character with 1–2 short polite Japanese sentences at their level, then ask one simple question back. No greetings.`
+          : `[REPLY] The learner said 「${heard}」. Reply in character with ONE short polite Japanese sentence (max 15 words) that answers it directly. Do not greet, do not ask a question, do not continue the script.`, true);
+      }
     }
   }
 
@@ -244,6 +269,7 @@ export class LiveBrain {
   close() {
     this.closed = true;
     clearTimeout(this.armTimer);
+    clearInterval(this.keepTimer);
     try { this.session?.close(); } catch { /* ignore */ }
     this.session = null;
   }
