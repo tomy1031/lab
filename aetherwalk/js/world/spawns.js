@@ -153,10 +153,11 @@ export function buildSpawnPoints(env) {
     else if (g.kind === 'bush') addProp(id, 'bush', p.x, p.z, (g.x * 11 + g.z) % 360, { fruit: g.count, itemId: g.itemId }, 0.6, y);
   }
   // そのほか：木人、台座の剣は上で追加ずみ、光の橋、飾りの燭台
+  // brazier_camp_path：野営地の手前 13 m、南の道の東脇。消えた松明をゴールの近くで付け直せるように（火の手ほどきの救済）
   const st = landmarks.start;
   addProp('dummy_start', 'dummy', st.x + 4.4, st.z - 3.2, 250, {}, 0.45, st.y + 0.3);
   addProp('lightbridge', 'lightbridge', landmarks.pier.x, landmarks.pier.z, 0, {}, 2, LAKE_LEVEL + 1.15);
-  const deco = [['brazier_bridge', 141, 240], ['brazier_hollow', -552, -112], ['brazier_arch', 396, 100], ['brazier_nest', 548, -138], ['brazier_ice', 126, -318], ['brazier_isle_w', -7, 2], ['brazier_isle_e', 7, 2], ['brazier_start', -4.6, 533.5]];
+  const deco = [['brazier_bridge', 141, 240], ['brazier_hollow', -552, -112], ['brazier_arch', 396, 100], ['brazier_nest', 548, -138], ['brazier_ice', 126, -318], ['brazier_isle_w', -7, 2], ['brazier_isle_e', 7, 2], ['brazier_start', -4.6, 533.5], ['brazier_camp_path', -22.4, 480.5]];
   for (const [id, x, z] of deco) {
     if (id === 'brazier_start') { addProp(id, 'brazier', x, z, 0, {}, 0.5, st.y + 0.3); continue; }
     const p = snap(x, z, { clear: 0.7 });
