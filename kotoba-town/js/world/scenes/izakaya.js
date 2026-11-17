@@ -386,7 +386,7 @@ export default function build({ setup }) {
   for (const o of [menu, beer, edamame, oshibori, hashi, yakitori, sake, menuStrips, lantern, counter, reg, clk, noren, fishTankProp]) props[o.userData.propId] = o;
   atlasize(g, A);
 
-  const staffPos = { x: 0.98, z: -0.9 };
+  const staffPos = { x: 1.08, z: -1.3 }; // beside the table end, inside the seated learner's view
   return K.finalize({
     group: g,
     spawn: K.spot(0, 0, 0),
