@@ -10,7 +10,10 @@ import { RUBRIC_INFO, VERDICTS } from './judge.js';
 const API = 'https://generativelanguage.googleapis.com/v1beta';
 let modelCache = null;
 
-/** Prefer the strongest general model that can think: newest "pro", then newest "flash". */
+/**
+ * Newest generation first (older "pro" models get retired or rate-limited sooner than the newest "flash"),
+ * then pro before flash, stable before preview.
+ */
 export function pickReviewModels(names) {
   const ok = names
     .map((n) => n.replace(/^models\//, ''))
@@ -18,7 +21,7 @@ export function pickReviewModels(names) {
   const ver = (n) => Number((n.match(/^gemini-(\d+(?:\.\d+)?)/) || [])[1] || 0);
   const rank = (n) => (/-pro/.test(n) ? 3 : /-flash(?!-lite)/.test(n) ? 2 : /lite/.test(n) ? 1 : 0);
   const stable = (n) => (/preview|latest/.test(n) ? 0 : 1);
-  return ok.sort((a, b) => rank(b) - rank(a) || ver(b) - ver(a) || stable(b) - stable(a)).slice(0, 4);
+  return ok.filter((n) => rank(n) >= 2).sort((a, b) => ver(b) - ver(a) || rank(b) - rank(a) || stable(b) - stable(a)).slice(0, 4);
 }
 
 async function listModels(apiKey, fetchImpl) {
@@ -118,15 +121,20 @@ export async function reviewInterview({ apiKey, lesson, variant, turns, level = 
   const { system, user, rubric } = reviewPrompt({ lesson, variant, turns });
   const deadline = Date.now() + timeoutMs;
   let models = [];
+  let retryBusy = false;
+  const perModelMs = 35000;
   try { models = await listModels(apiKey, fetchImpl); } catch (e) { log(`review: models ${e.message}`); }
-  if (!models.length) models = ['gemini-2.5-pro', 'gemini-2.5-flash'];
+  if (!models.length) models = ['gemini-3.8-flash', 'gemini-3.1-pro-preview'];
   for (const model of models) {
-    for (const thinking of [true, false]) {
+    for (const [attempt, thinking] of [[0, true], [1, true], [2, false]]) {
       if (Date.now() > deadline - 3000) return null;
+      if (attempt === 1 && !retryBusy) continue;
+      retryBusy = false;
       const generationConfig = { responseMimeType: 'application/json', responseSchema: SCHEMA(rubric), temperature: 0.4 };
       if (thinking) generationConfig.thinkingConfig = /^gemini-2\./.test(model) ? { thinkingBudget: -1 } : { thinkingLevel: level };
       const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timer = setTimeout(() => ctrl?.abort(), Math.max(1000, deadline - Date.now()));
+      // one model may not use the whole budget: a slow or busy one gives way to the next
+      const timer = setTimeout(() => ctrl?.abort(), Math.max(1000, Math.min(deadline - Date.now(), perModelMs)));
       const t0 = Date.now();
       try {
         const r = await fetchImpl(`${API}/models/${model}:generateContent`, {
@@ -139,8 +147,9 @@ export async function reviewInterview({ apiKey, lesson, variant, turns, level = 
         if (!r.ok) {
           const msg = (await r.text().catch(() => '')).slice(0, 200);
           log(`review: ${model}${thinking ? ' (thinking)' : ''} → ${r.status} ${msg}`);
-          if (r.status === 400 && thinking) continue; // this model does not take the thinking setting: try without
-          break; // next model
+          if (r.status === 400 && thinking) continue; // no thinking setting for this model: try without
+          if (r.status === 503 && attempt === 0) { retryBusy = true; await new Promise((res) => setTimeout(res, 2500)); continue; } // busy: once more
+          break; // 404 retired, 429 over quota …: next model
         }
         const j = await r.json();
         const text = (j.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
