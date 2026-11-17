@@ -263,7 +263,10 @@ export function createRadiance(ctx, I) {
     return n;
   }
 
+  /** a throwaway glow mesh for the shader warm-up frame (core/warm.js) */
+  function warmObject() { const m = new THREE.Mesh(auraGeometry(), mat); m.name = 'warm-sword-aura'; return m; }
+
   // gain: 0 hides the enchantment; camera: face the impact star to another camera (tests / screenshots)
-  const R = { update, hit, drawCalls, RADIANT, gain: 1, camera: null };
+  const R = { update, hit, drawCalls, warmObject, RADIANT, gain: 1, camera: null };
   return R;
 }

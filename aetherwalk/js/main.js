@@ -33,6 +33,7 @@ import { setupLanding } from './core/landing.js';
 import { errMsg } from './core/util.js';
 import { SPAWN_FALLBACK } from './core/config.js';
 import * as stubs from './core/stubs.js';
+import { prepareWarmup } from './core/warm.js';
 
 function readFlags(params) {
   const ua = navigator.userAgent || '';
@@ -146,8 +147,16 @@ async function boot() {
 
   // ── run ──
   ctx.progress('描画 rendering', 0.95);
+  // shader warm-up: wait (≤ 6 s) for the skinned gloves, then draw every OPUS-A shader once in the first frame,
+  // so no program compiles after ready (a multi-second stall under SwiftShader, a hitch on a Quest)
+  let warmDone = null;
+  try {
+    await Promise.race([ctx.player?.hands?.whenReady, new Promise((r) => setTimeout(r, 6000))]);
+    warmDone = prepareWarmup(ctx, ctx.items?.warmObjects?.() || []);
+  } catch (e) { report(`shader warm-up: ${errMsg(e)}`); }
   loop.start();
   await loop.firstFrame;
+  try { warmDone?.(); } catch (e) { report(`shader warm-up: ${errMsg(e)}`); }
   AW.ready = true;
   ctx.progress('準備完了 ready', 1);
   events.emit('ready', {});

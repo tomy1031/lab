@@ -283,6 +283,14 @@ export async function createItems(ctx) {
       return items.createInHand(itemId, hand, 'bag', null);
     },
     blockTest(shape, fromPos) { return shield.blockTest(shape, fromPos); },
+    /** throwaway meshes that use every shader a held or world item can need (a held sword with its steel and
+     *  gold, its glow / the swing trail, a world pool): drawn once in the warm-up frame so no first use hitches */
+    warmObjects() {
+      const held = models.makeMesh('sword');
+      const pool = new THREE.InstancedMesh(models.geometry('apple'), models.material(), 1);
+      pool.setMatrixAt(0, _m.identity());
+      return [held, radiance.warmObject(), pool];
+    },
     makeModel(itemId) { return models.makeModel(itemId); },
 
     // ── used by the player (grab.js / desktop.js) ──
