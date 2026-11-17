@@ -12,6 +12,7 @@
 //   STARWEAVER_REF STAR WEAVER (star-weaver/)                  default: origin/claude/upbeat-wozniak-itsh33 (then FILMS_REF)
 //   AETHERWALK_REF AETHERWALK (aetherwalk/)                    default: origin/claude/determined-newton-ki8tfm (then FILMS_REF)
 //   KOTOBA_REF    ことばタウン (kotoba-town/)                   default: HEAD if it has kotoba-town/, else origin/claude/vr-japanese-practice-app-qqna1o
+//   OFFBEAT_REF   OFFBEAT GROVE (offbeat-grove/)              default: HEAD
 //   DREAMDRIFT_REF DREAM DRIFT (dream-drift/)                  default: HEAD if it has dream-drift/, else origin/claude/happy-turing-uknqds
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
@@ -19,6 +20,7 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const sh = (cmd, opts = {}) => (execSync(cmd, { stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8', ...opts }) ?? '').trim();
 const root = sh('git rev-parse --show-toplevel');
@@ -33,6 +35,7 @@ const refs = {
   starweaver: process.env.STARWEAVER_REF || 'origin/claude/upbeat-wozniak-itsh33',
   aetherwalk: process.env.AETHERWALK_REF || 'origin/claude/determined-newton-ki8tfm',
   kotoba: process.env.KOTOBA_REF || 'HEAD',
+  offbeat: process.env.OFFBEAT_REF || 'HEAD',
   dreamdrift: process.env.DREAMDRIFT_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
@@ -237,7 +240,29 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 09 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Static files: the page, ES modules
+// 09 OFFBEAT GROVE — WebXR offbeat boxercise; static files plus an offline service worker. The game's own
+// tools/bundle.mjs copies what ships and fills sw.js with the build id (the folder's content hash) and the
+// list of files to cache, so the published game works with no network once opened.
+{
+  const dest = path.join(out, 'offbeat-grove');
+  try {
+    const src = exportDir(refs.offbeat, 'offbeat-grove');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.offbeat}:offbeat-grove"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    copy(path.join(src, 'docs', 'preview.jpg'), path.join(out, 'img', 'offbeat-grove.jpg'));
+    console.log(`offbeat-grove build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`offbeat-grove not found at ${refs.offbeat}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OFFBEAT GROVE</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="https://github.com/tomy1031/lab">リポジトリ</a>・<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 10 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Static files: the page, ES modules
 // and images (three.js and MediaPipe come from the CDN).
 {
   const dest = path.join(out, 'dream-drift');
@@ -259,4 +284,4 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
 
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} dreamdrift=${refs.dreamdrift}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift}`);

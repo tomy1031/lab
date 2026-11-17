@@ -142,6 +142,14 @@ export class TurnCard {
     if (s.mode !== 'listen' && s.mode !== 'free') return 860;
     const g = this.panel.g; const W = this.panel.canvas.width;
     const m = (str, px, mw, weight = 700) => { g.font = font(px, weight); return wrap(g, str, mw).length * px * 1.45; };
+    if (s.room) {
+      let y = 140 + m(s.promptEn || '', 36, W - 240, 800) + 16;
+      if (s.heard) y += m(`🎤 ${s.heard}`, 30, W - 160) + 50;
+      if (s.last) y += 60 + m(`🎤 ${s.last.heard || '—'}`, 26, W - 260) + (s.last.correction && s.last.correction !== s.last.heard ? m(`✓ ${s.last.correction}`, 30, W - 160, 800) : 0) + (s.last.tipEn ? m(s.last.tipEn, 24, W - 160, 500) : 0) + 30;
+      if (s.ideas?.length) y += 50 + s.ideas.reduce((a, t) => a + m(`・${t}`, 26, W - 160, 600), 0);
+      if (s.starters?.length) y += 40 + m(s.starters.join('　／　'), 30, W - 160, 800) + 20;
+      return Math.min(1600, Math.max(860, Math.ceil(y + 160)));
+    }
     let y = 140 + Math.min(m(s.promptEn || '', 34, W - 240), 170) + 10;
     if (s.heard) y += Math.min(m(`🎤 ${s.heard}`, 31, W - 160), 110) + 54;
     if (s.showHint && s.hintJa) y += Math.min(m(`💡 ${s.hintJa}`, 33, W - 160, 800), 120) + 58;
@@ -164,7 +172,8 @@ export class TurnCard {
       const listening = s.mode === 'listen' || s.mode === 'free';
       const tagW = nameTag(g, 50, 40, listening ? (s.mode === 'free' ? 'フリートーク · Free talk' : 'あなたの ばん · Your turn') : s.mode === 'feedback' ? 'ひょうか · Feedback' : 'きいて · Listen', listening ? THEME.leaf : s.mode === 'feedback' ? THEME.sun : '#d9cdb8', listening ? '#ffffff' : THEME.ink, 36);
       // which mode we are in: れんしゅう (practice, with examples) or ほんばん (real, no help)
-      nameTag(g, 50 + tagW + 16, 46, s.exam ? 'ほんばん' : 'れんしゅう', s.exam ? '#f7a35c' : '#d7ecdf', s.exam ? '#ffffff' : THEME.leafDark, 28);
+      if (s.room) nameTag(g, 50 + tagW + 16, 46, s.levelLabel || '', '#cfe3f7', '#2f5f8a', 28);
+      else nameTag(g, 50 + tagW + 16, 46, s.exam ? 'ほんばん' : 'れんしゅう', s.exam ? '#f7a35c' : '#d7ecdf', s.exam ? '#ffffff' : THEME.leafDark, 28);
       // mic indicator
       const cx = W - 120; const cy = 92;
       const micOn = listening && s.mic === 'on';
@@ -174,7 +183,7 @@ export class TurnCard {
       g.beginPath(); g.arc(cx, cy, 40, 0, Math.PI * 2); g.fill();
       drawMic(g, cx, cy, 22, '#ffffff');
       g.font = font(22, 800); g.textAlign = 'center'; g.fillStyle = THEME.soft;
-      g.fillText(micOn ? 'listening' : s.mic === 'denied' ? 'mic blocked' : s.mode === 'npc' ? 'wait…' : 'mic', cx, cy + 74);
+      g.fillText(micOn ? 'listening' : s.mic === 'denied' ? 'mic blocked' : s.mode === 'npc' || s.waiting ? 'wait…' : 'mic', cx, cy + 74);
 
       let y = 140;
       if (s.mode === 'npc') {
@@ -220,6 +229,7 @@ export class TurnCard {
         if (f.tipEn) y = text(g, f.tipEn, 60, y + 4, W - 120, 32, { color: '#6c7d8a', maxLines: 3 });
         return;
       }
+      if (s.room) { this.drawRoom(g, W, H, p, s); return; }
       // listen / free — every text is shown in full (wrapped, smaller type only when it must)
       const by = H - 130;
       const pf = fitWrap(g, s.promptEn || '', W - 240, 170, [40, 34, 30, 27]);
@@ -261,7 +271,7 @@ export class TurnCard {
         }
       }
       // bottom buttons
-      if (s.mode === 'free') {
+      if (s.mode === 'free' && !s.room) {
         p.button('finish', W / 2 - 170, by, 340, 84, 'おわる · Finish', () => this.h.finish(), { color: THEME.blue });
         return;
       }
@@ -278,6 +288,54 @@ export class TurnCard {
   }
 }
 
+/** The free-talk room's card: topic, what the learner is saying, the last line with a better way to say it, ideas. */
+TurnCard.prototype.drawRoom = function drawRoom(g, W, H, p, s) {
+  let y = 140;
+  const kind = s.topicKind === 'role' ? 'ロールプレイ' : 'おしゃべり';
+  const kw = chip(g, 60, y - 4, kind, s.topicKind === 'role' ? '#fde3c8' : '#e3f3ea', s.topicKind === 'role' ? '#a3622a' : THEME.leafDark, 22);
+  y = text(g, s.promptEn || '', 60 + kw + 14, y, W - 240 - kw - 14, 36, { weight: 800 }) + 16;
+  if (s.heard) {
+    const hf = fitWrap(g, `🎤 ${s.heard}`, W - 160, 140, [30, 27, 24]);
+    g.fillStyle = '#f1eadb'; rr(g, 50, y, W - 100, hf.height + 36, 26); g.fill();
+    text(g, `🎤 ${s.heard}`, 76, y + 18, W - 160, hf.px, { color: THEME.ink });
+    y += hf.height + 50;
+  } else if (s.waiting) {
+    y = text(g, '👂 きいて ください · Listen to your partner', 60, y, W - 120, 26, { color: THEME.soft }) + 12;
+  } else {
+    y = text(g, '🎙️ どうぞ、はなして ください · Your turn — just talk', 60, y, W - 120, 26, { color: THEME.leafDark, weight: 800 }) + 12;
+  }
+  if (s.last) {
+    const l = s.last;
+    g.fillStyle = '#eef6f1';
+    g.font = font(26, 700);
+    const better = l.correction && l.correction !== l.heard;
+    const bh = 30 + wrap(g, `🎤 ${l.heard || '—'}`, W - 260).length * 26 * 1.45 + (better ? (g.font = font(30, 800), wrap(g, `✓ ${l.correction}`, W - 160).length * 30 * 1.45) : 0) + (l.tipEn ? (g.font = font(24, 500), wrap(g, l.tipEn, W - 160).length * 24 * 1.45) : 0) + 20;
+    g.fillStyle = '#eef6f1'; rr(g, 50, y, W - 100, bh, 26); g.fill();
+    stars(g, 70, y + 12, l.score ?? 0, 3, 30);
+    let ly = text(g, `🎤 ${l.heard || '—'}`, 200, y + 14, W - 260, 26, { color: THEME.soft });
+    if (better) ly = text(g, `✓ ${l.correction}`, 76, ly + 6, W - 160, 30, { color: THEME.leafDark, weight: 800 });
+    if (l.tipEn) text(g, l.tipEn, 76, ly + 4, W - 160, 24, { color: '#6c7d8a', weight: 500 });
+    y += bh + 14;
+  }
+  if (s.ideas?.length) {
+    g.font = font(24, 800); g.fillStyle = '#8a6416'; g.textAlign = 'left'; g.textBaseline = 'top';
+    g.fillText('💡 はなせる こと · Ideas', 60, y); y += 40;
+    for (const t of s.ideas) y = text(g, `・${t}`, 70, y, W - 160, 26, { color: THEME.ink, weight: 600 });
+    y += 10;
+  }
+  if (s.starters?.length) {
+    const st = s.starters.join('　／　');
+    g.font = font(30, 800);
+    const sh = wrap(g, st, W - 160).length * 30 * 1.45 + 30;
+    g.fillStyle = '#fff3cf'; rr(g, 50, y, W - 100, sh, 26); g.fill();
+    text(g, st, 76, y + 15, W - 160, 30, { color: '#8a6416', weight: 800 });
+  }
+  const by = H - 130;
+  p.button('ideas', 50, by, 330, 84, s.ideas ? 'ヒントを とじる' : 'ヒント · Ideas', () => this.h.ideas?.(), { color: THEME.sun, fg: THEME.ink, size: 30 });
+  p.button('topic', 400, by, 400, 84, 'わだいを かえる · Topic', () => this.h.topic?.(), { color: '#a9cdf0', fg: THEME.ink, size: 30, disabled: !!s.waiting });
+  p.button('finish', 820, by, 330, 84, 'おわる · Finish', () => this.h.finish(), { color: THEME.blue, size: 30 });
+};
+
 function drawMic(g, x, y, s, color) {
   g.save();
   g.fillStyle = color; g.strokeStyle = color; g.lineWidth = s * 0.18; g.lineCap = 'round';
@@ -285,6 +343,27 @@ function drawMic(g, x, y, s, color) {
   g.beginPath(); g.arc(x, y - s * 0.05, s * 0.55, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke();
   g.beginPath(); g.moveTo(x, y + s * 0.5); g.lineTo(x, y + s * 0.8); g.stroke();
   g.restore();
+}
+
+/** Course tabs on the town board: Japanese title with the English one below. */
+function drawTabs(g, p, W, tabs, active, onTab) {
+  const x0 = 440; const gap = 18;
+  const tw = (W - x0 - 70 - gap * (tabs.length - 1)) / tabs.length;
+  tabs.forEach((c, i) => {
+    const x = x0 + i * (tw + gap);
+    const on = c.id === active;
+    p.button(`tab-${c.id}`, x, 32, tw, 88, '', () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink });
+    const hover = p.hoverId === `tab-${c.id}` ? -2 : 0;
+    g.save();
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = THEME.ink;
+    let sz = 30; g.font = font(sz, 800);
+    while (sz > 18 && g.measureText(c.titleJa).width > tw - 50) { sz -= 1; g.font = font(sz, 800); }
+    g.fillText(c.titleJa, x + tw / 2, 32 + 33 + hover);
+    let ez = 19; g.font = font(ez, 700);
+    while (ez > 13 && g.measureText(c.titleEn).width > tw - 50) { ez -= 1; g.font = font(ez, 700); }
+    g.fillStyle = THEME.soft; g.fillText(c.titleEn, x + tw / 2, 32 + 66 + hover);
+    g.restore();
+  });
 }
 
 // -------------------------------------------------------------------- board
@@ -302,29 +381,33 @@ export class Board {
   hide() { this.panel.visible = false; }
 
   /**
-   * The town board: course tabs and the 10 units of the chosen course.
-   * courses: [{ id, titleJa, titleEn, units: [...] }]; starsOf(variantId, mode).
+   * The town board: course tabs and the units of the chosen course (10 per page when a course has more than 12).
+   * courses: [{ id, titleJa, titleEn, units: [...] }]; tabs: every tab (the courses + the free-talk room);
+   * starsOf(variantId, mode); page/onPage for long courses.
    */
-  courses({ courses, active, starsOf, onTab, onPick }) {
+  courses({ courses, tabs = courses, active, starsOf, onTab, onPick, page = 0, onPage }) {
     this.panel.setHeight(1100);
     this.panel.visible = true;
     const course = courses.find((c) => c.id === active) || courses[0];
+    const paged = course.units.length > 12;
+    const pages = paged ? Math.ceil(course.units.length / 10) : 1;
+    const pg = Math.max(0, Math.min(pages - 1, page));
+    const units = paged ? course.units.slice(pg * 10, pg * 10 + 10) : course.units;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
       g.textBaseline = 'alphabetic';
       nameTag(g, 70, 40, 'ことばタウン', THEME.leaf, '#ffffff', 40);
-      // course tabs
-      let tx = 470;
-      for (const c of courses) {
-        const on = c.id === course.id;
-        const label = `${c.titleJa} · ${c.titleEn}`;
-        let tsz = 30; g.font = font(tsz, 800);
-        while (tsz > 20 && g.measureText(label).width > 560 - 78 * 0.5) { tsz -= 1; g.font = font(tsz, 800); }
-        p.button(`tab-${c.id}`, tx, 36, 560, 78, label, () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink, size: tsz });
-        tx += 590;
+      drawTabs(g, p, W, tabs, course.id, onTab);
+      if (paged) {
+        // pages: 1〜10, 11〜20 …
+        const bw = 300; const x0 = W / 2 - (pages * bw + (pages - 1) * 24) / 2;
+        for (let i = 0; i < pages; i++) {
+          const a = course.units[i * 10]?.no; const b = course.units[Math.min(course.units.length, i * 10 + 10) - 1]?.no;
+          p.button(`page-${i}`, x0 + i * (bw + 24), H - 128, bw, 76, `${a}〜${b}`, () => onPage?.(i), { color: i === pg ? THEME.sun : '#f1eadb', fg: THEME.ink, size: 32 });
+        }
       }
-      const cols = course.units.length > 10 ? 6 : 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 380;
-      course.units.forEach((L, i) => {
+      const cols = paged ? 5 : units.length > 10 ? 6 : 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = paged ? 370 : 380;
+      units.forEach((L, i) => {
         const x = 80 + (i % cols) * (cw + 28); const y = 150 + Math.floor(i / cols) * (ch + 30);
         const real = L.variants.reduce((s2, v) => s2 + starsOf(v.id, 'real'), 0);
         const prac = L.variants.reduce((s2, v) => s2 + starsOf(v.id, 'practice'), 0);
@@ -354,6 +437,139 @@ export class Board {
         }
         p.buttons.push({ id: L.id, x, y, w: cw, h: ch, onClick: () => onPick(L) });
       });
+    });
+  }
+
+  /**
+   * The free-talk room: choose a partner, a place, a topic, the level and the style — or おまかせ.
+   * v: { tabs, partners [{ id, nameJa, roleEn, casual }], partner, info, place {nameJa,nameEn}, topic, topicPos,
+   *      level, style, levels, live, summary, on: { tab, partner, place(dir), topic(dir), level, style, random, start } }
+   */
+  freeSetup(v) {
+    this.panel.setHeight(1100);
+    this.panel.visible = true;
+    const on = v.on;
+    this.panel.draw((g, W, H, p) => {
+      card(g, 10, 10, W - 20, H - 30, { r: 60 });
+      g.textBaseline = 'alphabetic';
+      nameTag(g, 70, 40, 'ことばタウン', THEME.leaf, '#ffffff', 40);
+      drawTabs(g, p, W, v.tabs, 'free', on.tab);
+      const label = (str, x, y) => { g.font = font(28, 800); g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillText(str, x, y); };
+      // partners
+      label('だれと はなす？ · Who', 80, 140);
+      const cols = 4; const cw = 252; const chh = 80; const gap = 12;
+      v.partners.forEach((c, i) => {
+        const x = 80 + (i % cols) * (cw + gap); const y = 186 + Math.floor(i / cols) * (chh + gap);
+        const sel = c.id === v.partner.id; const hover = p.hoverId === `p-${c.id}`;
+        g.fillStyle = THEME.shadow; rr(g, x + 2, y + 5, cw, chh, 24); g.fill();
+        g.fillStyle = sel ? THEME.sun : hover ? '#fff6dc' : '#ffffff'; rr(g, x, y, cw, chh, 24); g.fill();
+        g.fillStyle = colorFor(c.id); g.beginPath(); g.arc(x + 36, y + chh / 2, 22, 0, Math.PI * 2); g.fill();
+        g.fillStyle = THEME.ink; g.font = font(22, 800); g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText([...c.nameJa][0], x + 36, y + chh / 2 + 1);
+        g.textAlign = 'left'; g.textBaseline = 'top';
+        let nsz = 25; g.font = font(nsz, 800); while (nsz > 18 && g.measureText(c.nameJa).width > cw - 82) { nsz -= 1; g.font = font(nsz, 800); }
+        g.fillText(c.nameJa, x + 68, y + 8);
+        // the role in full (two short lines)
+        const role = c.roleEn.split(/[,(]/)[0].trim();
+        const rf = fitWrap(g, role, cw - 80, 36, [15, 14, 13, 12], { weight: 600, lh: 1.2 });
+        text(g, role, x + 68, y + 40, cw - 80, rf.px, { color: THEME.soft, weight: 600, maxLines: 2, lh: 1.2 });
+        p.buttons.push({ id: `p-${c.id}`, x, y, w: cw, h: chh, onClick: () => on.partner(c.id) });
+      });
+      const rows = Math.ceil(v.partners.length / cols);
+      const iy = 186 + rows * (chh + gap) + 6;
+      if (v.info) text(g, [v.info.relationEn && `${v.partner.nameJa}: ${v.info.relationEn}.`, v.info.likesEn && `Likes ${v.info.likesEn}.`].filter(Boolean).join(' '), 80, iy, 1050, 22, { color: THEME.soft, maxLines: 3, weight: 600 });
+      // right column: place, topic, level, style
+      const rx = 1170; const rw = W - 80 - rx;
+      const cycler = (id, y, h, lines, dir) => {
+        p.button(`${id}-prev`, rx, y + (h - 70) / 2, 70, 70, '◀', () => dir(-1), { color: '#f1eadb', fg: THEME.ink, size: 28 });
+        p.button(`${id}-next`, rx + rw - 70, y + (h - 70) / 2, 70, 70, '▶', () => dir(1), { color: '#f1eadb', fg: THEME.ink, size: 28 });
+        g.fillStyle = '#ffffff'; rr(g, rx + 82, y, rw - 164, h, 26); g.fill();
+        let ly = y + 12;
+        for (const [str, px, color, weight] of lines) { if (!str) continue; ly = text(g, str, rx + 100, ly, rw - 200, px, { color, weight, maxLines: 2 }); }
+      };
+      label('どこで · Where', rx, 140);
+      cycler('place', 180, 84, [[v.place.nameJa, 28, THEME.ink, 800], [v.place.nameEn, 18, THEME.soft, 600]], on.place);
+      label(`なにを はなす · Topic  ${v.topicPos}`, rx, 284);
+      cycler('topic', 324, 128, [[v.topic.titleJa, 27, THEME.ink, 800], [`${v.topic.titleEn}${v.topic.kind === 'role' ? '  (role-play)' : ''}`, 19, THEME.soft, 600]], on.topic);
+      label('レベル · Level', rx, 476);
+      const lw = (rw - 20) / 3;
+      v.levels.forEach(([id, ja, en], i) => p.button(`lv-${id}`, rx + i * (lw + 10), 516, lw, 76, '', () => on.level(id), { color: v.level === id ? THEME.leaf : '#f1eadb', lines: [ja, en], size: 22, lineHeight: 26, fg: v.level === id ? '#ffffff' : THEME.ink }));
+      label('はなしかた · Style', rx, 612);
+      const sw = (rw - 10) / 2;
+      p.button('st-polite', rx, 652, sw, 70, 'ていねい · Polite', () => on.style('polite'), { color: v.style === 'polite' ? THEME.leaf : '#f1eadb', fg: v.style === 'polite' ? '#ffffff' : THEME.ink, size: 24 });
+      p.button('st-casual', rx + sw + 10, 652, sw, 70, 'ともだち · Casual', () => on.style('casual'), { color: v.style === 'casual' ? THEME.leaf : '#f1eadb', fg: v.style === 'casual' ? '#ffffff' : THEME.ink, size: 24, disabled: !v.info?.casual });
+      const about = v.topic.situationEn || (v.topic.ideasEn || []).join(' · ');
+      if (about) text(g, about, rx, 744, rw, 21, { color: '#6c7d8a', maxLines: 5, weight: 500 });
+      // start
+      text(g, v.live ? v.summary : '🎙️ フリートークは Gemini Live が ひつようです — add your Gemini API key in せってい (Settings).', 80, H - 232, W - 160, 26, { color: v.live ? THEME.leafDark : THEME.red, weight: 800, maxLines: 2 });
+      p.button('random', 80, H - 150, 460, 92, '🎲 おまかせ · Surprise me', on.random, { color: THEME.sun, fg: THEME.ink, size: 32 });
+      p.button('start', W - 80 - 620, H - 150, 620, 92, 'はなす！ · Start talking', on.start, { color: '#f7a35c', size: 36, disabled: !v.live });
+    });
+  }
+
+  /** Feedback after a free talk: summary, what was good, better ways to say things, words for next time. */
+  freeReport({ report, turns, partner, place, topics, onAgain, onNew, onTown }) {
+    this.panel.setHeight(1100);
+    this.panel.visible = true;
+    this.panel.draw((g, W, H, p) => {
+      card(g, 10, 10, W - 20, H - 30, { r: 60 });
+      nameTag(g, 70, 44, 'フリートークの ふりかえり · Feedback', THEME.sun, THEME.ink, 40);
+      g.font = font(24, 700); g.fillStyle = THEME.soft; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
+      g.fillText(`${partner.nameJa} · ${place.nameJa} · ${turns.length} turns${report.source === 'live' ? ' · Gemini Live' : ''}`, W - 80, 92);
+      stars(g, 80, 128, report.stars, 3, 72);
+      let y = text(g, report.summaryEn || '', 360, 128, W - 440, 30, { weight: 700, maxLines: 3 });
+      y = Math.max(y + 10, 230);
+      if (topics?.length) y = text(g, `💬 ${topics.map((t) => t.titleJa).join('、 ')}`, 360, y - 6, W - 440, 22, { color: THEME.soft, maxLines: 1 }) + 10;
+      const colW = (W - 200) / 2; const lx = 80; const rx = 120 + colW;
+      // left: strengths, next steps, things said well
+      let ly = Math.max(y, 270);
+      if (report.strengthsEn) ly = text(g, `👍 ${report.strengthsEn}`, lx, ly, colW, 26, { color: THEME.leafDark, maxLines: 3 }) + 8;
+      if (report.improveEn) ly = text(g, `🌱 ${report.improveEn}`, lx, ly, colW, 26, { color: '#a3622a', maxLines: 3 }) + 8;
+      if (report.pronunciationEn) ly = text(g, `🗣️ ${report.pronunciationEn}`, lx, ly, colW, 26, { color: '#2f6db3', maxLines: 2 }) + 8;
+      if (report.levelEn) ly = text(g, `📈 ${report.levelEn}`, lx, ly, colW, 26, { color: THEME.ink, maxLines: 2 }) + 8;
+      if (report.good?.length) {
+        ly += 6; g.font = font(26, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillText('✨ よかった ことば · Said well', lx, ly); ly += 40;
+        for (const t of report.good) { if (ly > H - 300) break; ly = text(g, `「${t}」`, lx + 10, ly, colW - 10, 26, { color: THEME.ink, maxLines: 2, weight: 700 }) + 4; }
+      }
+      if (report.words?.length && ly < H - 300) {
+        ly += 10; g.font = font(26, 800); g.fillStyle = '#8a6416'; g.textAlign = 'left'; g.textBaseline = 'top';
+        g.fillText('📒 つぎに つかえる ことば · Words', lx, ly); ly += 44;
+        let cx = lx;
+        for (const w of report.words) {
+          const lab = `${w.ja}${w.kana && w.kana !== w.ja ? `（${w.kana}）` : ''} ${w.en}`;
+          g.font = font(22, 800);
+          const cw = g.measureText(lab).width + 26;
+          if (cx + cw > lx + colW) { cx = lx; ly += 52; }
+          if (ly > H - 230) break;
+          chip(g, cx, ly, lab, '#fff3cf', '#8a6416', 22);
+          cx += cw + 12;
+        }
+      }
+      // right: better ways to say it
+      let ry = Math.max(y, 270);
+      g.font = font(28, 800); g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top';
+      g.fillText('✍️ こう いうと もっと いい · Better ways to say it', rx, ry); ry += 48;
+      if (!report.corrections?.length) ry = text(g, turns.length ? 'Nothing big to fix — great job!' : 'Say a few sentences next time, and you will get tips here.', rx, ry, colW, 26, { color: THEME.soft, maxLines: 2 });
+      for (const c of report.corrections || []) {
+        if (ry > H - 300) break;
+        g.fillStyle = '#eef6f1';
+        g.font = font(24, 700); const h1 = wrap(g, `🎤 ${c.heard}`, colW - 40).slice(0, 2).length * 24 * 1.45;
+        g.font = font(28, 800); const h2 = wrap(g, `✓ ${c.better}`, colW - 40).slice(0, 2).length * 28 * 1.45;
+        g.font = font(21, 500); const h3 = c.tipEn ? wrap(g, c.tipEn, colW - 40).slice(0, 2).length * 21 * 1.45 : 0;
+        g.fillStyle = '#eef6f1'; rr(g, rx - 10, ry, colW + 10, h1 + h2 + h3 + 30, 24); g.fill();
+        let cy = text(g, `🎤 ${c.heard}`, rx + 12, ry + 12, colW - 40, 24, { color: THEME.soft, maxLines: 2 });
+        cy = text(g, `✓ ${c.better}`, rx + 12, cy + 2, colW - 40, 28, { color: THEME.leafDark, weight: 800, maxLines: 2 });
+        if (c.tipEn) cy = text(g, c.tipEn, rx + 12, cy + 2, colW - 40, 21, { color: '#6c7d8a', weight: 500, maxLines: 2 });
+        ry = cy + 26;
+      }
+      const list = [
+        ['again', 'もう いちど はなす · Again', onAgain, THEME.leaf, '#ffffff'],
+        ['new', 'ほかの あいて・わだい', onNew, '#a9cdf0', THEME.ink],
+        ['town', 'まちへ · Town', onTown, '#e8dccb', THEME.ink],
+      ];
+      const bw = (W - 160 - (list.length - 1) * 24) / list.length;
+      list.forEach(([id, label, fn, color, fg], i) => p.button(id, 80 + i * (bw + 24), H - 160, bw, 90, label, fn, { color, fg, size: 32 }));
     });
   }
 

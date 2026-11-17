@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { LiveBrain } from '../js/talk/brain.js';
-import { turnNote, readJudge, offlineJudge, offlineReport, UNIVERSAL_BRANCHES, JUDGE_TOOL } from '../js/talk/judge.js';
+import { turnNote, readJudge, offlineJudge, offlineReport, UNIVERSAL_BRANCHES, JUDGE_TOOL, freeSystemInstruction, freeTool, freeReplyInstruction, readReport, offlineFreeReport, freeEndNote } from '../js/talk/judge.js';
+import { topicsFor } from '../js/talk/free.js';
 import { toRomaji } from '../js/content/index.js';
 import { closeReason, resample, floatToPcm16, bytesToBase64, pcm16Base64ToFloat } from '../js/talk/live.js';
 
@@ -57,7 +58,7 @@ await test('PCM helpers round-trip', () => {
 
 // ---------------------------------------------------------------- fake Live
 const enc = new TextEncoder();
-function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false, rejectHints = false } = {}) {
+function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false, rejectHints = false, speakOnNote = false } = {}) {
   const sent = [];
   class WS {
     constructor() { this.readyState = 0; setTimeout(() => { this.readyState = 1; this.onopen?.(); }, 2); this.n = 0; }
@@ -79,7 +80,11 @@ function fakeLive({ rejectModels = [], speakAfterTool = true, skipTool = false, 
         setTimeout(() => this.emit({ serverContent: { turnComplete: true } }), 3);
         if (speakAfterTool) setTimeout(() => { this.emit({ serverContent: { modelTurn: { parts: [{ inlineData: { data: 'AAAA' } }] }, outputTranscription: { text: 'そうですか。' } } }); this.emit({ serverContent: { turnComplete: true } }); }, 15);
       }
-      if (m.clientContent?.turnComplete) setTimeout(() => this.emit({ toolCall: { functionCalls: [{ id: 'r1', name: 'final_report', args: { stars: 2, summary_en: 'ok', strengths_en: 'a', improve_en: 'b' } }] } }), 5);
+      const note = m.clientContent?.turns?.[0]?.parts?.[0]?.text || '';
+      if (speakOnNote && m.clientContent?.turnComplete && /^\[(START|TOPIC|TWIST|NUDGE)\]/.test(note)) {
+        // the character speaks on its own (free-talk room)
+        setTimeout(() => { this.emit({ serverContent: { modelTurn: { parts: [{ inlineData: { data: 'AAAA' } }] }, outputTranscription: { text: 'こんにちは。' } } }); this.emit({ serverContent: { turnComplete: true } }); }, 5);
+      } else if (m.clientContent?.turnComplete) setTimeout(() => this.emit({ toolCall: { functionCalls: [{ id: 'r1', name: 'final_report', args: { stars: 2, summary_en: 'ok', strengths_en: 'a', improve_en: 'b', corrections: [{ heard: 'リンです', better: 'リンと いいます。', tip_en: 't' }], next_words: [{ ja: '週末', kana: 'しゅうまつ', en: 'weekend' }], good_ja: ['リンです'] } }] } }), 5);
     }
     close() { this.readyState = 3; setTimeout(() => this.onclose?.({ code: 1000, reason: '' }), 1); }
   }
@@ -182,6 +187,86 @@ await test('Live: a model that refuses the hints gets a plain transcription setu
   const setups = g.sent.filter((m) => m.setup).map((m) => m.setup.inputAudioTranscription);
   assert.ok(setups[0].languageCodes && !setups.at(-1).languageCodes);
   assert.equal(g.judged.branch, 'name_only');
+});
+
+// ------------------------------------------------------------ free-talk room
+const freeData = {
+  partners: { sakamoto: { places: ['cafe'], worksAt: 'cafe', casual: false, newsJa: ['新しい ケーキを 作りました。'] } },
+  topics: [
+    { id: 'weekend', kind: 'chat', titleJa: 'しゅうまつ', titleEn: 'Weekend', levels: ['easy', 'normal'] },
+    { id: 'order', kind: 'role', titleJa: 'ちゅうもん', titleEn: 'Ordering', levels: ['easy'], places: ['cafe'], partners: ['sakamoto'], situationEn: 'You order a coffee.' },
+    { id: 'dreams', kind: 'chat', titleJa: 'ゆめ', titleEn: 'Dreams', levels: ['hard'] },
+    { id: 'tickets', kind: 'role', titleJa: 'きっぷ', titleEn: 'Tickets', levels: ['easy'], places: ['station'] },
+  ],
+};
+
+await test('free talk: topics fit the partner, place and level ("anything" first, specific before general)', () => {
+  const ids = topicsFor(freeData, { partner: 'sakamoto', place: 'cafe', level: 'easy' }).map((t) => t.id);
+  assert.deepEqual(ids, ['any', 'order', 'weekend']);
+  assert.deepEqual(topicsFor(freeData, { partner: 'sakamoto', place: 'park', level: 'hard' }).map((t) => t.id), ['any', 'dreams']);
+});
+
+await test('free talk: the instruction carries persona, level, style and topic; the report asks for corrections and words', () => {
+  const partner = { id: 'sakamoto', nameJa: '坂本 じろう', kana: 'さかもと じろう', roleEn: 'Owner of the café', personaJa: 'やさしい', voice: 'Charon' };
+  const easy = freeSystemInstruction({ partner, info: freeData.partners.sakamoto, place: 'きっさてん (Café)', topic: freeData.topics[1], level: 'easy', style: 'polite', news: ['新しい ケーキを 作りました。'] });
+  assert.match(easy, /ROLE-PLAY/);
+  assert.match(easy, /N5/);
+  assert.match(easy, /です\/ます/);
+  assert.match(easy, /新しい ケーキ/);
+  assert.match(easy, /judge_reply/);
+  const casual = freeSystemInstruction({ partner, place: 'park', topic: { id: 'any' }, level: 'hard', style: 'casual', mood: 'in a playful, joking mood' });
+  assert.match(casual, /playful/);
+  assert.match(casual, /plain style/);
+  assert.match(casual, /N3/);
+  const props = freeTool().functionDeclarations[1].parameters.properties;
+  assert.ok(props.corrections && props.next_words && props.good_ja && props.level_en);
+  assert.ok(freeTool({ nonBlocking: true }).functionDeclarations.every((d) => d.behavior === 'NON_BLOCKING'));
+  assert.match(freeReplyInstruction({ branch: 'free', heard: 'コーヒーが すきです' }, { level: 'easy' }), /コーヒーが すきです/);
+  assert.match(freeReplyInstruction({ branch: 'dont_know' }, {}), /simpler/);
+  assert.match(freeEndNote({ turns: [{ heard: 'a', score: 2, correction: 'b' }], topics: ['Weekend'] }), /^\[END\]/);
+});
+
+await test('free talk: the report is read with corrections and words; offline it is built from the turns', () => {
+  const r = readReport({ stars: 3, summary_en: 's', strengths_en: 'a', improve_en: 'b', corrections: [{ heard: 'x', better: 'y', tip_en: 'z' }, { heard: 'q' }], next_words: [{ ja: '週末', kana: 'しゅうまつ', en: 'weekend' }], good_ja: ['いいです'], level_en: 'N5' });
+  assert.equal(r.free, true);
+  assert.deepEqual(r.corrections, [{ heard: 'x', better: 'y', tipEn: 'z' }]);
+  assert.equal(r.words[0].kana, 'しゅうまつ');
+  assert.equal(r.levelEn, 'N5');
+  const off = offlineFreeReport([{ heard: 'コーヒー すき', score: 1, correction: 'コーヒーが すきです。', tipEn: 'Add が.' }, { heard: 'はい', score: 3, correction: 'はい' }], [{ ja: '週末', en: 'weekend' }]);
+  assert.equal(off.corrections.length, 1);
+  assert.equal(off.good[0], 'はい');
+  assert.equal(off.words[0].ja, '週末');
+});
+
+await test('Live: free talk — the partner opens on its own, replies by the custom instruction, writes the free report', async () => {
+  const { WS, sent } = fakeLive({ speakOnNote: true });
+  const got = { audio: 0, done: 0, text: '' };
+  const b = new LiveBrain({
+    apiKey: 'k', lesson: { vocab: [] }, variant: { characters: ['sakamoto'] }, character: fx.character, WebSocketImpl: WS,
+    instruction: 'FREE ROOM', tools: (o) => freeTool(o), replyInstruction: (r) => `CUSTOM ${r.heard}`, extraVocab: ['週末'], replySeconds: { chat: 20 },
+    on: { judge: () => 'chat', npcAudio: () => got.audio++, npcDone: () => got.done++, npcText: (t) => { got.text += t; } },
+  });
+  assert.ok(await b.connect());
+  const setup = sent.find((m) => m.setup).setup;
+  assert.equal(setup.systemInstruction.parts[0].text, 'FREE ROOM');
+  assert.ok(setup.tools[0].functionDeclarations[1].parameters.properties.corrections);
+  assert.ok(setup.inputAudioTranscription.customVocabulary.includes('週末'));
+  assert.ok(b.speak('[START] Greet the learner.'));
+  await new Promise((r) => setTimeout(r, 40));
+  assert.equal(got.audio, 1);
+  assert.equal(got.done, 1);
+  assert.equal(got.text, 'こんにちは。');
+  b.setTurn('[TURN 1] free', ['free']);
+  for (let i = 0; i < 4; i++) b.audio('AAAA');
+  await new Promise((r) => setTimeout(r, 80));
+  const resp = sent.find((m) => m.toolResponse).toolResponse.functionResponses[0].response;
+  assert.equal(resp.say, 'chat');
+  assert.equal(resp.instruction, 'CUSTOM リンです。');
+  assert.equal(b.maxBytes, 24000 * 2 * 20);
+  const report = await b.report('[END] now', 500);
+  assert.equal(report.free, true);
+  assert.equal(report.corrections[0].better, 'リンと いいます。');
+  b.close();
 });
 
 await test('base64 silence is exactly 100 ms at 16 kHz', () => {

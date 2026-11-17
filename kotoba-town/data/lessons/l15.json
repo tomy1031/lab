@@ -1,0 +1,1362 @@
+{
+  "lesson": 15,
+  "titleJa": "しゃしんを とっても いいですか",
+  "titleEn": "May I? — rules, family and what people do",
+  "summaryEn": "Ask for permission with ～ても いいですか, understand and pass on rules with ～ては いけません, and talk about where people live, whether they are married and where they work with ～て います. Answer しって いますか with しりません.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Vても いいですか／Vても いいです",
+      "meaningEn": "May I V? / You may V (asking for and giving permission; て-form + も いいです)",
+      "exampleJa": "ここで しゃしんを とっても いいですか。",
+      "exampleEn": "May I take a photo here?"
+    },
+    {
+      "id": "g2",
+      "pattern": "Vては いけません",
+      "meaningEn": "You must not V (a rule or prohibition; て-form + は いけません)",
+      "exampleJa": "なかで しゃしんを とっては いけません。",
+      "exampleEn": "You must not take photos inside."
+    },
+    {
+      "id": "g3",
+      "pattern": "Vて います (state: すんで／けっこんして／もって)",
+      "meaningEn": "a state that continues now: live in, be married, have with you",
+      "exampleJa": "かぞくは プノンペンに すんで います。",
+      "exampleEn": "My family lives in Phnom Penh."
+    },
+    {
+      "id": "g4",
+      "pattern": "Vて います (job, habit: はたらいて／つくって／うって)",
+      "meaningEn": "what someone does regularly: their work, study or business",
+      "exampleJa": "あねは ぎんこうで はたらいて います。",
+      "exampleEn": "My older sister works at a bank."
+    },
+    {
+      "id": "g5",
+      "pattern": "しって いますか → はい、しって います／いいえ、しりません",
+      "meaningEn": "Do you know …? Yes, I know / No, I don't know (never しって いません)",
+      "exampleJa": "いいえ、しりません。",
+      "exampleEn": "No, I don't know."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "置きます",
+      "kana": "おきます",
+      "en": "to put, to place"
+    },
+    {
+      "ja": "使います",
+      "kana": "つかいます",
+      "en": "to use"
+    },
+    {
+      "ja": "座ります",
+      "kana": "すわります",
+      "en": "to sit down"
+    },
+    {
+      "ja": "作ります",
+      "kana": "つくります",
+      "en": "to make"
+    },
+    {
+      "ja": "売ります",
+      "kana": "うります",
+      "en": "to sell"
+    },
+    {
+      "ja": "住んで います",
+      "kana": "すんで います",
+      "en": "to live (in a place)"
+    },
+    {
+      "ja": "結婚して います",
+      "kana": "けっこんして います",
+      "en": "to be married"
+    },
+    {
+      "ja": "独身",
+      "kana": "どくしん",
+      "en": "single, unmarried"
+    },
+    {
+      "ja": "知って います",
+      "kana": "しって います",
+      "en": "to know"
+    },
+    {
+      "ja": "知りません",
+      "kana": "しりません",
+      "en": "I don't know"
+    },
+    {
+      "ja": "持って います",
+      "kana": "もって います",
+      "en": "to have (with you)"
+    },
+    {
+      "ja": "働いて います",
+      "kana": "はたらいて います",
+      "en": "to work (as a job)"
+    },
+    {
+      "ja": "ご家族",
+      "kana": "ごかぞく",
+      "en": "your family (polite)"
+    },
+    {
+      "ja": "妹",
+      "kana": "いもうと",
+      "en": "(my) younger sister"
+    },
+    {
+      "ja": "資料",
+      "kana": "しりょう",
+      "en": "materials, documents"
+    },
+    {
+      "ja": "会議",
+      "kana": "かいぎ",
+      "en": "meeting"
+    },
+    {
+      "ja": "花屋",
+      "kana": "はなや",
+      "en": "flower shop"
+    },
+    {
+      "ja": "絵",
+      "kana": "え",
+      "en": "picture, painting"
+    },
+    {
+      "ja": "中",
+      "kana": "なか",
+      "en": "inside"
+    },
+    {
+      "ja": "ロッカー",
+      "kana": "ロッカー",
+      "en": "locker"
+    },
+    {
+      "ja": "有名[な]",
+      "kana": "ゆうめい[な]",
+      "en": "famous"
+    },
+    {
+      "ja": "のどが かわきました",
+      "kana": "のどが かわきました",
+      "en": "I'm thirsty"
+    }
+  ],
+  "tipsEn": [
+    "When the answer to ～ても いいですか is no, Japanese staff rarely say だめです. They start with すみません and often trail off: 「すみません、ここは ちょっと……」.",
+    "Many museums in Japan do not allow photos, food or drinks in the galleries, and ask you to leave wet umbrellas at the entrance. If you are not sure, ask first.",
+    "The opposite of しって います is しりません — not しって いません. And you live に a place: プノンペンに すんで います."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-15.html",
+      "https://langoal.com/vocabulary/15",
+      "https://blog.gokigen.jp/?p=314",
+      "https://bunpou.jepang.org/en/lesson/0073/temo-ii-desu"
+    ],
+    "notesEn": "Lesson 15 builds on the て-form from lesson 14: Vても いいです(か) for permission, Vては いけません for prohibition, and Vて います for states that hold now (すんで います, けっこんして います, もって います, しって います) and for regular occupations (はたらいて います, つくって います, うって います). The negative of しって います is しりません. Natural situations are asking staff what is allowed in a public place, small talk about family, and house rules at work. Typical mistakes are building the pattern on the ます-stem or dictionary form (✗ のみも いいです), wrong て-forms of group 1 verbs, ✗ しって いません, で instead of に with すんで います, けっこんします for 'is married', and refusing permission too bluntly. The three scenes are original: a rainy museum visit where the learner must pass the rules on to a colleague, dinner talk about family at the neighbours', and first-week office rules."
+  },
+  "variants": [
+    {
+      "id": "l15a",
+      "titleJa": "あめの ひの びじゅつかん",
+      "titleEn": "A rainy day at the museum",
+      "scene": "museum",
+      "setup": {
+        "time": "noon",
+        "season": "winter",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy winter Sunday. You and your colleague Fujita have come to the art museum, and Ueda at the counter has just handed you the tickets. Fujita steps away to take a phone call.",
+      "roleEn": "You are a visitor with a camera, a wet umbrella and a heavy bag. Ask before you do things — and pass the rules on to Fujita.",
+      "missionsEn": [
+        {
+          "text": "Ask whether you may take photos",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask whether you may put your umbrella or bag here",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Tell Fujita what is not allowed",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say whether you know the painting",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "ueda",
+        "fujita"
+      ],
+      "positions": {
+        "ueda": "counter",
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "いらっしゃいませ。チケットを どうぞ。",
+              "kana": "いらっしゃいませ。チケットを どうぞ。",
+              "en": "Welcome. Here are your tickets.",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "You would love some photos of the paintings. Ask if you may take photos — inside, or here in the entrance hall.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿で しゃしんを とっても いいですか。",
+            "modelAnswers": [
+              "すみません。なかで しゃしんを とっても いいですか。",
+              "ここで しゃしんを とっても いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "inside",
+                "whenEn": "Learner asks whether they may take photos inside / of the paintings / in the museum in general.",
+                "next": "n2_in",
+                "exampleJa": "なかで しゃしんを とっても いいですか。"
+              },
+              {
+                "id": "here",
+                "whenEn": "Learner asks specifically about taking photos HERE (the entrance hall, the poster).",
+                "next": "n2_here",
+                "exampleJa": "ここで しゃしんを とっても いいですか。"
+              }
+            ],
+            "fallback": "n2_in"
+          }
+        },
+        {
+          "id": "n2_in",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "すみません。中で 写真を とっては いけません。",
+              "kana": "すみません。なかで しゃしんを とっては いけません。",
+              "en": "I'm sorry. You must not take photos inside.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_here",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "ここでは いいですよ。中では とっては いけません。",
+              "kana": "ここでは いいですよ。なかでは とっては いけません。",
+              "en": "Here it's fine. Inside, you must not.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "ほかに 何か ありますか。",
+              "kana": "ほかに なにか ありますか。",
+              "en": "Is there anything else?"
+            }
+          ],
+          "listen": {
+            "promptEn": "It's raining: you have a wet umbrella and a heavy bag. Ask if you may put one of them here (おきます).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "ここに ＿＿を おいても いいですか。",
+            "modelAnswers": [
+              "ここに かさを おいても いいですか。",
+              "ここに かばんを おいても いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "umbrella",
+                "whenEn": "Learner asks whether they may put / leave their umbrella here.",
+                "next": "n4_kasa",
+                "exampleJa": "ここに かさを おいても いいですか。"
+              },
+              {
+                "id": "bag",
+                "whenEn": "Learner asks whether they may put / leave their bag (or other luggage) here.",
+                "next": "n4_bag",
+                "exampleJa": "ここに かばんを おいても いいですか。"
+              }
+            ],
+            "fallback": "n4_kasa"
+          }
+        },
+        {
+          "id": "n4_kasa",
+          "focus": "locker",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "すみません、ここは ちょっと……。かさは あそこに 置いて ください。",
+              "kana": "すみません、ここは ちょっと……。かさは あそこに おいて ください。",
+              "en": "Sorry, not here… Please put umbrellas over there.",
+              "gesture": "point",
+              "target": "locker"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_bag",
+          "focus": "locker",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "かばんは あの ロッカーを 使って ください。100円です。",
+              "kana": "かばんは あの ロッカーを つかって ください。ひゃくえんです。",
+              "en": "For bags, please use that locker. It's 100 yen.",
+              "gesture": "point",
+              "target": "locker"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "painting",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "すみません、会社から 電話でした。",
+              "kana": "すみません、かいしゃから でんわでした。",
+              "en": "Sorry, that was a call from the office.",
+              "gesture": "phone"
+            },
+            {
+              "who": "fujita",
+              "ja": "中で 写真を とっても いいですか。",
+              "kana": "なかで しゃしんを とっても いいですか。",
+              "en": "Is it OK to take photos inside?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita missed what Ueda said. Tell him the photo rule.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "いいえ、なかで しゃしんを ＿＿は いけません。",
+            "modelAnswers": [
+              "いいえ、なかで しゃしんを とっては いけません。",
+              "なかでは いけません。ここでは とっても いいです。"
+            ],
+            "branches": [
+              {
+                "id": "not_allowed",
+                "whenEn": "Learner says photos are not allowed (inside), without saying where they ARE allowed.",
+                "next": "n6_no",
+                "exampleJa": "いいえ、とっては いけません。"
+              },
+              {
+                "id": "here_ok",
+                "whenEn": "Learner says photos are allowed here in the hall (with or without the rule for inside).",
+                "next": "n6_here",
+                "exampleJa": "ここでは とっても いいです。"
+              }
+            ],
+            "fallback": "n6_no"
+          }
+        },
+        {
+          "id": "n6_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、いけませんか。ざんねんですね。",
+              "kana": "えっ、いけませんか。ざんねんですね。",
+              "en": "Oh, we can't? That's a pity.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_here",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "じゃ、あとで ここで いっしょに とりましょう。",
+              "kana": "じゃ、あとで ここで いっしょに とりましょう。",
+              "en": "Then let's take one together here later.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "poster",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "あの ポスターの 絵を 知って いますか。",
+              "kana": "あの ポスターの えを しって いますか。",
+              "en": "Do you know the painting on that poster?",
+              "gesture": "point",
+              "target": "poster"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the poster. Do you know that painting? Answer honestly.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "はい、しって ＿＿。／いいえ、しり＿＿。",
+            "modelAnswers": [
+              "いいえ、しりません。",
+              "はい、しって います。"
+            ],
+            "branches": [
+              {
+                "id": "knows",
+                "whenEn": "Learner says they know the painting.",
+                "next": "n8_yes",
+                "exampleJa": "はい、しって います。"
+              },
+              {
+                "id": "does_not_know",
+                "whenEn": "Learner says they do not know it.",
+                "next": "n8_no",
+                "exampleJa": "いいえ、しりません。"
+              }
+            ],
+            "fallback": "n8_no"
+          }
+        },
+        {
+          "id": "n8_yes",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "有名な 絵ですね。2階に ありますよ。",
+              "kana": "ゆうめいな えですね。にかいに ありますよ。",
+              "en": "It's a famous one, isn't it? It's on the second floor.",
+              "gesture": "nod",
+              "tts": "ゆうめいな えですね。にかいに ありますよ。"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_no",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "「青い 町」です。有名な 絵ですよ。2階に あります。",
+              "kana": "「あおい まち」です。ゆうめいな えですよ。にかいに あります。",
+              "en": "It's \"Blue Town\". It's a famous painting. It's on the second floor.",
+              "gesture": "nod",
+              "tts": "あおい まち です。ゆうめいな えですよ。にかいに あります。"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ああ、のどが かわきました。",
+              "kana": "ああ、のどが かわきました。",
+              "en": "Ah, I'm thirsty.",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita is thirsty. Ask Ueda for him: may you drink something inside? Or ask where you may drink.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "なかで ＿＿を のんでも いいですか。／カフェで のんでも いいですか。",
+            "modelAnswers": [
+              "すみません。なかで みずを のんでも いいですか。",
+              "カフェで のんでも いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "drink_inside",
+                "whenEn": "Learner asks whether they may drink (or eat) inside the museum.",
+                "next": "end_inside",
+                "exampleJa": "なかで みずを のんでも いいですか。"
+              },
+              {
+                "id": "where",
+                "whenEn": "Learner asks WHERE they may drink, or asks about the café.",
+                "next": "end_where",
+                "exampleJa": "カフェで のんでも いいですか。"
+              }
+            ],
+            "fallback": "end_inside"
+          }
+        },
+        {
+          "id": "end_inside",
+          "focus": "cafe_sign",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "すみません。中で 飲んでは いけません。カフェで どうぞ。",
+              "kana": "すみません。なかで のんでは いけません。カフェで どうぞ。",
+              "en": "I'm sorry. You must not drink inside. Please use the café.",
+              "gesture": "point",
+              "target": "cafe_sign"
+            },
+            {
+              "who": "fujita",
+              "ja": "じゃ、カフェで コーヒーを 飲みましょう。",
+              "kana": "じゃ、カフェで コーヒーを のみましょう。",
+              "en": "Then let's have a coffee at the café.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_where",
+          "focus": "cafe_sign",
+          "say": [
+            {
+              "who": "ueda",
+              "ja": "あそこの カフェで どうぞ。中で 飲んでは いけません。",
+              "kana": "あそこの カフェで どうぞ。なかで のんでは いけません。",
+              "en": "At the café over there, please. You must not drink inside.",
+              "gesture": "point",
+              "target": "cafe_sign"
+            },
+            {
+              "who": "fujita",
+              "ja": "いいですね。わたしは コーヒーが 飲みたいです。",
+              "kana": "いいですね。わたしは コーヒーが のみたいです。",
+              "en": "Nice. I want a coffee.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l15b",
+      "titleJa": "もりさんの うち",
+      "titleEn": "Dinner at the Moris'",
+      "scene": "home",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Your neighbours Aya and Shun Mori have invited you for dinner. Before the meal you chat in the living room, where a family photo stands by the sofa.",
+      "roleEn": "You are the neighbour from next door. Talk about your real family: where they live and what they do.",
+      "missionsEn": [
+        {
+          "text": "Ask before you sit down or look at the photo",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask about Aya's sister: married? work?",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say where your family lives and works",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say whether you know the flower shop",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "host",
+        "mori_shun": "host2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いらっしゃい。どうぞ 上がって ください。",
+              "kana": "いらっしゃい。どうぞ あがって ください。",
+              "en": "Welcome. Please come in.",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "You are in the Moris' living room. Ask if you may sit here (すわります) — or if you may look at the photo (みます).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "ここに ＿＿ても いいですか。／この しゃしんを ＿＿ても いいですか。",
+            "modelAnswers": [
+              "ここに すわっても いいですか。",
+              "この しゃしんを みても いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "sit",
+                "whenEn": "Learner asks whether they may sit down (here, on the sofa).",
+                "next": "n2_sit",
+                "exampleJa": "ここに すわっても いいですか。"
+              },
+              {
+                "id": "photo",
+                "whenEn": "Learner asks whether they may look at the photo.",
+                "next": "n2_photo",
+                "exampleJa": "この しゃしんを みても いいですか。"
+              }
+            ],
+            "fallback": "n2_sit"
+          }
+        },
+        {
+          "id": "n2_sit",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ええ、どうぞ。すわって ください。",
+              "kana": "ええ、どうぞ。すわって ください。",
+              "en": "Yes, of course. Please sit down.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_photo",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ええ、どうぞ。見て ください。",
+              "kana": "ええ、どうぞ。みて ください。",
+              "en": "Yes, go ahead. Have a look.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "photo",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "これは 妹です。大阪に 住んで います。",
+              "kana": "これは いもうとです。おおさかに すんで います。",
+              "en": "This is my younger sister. She lives in Osaka.",
+              "gesture": "point",
+              "target": "photo"
+            }
+          ],
+          "listen": {
+            "promptEn": "Be curious about Aya's sister (いもうとさん): ask if she is married, or where she works.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "いもうとさんは ＿＿して いますか。／どこで ＿＿て いますか。",
+            "modelAnswers": [
+              "いもうとさんは けっこんして いますか。",
+              "いもうとさんは どこで はたらいて いますか。"
+            ],
+            "branches": [
+              {
+                "id": "married",
+                "whenEn": "Learner asks whether the sister is married (or single).",
+                "next": "n4_married",
+                "exampleJa": "いもうとさんは けっこんして いますか。"
+              },
+              {
+                "id": "work",
+                "whenEn": "Learner asks where the sister works or what she does.",
+                "next": "n4_work",
+                "exampleJa": "いもうとさんは どこで はたらいて いますか。"
+              }
+            ],
+            "fallback": "n4_married"
+          }
+        },
+        {
+          "id": "n4_married",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいえ、独身です。仕事が 大好きですから。",
+              "kana": "いいえ、どくしんです。しごとが だいすきですから。",
+              "en": "No, she's single. She loves her work, you see.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_work",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "大阪の 病院で 働いて います。まだ 独身ですよ。",
+              "kana": "おおさかの びょういんで はたらいて います。まだ どくしんですよ。",
+              "en": "She works at a hospital in Osaka. She's still single.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "ご家族は どちらに 住んで いますか。",
+              "kana": "ごかぞくは どちらに すんで いますか。",
+              "en": "Where does your family live?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Shun where your family lives (town and country). Remember: place に すんで います.",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "かぞくは ＿＿に すんで います。",
+            "modelAnswers": [
+              "かぞくは カンボジアの プノンペンに すんで います。",
+              "りょうしんは シェムリアップに すんで います。"
+            ],
+            "branches": [
+              {
+                "id": "home_country",
+                "whenEn": "Learner says their family lives in their home country (any town or country outside Japan).",
+                "next": "n6_home",
+                "exampleJa": "かぞくは カンボジアに すんで います。"
+              },
+              {
+                "id": "japan",
+                "whenEn": "Learner says their family (or part of it) lives in Japan, or lives together with them.",
+                "next": "n6_japan",
+                "exampleJa": "あねは とうきょうに すんで います。"
+              }
+            ],
+            "fallback": "n6_home"
+          }
+        },
+        {
+          "id": "n6_home",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。遠いですね。わたしも 行きたいです。",
+              "kana": "そうですか。とおいですね。わたしも いきたいです。",
+              "en": "I see. That's far. I'd like to go there too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_japan",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。それは いいですね。",
+              "kana": "そうですか。それは いいですね。",
+              "en": "I see. That's nice.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "ご家族は どこで 働いて いますか。",
+              "kana": "ごかぞくは どこで はたらいて いますか。",
+              "en": "Where does your family work?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Shun about one family member: where they work, what they sell or teach — or where they study.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "ちちは ＿＿で はたらいて います。／あには ＿＿で べんきょうして います。",
+            "modelAnswers": [
+              "ちちは ぎんこうで はたらいて います。",
+              "ははは みせで くだものを うって います。",
+              "あには だいがくで べんきょうして います。"
+            ],
+            "branches": [
+              {
+                "id": "works",
+                "whenEn": "Learner says a family member works somewhere, or makes / sells / teaches something.",
+                "next": "n8_work",
+                "exampleJa": "ちちは かいしゃで はたらいて います。"
+              },
+              {
+                "id": "studies",
+                "whenEn": "Learner says a family member studies or goes to school, or that nobody works now.",
+                "next": "n8_study",
+                "exampleJa": "いもうとは こうこうで べんきょうして います。"
+              }
+            ],
+            "fallback": "n8_work"
+          }
+        },
+        {
+          "id": "n8_work",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "いい お仕事ですね。わたしは 銀行で 働いて います。",
+              "kana": "いい おしごとですね。わたしは ぎんこうで はたらいて います。",
+              "en": "That's a good job. I work at a bank.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_study",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "学生ですか。いいですね。わたしは 銀行で 働いて います。",
+              "kana": "がくせいですか。いいですね。わたしは ぎんこうで はたらいて います。",
+              "en": "A student? That's nice. I work at a bank.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "駅の 前の 花屋を 知って いますか。",
+              "kana": "えきの まえの はなやを しって いますか。",
+              "en": "Do you know the flower shop in front of the station?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Do you know that flower shop? Answer yes or no.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "はい、しって ＿＿。／いいえ、しり＿＿。",
+            "modelAnswers": [
+              "はい、しって います。",
+              "いいえ、しりません。"
+            ],
+            "branches": [
+              {
+                "id": "knows",
+                "whenEn": "Learner says they know the flower shop.",
+                "next": "end_yes",
+                "exampleJa": "はい、しって います。"
+              },
+              {
+                "id": "does_not_know",
+                "whenEn": "Learner says they do not know it.",
+                "next": "end_no",
+                "exampleJa": "いいえ、しりません。"
+              }
+            ],
+            "fallback": "end_no"
+          }
+        },
+        {
+          "id": "end_yes",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "わたしは あそこで 花を 売って います。来て くださいね。",
+              "kana": "わたしは あそこで はなを うって います。きて くださいね。",
+              "en": "I sell flowers there. Please come by.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "じゃ、そろそろ 晩ごはんを 食べましょう。",
+              "kana": "じゃ、そろそろ ばんごはんを たべましょう。",
+              "en": "Well then, let's have dinner.",
+              "gesture": "beckon"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "駅の 前に あります。わたしは あそこで 花を 売って います。",
+              "kana": "えきの まえに あります。わたしは あそこで はなを うって います。",
+              "en": "It's in front of the station. I sell flowers there.",
+              "gesture": "nod"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "いい 店ですよ。じゃ、晩ごはんを 食べましょう。",
+              "kana": "いい みせですよ。じゃ、ばんごはんを たべましょう。",
+              "en": "It's a nice shop. Well, let's have dinner.",
+              "gesture": "beckon"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "お国の 家族の 話を もっと 聞きたいです。",
+        "openerKana": "おくにの かぞくの はなしを もっと ききたいです。",
+        "openerEn": "I'd love to hear more about your family back home.",
+        "topicEn": "Chat about the learner's family and the Moris: where people live, whether they are married, where they work or study, what they know. Stay within lesson 15 grammar (～て います for states and jobs, しって います／しりません, ～ても いいですか); polite style only.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l15c",
+      "titleJa": "かいしゃの ルール",
+      "titleEn": "Office rules",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "summer",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "A cloudy summer morning in your first week at the design company. Aoki shows you your desk and a few house rules, then Mr Ogawa, the manager, stops by.",
+      "roleEn": "You are the new team member from abroad. Ask before you use things, and answer the manager politely.",
+      "missionsEn": [
+        {
+          "text": "Ask whether you may use the computer or put your bag down",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask where you may eat lunch",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Tell the manager where you live",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask what the company or Aoki makes",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "ogawa"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "ogawa": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "my_desk",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。ここを 使って ください。これが つくえです。",
+              "kana": "おはよう ございます。ここを つかって ください。これが つくえです。",
+              "en": "Good morning. Please use this place. This is your desk.",
+              "gesture": "point",
+              "target": "my_desk"
+            }
+          ],
+          "listen": {
+            "promptEn": "First week at the office. Ask if you may use this computer (つかいます) — or put your bag here (おきます).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "この パソコンを ＿＿ても いいですか。／ここに かばんを ＿＿ても いいですか。",
+            "modelAnswers": [
+              "この パソコンを つかっても いいですか。",
+              "ここに かばんを おいても いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "computer",
+                "whenEn": "Learner asks whether they may use the computer.",
+                "next": "n2_pc",
+                "exampleJa": "この パソコンを つかっても いいですか。"
+              },
+              {
+                "id": "bag",
+                "whenEn": "Learner asks whether they may put their bag (or things) here.",
+                "next": "n2_bag",
+                "exampleJa": "ここに かばんを おいても いいですか。"
+              }
+            ],
+            "fallback": "n2_pc"
+          }
+        },
+        {
+          "id": "n2_pc",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええ、いいですよ。毎日 使って ください。",
+              "kana": "ええ、いいですよ。まいにち つかって ください。",
+              "en": "Yes, sure. Please use it every day.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_bag",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええ、いいですよ。つくえの 下に 置いて ください。",
+              "kana": "ええ、いいですよ。つくえの したに おいて ください。",
+              "en": "Yes, sure. Please put it under the desk.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "meeting_room",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、あの 会議室で 食べては いけませんよ。",
+              "kana": "あ、あの かいぎしつで たべては いけませんよ。",
+              "en": "Oh, and you must not eat in that meeting room.",
+              "gesture": "point",
+              "target": "meeting_room"
+            }
+          ],
+          "listen": {
+            "promptEn": "So where is lunch allowed? Ask if you may eat at your desk (つくえで) — or outside (そとで).",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿で ひるごはんを たべても いいですか。",
+            "modelAnswers": [
+              "つくえで ひるごはんを たべても いいですか。",
+              "そとで たべても いいですか。"
+            ],
+            "branches": [
+              {
+                "id": "at_desk",
+                "whenEn": "Learner asks whether they may eat at their desk / here in the office.",
+                "next": "n4_desk",
+                "exampleJa": "つくえで たべても いいですか。"
+              },
+              {
+                "id": "outside",
+                "whenEn": "Learner asks whether they may eat outside or go out for lunch.",
+                "next": "n4_out",
+                "exampleJa": "そとで たべても いいですか。"
+              }
+            ],
+            "fallback": "n4_desk"
+          }
+        },
+        {
+          "id": "n4_desk",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええ、いいですよ。わたしも つくえで 食べて います。",
+              "kana": "ええ、いいですよ。わたしも つくえで たべて います。",
+              "en": "Yes, that's fine. I eat at my desk too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_out",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ええ、いいですよ。近くに いい 店が あります。",
+              "kana": "ええ、いいですよ。ちかくに いい みせが あります。",
+              "en": "Yes, that's fine. There are good places nearby.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "おはよう ございます。今、どちらに 住んで いますか。",
+              "kana": "おはよう ございます。いま、どちらに すんで いますか。",
+              "en": "Good morning. Where do you live now?",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "The manager asks where you live now. Tell him (place に すんで います).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿に すんで います。",
+            "modelAnswers": [
+              "えきの ちかくに すんで います。",
+              "みどりまちの アパートに すんで います。"
+            ],
+            "branches": [
+              {
+                "id": "near",
+                "whenEn": "Learner says they live near the office or the station, or in this town.",
+                "next": "n6_near",
+                "exampleJa": "えきの ちかくに すんで います。"
+              },
+              {
+                "id": "elsewhere",
+                "whenEn": "Learner names another town or area, a dormitory, or says it is far.",
+                "next": "n6_far",
+                "exampleJa": "となりの まちに すんで います。"
+              }
+            ],
+            "fallback": "n6_near"
+          }
+        },
+        {
+          "id": "n6_near",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "近いですね。それは いいですね。",
+              "kana": "ちかいですね。それは いいですね。",
+              "en": "That's close. That's good.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_far",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。毎朝 たいへんですね。",
+              "kana": "そうですか。まいあさ たいへんですね。",
+              "en": "I see. That must be hard every morning.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "calendar",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "あしたの 会議の 時間を 知って いますか。",
+              "kana": "あしたの かいぎの じかんを しって いますか。",
+              "en": "Do you know the time of tomorrow's meeting?",
+              "gesture": "point",
+              "target": "calendar"
+            }
+          ],
+          "listen": {
+            "promptEn": "Do you know when tomorrow's meeting is? Nobody has told you yet — answer honestly.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "はい、しって ＿＿。／いいえ、しり＿＿。",
+            "modelAnswers": [
+              "いいえ、しりません。",
+              "はい、しって います。"
+            ],
+            "branches": [
+              {
+                "id": "does_not_know",
+                "whenEn": "Learner says they do not know the time.",
+                "next": "n8_no",
+                "exampleJa": "いいえ、しりません。"
+              },
+              {
+                "id": "knows",
+                "whenEn": "Learner says they know it.",
+                "next": "n8_yes",
+                "exampleJa": "はい、しって います。"
+              }
+            ],
+            "fallback": "n8_no"
+          }
+        },
+        {
+          "id": "n8_no",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "10時からです。青木さんが 資料を 持って います。",
+              "kana": "じゅうじからです。あおきさんが しりょうを もって います。",
+              "en": "It's from ten o'clock. Aoki has the materials.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_yes",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。では、10時に 会議室へ 来て ください。",
+              "kana": "そうですか。では、じゅうじに かいぎしつへ きて ください。",
+              "en": "I see. Then please come to the meeting room at ten.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ほかに 質問は ありますか。",
+              "kana": "ほかに しつもんは ありますか。",
+              "en": "Do you have any other questions?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask about the work here: what does this company make (つくります)? Or what is Aoki making now?",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "この かいしゃは なにを ＿＿て いますか。",
+            "modelAnswers": [
+              "この かいしゃは なにを つくって いますか。",
+              "あおきさんは いま なにを つくって いますか。"
+            ],
+            "branches": [
+              {
+                "id": "company",
+                "whenEn": "Learner asks what the company makes, sells or does.",
+                "next": "end_company",
+                "exampleJa": "この かいしゃは なにを つくって いますか。"
+              },
+              {
+                "id": "aoki",
+                "whenEn": "Learner asks what Aoki herself is making or doing.",
+                "next": "end_aoki",
+                "exampleJa": "あおきさんは なにを つくって いますか。"
+              }
+            ],
+            "fallback": "end_company"
+          }
+        },
+        {
+          "id": "end_company",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "会社や 店の ウェブサイトを 作って います。",
+              "kana": "かいしゃや みせの ウェブサイトを つくって います。",
+              "en": "We make websites for companies and shops.",
+              "gesture": "nod"
+            },
+            {
+              "who": "aoki",
+              "ja": "じゃ、今日も よろしく おねがいします。",
+              "kana": "じゃ、きょうも よろしく おねがいします。",
+              "en": "Well then, let's have a good day.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_aoki",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "今、駅の 前の 花屋の ポスターを 作って います。",
+              "kana": "いま、えきの まえの はなやの ポスターを つくって います。",
+              "en": "Right now I'm making a poster for the flower shop by the station.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "ogawa",
+              "ja": "では、今日も よろしく おねがいします。",
+              "kana": "では、きょうも よろしく おねがいします。",
+              "en": "Well then, I'm counting on you today too.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
