@@ -100,6 +100,8 @@ export function createDesktop(ctx, P, holsters) {
     }
     V.hold('grip' + S(hand), true);
     await wait(0.15);
+    // out of arm's reach (a sword standing on its pedestal, something on a ledge): call it to the hand
+    if (near && !near.dead && !near.heldBy && !items.held[hand] && !items.pulling?.[hand]) items.pull(near, hand);
     reach(hand, null);
     V.setReach(0.78);
     if (!keys.has('KeyC')) V.setDuck(false);

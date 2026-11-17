@@ -26,6 +26,11 @@ export function createHud(ctx, S) {
     card(g, 4, 4, W - 8, H - 8, 26);
     const v = S.vitals;
     hearts(g, 22, 18, 36, v.hp, v.maxHp, 8);
+    // hits landing within 2 s of each other (combat.js)
+    if (S.combo >= 2) {
+      text(g, `×${S.combo}`, W - 96, 50, { size: 34, weight: 800, color: C.gold, align: 'right' });
+      text(g, 'COMBO', W - 24, 48, { size: 15, weight: 700, color: C.ink, align: 'right' });
+    }
     const rows = Math.ceil(v.maxHp / 4) > 8 ? 2 : 1;
     let y = 18 + rows * 37 + 8;
     // tailwind
@@ -100,7 +105,7 @@ export function createHud(ctx, S) {
         const v = S.vitals;
         const sb = `${v.hp}|${v.maxHp}|${Math.round(v.stamina)}|${v.tier}|${S.cadence}`;
         if (showBand && sb !== sigB) { sigB = sb; drawBand(); }
-        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}`;
+        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}|${S.combo >= 2 ? S.combo : 0}`;
         if (showFloat && sf !== sigF) { sigF = sf; drawFloat(); }
       }
       if (showFloat) {

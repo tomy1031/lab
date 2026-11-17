@@ -2,6 +2,10 @@
 import * as THREE from 'three';
 import { heightAt, fx, flash, emit, toast, spawnList, findProp, propsOf, setPropState, anchorOf, playerPos, landmark } from './util.js';
 
+// a fire bowl lights when a flame comes within TOUCH_R of it, or when you stand within CATCH_D holding a lit
+// torch for CATCH_T seconds (playtest: "ran there but it never lit")
+const TOUCH_R = 1.2, CATCH_D = 2.2, CATCH_T = 0.8;
+
 export function createCheckpoints(ctx, G) {
   const lights = [];        // waylights
   const braziers = [];      // generic braziers (shrines may reserve some)
@@ -17,7 +21,7 @@ export function createCheckpoints(ctx, G) {
       for (const w of spawnList(ctx, 'waylights')) {
         const prop = findProp(ctx, 'waylight', w.id, w.x, w.z, 6);
         const lm = landmark(ctx, w.id);
-        lights.push({ id: w.id, x: w.x, z: w.z, prop, lit: false, zone: null, cook: null, nearT: 0,
+        lights.push({ id: w.id, x: w.x, z: w.z, prop, lit: false, zone: null, cook: null, nearT: 0, catchT: 0,
           name: (lm && lm.name) || '風見の灯', firePos: new THREE.Vector3(), cookPos: new THREE.Vector3() });
       }
       braziers.length = 0;
@@ -45,7 +49,8 @@ export function createCheckpoints(ctx, G) {
         emit(ctx, 'fire:lit', { id: entry.id, pos: entry.firePos });
         fx(ctx, 'ember', entry.firePos, { count: 30, speed: 2 });
         flash(ctx, entry.firePos, { color: 0xffb347, size: 3, life: 0.5 });
-        toast(ctx, `${entry.name}に火が灯った`, 'WAYLIGHT LIT · 復活地点', 'quest', 3500);
+        const lesson = entry.id === 'camp_meadow' && G.quest && G.quest.stage <= 1;
+        if (!lesson) toast(ctx, `${entry.name}に火が灯った`, 'WAYLIGHT LIT · 復活地点', 'quest', 3500);
         C.setCheckpoint(entry.id);
       }
     },
@@ -69,6 +74,16 @@ export function createCheckpoints(ctx, G) {
     /** braziers that no shrine drives burn from the start: fire for torches and arrows around the island */
     lightFree() { for (const b of braziers) if (!b.reserved && !b.lit) C.lightBrazier(b, true); },
     byId(id) { return lights.find((l) => l.id === id) || null; },
+    /** the nearest burning brazier to (x, z) — where a dead torch can be relit — or null */
+    nearestFire(x, z) {
+      let best = null, bd = Infinity;
+      for (const b of braziers) {
+        if (!b.lit) continue;
+        const d = Math.hypot(b.x - x, b.z - z);
+        if (d < bd) { bd = d; best = b; }
+      }
+      return best;
+    },
     nearLit(maxD = 5) {
       playerPos(ctx, _p);
       let best = null, bd = maxD;
@@ -138,7 +153,14 @@ export function createCheckpoints(ctx, G) {
         anchorOf(l.prop, 'fire', _a);
         if (!l.prop) _a.set(l.x, heightAt(ctx, l.x, l.z) + 0.5, l.z);
         _a.y += 0.3;
-        if (foreignFire(_a, 0.75)) { C.light(l); continue; }
+        if (foreignFire(_a, TOUCH_R)) { l.catchT = 0; C.light(l); continue; }
+        // standing right by it with a burning torch in either hand: it catches after a moment (crackling)
+        if (d < CATCH_D && G.quest && G.quest.torchLit()) {
+          if (l.catchT === 0) emit(ctx, 'fire:catching', { id: l.id, pos: _a.clone() });
+          l.catchT += 0.2;
+          fx(ctx, 'ember', _a, { count: 3, speed: 0.8 });
+          if (l.catchT >= CATCH_T - 1e-6) { l.catchT = 0; C.light(l); continue; }
+        } else l.catchT = 0;
         // the other camps catch the wind when you stand by them (the first one is the torch lesson)
         const tutorial = l.id === 'camp_meadow' && stage <= 1;
         if (!tutorial && d < 3.2) { l.nearT += 0.2; if (l.nearT > 1.5) C.light(l); }

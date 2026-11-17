@@ -68,7 +68,7 @@ export function getSprites(ctx) {
     r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.3, 'rgba(255,255,255,0.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = r; g.fillRect(0, 0, 64, 64);
   });
-  const MAXS = 32;
+  const MAXS = 48;
   const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), ctx.art.basic({ color: 0xffffff, map: tex, additive: true }), MAXS);
   mesh.name = 'glow-sprites';
   mesh.frustumCulled = false;

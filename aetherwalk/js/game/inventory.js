@@ -175,7 +175,12 @@ export function createInventory(ctx, G) {
     const d = def(e.itemId);
     if (!d) return;
     if (d.stack === 1) {
-      if (!inv.has(e.itemId) && e.from === 'world') inv.add(e.itemId, 1);
+      if (!inv.has(e.itemId) && e.from === 'world') {
+        // the pedestal sword is announced by pickups (title + hint), so add it quietly here
+        const quiet = !!(G.pickups && G.pickups.isPedestalUid && G.pickups.isPedestalUid(e.uid));
+        inv.add(e.itemId, 1, { silent: quiet });
+        if (quiet) emit(ctx, 'item:pickup', { itemId: e.itemId, count: 1 });
+      }
       out.add(e.itemId);
     }
   });

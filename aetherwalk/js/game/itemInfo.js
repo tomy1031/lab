@@ -37,3 +37,24 @@ export const SLOT_CATS = {
 };
 // carry-limit bonus per seed tier (§8.4) applies to these
 export const TIER_BONUS_CATS = new Set(['ammo', 'throwable', 'food']);
+
+// one-line "how to use it" shown on the hand label the first 3 times an item is taken (playtest feedback)
+export const ITEM_HINTS = {
+  sword:            ['振って斬る・強く振ると強打', 'SWING TO SLASH · HARD = STRONG HIT'],
+  spear:            ['柄の向きに突く・投げてもよい', 'THRUST ALONG THE SHAFT · OR THROW'],
+  torch:            ['火に近づけると燃える・振って叩く', 'TOUCH FIRE TO LIGHT · SWING TO HIT'],
+  shield:           ['構えて受ける・攻撃へ押し出すとパリィ', 'RAISE TO BLOCK · PUSH OUT TO PARRY'],
+  bow:              ['もう片手で肩越しに矢を取り、引いて離す', 'TAKE AN ARROW OVER THE SHOULDER, DRAW, RELEASE'],
+  arrow:            ['弓につがえて引き、離して放つ', 'NOCK ON THE BOW, DRAW, RELEASE'],
+  bomb:             ['トリガーで点火 → 3 秒で爆発。投げよう', 'TRIGGER TO LIGHT · THROW · 3 S'],
+  rock:             ['投げて当てる・鈴も鳴らせる', 'THROW IT · RINGS BELLS TOO'],
+  windfan:          ['大きくあおぐと突風', 'FAN HARD FOR A GUST'],
+  flask:            ['口元で傾けて飲む（HP +2）', 'TIP AT YOUR MOUTH TO DRINK · HP +2'],
+  waybell:          ['振ると目的地へ光の帯', 'SHAKE IT: A RIBBON TO YOUR GOAL'],
+  apple:            ['口へ運んで食べる（HP +4）', 'BRING TO YOUR MOUTH · HP +4'],
+  apple_baked:      ['口へ運んで食べる（HP +8）', 'BRING TO YOUR MOUTH · HP +8'],
+  mushroom:         ['食べると HP +2・追い風 +30', 'EAT · HP +2 · TAILWIND +30'],
+  mushroom_grilled: ['食べると HP +6・追い風が満タン', 'EAT · HP +6 · FULL TAILWIND'],
+  frostberry:       ['食べると 60 秒 追い風が減らない', 'EAT · TAILWIND HOLDS 60 S'],
+  honeycomb:        ['食べると HP 全回復', 'EAT · FULL HEAL'],
+};

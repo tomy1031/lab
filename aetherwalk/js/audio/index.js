@@ -159,6 +159,10 @@ export async function createAudio(ctx) {
   });
   on('item:ignite', () => play('fireLit'));
   on('fire:lit', (p) => play('fireLit', { pos: p.pos }));
+  on('fire:catching', (p) => play('catching', { pos: p.pos }));
+  on('item:extinguish', (p) => { if (p.itemId === 'torch') play('fizzle'); });
+  // a Nagi recoiling at a fire's edge: a short hiss and a crackle where it turned back
+  on('enemy:recoil', (p) => { play('fizzle', { pos: p.pos }); play('crackle', { pos: p.pos }); });
   on('tower:lift', (p) => { if (ctx.game && ctx.game.towers && ctx.game.towers.onLift) play('lift', { ratio: p.ratio || 0 }); });
   on('tower:awake', () => { play('towerBell'); setTimeout(() => play('sting:bell'), 900); });
   on('bell:ring', (p) => { if (!p.strong) play('bellSmall', { pos: p.pos }); else if (String(p.id).startsWith('seed')) play('bellSmall', { pos: p.pos }); else play('towerBell'); });

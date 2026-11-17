@@ -16,6 +16,7 @@ export const SETTING_DEFS = {
   stickMove: { def: false, label: 'スティックで歩く', en: 'STICK MOVE' },
   seated: { def: false, label: '座って遊ぶ', en: 'SEATED' },
   duckDepth: { def: 'normal', options: ['normal', 'shallow'], label: 'しゃがみの深さ', en: 'DUCK DEPTH', names: { normal: 'ふつう', shallow: '浅い' } },
+  combatFreq: { def: 'normal', options: ['low', 'normal', 'high'], label: '戦いの頻度', en: 'COMBAT', names: { low: '少なめ', normal: 'ふつう', high: '多め' } },
   edgeGuard: { def: true, label: '崖の縁で止まる', en: 'EDGE GUARD' },
   knockback: { def: true, label: 'ノックバック', en: 'KNOCKBACK' },
   gripToggle: { def: false, label: 'グリップ切り替え式', en: 'GRIP TOGGLE' },

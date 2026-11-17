@@ -117,7 +117,9 @@ export function createHands(ctx, P) {
   const handMat = ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.35, spec: 0.12, gloss: 10 });
   const cuffs = createAttached(ctx, 'glove-cuffs', cuffGeometry(),
     ctx.art.material({ color: 0xffffff, vertexColors: true, flat: false, rim: 0.3, spec: 0.7, gloss: 50 }), 2, 1e6);
-  loadHandData().then(async (data) => {
+  // resolves once both skinned hands (and their baked glove material) are in place, or the fallback stays;
+  // main.js waits for it (capped) so the glove shader is compiled in the warm-up frame, not after ready
+  const whenReady = loadHandData().then(async (data) => {
     for (const side of HANDS) {
       await new Promise((r) => setTimeout(r, 0));          // one hand's texture bake per task (no long stall)
       const h = H[side];
@@ -249,5 +251,5 @@ export function createHands(ctx, P) {
     flatNormals(h.geo);
   }
   pose(H.left, 0.15); pose(H.right, 0.15);
-  return { update, H, get ready() { return rigReady; } };
+  return { update, H, whenReady, get ready() { return rigReady; } };
 }

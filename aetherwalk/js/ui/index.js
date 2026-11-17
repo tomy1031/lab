@@ -2,6 +2,9 @@
 // titles 2 m ahead, the left-wrist menu, and the PC overlay. Listens to events; others call toast/title only.
 import * as THREE from 'three';
 import { createHud, createToasts } from './hud.js';
+import { createTutorial } from './tutorial.js';
+import { createLabels } from './labels.js';
+import { createCombatCues } from './combat.js';
 import { createWrist } from './wrist.js';
 import { createOverlay } from './overlay.js';
 
@@ -16,7 +19,7 @@ export async function createUI(ctx) {
     cadence: 0, gait: 'idle', stepsToday: 0, kcalToday: 0, kmToday: 0, activeToday: 0,
     objective: null, objDist: null, objBearing: 0,
     trial: null, trialT: 0, boss: null, cooldown: null,
-    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null,
+    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null, combo: 0, comboT: 0,
     hudVisible: true, domMenu: null,
   };
   const forceVR = !!(ctx.params && ctx.params.has && ctx.params.has('vrhud'));
@@ -37,6 +40,11 @@ export async function createUI(ctx) {
     const t = typeof opts === 'string' ? { sub: opts } : opts;
     // drop exact repeats waiting in the queue; keep the queue short
     if (S.toastQueue.some((q) => q.text === text) || (S.currentToast && S.currentToast.text === text)) return;
+    // a newer step of the same kind (tag) replaces the older one: the queued one is dropped, the showing one ends soon
+    if (t.tag && t.tag !== 'tut') {
+      for (let i = S.toastQueue.length - 1; i >= 0; i--) if (S.toastQueue[i].tag === t.tag) S.toastQueue.splice(i, 1);
+      if (S.currentToast && S.currentToast.tag === t.tag) S.currentToast.left = Math.min(S.currentToast.left, 300);
+    }
     S.toastQueue.push({ text, sub: t.sub || '', kind: t.kind || 'info', ms: t.ms || 3000, tag: t.tag || null });
     while (S.toastQueue.length > 4) S.toastQueue.shift();
   }
@@ -58,7 +66,7 @@ export async function createUI(ctx) {
       S.hudVisible = !!b;
       document.body.classList.toggle('aw-nohud', !b);
       // hide every board at once (the wrist band lives on the left hand) — ART_REVIEW B-P3-1
-      if (!b) { hud.hideAll(); toasts.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
+      if (!b) { hud.hideAll(); toasts.hideAll(); ui.tutorial.hideAll(); ui.labels.hideAll(); ui.combat.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
     },
     toast, title,
     openMenu(page = 'map') {
@@ -81,6 +89,9 @@ export async function createUI(ctx) {
   };
   ui.wrist = createWrist(ctx, S, ui);
   ui.overlay = createOverlay(ctx, S, ui);
+  ui.tutorial = createTutorial(ctx, S, ui);
+  ui.labels = createLabels(ctx, S, ui);
+  ui.combat = createCombatCues(ctx, S, ui);
   ui.hud = hud;
 
   function isVR() { return !!(ctx.renderer && ctx.renderer.xr && ctx.renderer.xr.isPresenting) || !!(ctx.flags && ctx.flags.xr); }
@@ -240,6 +251,9 @@ export async function createUI(ctx) {
     S.menuOpen = ui.wrist.open;
     hud.update(dt, vr);
     toasts.update(dt, vr);
+    ui.tutorial.update(dt, vr);
+    ui.labels.update(dt, vr);
+    ui.combat.update(dt, vr);
     ui.wrist.update(dt, vr);
     ui.overlay.update(dt, isVR() || forceVR);   // ?vrhud shows what the headset shows (no PC overlay)
     // fade

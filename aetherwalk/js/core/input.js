@@ -50,9 +50,9 @@ const GUARD = { p: [0.12, -0.2, -0.44], d: [0.0, 1, 0.05], e: [1, -0.25, 0.2] };
 //   empty hand 45.6° below the view → out of frame; holding something 34.7° below → only the item's
 //   far end shows in the lower quarter; a shield turned 35° outward at the lower left.
 const EMPTY_REST = { p: [0.24, -0.47, -0.46], d: [0.05, 0.72, -0.7], e: [0.12, 0.2, 0.9] };
-// (a thumb-up fist puts the cuff above the grip: the grip sits under the frame at y −0.52 and the blade is pitched
-//  11° up, so only the blade rises into the lower third and ≤ 25 px of glove/cuff shows at 720p)
-const HELD_REST = { p: [0.22, -0.52, -0.55], d: [0.03, 0.2, -1], e: [0.0, 1, 0.0] };    // thumb up, tip low and forward
+// (the cuff sits above the grip: the grip is under the frame at y −0.52, the blade pitched 11° up and the wrist
+//  rolled 45° so the flat (and its rune line) faces the view; no glove shows at 720p)
+const HELD_REST = { p: [0.22, -0.52, -0.55], d: [0.03, 0.2, -1], e: [0.7, 0.71, 0.0] };    // tip low and forward, wrist rolled 45° (the flat shows)
 const SHIELD_REST = { p: [0.34, -0.46, -0.5], d: [0.0, 1, 0.0], e: [0.819, 0, 0.574] };  // face 35° outward (left hand mirrors)
 SWINGS.rest = { keys: [REST, REST, REST] };
 // held poses for desktop (orientation while reaching / resting)

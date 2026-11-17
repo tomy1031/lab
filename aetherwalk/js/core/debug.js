@@ -6,8 +6,8 @@ import { createDummy } from './stubs.js';
 const SRGB = Uint8Array.from({ length: 256 }, (_, v) => { const l = v / 255; return Math.round(255 * (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)); });
 
 // names of everything OPUS-A draws (hands, items, their effects, comfort aids)
-const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
-const LOGGED = ['step', 'gait', 'hit', 'swing', 'item:grab', 'item:release', 'item:throw', 'item:consume', 'item:use',
+const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|sword-aura|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
+const LOGGED = ['step', 'gait', 'hit', 'swing', 'item:grab', 'item:hover', 'item:release', 'item:throw', 'item:consume', 'item:use',
   'item:ignite', 'item:extinguish', 'item:cook', 'item:return', 'item:pickup', 'projectile:fire', 'explosion', 'gust',
   'player:duck', 'player:glide', 'player:land', 'player:teleport', 'region:enter', 'pause', 'perf:level', 'xr:start', 'xr:end'];
 

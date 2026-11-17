@@ -868,12 +868,13 @@ ctx.events = { on(name, fn) → off関数, once(name, fn), off(name, fn), emit(n
 | `region:enter` | A | `{ region, from }` |
 | `time:phase` | FABLE | `{ phase:'dawn'|'day'|'dusk'|'night', time }` |
 | `item:grab` | A | `{ uid, itemId, hand, from:'world'|'holster'|'bag', slot }` |
+| `item:hover` | A | `{ hand, itemId, source:'world'|'holster', uid, slot }`：手がつかめる範囲に入った物（世界の物は 0.25 m で入り 0.32 m まで保つ。ホルスターは中身のある枠・矢筒・手首の鈴）。離れたら `itemId: null`（`source`/`uid`/`slot` は離れた物のもの）。入りは 0.12 s、離れは 0.22 s 続いてから出す（つかんだ瞬間は待たずに離れを出す）。対象が替わるときは離れ→入りの 2 回。PC では右手が E キーで取るもの（足もと 1.5 m、なければ照準の先 2.5 m）を出す |
 | `item:release` | A | `{ uid, itemId, hand, to:'world'|'holster'|'bag', slot, speed }` |
 | `item:throw` | A | `{ uid, itemId, hand, speed }` |
 | `item:pickup` | A または B | `{ itemId, count }`（持ちものに入った） |
 | `item:consume` | A | `{ itemId, hand, how:'eat'|'drink' }`（効果は B が `defs.food` を見て適用） |
 | `item:use` | A | `{ itemId, action, hand }`（`'ring'` 鈴、`'fuse'` 点火、`'pour'`、`'fill'`、`'fan'`） |
-| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` |
+| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` / `{ uid, itemId, why:'burnout'|'water'|'wind'|'stowed'|'return' }`（ホルスターの中で水に沈んだときは `uid: null`） |
 | `item:cook` | A | `{ from, to }` |
 | `item:return` | A | `{ itemId }`（持ちものに戻った） |
 | `swing` | A | `{ hand, itemId, speed, type }`（先端 3 m/s を超えた瞬間に 1 回） |
@@ -1113,7 +1114,7 @@ export async function createItems(ctx) → Items
 
 Items = {
   defs,                                    // ITEM_DEFS
-  spawn(itemId, { pos, vel, state, owned, count } = {}) → ItemInstance,   // 世界に置く
+  spawn(itemId, { pos, vel, state, owned, count, quat } = {}) → ItemInstance,   // 世界に置く（quat を渡すと置かれたまま：§10.18）
   despawn(instance),
   held: { left: ItemInstance | null, right: ItemInstance | null },
   equip(itemId, hand = 'right') → ItemInstance,       // 手に持たせる（持ちものの数は変えない）
@@ -1340,16 +1341,19 @@ window.AW = {
 - **`item:consume`**：水筒は 1 口ごとに出す（`{ itemId:'flask', how:'drink', gulpsLeft }`、効果は `defs.flask.food` が 1 口ぶん）。食べものは食べ終えたとき 1 回（`bites` 口、0.4 s ごと）。
 - **`item:use` の action**：`'ring' 'fuse' 'pour' 'fill' 'fan' 'bite' 'nock'`。
 - **松明の燃える時間**：`instance.state.burnLimit`（秒）を書けば 180 s の代わりに使う（灯しの祠の 45 s 用。`ctx.items.held.right.state.burnLimit = 45`）。
+- **ホルスターの松明**：灯った松明をホルスターに差すと消えずに燃え続け、燃える時間はそのあいだ止まる（枠の上に小さな残り火が光る）。抜けばそのまま燃えている。袋にしまうと消える（`why:'stowed'`）。差したまま枠が水に沈むと消える。残り 30 s で炎が小さくなり揺らぐ。
 - **かけら・種・珠**：世界に置かれたもの（`items.spawn('shard', …)`）は 1 m 以内を通るか手で触れると `inventory.add` で集まる（`item:pickup` は inventory が出す）。数のある束（`count > 1`）はつかむと全部袋に入る。
 - **戻ってくる装備**：落とした・投げた自分の装備は 8 s 後か 25 m 離れると消え、`inventory.markIn(id)` と `item:return` を出す。
 - **追加のイベント**：`player:turn { yaw }`（スナップ／スムーズターン）、`player:recenter {}`。`hit` には `targetId, targetKind, applied, killed, blocked` が付く。
 - **`input.virtual` の追加**：`setLook(yawDeg, pitchDeg)` の yaw は**ワールドの向き**（0＝北）。ほかに `addLook, getLook, setHandOffset, setGuard, setHandPose('rest'|'guard'|'bow'|'drink'|'eat'|'pour'|'draw'), hold(btn, down), setStick, setReach, isSwinging`。`swing` の種類は `slashH slashV thrust throw fan shake`。
 - **`ctx.items` の追加**（player が使う）：`createInHand, grabWorld, nearestGrabbable, rayGrabbable, pull, cancelPull, drop, stow, isHeld, tipSpeed(hand), bowInfo(hand), budget()`。
 - **`AW.debug` の追加**：`events(name)`（直近のイベントの写し）、`clearEvents, spawnDummy(dx, dz), dummyState, spawnItem(id, dx, dz, dy), items(), heldItem(hand), addZone(kind, …), handTo, press, hold, look, budget(), stats()`。
-- **PC の手の置き場（ART_REVIEW A-P1-1/2）**：XR でないときだけ。何も持たない手は頭の空間で `[±0.24, −0.47, −0.46]`（画面の外）、持っている手は `[±0.22, −0.49, −0.55]`（親指を上にした握りは袖口が握りの 0.11 m 上に来るので、レビューの −0.36 より下げて手袋が下端から 6% 以内に収まるようにした）、盾は `[−0.34, −0.46, −0.50]` で面を外へ 35°。`setHandPose('raise')` は松明を前に掲げる。
+- **PC の手の置き場（ART_REVIEW A-P1-1/2）**：XR でないときだけ。何も持たない手は頭の空間で `[±0.24, −0.47, −0.46]`（画面の外）、持っている手は `[±0.22, −0.52, −0.55]`、刃を 11° 上げ手首を 45° 返す（手袋は画面の外、刃の平らな面と光の筋が下 1/3 に見える。レビューの −0.36 では袖口が入るため下げた）、盾は `[−0.34, −0.46, −0.50]` で面を外へ 35°。`setHandPose('raise')` は松明を前に掲げる。
 - **鍛え直し**：近接の `base` と突きに `ctx.game.inventory.temper[itemId]`（0〜3）を足す。game がスタブなら 0。
 - **滑空の追い風**：player は `spendStamina` を呼ばない（§10.19）。`vitals.stamina ≤ 0` のときだけ降下を 3 m/s にする。
 - **小さな光の共有描画**（OPUS-A 内部）：水色の宝石（手袋の袖口・盾・剣の鍔）は 1 つの `InstancedMesh`（`art.basic #7fe9ff`）、拾えるものと夜の宝石のにじみは 1 つの加算 `art.basic` のカメラ向き四角（`glow-sprites`）、矢と石の足もとの影も 1 つ（`item-shadows`）。数が増えてもドローコールは増えない。`AW.debug.budget()` は場面を数えて OPUS-A の実際のドローコール・三角形を返し、`AW.debug.coverage(pattern, w, minLum)` は名前の合う物だけを描いて画面の占有率を返す（受け入れ確認用）。
+- **置かれた物（台座の剣）**：`items.spawn(id, { pos, quat, owned })` で `quat` を渡すと「置かれた」物になり、地面へ落としたり寝かせたりせず、その位置と向きのまま眠る（台座の上に立てた剣など）。手に取ると普通の物に戻る。つかむと `item:grab { from:'world' }` が出て、装備（`stack: 1`）は inventory が持ちものに加える。PC の E で腕の届かない物（1.5 m 以内）は手もとへ引き寄せる。
+- **剣の輝き**（`js/items/radiance.js`）：剣（`sword`）は手にあるときも世界にあるときも、自分のメッシュ（鋼と金の 2 グループ）に加算の光のメッシュ 1 枚を重ねる（樋の光の筋と菱形の刻印・刃を包む淡い光・漂う光の粒・鍔の宝石の輝き・当たりの瞬間の十字の閃光。光の帯と粒はカメラを向く）。振ると明るく、強打で金、`vitals.tier ≥ 2`（追い風 II）で金がかる。昼は控えめ、夜に強い。持つと +1 ドローコール。剣だけは世界でも共有の InstancedMesh を使わない。
 - **CSS**：`tools/build.mjs` は `css/` を配らないので、ランディングと PC 表示の CSS は `index.html` に直接書いた。PC 表示で OPUS-A が使う要素は `#aw-hint`（クリックで開始）`#aw-reticle` `#aw-back`。`#aw-overlay` の中身は OPUS-B。
 
 ### 10.19 OPUS-B の補足（実装から決めたこと。既存の API は変えていない）
