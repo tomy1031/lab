@@ -364,14 +364,24 @@ export default function build({ setup }) {
     add(chochin(small[i % 2], 0.08, 0.22, M, lit), -1.6 + i * 1.2, 2.32, -2.55, i * 0.9);
   }
   // a little shelf with a daruma on the left wall
-  g.add(K.box(0.2, 0.03, 0.62, M.light, { x: X0 + 0.1, y: 1.92, z: -0.05 }));
-  add(daruma(A, M), X0 + 0.11, 1.95, -0.2, Math.PI / 2);
-  add(sakeBottle(A, M, bottleCols[0], labelRegions[0], 0.62), X0 + 0.1, 1.95, 0.12, Math.PI / 2);
+  g.add(K.box(0.2, 0.03, 0.62, M.light, { x: X0 + 0.1, y: 2.02, z: -0.05 }));
+  add(daruma(A, M), X0 + 0.11, 2.05, -0.2, Math.PI / 2);
+  add(sakeBottle(A, M, bottleCols[0], labelRegions[0], 0.62), X0 + 0.1, 2.05, 0.12, Math.PI / 2);
 
   // ------------------------------------------------------------------ lights
   const k = lit ? 1.25 : 0.9;
-  const lights = [[0, 2.05, -0.75, '#ffb46a', 3.0, 4.8], [0.9, 2.35, -3.4, '#ffbd78', 3.8, 6.5], [1.3, 2.4, -5.4, '#ffe1b4', 3.0, 5.5], [-1.2, 2.25, 1.5, '#ffb46a', 2.4, 5.5]];
+  const lights = [[0, 2.05, -0.75, '#ffb46a', 3.0, 4.8], [0.9, 2.35, -3.4, '#ffbd78', 3.8, 6.5], [1.3, 2.4, -5.4, '#ffe1b4', 3.0, 5.5], [0.3, 2.3, 1.3, '#ffb46a', 2.8, 6.5]];
   for (const [x, y, z, c, i, d] of lights) { const l = new THREE.PointLight(c, i * k, d, 1.4); l.position.set(x, y, z); g.add(l); }
+
+  // small things do not cast shadows (keeps the shadow pass cheap)
+  const bs = new THREE.Vector3();
+  g.updateMatrixWorld(true);
+  g.traverse((o) => {
+    if (!o.isMesh || !o.castShadow) return;
+    if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+    o.getWorldScale(bs);
+    if (o.geometry.boundingSphere.radius * Math.max(bs.x, bs.y, bs.z) < 0.06) o.castShadow = false;
+  });
 
   for (const o of [menu, beer, edamame, oshibori, hashi, yakitori, sake, menuStrips, lantern, counter, reg, clk, noren, fishTankProp]) props[o.userData.propId] = o;
   atlasize(g, A);
@@ -1183,7 +1193,7 @@ function daruma(A, M) {
     c.lineWidth = 3; c.beginPath(); c.moveTo(W * 0.2, Hh * 0.28); c.lineTo(W * 0.42, Hh * 0.32); c.moveTo(W * 0.8, Hh * 0.28); c.lineTo(W * 0.58, Hh * 0.32); c.stroke();
     c.beginPath(); c.arc(W / 2, Hh * 0.62, 8, 0.2, Math.PI - 0.2); c.stroke();
   });
-  d.add(A.plane(0.075, 0.07, face, { y: 0.095, z: 0.064 }));
+  d.add(A.plane(0.075, 0.07, face, { y: 0.095, z: 0.073 }));
   return d;
 }
 

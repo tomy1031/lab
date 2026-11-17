@@ -345,22 +345,22 @@ function tubeGeo(points, r, segs = 24, radial = 6) {
 // body sections, in units of the height (y from the floor); widths are scaled by build
 const TORSO = {
   m: {
-    a: [[0.40, 0.106], [0.47, 0.106], [0.53, 0.099], [0.58, 0.094], [0.64, 0.097], [0.70, 0.102], [0.75, 0.105], [0.785, 0.103], [0.807, 0.096], [0.823, 0.08], [0.835, 0.057], [0.842, 0.036], [0.847, 0.028]],
-    b: [[0.40, 0.076], [0.47, 0.075], [0.53, 0.067], [0.58, 0.062], [0.64, 0.064], [0.70, 0.067], [0.75, 0.068], [0.785, 0.066], [0.807, 0.06], [0.823, 0.051], [0.835, 0.04], [0.842, 0.031], [0.847, 0.026]],
+    a: [[0.40, 0.106], [0.47, 0.106], [0.53, 0.099], [0.58, 0.094], [0.64, 0.097], [0.70, 0.102], [0.75, 0.105], [0.78, 0.103], [0.8, 0.097], [0.815, 0.086], [0.828, 0.069], [0.838, 0.05], [0.844, 0.035], [0.848, 0.028]],
+    b: [[0.40, 0.076], [0.47, 0.075], [0.53, 0.067], [0.58, 0.062], [0.64, 0.064], [0.70, 0.067], [0.75, 0.068], [0.78, 0.066], [0.8, 0.061], [0.815, 0.055], [0.828, 0.047], [0.838, 0.038], [0.844, 0.031], [0.848, 0.026]],
   },
   f: {
-    a: [[0.40, 0.111], [0.47, 0.11], [0.52, 0.097], [0.57, 0.084], [0.63, 0.087], [0.69, 0.092], [0.75, 0.093], [0.785, 0.091], [0.808, 0.085], [0.823, 0.071], [0.835, 0.051], [0.842, 0.032], [0.847, 0.025]],
-    b: [[0.40, 0.078], [0.47, 0.077], [0.52, 0.067], [0.57, 0.059], [0.63, 0.062], [0.69, 0.065], [0.75, 0.064], [0.785, 0.061], [0.808, 0.055], [0.823, 0.047], [0.835, 0.037], [0.842, 0.028], [0.847, 0.023]],
+    a: [[0.40, 0.111], [0.47, 0.11], [0.52, 0.097], [0.57, 0.084], [0.63, 0.087], [0.69, 0.092], [0.75, 0.093], [0.78, 0.091], [0.8, 0.086], [0.815, 0.077], [0.828, 0.062], [0.838, 0.045], [0.844, 0.031], [0.848, 0.025]],
+    b: [[0.40, 0.078], [0.47, 0.077], [0.52, 0.067], [0.57, 0.059], [0.63, 0.062], [0.69, 0.065], [0.75, 0.064], [0.78, 0.061], [0.8, 0.057], [0.815, 0.051], [0.828, 0.043], [0.838, 0.035], [0.844, 0.028], [0.848, 0.023]],
   },
 };
 const PELVIS = {
   m: {
-    a: [[0.428, 0.03], [0.438, 0.07], [0.452, 0.092], [0.475, 0.099], [0.51, 0.099], [0.55, 0.097], [0.597, 0.098]],
-    b: [[0.428, 0.03], [0.438, 0.05], [0.452, 0.06], [0.475, 0.065], [0.51, 0.066], [0.55, 0.064], [0.597, 0.065]],
+    a: [[0.436, 0.03], [0.445, 0.072], [0.458, 0.091], [0.48, 0.096], [0.51, 0.097], [0.55, 0.096], [0.6, 0.097]],
+    b: [[0.436, 0.03], [0.445, 0.042], [0.458, 0.05], [0.48, 0.058], [0.51, 0.063], [0.55, 0.064], [0.6, 0.065]],
   },
   f: {
-    a: [[0.428, 0.03], [0.438, 0.074], [0.452, 0.096], [0.475, 0.102], [0.51, 0.1], [0.55, 0.091], [0.597, 0.088]],
-    b: [[0.428, 0.03], [0.438, 0.052], [0.452, 0.062], [0.475, 0.067], [0.51, 0.066], [0.55, 0.062], [0.597, 0.062]],
+    a: [[0.436, 0.03], [0.445, 0.076], [0.458, 0.095], [0.48, 0.1], [0.51, 0.099], [0.55, 0.091], [0.6, 0.088]],
+    b: [[0.436, 0.03], [0.445, 0.044], [0.458, 0.052], [0.48, 0.06], [0.51, 0.064], [0.55, 0.062], [0.6, 0.062]],
   },
 };
 
@@ -446,7 +446,7 @@ export class Person {
     this.thighLen = thighL; this.shinLen = shinL; this.ankleH = hipY - h(0.02) - thighL - shinL;
     const legX = h(f ? 0.05 : 0.048) * bw;
     const shX = h(f ? 0.112 : 0.124) * bw;
-    const shY = hipY + h(0.035) + torsoLen * 0.87;
+    const shY = hipY + h(0.035) + torsoLen * 0.855;
     const ra = h(f ? 0.027 : 0.03) * lw;             // upper-arm radius
     const upperArm = h(0.17); const foreArm = h(0.148);
     const headR = H * 0.09; // larger than life: friendlier, and the face reads from further away
@@ -455,6 +455,7 @@ export class Person {
     this.hips = this.bone(this.rootBone, [0, hipY, 0], 'hips');
     this.spine = this.bone(this.hips, [0, h(0.035), 0], 'spine');
     this.chest = this.bone(this.spine, [0, 0, 0], 'chest');
+    this.seat = this.bone(this.hips, [0, -h(0.02), 0], 'seat');
     this.legs = [];
     for (const s of [-1, 1]) {
       const th = this.bone(this.hips, [s * legX, -h(0.02), 0], 'thigh');
@@ -464,7 +465,7 @@ export class Person {
     }
     this.arms = [];
     for (const s of [-1, 1]) {
-      const sh = this.bone(this.chest, [s * shX, torsoLen * 0.87, -h(0.004)], 'shoulder');
+      const sh = this.bone(this.chest, [s * shX, torsoLen * 0.855, -h(0.004)], 'shoulder');
       const ua = this.bone(sh, [0, 0, 0], 'upperArm');
       const el = this.bone(ua, [0, -upperArm, 0], 'elbow');
       const hd = this.bone(el, [0, -foreArm, 0], 'hand');
@@ -479,14 +480,19 @@ export class Person {
     const yWaist = hipY + h(0.035);
     const wTrunk = (p) => { const t = smooth(yWaist - h(0.045), yWaist + h(0.075), p.y); return [[this.hips, 1 - t], [this.chest, t]]; };
     const kneeY = hipY - h(0.02) - thighL;
-    const wLeg = (l) => (p) => { const t = smooth(kneeY + h(0.024), kneeY - h(0.024), p.y); return [[l.th, 1 - t], [l.kn, t]]; };
+    const wLeg = (l) => (p) => { const t = smooth(kneeY + h(0.034), kneeY - h(0.034), p.y); return [[l.th, 1 - t], [l.kn, t]]; };
     const elbowY = shY - upperArm;
     const wArm = (a) => (p) => { const t = smooth(elbowY + h(0.022), elbowY - h(0.022), p.y); return [[a.ua, 1 - t], [a.el, t]]; };
-    // below the seat, garments follow the thighs (so sitting folds skirts and coat tails over the lap)
-    const wSkirt = (yTop, yFull, k = 1) => (p) => {
-      const t = smooth(yTop, yFull, p.y) * k;
+    // below the seat, the front of skirts and coat tails follows the thighs and, past the knee, the shins
+    // (so sitting lays them over the lap and lets them fall at the knee); the back mostly stays with the hips
+    // (the seat bone folds the back under the thighs: it is sat on)
+    const wSkirt = (yTop, yFull) => (p) => {
+      const t = smooth(yTop, yFull, p.y);
+      const fr = smooth(-h(0.035), h(0.025), p.z);
+      const k = t * fr;
+      const tk = smooth(kneeY + h(0.035), kneeY - h(0.005), p.y);
       const sl = smooth(-h(0.03), h(0.03), p.x);
-      return [[this.hips, 1 - t], [LEG[1].th, t * sl], [LEG[-1].th, t * (1 - sl)]];
+      return [[this.hips, 1 - t], [this.seat, t * (1 - fr)], [LEG[1].th, k * sl * (1 - tk)], [LEG[-1].th, k * (1 - sl) * (1 - tk)], [LEG[1].kn, k * sl * tk], [LEG[-1].kn, k * (1 - sl) * tk]];
     };
     // pelvis: mostly the hips; the lap and seat lean toward the thighs a little
     const wPelvis = (p) => {
@@ -498,16 +504,17 @@ export class Person {
     // ---- trunk (top garment) and pelvis (bottoms)
     const T = TORSO[sex]; const PV = PELVIS[sex];
     const sc = (keys, k = bw) => curve(keys.map(([y, v]) => [h(y), h(v) * k]));
-    const pa = sc(PV.a); const pb = sc(PV.b);
+    let pa = sc(PV.a); let pb = sc(PV.b);
     const smax = (x, y, k) => { const d = Math.max(k - Math.abs(x - y), 0) / k; return Math.max(x, y) + d * d * k * 0.25; };
     const ta0 = sc(T.a); const tb0 = sc(T.b);
-    const clear = (y) => (tucked ? 0 : smooth(h(0.62), h(0.56), y));
-    let ta = (y) => smax(ta0(y), pa(y) + h(0.007) * clear(y), h(0.012));
-    let tb = (y) => smax(tb0(y), pb(y) + h(0.009) * clear(y), h(0.012));
+    const clear = (y) => (tucked ? 0 : smooth(h(0.625), h(0.565), y));
+    let ta = tucked ? ta0 : (y) => smax(ta0(y), pa(y) + h(0.011) * clear(y), h(0.012));
+    let tb = tucked ? tb0 : (y) => smax(tb0(y), pb(y) + h(0.012) * clear(y), h(0.012));
+    if (tucked) { const p0 = pa; const q0 = pb; const k = (y) => smooth(h(0.55), h(0.585), y); pa = (y) => Math.max(p0(y), ta0(y) + h(0.005) * k(y)); pb = (y) => Math.max(q0(y), tb0(y) + h(0.005) * k(y)); }
     if (type === 'happi') { const a0 = ta; const b0 = tb; ta = (y) => a0(y) + h(0.006) * smooth(h(0.6), h(0.45), y); tb = (y) => b0(y) + h(0.005) * smooth(h(0.6), h(0.45), y); }
-    const tcz = curve([[h(0.8), 0], [h(0.847), -h(0.004)]]);
-    const tn = curve([[h(0.4), 2.45], [h(0.78), 2.5], [h(0.835), 2.2], [h(0.847), 2.0]]);
-    const bust = f ? h(old ? 0.006 : 0.011) : 0;
+    const tcz = curve([[h(0.8), 0], [h(0.848), -h(0.004)]]);
+    const tn = curve([[h(0.4), 2.45], [h(0.78), 2.5], [h(0.835), 2.2], [h(0.848), 2.0]]);
+    const bust = f ? h(old ? 0.005 : 0.009) : 0;
     const belly = !f && b > 1.04 ? h((b - 1) * 0.11) : 0;
     const trunkBump = (x, y, co) => {
       if (co <= 0) return 0;
@@ -516,9 +523,9 @@ export class Person {
       if (belly) z += belly * Math.exp(-((x / h(0.075)) ** 2) - (((y - h(0.565)) / h(0.065)) ** 2));
       return z * co ** 1.5;
     };
-    const trunk = new Surf((y) => [ta(y), tb(y), tcz(y), tn(y)], h(0.4), h(0.847), { bump: trunkBump, w: wTrunk });
-    const pelvisS = new Surf((y) => [pa(y), pb(y), 0, 2.4], h(0.428), h(0.597), {
-      bump: (x, y, co) => (co < 0 ? -h(0.004) * Math.exp(-(((y - h(0.47)) / h(0.04)) ** 2)) * (-co) ** 1.5 : 0),
+    const trunk = new Surf((y) => [ta(y), tb(y), tcz(y), tn(y)], h(0.4), h(0.848), { bump: trunkBump, w: wTrunk });
+    const pelvisS = new Surf((y) => [pa(y), pb(y), 0, 2.4], h(0.436), h(0.6), {
+      bump: (x, y, co) => (co < 0 ? -h(0.004) * Math.exp(-(((y - h(0.47)) / h(0.04)) ** 2)) * (-co) ** 1.5 : trunkBump(x, y, co)),
       w: wPelvis,
     });
     const hemY = tucked ? h(0.565) : jacket ? h(0.443) : type === 'happi' ? h(0.448) : h(0.468);
@@ -562,7 +569,7 @@ export class Person {
       collarBand(mat, { hgt: h(0.012) });
       both([[0.003, 0.835], [0.03, 0.839], [0.043, 0.826], [0.04, 0.812], [0.026, 0.806], [0.01, 0.81]], mat, { off: 0.0025, thick: 0.002 });
     };
-    const crewNeck = (mat) => band(0.832, 0.846, mat, { off: 0.001, thick: 0.003, rib: 0.12 });
+    const crewNeck = (mat) => band(0.837, 0.847, mat, { off: 0.001, thick: 0.0028, rib: 0.06, nu: 30 });
     const lapels = (yV, mat, { w = 0.06, notch = true, yTop = 0.836 } = {}) => {
       const k = f ? 0.88 : 1;
       both(notch
@@ -674,7 +681,7 @@ export class Person {
       case 'konbini': {
         const col = type === 'polo' ? accent : shade(top, 0.9);
         collarBand(col, { hgt: h(0.014) });
-        both([[0.006, 0.836], [0.034, 0.84], [0.046, 0.818], [0.016, 0.806]], col, { off: 0.0025, thick: 0.0022 });
+        both([[0.005, 0.837], [0.034, 0.843], [0.052, 0.816], [0.018, 0.799]], col, { off: 0.0025, thick: 0.0022 });
         placket(0.808, 0.765, shade(top, 0.95), 2, type === 'polo' ? pearl : C('#ffffff', 'gloss'));
         if (type === 'konbini') {
           band(0.612, 0.632, C('#ffffff'), { off: 0.0012, thick: 0.0008 });
@@ -754,11 +761,11 @@ export class Person {
         // band from the person's right shoulder, crossing over, then down the front edge to the hem
         onT([[-0.046, 0.834], [-0.028, 0.838], [0.022, yX], [0.022, 0.452], [0.0, 0.452], [0.0, yX + 0.004]], eri, { off: 0.0024, thick: 0.0028 });
         onT([[0.028, 0.838], [0.046, 0.834], [0.006, yX + 0.04], [-0.004, yX + 0.03]], eri, { off: 0.0012, thick: 0.0024 });
-        print('happi:daichi', 0.0018, 0.47, 0.0202, 0.64, 64, 384, (c, w, hh) => {
+        print('happi:daichi', 0.0018, 0.592, 0.0202, 0.66, 64, 236, (c, w, hh) => {
           c.fillStyle = hex(accent); c.fillRect(0, 0, w, hh);
           c.fillStyle = hex(shade(top, 0.9)); c.textAlign = 'center'; c.textBaseline = 'middle';
-          c.font = `800 ${w * 0.8}px ${PRINT_FONT}`;
-          ['だ', 'い', 'ち'].forEach((ch, i) => c.fillText(ch, w / 2, hh * (0.2 + i * 0.28)));
+          c.font = `800 ${w * 0.78}px ${PRINT_FONT}`;
+          ['だ', 'い', 'ち'].forEach((ch, i) => c.fillText(ch, w / 2, hh * (0.18 + i * 0.32)));
         }, { off: 0.0056, bg: hex(accent) });
         print(`happi:matsuri:${hex(accent)}`, -0.075, 0.6, 0.075, 0.75, 256, 256, (c, w, hh) => {
           c.fillStyle = hex(accent);
@@ -793,7 +800,7 @@ export class Person {
         if (fam) { c.font = `800 ${hh * 0.17}px ${PRINT_FONT}`; c.fillText(fam, w / 2, hh * 0.76, w * 0.9); }
       }, { off: 0.0066, bg: '#ffffff' });
     }
-    if (extras.has('scarf')) this._scarf(type, accent, { trunk, h, onT, both, neckR, yWaist });
+    if (extras.has('scarf')) this._scarf(type, accent, { trunk, h, onT, neckR, yWaist });
 
     // ---- bottoms: belt, skirt or trousers
     const belt = C(type === 'casual' ? '#5a3d2b' : '#2a2220', 'gloss');
@@ -805,12 +812,12 @@ export class Person {
     if (skirt) {
       const long = type === 'cardigan';
       const yHem = h(long ? 0.18 : 0.285);
-      const sa = curve([[yHem, h(long ? 0.125 : 0.128) * bw], [h(0.36), h(0.12) * bw], [h(0.45), h(0.109) * bw], [h(0.52), h(0.098) * bw], [h(0.6), pa(h(0.597)) + h(0.003)]]);
-      const sb = curve([[yHem, h(long ? 0.09 : 0.092) * bw], [h(0.45), h(0.077) * bw], [h(0.52), h(0.07) * bw], [h(0.6), pb(h(0.597)) + h(0.003)]]);
-      skirtS = new Surf((y) => [sa(y), sb(y), 0, 2.3], yHem, h(0.6), { w: wSkirt(h(0.54), h(0.43)) });
+      const sa = curve([[yHem, h(long ? 0.125 : 0.128) * bw], [h(0.36), h(0.12) * bw], [h(0.45), h(0.109) * bw], [h(0.52), h(0.098) * bw], [h(0.6), pa(h(0.6)) + h(0.003)]]);
+      const sb = curve([[yHem, h(long ? 0.09 : 0.092) * bw], [h(0.45), h(0.077) * bw], [h(0.52), h(0.07) * bw], [h(0.6), pb(h(0.6)) + h(0.003)]]);
+      skirtS = new Surf((y) => [Math.max(sa(y), pa(y) + h(0.0045)), Math.max(sb(y), pb(y) + h(0.0045)), 0, 2.4], yHem, h(0.6), { w: wSkirt(h(0.54), h(0.43)) });
       this.addW(skirtS.mesh({ nu: 32, nv: 10 }), bottom, skirtS.w);
       this.addW(skirtS.mesh({ nu: 32, nv: 3, y0: yHem, y1: yHem + h(0.05), off: -h(0.0018), flip: true }), shade(bottom, 0.5), skirtS.w);
-      band(0.575, 0.598, shade(bottom, 1.04), { surf: skirtS, off: 0.0008, thick: 0.002 });
+      if (tucked) band(0.575, 0.598, shade(bottom, 1.04), { surf: skirtS, off: 0.0008, thick: 0.002 });
       if (!long) onT([[-0.0012, 0.29], [0.0012, 0.29], [0.0012, 0.57], [-0.0012, 0.57]], shade(bottom, 0.75), { surf: skirtS, off: 0.0008 });
     }
     if (type === 'labcoat') {
@@ -835,20 +842,20 @@ export class Person {
         const prof = [[-0.468, 0.0165], [-0.445, 0.0185], [-0.4, 0.023], [-0.33, 0.0285], [-0.275, 0.026], [-0.2475, 0.0265], [-0.18, 0.031], [-0.08, 0.037], [0, 0.04], [0.025, 0.034], [0.038, 0.018], [0.042, 0.002]].map(([yy, r]) => [y(yy), h(r) * lw]);
         this.addW(latheSurf(prof, { cx: p0.x, cz: 0, zs: 0.98 }).mesh({ nu: 14, nv: 22 }), tightC, wl);
       } else {
-        const r0 = (f ? 0.048 : 0.05) * bw;
-        const prof = [[-0.467, 0.0345], [-0.44, 0.034], [-0.36, 0.0352], [-0.25, 0.038], [-0.15, 0.0425], [-0.06, r0 - 0.002], [0, r0], [0.03, r0 * 0.82], [0.045, r0 * 0.42], [0.05, 0.002]].map(([yy, r]) => [y(yy), h(r) * (yy > -0.25 ? 1 : lw)]);
-        const leg = latheSurf(prof, { cx: p0.x, zs: 0.96, w: wl });
+        const r0 = (f ? 0.047 : 0.049) * bw;
+        const prof = [[-0.467, 0.035], [-0.44, 0.0348], [-0.36, 0.0365], [-0.25, 0.0395], [-0.15, 0.0435], [-0.06, r0 - 0.0015], [0, r0], [0.03, r0 * 0.82], [0.045, r0 * 0.42], [0.05, 0.002]].map(([yy, r]) => [y(yy), h(r) * (yy > -0.25 ? 1 : lw)]);
+        const leg = latheSurf(prof, { cx: p0.x, zs: 1.0, w: wl });
         this.addW(leg.mesh({ nu: 14, nv: 20 }), bottom, wl);
         // inside of the hem
         this.addW(leg.mesh({ nu: 14, nv: 1, y0: y(-0.467), y1: y(-0.455), off: -h(0.0012), flip: true }), shade(bottom, 0.5), wl);
         // front crease (dressy trousers) or an outer seam (jeans, casual)
         const crease = jacket || type === 'shirt' || type === 'labcoat' || (type === 'cardigan' && f) || type === 'polo';
-        if (crease) this.addW(layerGeo(leg, panelShape(() => p0.x - h(0.0012), () => p0.x + h(0.0012), y(-0.462), y(-0.06), 1, 8), { off: h(0.0006) }), shade(bottom, luma(bottom) < 0.2 ? 1.5 : 0.86), wl);
+        if (crease) this.addW(layerGeo(leg, panelShape(() => p0.x - h(0.0012), () => p0.x + h(0.0012), y(-0.462), y(-0.06), 1, 8), { off: h(0.0006) }), shade(bottom, luma(bottom) < 0.2 ? 1.28 : 0.9), wl);
         if (type === 'casual') this.addW(bandGeo(leg, y(-0.464), y(-0.442), { off: h(0.0015), thick: h(0.002), nu: 16 }), shade(bottom, 1.18), wl);
       }
       // knee filler (keeps the knee round when it bends)
-      const kr = skirt ? h(0.025) * lw : h(0.0355) * lw;
-      this.add(new THREE.SphereGeometry(kr, 10, 7), skirt ? tightC : bottom, l.kn, [0, 0, -kr * 0.05]);
+      const kr = skirt ? h(0.025) * lw : h(0.0375) * lw;
+      this.add(new THREE.SphereGeometry(kr, 10, 7), skirt ? tightC : bottom, l.kn, [0, -kr * 0.1, -kr * 0.12]);
     }
     this._shoes(type, f, old, { h, skirt, tightC, skin, bottom, top });
 
@@ -922,7 +929,7 @@ export class Person {
     const palm = new THREE.SphereGeometry(1, 12, 9);
     this.add(palm, skin, hd, [-s * 0.0012 * k, -0.0245 * k, 0.0005 * k], [0, 0, 0], [0.0108 * k, 0.0235 * k, 0.0212 * k]);
     const kY = -0.04 * k;
-    const finger = (bone, r, len, y0, z) => { const g = new THREE.CapsuleGeometry(r, Math.max(1e-4, len - r * 1.2), 2, 6); this.add(g, skin, bone, [0, y0 - len / 2, z]); };
+    const finger = (bone, r, len, y0, z) => { const g = new THREE.CapsuleGeometry(r, Math.max(1e-4, len - r * 1.2), 2, 7); this.add(g, skin, bone, [0, y0 - len / 2, z], [0, 0, 0], [1.08, 1, 0.95]); };
     a.i1 = this.bone(hd, [0, kY, 0], 'index1');
     a.i2 = this.bone(a.i1, [0, -0.0145 * k, 0], 'index2');
     a.f1 = this.bone(hd, [0, kY, 0], 'fingers1');
@@ -934,9 +941,9 @@ export class Person {
       finger(a.f2, r * 0.95 * k, l2 * k, (0.016 - l1 + 0.0008) * k, z * k);
     }
     a.tb = this.bone(hd, [-s * 0.003 * k, -0.012 * k, 0.0135 * k], 'thumb');
-    const tdir = V(-s * 0.18, -0.78, 0.6).normalize();
+    const tdir = V(-s * 0.3, -0.86, 0.42).normalize();
     const tq = new THREE.Quaternion().setFromUnitVectors(V(0, -1, 0), tdir);
-    const tg = new THREE.CapsuleGeometry(0.0062 * k, 0.017 * k, 2, 6);
+    const tg = new THREE.CapsuleGeometry(0.0062 * k, 0.016 * k, 2, 7);
     tg.applyQuaternion(tq);
     this.add(tg, skin, a.tb, [tdir.x * 0.012 * k, tdir.y * 0.012 * k, tdir.z * 0.012 * k]);
     a.k = k;
@@ -1063,15 +1070,15 @@ export class Person {
     }
   }
 
-  _scarf(type, accent, { trunk, h, both, neckR, yWaist }) {
+  _scarf(type, accent, { trunk, h, onT, neckR, yWaist }) {
     const thick = type === 'cardigan';
     const r = neckR + h(thick ? 0.011 : 0.007);
     const ring = new THREE.TorusGeometry(r, h(thick ? 0.011 : 0.0075), 8, 20);
     ring.scale(1.05, 1, 0.95);
     this.add(ring, accent, this.chest, [0, h(0.84) - yWaist, -h(0.004)], [Math.PI / 2 - 0.12, 0, 0]);
     if (thick) {
-      both([[0.012, 0.832], [0.034, 0.83], [0.032, 0.68], [0.012, 0.682]], shade(accent, 0.97), { off: 0.004, thick: 0.006 });
-      for (let i = 0; i < 4; i++) both([[0.012, 0.684 + i * 0.002], [0.032, 0.682 + i * 0.002], [0.032, 0.6825 + i * 0.002], [0.012, 0.6845 + i * 0.002]], shade(accent, 0.8), { off: 0.0101 });
+      onT([[0.006, 0.834], [0.026, 0.832], [0.03, 0.72], [0.012, 0.722]], shade(accent, 0.97), { off: 0.004, thick: 0.006 });
+      onT([[-0.024, 0.832], [-0.006, 0.834], [-0.004, 0.745], [-0.022, 0.743]], shade(accent, 0.9), { off: 0.004, thick: 0.005 });
     } else {
       const k = trunk.at(trunk.th(h(0.022), h(0.825)), h(0.825), h(0.008));
       const knot = new THREE.SphereGeometry(h(0.0105), 8, 6); knot.scale(1.1, 0.9, 0.7); knot.translate(k.x, k.y, k.z);
@@ -1123,7 +1130,6 @@ export class Person {
       const cm = C(L.outfit?.top || '#1f2a44');
       const gold = C(L.outfit?.accent || '#c9a54a', 'gloss');
       this.add(new THREE.CylinderGeometry(R * 1.13, R * 1.04, R * 0.5, 24), cm, h, [0, hcy + R * 0.66, -R * 0.04], [-0.1, 0, 0], [1, 1, 1.02]);
-      this.add(new THREE.SphereGeometry(R * 1.13, 24, 6, 0, Math.PI * 2, 0, 0.5), cm, h, [0, hcy + R * 0.36, -R * 0.08], [-0.1, 0, 0], [1, 0.9, 1.02]);
       this.add(new THREE.CylinderGeometry(R * 1.055, R * 1.05, R * 0.2, 24, 1, true), shade(cm, 0.6), h, [0, hcy + R * 0.5, -R * 0.02], [-0.1, 0, 0]);
       this.add(new THREE.CylinderGeometry(R * 1.065, R * 1.065, R * 0.045, 24, 1, true), gold, h, [0, hcy + R * 0.58, -R * 0.03], [-0.1, 0, 0]);
       this.add(new THREE.CylinderGeometry(R * 0.98, R * 1.0, R * 0.05, 20, 1, false, -Math.PI / 2, Math.PI), C('#121315', 'gloss'), h, [0, hcy + R * 0.4, R * 0.2], [-0.32, 0, 0], [1, 1, 1.25]);
@@ -1223,7 +1229,7 @@ export class Person {
       if (p.w) {
         for (let i = 0; i < n; i++) {
           P.fromBufferAttribute(g.attributes.position, i);
-          const ws = p.w(P).filter(([, wt]) => wt > 1e-4).slice(0, 4);
+          const ws = p.w(P).filter(([, wt]) => wt > 1e-4).sort((a, b) => b[1] - a[1]).slice(0, 4);
           let sum = 0;
           for (const [, wt] of ws) sum += wt;
           ws.forEach(([bn, wt], j) => { si[i * 4 + j] = bn.userData.index; sw[i * 4 + j] = wt / sum; });
@@ -1281,6 +1287,7 @@ export class Person {
     this.hips.position.y = H * 0.505;
     this.chest.position.y = 0;
     for (const l of this.legs) { R(l.th); R(l.kn); R(l.ft); }
+    R(this.seat); this.seat.scale.set(1, 1, 1);
     for (const a of this.arms) {
       R(a.sh); a.ua.quaternion.identity(); a.ua.rotation.set(0.06, 0, a.s * this.restArm); R(a.el, -0.14); R(a.hd);
       a.pose.curl = 0.5; a.pose.index = 0.38; a.pose.thumb = 0.15;
@@ -1309,6 +1316,7 @@ export class Person {
       const hipJ = this.seatH + H * 0.025;
       const drop = clamp(Math.asin(clamp((hipJ - this.shinLen - this.ankleH) / this.thighLen, -1, 1)), -0.08, 0.5);
       for (const l of this.legs) { l.th.rotation.x = -Math.PI / 2 + drop; l.th.rotation.z = l.s * 0.03; l.kn.rotation.x = Math.PI / 2 - drop; }
+      this.seat.rotation.x = -Math.PI / 2 + drop; this.seat.scale.set(1, 0.3, 0.8);
       for (const a of this.arms) { a.ua.rotation.x = -0.4; a.el.rotation.x = -0.85; a.ua.rotation.z = a.s * 0.12; a.hd.rotation.y = -a.s * 0.25; a.pose.curl = 0.35; a.pose.index = 0.3; }
     }
 
@@ -1434,8 +1442,10 @@ export class Person {
         this.spine.rotation.x += 0.18 * e;
         return null;
       case 'think':
-        Rt.ua.rotation.x += -0.55 * e; Rt.ua.rotation.z += 0.25 * e;
-        Rt.el.rotation.x += -2.1 * e;
+        // hand to the chin, the other arm across the waist
+        Rt.ua.rotation.x += -1.02 * e; Rt.ua.rotation.z += -Rt.s * 0.42 * e;
+        Rt.el.rotation.x += -2.15 * e;
+        Rt.hd.rotation.y += Rt.s * 0.5 * e; Rt.hd.rotation.x += 0.3 * e;
         this.head.rotation.z += 0.14 * e; this.head.rotation.x += -0.06 * e;
         Lf.ua.rotation.x += -0.3 * e; Lf.el.rotation.x += -1.1 * e; Lf.ua.rotation.z += 0.35 * e;
         this._hand(Rt, { curl: 1.2, index: 0.7, thumb: -0.2 }, e);

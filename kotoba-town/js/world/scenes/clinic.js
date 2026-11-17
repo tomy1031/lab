@@ -203,7 +203,7 @@ export default function build({ setup }) {
   add(K.plant(1.1, 8), -0.2, 0, 3.48);
   add(K.plant(1.0, 13), -3.93, 0, 1.52);
   // outlets
-  for (const [x, z, ry] of [[X1 - 0.004, -0.9, -Math.PI / 2], [X0 + 0.004, 1.3, Math.PI / 2], [-1.7, ZS - 0.004, Math.PI], [-1.5, ZK + TW / 2 + 0.004, 0]]) add(outlet(M), x, 0.3, z, ry);
+  for (const [x, z, ry] of [[X1 - 0.004, -0.9, -Math.PI / 2], [X0 + 0.004, 1.3, Math.PI / 2], [-1.7, ZS - 0.004, Math.PI], [-3.45, ZK + TW / 2 + 0.004, 0]]) add(outlet(M), x, 0.3, z, ry);
   if (winter) add(humidifier(A, M), -0.95, 0, 1.55, 0.3);
 
   // ------------------------------------------------------------------ behind the learner: entrance, slippers, magazines, kids' corner
@@ -211,7 +211,7 @@ export default function build({ setup }) {
   ent.traverse((o) => { o.castShadow = false; });
   add(A.paint(4.2, 3.2, 90, (c, W, Hh) => drawView(c, W, Hh, env, 'street'), { glow: true }), (ENT.x0 + ENT.x1) / 2, GY + 1.5, ZS + 1.3, Math.PI);
   add(K.mesh(new THREE.PlaneGeometry(4.2, 1.3), M.pave, { rx: -Math.PI / 2, cast: false }), (ENT.x0 + ENT.x1) / 2, GY + 0.002, ZS + 0.65);
-  add(A.paint(1.2, 0.6, 220, (c, W, Hh) => drawDoormat(c, W, Hh, rain), { rx: -Math.PI / 2, receive: true }), (ENT.x0 + ENT.x1) / 2, GY + 0.006, ZS - 0.4);
+  add(A.paint(1.2, 0.6, 220, (c, W, Hh) => drawDoormat(c, W, Hh, rain), { rx: -Math.PI / 2, receive: true }), (ENT.x0 + ENT.x1) / 2, GY + 0.006, ZS - 0.4, Math.PI);
   add(shoeLocker(A, M), X1, GY, 3.3, -Math.PI / 2);
   add(umbrellaStand(M, rain), 0.88, GY, 3.52);
   add(slipperRack(A, M), 2.98, 0, 2.53);
@@ -258,7 +258,6 @@ export default function build({ setup }) {
   g.add(K.box(railX - X0, 0.03, 0.025, M.chrome, { x: (X0 + railX) / 2, y: 2.38, z: railZ, cast: false }));
   for (const [x, z] of [[railX, -2.6], [railX, -3.6], [railX, railZ], [-3.9, railZ]]) g.add(K.box(0.012, H - 2.4, 0.012, M.chrome, { x, y: 2.4, z, cast: false }));
   add(curtainBunch(M.curtain, 0.5, 2.05), railX, 0.32, -2.75, Math.PI / 2);
-  add(curtainBunch(M.curtain, 0.48, 2.05), -3.93, 0.32, railZ);
   add(frostedWindow(A, M, env), X0, FWIN.y0, (FWIN.z0 + FWIN.z1) / 2, Math.PI / 2);
   // east side: sink, glass cabinet, scale; eye chart by the door
   add(sinkUnit(A, M), xr, 0, -3.15, -Math.PI / 2);
@@ -546,6 +545,16 @@ function curtainBunch(m, w, h, n = 4) {
   return c;
 }
 
+/** Sliding door leaf (引き戸) of the consultation room, centred, bottom at y = 0, facing +z. */
+function slidingDoor(M) {
+  const d = new THREE.Group(); const w = 0.94; const h = 1.98;
+  d.add(K.box(w, h, 0.035, M.oak, { y: 0.01 }));
+  d.add(K.box(0.12, 0.95, 0.039, K.mat('#e4f0ef', { rough: 0.2 }), { x: w / 2 - 0.24, y: 0.75 })); // frosted slit
+  d.add(K.box(0.03, 0.26, 0.05, M.alu, { x: w / 2 - 0.07, y: 0.8 }));                                 // pull handle
+  d.add(K.box(w, 0.08, 0.04, M.oakSolid, { y: 0.01 }));
+  return d;
+}
+
 function basket(M) { // 荷物かご
   const b = new THREE.Group(); const m = K.mat('#c9a46e', { rough: 0.85 }); const d = K.mat('#a9824f', { rough: 0.85 });
   b.add(K.box(0.42, 0.02, 0.3, m));
@@ -579,7 +588,7 @@ function sinkUnit(A, M) { // hand-washing sink, back at z = 0, facing +z
   s.add(K.box(0.4, 0.004, 0.28, K.mat('#dbe4e6', { rough: 0.2 }), { y: 0.84, z: 0.25, cast: false }));
   s.add(K.cyl(0.014, 0.014, 0.16, M.chrome, { y: 0.84, z: 0.07 }, 8));
   s.add(K.box(0.025, 0.025, 0.13, M.chrome, { y: 0.98, z: 0.12 }));
-  s.add(K.box(0.46, 0.56, 0.012, K.mat('#cddde4', { rough: 0.05, metal: 0.6 }), { y: 1.12, z: 0.006 }));
+  s.add(K.box(0.46, 0.56, 0.012, K.mat('#dbe8ee', { rough: 0.12 }), { y: 1.12, z: 0.006 })); // mirror
   s.add(K.box(0.26, 0.3, 0.12, M.white, { x: -0.42, y: 1.15, z: 0.06 }));
   s.add(K.box(0.18, 0.012, 0.03, M.dark, { x: -0.42, y: 1.16, z: 0.12, cast: false }));
   put(s, pumpBottle(M, '#f2e6c9'), 0.17, 0.84, 0.1);
@@ -852,14 +861,15 @@ function frostedWindow(A, M, env) { // privacy glass above the bed, bottom at y 
 /** Automatic glass doors of the entrance, bottom at y = 0 (土間), facing +z (into the room). */
 function entranceDoors(A, M) {
   const e = new THREE.Group(); const w = ENT.x1 - ENT.x0; const h = ENT.h - GY;
-  e.add(K.box(w + 0.16, 0.14, 0.14, M.alu, { y: h - 0.02 }));
-  for (const sx of [-1, 1]) e.add(K.box(0.08, h, 0.14, M.alu, { x: sx * (w / 2 + 0.04) }));
+  const alu = K.mat('#cfd3d6', { rough: 0.4, metal: 0.15 }); // light satin (a metal finish reads black indoors)
+  e.add(K.box(w + 0.16, 0.14, 0.14, alu, { y: h - 0.02 }));
+  for (const sx of [-1, 1]) e.add(K.box(0.08, h, 0.14, alu, { x: sx * (w / 2 + 0.04) }));
   for (const s of [-1, 1]) {
     const leaf = new THREE.Group();
     const lw = w / 2;
     leaf.add(K.mesh(new THREE.PlaneGeometry(lw - 0.06, h - 0.1), M.glass, { y: (h - 0.04) / 2, cast: false, receive: false }));
-    for (const y of [0.0, h - 0.07]) leaf.add(K.box(lw, 0.05, 0.05, M.alu, { y }));
-    for (const x of [-lw / 2 + 0.02, lw / 2 - 0.02]) leaf.add(K.box(0.04, h - 0.04, 0.05, M.alu, { x }));
+    for (const y of [0.0, h - 0.07]) leaf.add(K.box(lw, 0.05, 0.05, alu, { y }));
+    for (const x of [-lw / 2 + 0.02, lw / 2 - 0.02]) leaf.add(K.box(0.04, h - 0.04, 0.05, alu, { x }));
     leaf.add(A.text([{ t: '自動ドア', scale: 0.9 }], 0.22, 0.06, { bg: '#ffffff', fg: '#2f6b55', radius: 0.4, ppm: 700, y: 1.28, z: 0.03 }));
     put(e, leaf, s * lw / 2, 0, s * 0.02);
   }
