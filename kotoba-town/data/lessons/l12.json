@@ -1,0 +1,1335 @@
+{
+  "lesson": 12,
+  "titleJa": "どうでしたか",
+  "titleEn": "How was it? Which is better?",
+  "summaryEn": "Talk about how things were (たのしかったです, にぎやかでした, あめじゃ ありませんでした) and compare: AはBより, AとBと どちらが, ～の ほうが, ～が いちばん.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "N／な-adj でした・じゃ ありませんでした",
+      "meaningEn": "past of noun and な-adjective sentences: was / was not",
+      "exampleJa": "きのうは あめでした。おまつりは にぎやかでした。",
+      "exampleEn": "It rained yesterday. The festival was lively."
+    },
+    {
+      "id": "g2",
+      "pattern": "い-adj ～かったです・～くなかったです",
+      "meaningEn": "past of い-adjectives: drop い, add かったです / くなかったです (いい → よかったです)",
+      "exampleJa": "りょこうは たのしかったです。あまり たかくなかったです。",
+      "exampleEn": "The trip was fun. It was not very expensive."
+    },
+    {
+      "id": "g3",
+      "pattern": "N1は N2より adj です",
+      "meaningEn": "N1 is more … than N2 (より marks the thing you compare with)",
+      "exampleJa": "この ネクタイは その ネクタイより やすいです。",
+      "exampleEn": "This tie is cheaper than that tie."
+    },
+    {
+      "id": "g4",
+      "pattern": "N1と N2と どちらが adj ですか／N の ほうが adj です",
+      "meaningEn": "which of the two is more …? — N is more … (どちらも = both)",
+      "exampleJa": "なつと ふゆと どちらが すきですか。…なつの ほうが すきです。",
+      "exampleEn": "Which do you like better, summer or winter? — I like summer better."
+    },
+    {
+      "id": "g5",
+      "pattern": "N1[の 中]で 何／どこ／だれ／いつが いちばん adj ですか",
+      "meaningEn": "what / where / who / when is the most … in N1? — N2が いちばん …です",
+      "exampleJa": "きせつで いつが いちばん すきですか。…はるが いちばん すきです。",
+      "exampleEn": "Which season do you like best? — I like spring best."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "お祭り",
+      "kana": "おまつり",
+      "en": "festival"
+    },
+    {
+      "ja": "天気",
+      "kana": "てんき",
+      "en": "weather"
+    },
+    {
+      "ja": "雨",
+      "kana": "あめ",
+      "en": "rain"
+    },
+    {
+      "ja": "季節",
+      "kana": "きせつ",
+      "en": "season"
+    },
+    {
+      "ja": "春",
+      "kana": "はる",
+      "en": "spring"
+    },
+    {
+      "ja": "夏",
+      "kana": "なつ",
+      "en": "summer"
+    },
+    {
+      "ja": "秋",
+      "kana": "あき",
+      "en": "autumn"
+    },
+    {
+      "ja": "冬",
+      "kana": "ふゆ",
+      "en": "winter"
+    },
+    {
+      "ja": "多い",
+      "kana": "おおい",
+      "en": "many, a lot (people)"
+    },
+    {
+      "ja": "少ない",
+      "kana": "すくない",
+      "en": "few, little"
+    },
+    {
+      "ja": "涼しい",
+      "kana": "すずしい",
+      "en": "cool"
+    },
+    {
+      "ja": "暖かい",
+      "kana": "あたたかい",
+      "en": "warm"
+    },
+    {
+      "ja": "甘い",
+      "kana": "あまい",
+      "en": "sweet"
+    },
+    {
+      "ja": "辛い",
+      "kana": "からい",
+      "en": "spicy, hot"
+    },
+    {
+      "ja": "近い",
+      "kana": "ちかい",
+      "en": "near"
+    },
+    {
+      "ja": "遠い",
+      "kana": "とおい",
+      "en": "far"
+    },
+    {
+      "ja": "速い",
+      "kana": "はやい",
+      "en": "fast"
+    },
+    {
+      "ja": "簡単[な]",
+      "kana": "かんたん[な]",
+      "en": "easy, simple"
+    },
+    {
+      "ja": "どちら",
+      "kana": "どちら",
+      "en": "which (of two)"
+    },
+    {
+      "ja": "どちらも",
+      "kana": "どちらも",
+      "en": "both"
+    },
+    {
+      "ja": "いちばん",
+      "kana": "いちばん",
+      "en": "the most, best"
+    },
+    {
+      "ja": "ずっと",
+      "kana": "ずっと",
+      "en": "by far"
+    },
+    {
+      "ja": "おかえりなさい",
+      "kana": "おかえりなさい",
+      "en": "welcome back"
+    },
+    {
+      "ja": "疲れました",
+      "kana": "つかれました",
+      "en": "I'm tired"
+    },
+    {
+      "ja": "誕生日",
+      "kana": "たんじょうび",
+      "en": "birthday"
+    }
+  ],
+  "tipsEn": [
+    "「どうでしたか」 is the everyday way to ask about a trip, a party or a weekend. A short honest answer is fine: たのしかったです, たいへんでした.",
+    "いい becomes よかったです in the past — never いかったです or いいでした.",
+    "Summer and autumn festivals (おまつり) fill parks and shrines with food stalls: やきそば, たこやき, かきごおり."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-12/grammar/",
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-12.html",
+      "https://gogakueducation.com/?p=4462"
+    ],
+    "notesEn": "Lesson 12 adds the past of noun and な-adjective sentences (でした, じゃ ありませんでした) and of い-adjectives (～かったです, ～くなかったです, with いい → よかったです), and three comparison patterns: N1は N2より adj, N1と N2と どちらが adj ですか answered with ～の ほうが (or どちらも), and N1[の 中]で 何／どこ／だれ／いつが いちばん adj. Its natural situations are reporting how something was — a trip, a festival, a party, the weather — and choosing between two things in a shop. Typical mistakes are treating い-adjectives like nouns (✗ おいしいでした, ✗ たのしいじゃ ありませんでした), ✗ いかったです for よかったです, attaching より to the wrong item, answering a どちら question without ～の ほうが, and using どちら where いちばん with 何／どこ／だれ／いつ is needed for three or more. Khmer adjectives do not change for tense and comparison is made with a word placed after the adjective, so both the adjective endings and the order \"B より A\" need many short repetitions. The three scenes are original: an evening chat after the summer festival in the park, choosing a birthday tie for the manager at the department store, and reporting back at the office after a week in Osaka."
+  },
+  "variants": [
+    {
+      "id": "l12a",
+      "titleJa": "おまつりは どうでしたか",
+      "titleEn": "How was the festival?",
+      "scene": "park",
+      "setup": {
+        "time": "evening",
+        "season": "summer",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "The summer festival in the park is winding down and the food stalls are closing. Hara-san, who walks here every day, spots you on the path and wants to hear all about your day.",
+      "roleEn": "You spent the day at the festival. Tell her honestly how it was — it does not have to be all good.",
+      "missionsEn": [
+        {
+          "text": "Say how the festival and the food were",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Compare it with festivals in your country (～より)",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Say which is hotter: your country or Japan",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Say which season you like best",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "hara"
+      ],
+      "positions": {
+        "hara": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "こんばんは。今日の お祭りは にぎやかでしたね。",
+              "kana": "こんばんは。きょうの おまつりは にぎやかでしたね。",
+              "en": "Good evening. Today's festival was lively, wasn't it?",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "hara",
+              "ja": "お祭りは どうでしたか。",
+              "kana": "おまつりは どうでしたか。",
+              "en": "How was the festival for you?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her how the festival was for you — fun, lively, crowded, tiring… Use the past form.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "＿＿かったです。／＿＿でした。",
+            "modelAnswers": [
+              "とても たのしかったです。",
+              "にぎやかでした。おもしろかったです。",
+              "ひとが おおかったですから、あまり たのしくなかったです。"
+            ],
+            "branches": [
+              {
+                "id": "enjoyed",
+                "whenEn": "Learner says it was fun, good, interesting, lively or beautiful (overall positive).",
+                "next": "n2_good",
+                "exampleJa": "とても たのしかったです。"
+              },
+              {
+                "id": "not_much",
+                "whenEn": "Learner says it was not much fun, too crowded, too hot or tiring (overall negative or mixed).",
+                "next": "n2_bad",
+                "exampleJa": "あまり たのしくなかったです。"
+              }
+            ],
+            "fallback": "n2_good"
+          }
+        },
+        {
+          "id": "n2_good",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "よかったですね。わたしも 楽しかったですよ。",
+              "kana": "よかったですね。わたしも たのしかったですよ。",
+              "en": "I'm glad. I had fun too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_bad",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。人が とても 多かったですからね。",
+              "kana": "そうですか。ひとが とても おおかったですからね。",
+              "en": "I see. Well, there were an awful lot of people.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "food_stall",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "お祭りの 食べ物は どうでしたか。おいしかったですか。",
+              "kana": "おまつりの たべものは どうでしたか。おいしかったですか。",
+              "en": "How was the festival food? Was it good?",
+              "gesture": "point",
+              "target": "food_stall"
+            }
+          ],
+          "listen": {
+            "promptEn": "Did you eat at the stalls? Say what it was like — tasty, not so tasty, expensive, sweet…",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿を たべました。＿＿かったです。",
+            "modelAnswers": [
+              "やきそばを たべました。おいしかったです。",
+              "あまり おいしくなかったです。たかかったです。",
+              "なにも たべませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "tasty",
+                "whenEn": "Learner says the food was good (tasty, sweet, cheap…).",
+                "next": "n4_yum",
+                "exampleJa": "やきそばを たべました。おいしかったです。"
+              },
+              {
+                "id": "not_good_or_nothing",
+                "whenEn": "Learner says the food was not good or was expensive, or that they ate nothing.",
+                "next": "n4_meh",
+                "exampleJa": "あまり おいしくなかったです。"
+              }
+            ],
+            "fallback": "n4_yum"
+          }
+        },
+        {
+          "id": "n4_yum",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "いいですね。わたしは たこやきを 食べました。熱かったです！",
+              "kana": "いいですね。わたしは たこやきを たべました。あつかったです！",
+              "en": "Lovely. I had takoyaki. It was hot!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_meh",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。お祭りの 食べ物は 少し 高かったですね。",
+              "kana": "そうですか。おまつりの たべものは すこし たかかったですね。",
+              "en": "I see. The festival food was a little expensive, wasn't it?",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "お国の お祭りは どうですか。日本の お祭りより にぎやかですか。",
+              "kana": "おくにの おまつりは どうですか。にほんの おまつりより にぎやかですか。",
+              "en": "What are festivals like in your country? Are they livelier than Japanese festivals?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Compare festivals at home with Japanese ones. Which are livelier? Use ～より or ～の ほうが.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "くにの おまつりは にほんの おまつりより ＿＿です。",
+            "modelAnswers": [
+              "はい、くにの おまつりは にほんの おまつりより にぎやかです。",
+              "いいえ、にほんの おまつりの ほうが にぎやかです。"
+            ],
+            "branches": [
+              {
+                "id": "home_livelier",
+                "whenEn": "Learner says festivals in their country are livelier (or bigger, more fun) than Japanese ones.",
+                "next": "n6_home",
+                "exampleJa": "はい、にほんの おまつりより にぎやかです。"
+              },
+              {
+                "id": "japan_livelier_or_same",
+                "whenEn": "Learner says Japanese festivals are livelier, or that both are the same, or that there are no such festivals at home.",
+                "next": "n6_japan",
+                "exampleJa": "いいえ、にほんの おまつりの ほうが にぎやかです。"
+              }
+            ],
+            "fallback": "n6_japan"
+          }
+        },
+        {
+          "id": "n6_home",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "へえ、日本より にぎやかですか。すごいですね。",
+              "kana": "へえ、にほんより にぎやかですか。すごいですね。",
+              "en": "Oh, livelier than in Japan? That's amazing.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_japan",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。日本の お祭りは 音楽も にぎやかですからね。",
+              "kana": "そうですか。にほんの おまつりは おんがくも にぎやかですからね。",
+              "en": "I see. Well, the music at Japanese festivals is lively too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "今日は 暑かったですね。お国と 日本と どちらが 暑いですか。",
+              "kana": "きょうは あつかったですね。おくにと にほんと どちらが あついですか。",
+              "en": "It was hot today, wasn't it? Which is hotter, your country or Japan?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Which is hotter — your country or Japan? Answer with ～の ほうが (or どちらも for both).",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿の ほうが あついです。／どちらも あついです。",
+            "modelAnswers": [
+              "わたしの くにの ほうが あついです。",
+              "にほんの なつの ほうが あついです。",
+              "どちらも あついです。"
+            ],
+            "branches": [
+              {
+                "id": "home_hotter",
+                "whenEn": "Learner says their own country is hotter.",
+                "next": "n8_home",
+                "exampleJa": "くにの ほうが あついです。"
+              },
+              {
+                "id": "japan_or_both",
+                "whenEn": "Learner says Japan is hotter, or that both are equally hot.",
+                "next": "n8_japan",
+                "exampleJa": "どちらも あついです。"
+              }
+            ],
+            "fallback": "n8_home"
+          }
+        },
+        {
+          "id": "n8_home",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。日本より 暑いですか。たいへんですね。",
+              "kana": "そうですか。にほんより あついですか。たいへんですね。",
+              "en": "Really? Hotter than Japan? That must be hard.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_japan",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "えっ、そうですか。日本の 夏は とても 暑いですからね。",
+              "kana": "えっ、そうですか。にほんの なつは とても あついですからね。",
+              "en": "Oh, really? Well, the Japanese summer is very hot.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "わたしは 春が いちばん 好きです。季節で いつが いちばん 好きですか。",
+              "kana": "わたしは はるが いちばん すきです。きせつで いつが いちばん すきですか。",
+              "en": "I like spring best. Which season do you like best?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Which season do you like best? はる spring, なつ summer, あき autumn, ふゆ winter. You can add why (～から).",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿が いちばん すきです。",
+            "modelAnswers": [
+              "あきが いちばん すきです。",
+              "はるが いちばん すきです。さくらが きれいですから。",
+              "あきが いちばん すきです。すずしいですから。"
+            ],
+            "branches": [
+              {
+                "id": "spring",
+                "whenEn": "Learner likes spring best.",
+                "next": "end_spring",
+                "exampleJa": "はるが いちばん すきです。"
+              },
+              {
+                "id": "other_season",
+                "whenEn": "Learner likes summer, autumn or winter best (or another time of year).",
+                "next": "end_other",
+                "exampleJa": "あきが いちばん すきです。"
+              }
+            ],
+            "fallback": "end_other"
+          }
+        },
+        {
+          "id": "end_spring",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "わたしもです！来年の 春、ここで 桜を 見ましょう。",
+              "kana": "わたしもです！らいねんの はる、ここで さくらを みましょう。",
+              "en": "Me too! Next spring, let's see the cherry blossoms here.",
+              "gesture": "point",
+              "target": "sakura"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_other",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "いいですね。じゃ、その 季節に また ここで 会いましょう。",
+              "kana": "いいですね。じゃ、その きせつに また ここで あいましょう。",
+              "en": "Lovely. Then let's meet here again in that season.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l12b",
+      "titleJa": "どちらが いいですか",
+      "titleEn": "Which one is better?",
+      "scene": "depato",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "Next week is department manager Ogawa's birthday. On a rainy lunch break, you and Aoki are at the department store to choose the team's present: the blue tie or the red one?",
+      "roleEn": "You are Aoki's colleague. Look at the two ties in front of you, compare them, and decide.",
+      "missionsEn": [
+        {
+          "text": "Say which tie you think is better",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Ask the clerk which one is cheaper or more expensive",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Choose one and say why, comparing with ～より",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Say which food you like best",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "nishimura"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "nishimura": "clerk"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "tie_blue",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "部長の 誕生日の プレゼントですね。去年は ワインでした。",
+              "kana": "ぶちょうの たんじょうびの プレゼントですね。きょねんは ワインでした。",
+              "en": "So, the manager's birthday present. Last year it was wine.",
+              "gesture": "think"
+            },
+            {
+              "who": "nishimura",
+              "ja": "いらっしゃいませ。ネクタイは いかがですか。",
+              "kana": "いらっしゃいませ。ネクタイは いかがですか。",
+              "en": "Welcome. How about a tie?",
+              "gesture": "point",
+              "target": "tie_blue"
+            },
+            {
+              "who": "aoki",
+              "ja": "青い ネクタイと 赤い ネクタイと どちらが いいですか。",
+              "kana": "あおい ネクタイと あかい ネクタイと どちらが いいですか。",
+              "en": "Which is better, the blue tie or the red tie?",
+              "gesture": "point",
+              "target": "tie_red"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the two ties. Tell Aoki which one you think is better (～の ほうが), or that both are good (どちらも).",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿ ネクタイの ほうが いいです。／どちらも いいです。",
+            "modelAnswers": [
+              "あおい ネクタイの ほうが いいです。",
+              "あかい ネクタイの ほうが すてきです。",
+              "どちらも いいですね。"
+            ],
+            "branches": [
+              {
+                "id": "blue",
+                "whenEn": "Learner prefers the blue tie.",
+                "next": "n2_blue",
+                "exampleJa": "あおい ネクタイの ほうが いいです。"
+              },
+              {
+                "id": "red",
+                "whenEn": "Learner prefers the red tie.",
+                "next": "n2_red",
+                "exampleJa": "あかい ネクタイの ほうが いいです。"
+              },
+              {
+                "id": "both",
+                "whenEn": "Learner says both are good or cannot decide.",
+                "next": "n2_both",
+                "exampleJa": "どちらも いいです。"
+              }
+            ],
+            "fallback": "n2_both"
+          }
+        },
+        {
+          "id": "n2_blue",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですね。青い ネクタイの ほうが すてきですね。",
+              "kana": "そうですね。あおい ネクタイの ほうが すてきですね。",
+              "en": "You're right. The blue tie is nicer.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_red",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "赤い ネクタイですか。おもしろいですね！",
+              "kana": "あかい ネクタイですか。おもしろいですね！",
+              "en": "The red tie? Now that's interesting!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_both",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですね。どちらも すてきですね……。",
+              "kana": "そうですね。どちらも すてきですね……。",
+              "en": "True. They're both nice…",
+              "gesture": "think"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "高いですか。安いですか。わかりませんね……。",
+              "kana": "たかいですか。やすいですか。わかりませんね……。",
+              "en": "Are they expensive? Cheap? We can't tell…",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "There are no price tags. Ask the clerk which tie is cheaper — or which is more expensive.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "あおい ネクタイと あかい ネクタイと どちらが ＿＿ですか。",
+            "modelAnswers": [
+              "すみません。あおい ネクタイと あかい ネクタイと どちらが やすいですか。",
+              "すみません。どちらが たかいですか。"
+            ],
+            "branches": [
+              {
+                "id": "asks_cheaper",
+                "whenEn": "Learner asks which tie is cheaper.",
+                "next": "n4_cheap",
+                "exampleJa": "あおい ネクタイと あかい ネクタイと どちらが やすいですか。"
+              },
+              {
+                "id": "asks_expensive",
+                "whenEn": "Learner asks which tie is more expensive, or simply asks the prices.",
+                "next": "n4_exp",
+                "exampleJa": "どちらが たかいですか。"
+              }
+            ],
+            "fallback": "n4_cheap"
+          }
+        },
+        {
+          "id": "n4_cheap",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "青い ネクタイの ほうが 安いです。赤い ネクタイより 3,000円 安いです。",
+              "kana": "あおい ネクタイの ほうが やすいです。あかい ネクタイより さんぜんえん やすいです。",
+              "en": "The blue tie is cheaper. It is 3,000 yen cheaper than the red one.",
+              "gesture": "point",
+              "target": "tie_blue",
+              "tts": "あおい ネクタイの ほうが やすいです。あかい ネクタイより さんぜんえん やすいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_exp",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "赤い ネクタイの ほうが 高いです。青い ネクタイより 3,000円 高いです。",
+              "kana": "あかい ネクタイの ほうが たかいです。あおい ネクタイより さんぜんえん たかいです。",
+              "en": "The red tie is more expensive. It is 3,000 yen more than the blue one.",
+              "gesture": "point",
+              "target": "tie_red",
+              "tts": "あかい ネクタイの ほうが たかいです。あおい ネクタイより さんぜんえん たかいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "じゃ、どちらを 買いますか。",
+              "kana": "じゃ、どちらを かいますか。",
+              "en": "So, which one shall we buy?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Decide! Say which tie you will buy and why, comparing it with the other one (～より ～ですから).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "＿＿ ネクタイを かいます。＿＿ ネクタイより ＿＿ですから。",
+            "modelAnswers": [
+              "あおい ネクタイを かいます。あかい ネクタイより やすいですから。",
+              "あかい ネクタイを かいます。あおい ネクタイより すてきですから。"
+            ],
+            "branches": [
+              {
+                "id": "buys_blue",
+                "whenEn": "Learner chooses the blue (cheaper) tie.",
+                "next": "n6_blue",
+                "exampleJa": "あおい ネクタイを かいます。あかい ネクタイより やすいですから。"
+              },
+              {
+                "id": "buys_red",
+                "whenEn": "Learner chooses the red (more expensive) tie.",
+                "next": "n6_red",
+                "exampleJa": "あかい ネクタイを かいます。あおい ネクタイより すてきですから。"
+              }
+            ],
+            "fallback": "n6_blue"
+          }
+        },
+        {
+          "id": "n6_blue",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね。じゃ、青い ネクタイを ください。",
+              "kana": "いいですね。じゃ、あおい ネクタイを ください。",
+              "en": "Good idea. We'll take the blue tie, please.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_red",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "高いですが、すてきですね。じゃ、赤い ネクタイを ください。",
+              "kana": "たかいですが、すてきですね。じゃ、あかい ネクタイを ください。",
+              "en": "It's expensive, but it is lovely. We'll take the red tie, please.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "かしこまりました。",
+              "kana": "かしこまりました。",
+              "en": "Certainly.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "aoki",
+              "ja": "来週は 部長の パーティーですね。料理で 何が いちばん 好きですか。",
+              "kana": "らいしゅうは ぶちょうの パーティーですね。りょうりで なにが いちばん すきですか。",
+              "en": "The manager's party is next week. What food do you like best?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Aoki is planning the party menu. Tell her which food you like best (～が いちばん).",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "＿＿が いちばん すきです。",
+            "modelAnswers": [
+              "すしが いちばん すきです。",
+              "にほんりょうりで てんぷらが いちばん すきです。",
+              "カレーが いちばん すきです。"
+            ],
+            "branches": [
+              {
+                "id": "japanese_food",
+                "whenEn": "Learner names Japanese food or a Japanese dish (sushi, tempura, ramen, sukiyaki…).",
+                "next": "n8_jp",
+                "exampleJa": "すしが いちばん すきです。"
+              },
+              {
+                "id": "other_food",
+                "whenEn": "Learner names any other cuisine or dish.",
+                "next": "n8_other",
+                "exampleJa": "カレーが いちばん すきです。"
+              }
+            ],
+            "fallback": "n8_other"
+          }
+        },
+        {
+          "id": "n8_jp",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！部長も 日本料理が いちばん 好きですよ。",
+              "kana": "いいですね！ぶちょうも にほんりょうりが いちばん すきですよ。",
+              "en": "Great! The manager likes Japanese food best, too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_other",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいですね！じゃ、パーティーの 料理は それですね。",
+              "kana": "いいですね！じゃ、パーティーの りょうりは それですね。",
+              "en": "Nice! Then that's what we'll have at the party.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "プレゼントです。どうぞ。どうも ありがとう ございました。",
+              "kana": "プレゼントです。どうぞ。どうも ありがとう ございました。",
+              "en": "Here is your present. Thank you very much.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l12c",
+      "titleJa": "おおさかは どうでしたか",
+      "titleEn": "How was Osaka?",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "You are back at your desk after a week of work at the Osaka office. Department manager Ogawa and Fujita both want to know how it went.",
+      "roleEn": "You spent last week working in Osaka. Decide for yourself how the weather, the food and the city were.",
+      "missionsEn": [
+        {
+          "text": "Say how the trip and the weather were",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Compare Osaka's food and bustle with Tokyo's",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say what was the most interesting thing in Osaka",
+          "grammar": [
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "ogawa",
+        "fujita"
+      ],
+      "positions": {
+        "ogawa": "npc1",
+        "fujita": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "おはよう ございます。おかえりなさい。",
+              "kana": "おはよう ございます。おかえりなさい。",
+              "en": "Good morning. Welcome back.",
+              "gesture": "nod"
+            },
+            {
+              "who": "ogawa",
+              "ja": "大阪は どうでしたか。",
+              "kana": "おおさかは どうでしたか。",
+              "en": "How was Osaka?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the manager how your week in Osaka was — fun, busy, interesting, hard… Use the past form.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "＿＿かったです。／＿＿でした。",
+            "modelAnswers": [
+              "たのしかったです。",
+              "いそがしかったですが、おもしろかったです。",
+              "たいへんでした。いそがしかったです。"
+            ],
+            "branches": [
+              {
+                "id": "good",
+                "whenEn": "Learner says it was fun, good or interesting (overall positive, even if busy).",
+                "next": "n2_good",
+                "exampleJa": "いそがしかったですが、たのしかったです。"
+              },
+              {
+                "id": "hard",
+                "whenEn": "Learner says it was hard, tiring or not enjoyable (overall negative).",
+                "next": "n2_hard",
+                "exampleJa": "たいへんでした。"
+              }
+            ],
+            "fallback": "n2_good"
+          }
+        },
+        {
+          "id": "n2_good",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "それは よかったですね。",
+              "kana": "それは よかったですね。",
+              "en": "I'm glad to hear that.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_hard",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。たいへんでしたね。",
+              "kana": "そうですか。たいへんでしたね。",
+              "en": "I see. That was hard on you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "先週 東京は 毎日 雨でした。大阪も 雨でしたか。",
+              "kana": "せんしゅう とうきょうは まいにち あめでした。おおさかも あめでしたか。",
+              "en": "It rained every day in Tokyo last week. Was it rainy in Osaka too?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Was it rainy in Osaka too? Answer with a noun in the past: ～でした / ～じゃ ありませんでした.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "はい、あめでした。／いいえ、あめじゃ ありませんでした。",
+            "modelAnswers": [
+              "いいえ、あめじゃ ありませんでした。いい てんきでした。",
+              "はい、おおさかも あめでした。"
+            ],
+            "branches": [
+              {
+                "id": "fine",
+                "whenEn": "Learner says it was not rainy / the weather was good.",
+                "next": "n4_fine",
+                "exampleJa": "いいえ、あめじゃ ありませんでした。"
+              },
+              {
+                "id": "rainy",
+                "whenEn": "Learner says it was rainy or the weather was bad (rain, cloudy, cold).",
+                "next": "n4_rain",
+                "exampleJa": "はい、おおさかも あめでした。"
+              }
+            ],
+            "fallback": "n4_fine"
+          }
+        },
+        {
+          "id": "n4_fine",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。東京は 寒かったですよ。",
+              "kana": "いいですね。とうきょうは さむかったですよ。",
+              "en": "Lucky you. It was cold in Tokyo.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_rain",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、大阪も ですか。ざんねんでしたね。",
+              "kana": "えっ、おおさかも ですか。ざんねんでしたね。",
+              "en": "What, Osaka too? That was a pity.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "大阪の 食べ物は どうでしたか。東京より 安かったですか。",
+              "kana": "おおさかの たべものは どうでしたか。とうきょうより やすかったですか。",
+              "en": "How was the food in Osaka? Was it cheaper than in Tokyo?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "How was the food in Osaka? Was it cheaper than in Tokyo? (Negative past: ～くなかったです.)",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "はい、とうきょうより ＿＿かったです。／いいえ、あまり ＿＿くなかったです。",
+            "modelAnswers": [
+              "はい、とうきょうより やすかったです。おいしかったです。",
+              "いいえ、あまり やすくなかったです。",
+              "おいしかったですが、たかかったです。"
+            ],
+            "branches": [
+              {
+                "id": "cheaper",
+                "whenEn": "Learner says the food was cheaper than in Tokyo (or cheap and good).",
+                "next": "n6_cheap",
+                "exampleJa": "はい、とうきょうより やすかったです。"
+              },
+              {
+                "id": "not_cheaper",
+                "whenEn": "Learner says it was not cheaper, or was expensive.",
+                "next": "n6_not",
+                "exampleJa": "いいえ、あまり やすくなかったです。"
+              }
+            ],
+            "fallback": "n6_cheap"
+          }
+        },
+        {
+          "id": "n6_cheap",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね。大阪の たこやきは 有名ですからね。",
+              "kana": "いいですね。おおさかの たこやきは ゆうめいですからね。",
+              "en": "Nice. Osaka's takoyaki is famous, after all.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_not",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "えっ、そうですか。大阪も 高いですね。",
+              "kana": "えっ、そうですか。おおさかも たかいですね。",
+              "en": "Oh, really? So Osaka is expensive too.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "東京と 大阪と どちらが にぎやかですか。",
+              "kana": "とうきょうと おおさかと どちらが にぎやかですか。",
+              "en": "Which is livelier, Tokyo or Osaka?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Which city is livelier — Tokyo or Osaka? Answer with ～の ほうが (or どちらも for both).",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿の ほうが にぎやかです。／どちらも にぎやかです。",
+            "modelAnswers": [
+              "おおさかの ほうが にぎやかです。",
+              "とうきょうの ほうが にぎやかです。",
+              "どちらも にぎやかです。"
+            ],
+            "branches": [
+              {
+                "id": "osaka",
+                "whenEn": "Learner says Osaka is livelier.",
+                "next": "n8_osaka",
+                "exampleJa": "おおさかの ほうが にぎやかです。"
+              },
+              {
+                "id": "tokyo_or_both",
+                "whenEn": "Learner says Tokyo is livelier, or that both are lively.",
+                "next": "n8_tokyo",
+                "exampleJa": "とうきょうの ほうが にぎやかです。"
+              }
+            ],
+            "fallback": "n8_tokyo"
+          }
+        },
+        {
+          "id": "n8_osaka",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "ほう、そうですか。大阪は 元気な 町ですからね。",
+              "kana": "ほう、そうですか。おおさかは げんきな まちですからね。",
+              "en": "Oh, is that so? Well, Osaka is an energetic city.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_tokyo",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですね。東京は 人が 多いですからね。",
+              "kana": "そうですね。とうきょうは ひとが おおいですからね。",
+              "en": "Yes. Tokyo does have a lot of people.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "大阪で 何が いちばん おもしろかったですか。",
+              "kana": "おおさかで なにが いちばん おもしろかったですか。",
+              "en": "What was the most interesting thing in Osaka?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "What was the most interesting thing in Osaka — the castle, the food, the people, the work? (～が いちばん ～かったです)",
+            "grammar": [
+              "g5",
+              "g2"
+            ],
+            "hintJa": "＿＿が いちばん おもしろかったです。",
+            "modelAnswers": [
+              "おおさかじょうが いちばん おもしろかったです。",
+              "たべものが いちばん よかったです。",
+              "しごとが いちばん おもしろかったです。"
+            ],
+            "branches": [
+              {
+                "id": "sights_or_food",
+                "whenEn": "Learner names a place, the food, the people or anything other than work.",
+                "next": "end_fun",
+                "exampleJa": "おおさかじょうが いちばん おもしろかったです。"
+              },
+              {
+                "id": "work",
+                "whenEn": "Learner says the work (the job, the meetings, the office) was the most interesting.",
+                "next": "end_work",
+                "exampleJa": "しごとが いちばん おもしろかったです。"
+              }
+            ],
+            "fallback": "end_fun"
+          }
+        },
+        {
+          "id": "end_fun",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！来月は わたしが 大阪へ 行きます！",
+              "kana": "いいですね！らいげつは わたしが おおさかへ いきます！",
+              "en": "Nice! Next month I'm the one going to Osaka!",
+              "gesture": "laugh"
+            },
+            {
+              "who": "ogawa",
+              "ja": "藤田さんは 来月も 東京で 仕事ですよ。",
+              "kana": "ふじたさんは らいげつも とうきょうで しごとですよ。",
+              "en": "Fujita, you'll be working in Tokyo next month as well.",
+              "gesture": "shake_head"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_work",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "ほう、仕事ですか。じゃ、来月も 大阪へ おねがいします。",
+              "kana": "ほう、しごとですか。じゃ、らいげつも おおさかへ おねがいします。",
+              "en": "Oh, the work? Then I'll ask you to go to Osaka again next month.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "fujita",
+              "ja": "部長、わたしも 行きます！",
+              "kana": "ぶちょう、わたしも いきます！",
+              "en": "Sir, I'll go too!",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

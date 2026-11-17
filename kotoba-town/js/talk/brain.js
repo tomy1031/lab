@@ -20,6 +20,9 @@ export class LiveBrain {
    * @param {string} [o.thinkingLevel]  LOW | MEDIUM | HIGH for models that reason in the background
    * @param {object} o.on  callbacks: status(s, detail), heard(text), npcAudio(b64), npcText(text),
    *        npcDone(), judge(result) → 'nothing'|'react'|'chat', error(reason)
+   * Free-talk room (no script): o.instruction replaces the system instruction, o.tools(opts) the functions,
+   * o.replyInstruction(result, say) what the partner is told to answer, o.extraVocab more words for the
+   * speech recogniser, o.temperature, o.replySeconds { react, chat } the longest reply.
    */
   constructor(o) {
     this.o = o;
@@ -56,6 +59,7 @@ export class LiveBrain {
     }
     if (learnerName) out.push(learnerName);
     for (const v of lesson.vocab || []) out.push(v.ja);
+    for (const w of this.o.extraVocab || []) out.push(w);
     return [...new Set(out.filter((w) => w && [...w].length <= 20))].slice(0, 40);
   }
 
@@ -65,14 +69,14 @@ export class LiveBrain {
     const setup = {
       generationConfig: {
         responseModalities: ['AUDIO'],
-        temperature: 0.5,
+        temperature: this.o.temperature ?? 0.5,
         speechConfig: { languageCode: 'ja-JP', voiceConfig: { prebuiltVoiceConfig: { voiceName: character.voice } } },
         // only the thinking model takes this; others reject it
         ...(thinking ? { thinkingConfig: { thinkingLevel: this.o.thinkingLevel || 'MEDIUM' } } : {}),
       },
-      systemInstruction: { parts: [{ text: systemInstruction({ lesson, variant, character, learnerName }) }] },
+      systemInstruction: { parts: [{ text: this.o.instruction || systemInstruction({ lesson, variant, character, learnerName }) }] },
       // the thinking model only accepts non-blocking functions
-      tools: [judgeTool({ interview: lesson.format === 'interview', nonBlocking: thinking })],
+      tools: [this.o.tools ? this.o.tools({ nonBlocking: thinking }) : judgeTool({ interview: lesson.format === 'interview', nonBlocking: thinking })],
       realtimeInputConfig: {
         automaticActivityDetection: {
           disabled: false,
@@ -261,13 +265,15 @@ export class LiveBrain {
     clearTimeout(this.armTimer);
     if (this.gate === 'armed') this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, this.thinking ? 15000 : 7000);
     const response = { ok: true, say };
-    if (say === 'react') {
+    const custom = say !== 'nothing' && this.o.replyInstruction ? this.o.replyInstruction(result, say) : '';
+    if (custom) response.instruction = custom;
+    else if (say === 'react') {
       response.instruction = `Reply in character to what the learner just said (${result.heard ? `「${result.heard}」` : 'see audio'}): ONE short polite Japanese sentence, at most 15 words, that answers their question or comment directly. Do not greet, do not introduce yourself, do not ask a question, do not continue the script.`;
     } else if (say === 'chat') {
       response.instruction = `Reply in character to 「${result.heard}」 with 1–2 short polite Japanese sentences at the learner's level, then ask one simple question back. No greetings.`;
     }
     this.played = 0;
-    this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8); // hard cap on reply length
+    this.maxBytes = this.replyBytes(say); // hard cap on reply length
     this.heardText = '';
     this.session?.sendToolResponse([{ id: call.id, name: call.name, response }]);
   }
@@ -304,14 +310,39 @@ export class LiveBrain {
         // there is no function call to answer, so ask for the reply in a note
         this.gate = 'armed';
         this.played = 0;
-        this.maxBytes = 24000 * 2 * (say === 'chat' ? 14 : 8);
+        this.maxBytes = this.replyBytes(say);
         clearTimeout(this.armTimer);
         this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, 7000);
-        this.session?.sendText(say === 'chat'
+        const custom = this.o.replyInstruction ? this.o.replyInstruction({ heard, branch: 'free', score: 1 }, say) : '';
+        this.session?.sendText(custom ? `[REPLY] The learner said 「${heard}」. ${custom}` : say === 'chat'
           ? `[REPLY] The learner said 「${heard}」. Reply in character with 1–2 short polite Japanese sentences at their level, then ask one simple question back. No greetings.`
           : `[REPLY] The learner said 「${heard}」. Reply in character with ONE short polite Japanese sentence (max 15 words) that answers it directly. Do not greet, do not ask a question, do not continue the script.`, true);
       }
     }
+  }
+
+  /** Longest reply in bytes of 24 kHz PCM16 (model audio is cut there). */
+  replyBytes(say) {
+    const sec = this.o.replySeconds?.[say] ?? (say === 'chat' ? 14 : 8);
+    return 24000 * 2 * sec;
+  }
+
+  /**
+   * Let the character speak on its own (free-talk room: the opener, a new topic, a twist, a nudge).
+   * The note is a complete turn; the reply is played like a judged reply and ends with npcDone.
+   */
+  speak(note, seconds = 16) {
+    if (!this.live) return false;
+    clearTimeout(this.fallbackTimer); this.fallbackTimer = null;
+    this.awaitingJudge = false;
+    this.heardText = '';
+    this.played = 0;
+    this.maxBytes = 24000 * 2 * seconds;
+    this.gate = 'armed';
+    clearTimeout(this.armTimer);
+    this.armTimer = setTimeout(() => { if (this.gate === 'armed') { this.gate = 'drop'; this.on.npcDone(false); } }, this.thinking ? 15000 : 9000);
+    this.session.sendText(note, true);
+    return true;
   }
 
   /** Ask for the closing report; resolves null on timeout. */

@@ -1,0 +1,1397 @@
+{
+  "lesson": 16,
+  "titleJa": "どうやって いきますか",
+  "titleEn": "First this, then that — and what it's like",
+  "summaryEn": "Put actions in order with ～て、～て and ～てから, ask the way with どうやって, and describe people and places in one breath: ～くて／～で and N1は N2が ～です.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "V1て、V2て、V3ます",
+      "meaningEn": "do V1, then V2, then V3 (actions in order; only the last verb shows tense)",
+      "exampleJa": "おしろを みて、しゃしんを とって、ひるごはんを たべます。",
+      "exampleEn": "I'll see the castle, take photos and have lunch."
+    },
+    {
+      "id": "g2",
+      "pattern": "V1てから、V2ます",
+      "meaningEn": "after doing V1, do V2 (V1 is finished first)",
+      "exampleJa": "うちへ かえってから、ばんごはんを たべます。",
+      "exampleEn": "I'll eat dinner after I get home."
+    },
+    {
+      "id": "g3",
+      "pattern": "いadj(～い→～くて)、～",
+      "meaningEn": "joining an い-adjective to what follows: …and… (いい → よくて)",
+      "exampleJa": "この こうえんは ひろくて、きれいです。",
+      "exampleEn": "This park is big and pretty."
+    },
+    {
+      "id": "g4",
+      "pattern": "なadj／N で、～",
+      "meaningEn": "joining a な-adjective or a noun to what follows: …and…",
+      "exampleJa": "ミンさんは げんきで、しんせつです。",
+      "exampleEn": "Minh is cheerful and kind."
+    },
+    {
+      "id": "g5",
+      "pattern": "N1は N2が adj",
+      "meaningEn": "as for N1, its N2 is … (describing a feature of a person or place)",
+      "exampleJa": "カンボジアは たべものが おいしいです。",
+      "exampleEn": "In Cambodia the food is delicious."
+    },
+    {
+      "id": "g6",
+      "pattern": "どうやって V ますか",
+      "meaningEn": "how do you V? (asking the way or the method; the answer lists steps with て)",
+      "exampleJa": "おしろまで どうやって いきますか。",
+      "exampleEn": "How do I get to the castle?"
+    },
+    {
+      "id": "g7",
+      "pattern": "どの N／どれ",
+      "meaningEn": "which N (of three or more) / which one",
+      "exampleJa": "どの ボタンを おしますか。",
+      "exampleEn": "Which button do I press?"
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "乗ります",
+      "kana": "のります",
+      "en": "to get on, to ride (でんしゃに)"
+    },
+    {
+      "ja": "降ります",
+      "kana": "おります",
+      "en": "to get off (でんしゃを)"
+    },
+    {
+      "ja": "乗りかえます",
+      "kana": "のりかえます",
+      "en": "to change (trains, buses)"
+    },
+    {
+      "ja": "入れます",
+      "kana": "いれます",
+      "en": "to put in, to insert"
+    },
+    {
+      "ja": "押します",
+      "kana": "おします",
+      "en": "to push, to press"
+    },
+    {
+      "ja": "浴びます",
+      "kana": "あびます",
+      "en": "to take (a shower)"
+    },
+    {
+      "ja": "ボタン",
+      "kana": "ボタン",
+      "en": "button"
+    },
+    {
+      "ja": "きっぷ",
+      "kana": "きっぷ",
+      "en": "ticket"
+    },
+    {
+      "ja": "まず",
+      "kana": "まず",
+      "en": "first of all"
+    },
+    {
+      "ja": "どうやって",
+      "kana": "どうやって",
+      "en": "how, in what way"
+    },
+    {
+      "ja": "どの",
+      "kana": "どの",
+      "en": "which (+ noun)"
+    },
+    {
+      "ja": "若い",
+      "kana": "わかい",
+      "en": "young"
+    },
+    {
+      "ja": "長い",
+      "kana": "ながい",
+      "en": "long"
+    },
+    {
+      "ja": "短い",
+      "kana": "みじかい",
+      "en": "short"
+    },
+    {
+      "ja": "明るい",
+      "kana": "あかるい",
+      "en": "bright, cheerful"
+    },
+    {
+      "ja": "背が 高い",
+      "kana": "せが たかい",
+      "en": "tall (person)"
+    },
+    {
+      "ja": "髪",
+      "kana": "かみ",
+      "en": "hair"
+    },
+    {
+      "ja": "多い",
+      "kana": "おおい",
+      "en": "many, a lot of"
+    },
+    {
+      "ja": "広い",
+      "kana": "ひろい",
+      "en": "wide, spacious"
+    },
+    {
+      "ja": "お寺",
+      "kana": "おてら",
+      "en": "temple"
+    },
+    {
+      "ja": "お城",
+      "kana": "おしろ",
+      "en": "castle"
+    },
+    {
+      "ja": "ジョギング",
+      "kana": "ジョギング",
+      "en": "jogging"
+    },
+    {
+      "ja": "シャワー",
+      "kana": "シャワー",
+      "en": "shower"
+    },
+    {
+      "ja": "飛行機",
+      "kana": "ひこうき",
+      "en": "airplane"
+    }
+  ],
+  "tipsEn": [
+    "At a Japanese ticket machine you usually put the money in first and then press the button with your fare — the price is on the route map above the machine.",
+    "Join adjectives with ～くて or ～で, not with と: 「やすくて、おいしいです」. And いい becomes よくて.",
+    "When people ask どうやって, answer in steps with the て-form: 「でんしゃに のって、みどりえきで のりかえます」."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-16.html",
+      "https://langoal.com/vocabulary/16",
+      "https://gogakueducation.com/?p=4319"
+    ],
+    "notesEn": "Lesson 16 uses the て-form to connect: V1て、V2て、V3ます for actions in sequence (tense only on the last verb), V1てから V2 for 'after doing', ～くて for い-adjectives (いい → よくて) and ～で for な-adjectives and nouns, N1は N2が adjective for describing a feature of a person or place, どうやって for asking a method or route, and どの N／どれ. Its vocabulary covers trains and machines (のります, おります, のりかえます, いれます, おします), the body and descriptions (せが たかい, かみ, わかい, あかるい). Natural situations are getting route and ticket-machine instructions, describing a friend or a place, and daily routines. Typical mistakes are joining adjectives with と or with ～いで, ✗ いくて for よくて, putting past tense on the middle verbs, confusing ～てから (after) with ～から (because), and particle slips with the new verbs (✗ でんしゃを のります for に, ✗ でんしゃに おります for を). The three scenes are original: a day trip from the station, waiting for a friend in the park with a chatty neighbour, and a 'my town' speaking class."
+  },
+  "variants": [
+    {
+      "id": "l16a",
+      "titleJa": "きっぷを かって、でんしゃに のって",
+      "titleEn": "Buy a ticket, catch the train",
+      "scene": "station",
+      "setup": {
+        "time": "morning",
+        "season": "summer",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A clear summer morning and a free day: you are taking the train to the next town to see its castle or its temple. First ask Okada at the gate for help; then a familiar face turns up.",
+      "roleEn": "You are a traveller who has never used this ticket machine. Decide your own plan for the day.",
+      "missionsEn": [
+        {
+          "text": "Ask how to get there and how to buy the ticket",
+          "grammar": [
+            "g6",
+            "g7"
+          ]
+        },
+        {
+          "text": "Tell Takeuchi your plan in order",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Describe life in this town with two points",
+          "grammar": [
+            "g3",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say when you will eat dinner (～てから)",
+          "grammar": [
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "okada",
+        "takeuchi"
+      ],
+      "positions": {
+        "okada": "staff",
+        "takeuchi": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "おはよう ございます。",
+              "kana": "おはよう ございます。",
+              "en": "Good morning.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "A day trip! You want to go to the castle (おしろ) — or the temple (おてら). Ask the station staff how to get there.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "すみません。＿＿まで どうやって いきますか。",
+            "modelAnswers": [
+              "すみません。おしろまで どうやって いきますか。",
+              "おてらまで どうやって いきますか。"
+            ],
+            "branches": [
+              {
+                "id": "castle",
+                "whenEn": "Learner asks how to get to the castle.",
+                "next": "n2_castle",
+                "exampleJa": "おしろまで どうやって いきますか。"
+              },
+              {
+                "id": "temple",
+                "whenEn": "Learner asks how to get to the temple (or any other place).",
+                "next": "n2_temple",
+                "exampleJa": "おてらまで どうやって いきますか。"
+              }
+            ],
+            "fallback": "n2_castle"
+          }
+        },
+        {
+          "id": "n2_castle",
+          "focus": "platform_sign_2",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "おしろですか。2番線の 電車に 乗って、しろやま駅で 降りて ください。",
+              "kana": "おしろですか。にばんせんの でんしゃに のって、しろやまえきで おりて ください。",
+              "en": "The castle? Take the train from platform 2 and get off at Shiroyama Station.",
+              "gesture": "point",
+              "target": "platform_sign_2",
+              "tts": "おしろですか。にばんせんの でんしゃに のって、しろやまえきで おりて ください。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_temple",
+          "focus": "platform_sign",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "お寺ですか。1番線の 電車に 乗って、みどり駅で バスに 乗りかえて ください。",
+              "kana": "おてらですか。いちばんせんの でんしゃに のって、みどりえきで バスに のりかえて ください。",
+              "en": "The temple? Take the train from platform 1 and change to a bus at Midori Station.",
+              "gesture": "point",
+              "target": "platform_sign",
+              "tts": "おてらですか。いちばんせんの でんしゃに のって、みどりえきで バスに のりかえて ください。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "ticket_machine",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "きっぷは そこの きかいで 買って ください。",
+              "kana": "きっぷは そこの きかいで かって ください。",
+              "en": "Please buy your ticket at the machine there.",
+              "gesture": "point",
+              "target": "ticket_machine"
+            }
+          ],
+          "listen": {
+            "promptEn": "The machine has a lot of buttons. Ask how to buy the ticket — or which button to press.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "きっぷは どうやって ＿＿か。／どの ボタンを ＿＿か。",
+            "modelAnswers": [
+              "きっぷは どうやって かいますか。",
+              "どの ボタンを おしますか。"
+            ],
+            "branches": [
+              {
+                "id": "how",
+                "whenEn": "Learner asks how to buy the ticket / how to use the machine.",
+                "next": "n4_how",
+                "exampleJa": "きっぷは どうやって かいますか。"
+              },
+              {
+                "id": "which_button",
+                "whenEn": "Learner asks which button to press (or which ticket).",
+                "next": "n4_which",
+                "exampleJa": "どの ボタンを おしますか。"
+              }
+            ],
+            "fallback": "n4_how"
+          }
+        },
+        {
+          "id": "n4_how",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "まず お金を 入れて、320円の ボタンを 押して ください。",
+              "kana": "まず おかねを いれて、さんびゃくにじゅうえんの ボタンを おして ください。",
+              "en": "First put the money in, then press the 320-yen button.",
+              "gesture": "nod",
+              "tts": "まず おかねを いれて、さんびゃくにじゅうえんの ボタンを おして ください。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_which",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "320円の ボタンです。お金を 入れてから、押して ください。",
+              "kana": "さんびゃくにじゅうえんの ボタンです。おかねを いれてから、おして ください。",
+              "en": "The 320-yen button. Press it after you put the money in.",
+              "gesture": "nod",
+              "tts": "さんびゃくにじゅうえんの ボタンです。おかねを いれてから、おして ください。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "あら、おはよう ございます。お出かけですか。",
+              "kana": "あら、おはよう ございます。おでかけですか。",
+              "en": "Oh, good morning. Going out?",
+              "gesture": "wave"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "今日は 何を しますか。",
+              "kana": "きょうは なにを しますか。",
+              "en": "What are you going to do today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Takeuchi your plan for the day: two or three actions joined with the て-form.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿て、＿＿て、＿＿ます。",
+            "modelAnswers": [
+              "おしろを みて、しゃしんを とって、ひるごはんを たべます。",
+              "ともだちに あって、おてらを みます。"
+            ],
+            "branches": [
+              {
+                "id": "with_friend",
+                "whenEn": "The plan includes meeting a friend or going with someone.",
+                "next": "n6_friend",
+                "exampleJa": "ともだちに あって、おしろを みます。"
+              },
+              {
+                "id": "sightseeing",
+                "whenEn": "The plan is sightseeing, photos, food or shopping, with no mention of meeting anyone.",
+                "next": "n6_sight",
+                "exampleJa": "おしろを みて、しゃしんを とります。"
+              }
+            ],
+            "fallback": "n6_sight"
+          }
+        },
+        {
+          "id": "n6_friend",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "お友だちと いっしょですか。楽しいですね。",
+              "kana": "おともだちと いっしょですか。たのしいですね。",
+              "en": "With a friend? That'll be fun.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_sight",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "いいですね。あの 町は 古くて、きれいですよ。",
+              "kana": "いいですね。あの まちは ふるくて、きれいですよ。",
+              "en": "Lovely. That town is old and beautiful.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "この 町の 生活は どうですか。",
+              "kana": "この まちの せいかつは どうですか。",
+              "en": "How is life in this town?"
+            }
+          ],
+          "listen": {
+            "promptEn": "How do you find life in this town? Give two points in one sentence (～くて／～で).",
+            "grammar": [
+              "g3",
+              "g4",
+              "g5"
+            ],
+            "hintJa": "＿＿くて、＿＿です。／＿＿で、＿＿です。",
+            "modelAnswers": [
+              "しずかで、いい まちです。",
+              "ひとが しんせつで、たのしいです。",
+              "たべものが たかくて、たいへんです。"
+            ],
+            "branches": [
+              {
+                "id": "positive",
+                "whenEn": "Learner is mainly positive (quiet, pretty, convenient, kind people, fun …).",
+                "next": "n8_good",
+                "exampleJa": "しずかで、きれいです。"
+              },
+              {
+                "id": "hard",
+                "whenEn": "Learner mentions something hard or negative (expensive, busy, cold, difficult Japanese …).",
+                "next": "n8_hard",
+                "exampleJa": "ものが たかくて、たいへんです。"
+              }
+            ],
+            "fallback": "n8_good"
+          }
+        },
+        {
+          "id": "n8_good",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "よかったです。わたしも この 町が 好きです。",
+              "kana": "よかったです。わたしも この まちが すきです。",
+              "en": "I'm glad. I like this town too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_hard",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。それは たいへんですね。",
+              "kana": "そうですか。それは たいへんですね。",
+              "en": "I see. That's tough.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "晩ごはんは うちへ 帰ってから 食べますか。",
+              "kana": "ばんごはんは うちへ かえってから たべますか。",
+              "en": "Will you have dinner after you get home?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Dinner: after you get home — or will you eat first and then come home? Use ～てから.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "うちへ ＿＿てから、たべます。／＿＿てから、かえります。",
+            "modelAnswers": [
+              "はい、うちへ かえってから たべます。",
+              "いいえ、ばんごはんを たべてから、かえります。"
+            ],
+            "branches": [
+              {
+                "id": "at_home",
+                "whenEn": "Learner will eat after returning home.",
+                "next": "n10_home",
+                "exampleJa": "うちへ かえってから たべます。"
+              },
+              {
+                "id": "eat_first",
+                "whenEn": "Learner will eat there first and then come home.",
+                "next": "n10_out",
+                "exampleJa": "たべてから、かえります。"
+              }
+            ],
+            "fallback": "n10_home"
+          }
+        },
+        {
+          "id": "n10_home",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。わたしも いつも 帰ってから 食べます。",
+              "kana": "そうですか。わたしも いつも かえってから たべます。",
+              "en": "I see. I always eat after I get home too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n10_out",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "いいですね。あの 町は 魚が おいしいですよ。",
+              "kana": "いいですね。あの まちは さかなが おいしいですよ。",
+              "en": "Good idea. The fish is delicious in that town.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "focus": "train",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "あ、電車が 来ましたよ。",
+              "kana": "あ、でんしゃが きましたよ。",
+              "en": "Ah, here comes the train.",
+              "gesture": "point",
+              "target": "train"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "じゃ、いって いらっしゃい。",
+              "kana": "じゃ、いって いらっしゃい。",
+              "en": "Well, have a good trip.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l16b",
+      "titleJa": "こうえんで ともだちを まって います",
+      "titleEn": "Waiting for a friend in the park",
+      "scene": "park",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "A cool autumn evening in the park. You are waiting for your classmate Minh — tall, short hair, cheerful and kind — when Mrs Hara, who walks here every day, stops for a chat.",
+      "roleEn": "You are a student waiting for a friend. Describe people and places with two points at a time, and tell her your real routine.",
+      "missionsEn": [
+        {
+          "text": "Describe your friend and the park",
+          "grammar": [
+            "g3",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Tell her your morning routine",
+          "grammar": [
+            "g2",
+            "g1"
+          ]
+        },
+        {
+          "text": "Say what you will do after meeting Minh",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Introduce Minh in one sentence",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "hara",
+        "minh"
+      ],
+      "positions": {
+        "hara": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "こんばんは。今日は すずしくて、いい 日ですね。",
+              "kana": "こんばんは。きょうは すずしくて、いい ひですね。",
+              "en": "Good evening. It's cool and pleasant today, isn't it?",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "hara",
+              "ja": "お友だちを 待って いますか。どんな 人ですか。",
+              "kana": "おともだちを まって いますか。どんな ひとですか。",
+              "en": "Are you waiting for a friend? What are they like?"
+            }
+          ],
+          "listen": {
+            "promptEn": "You are waiting for Minh: tall, short hair, cheerful and kind. Describe him (or your own friend) with two points in one sentence.",
+            "grammar": [
+              "g5",
+              "g3",
+              "g4"
+            ],
+            "hintJa": "ミンさんは ＿＿が ＿＿くて、＿＿です。／＿＿で、＿＿です。",
+            "modelAnswers": [
+              "ミンさんは せが たかくて、かみが みじかいです。",
+              "ミンさんは げんきで、しんせつです。"
+            ],
+            "branches": [
+              {
+                "id": "looks",
+                "whenEn": "Learner describes what the friend looks like (height, hair, eyes, young …).",
+                "next": "n2_looks",
+                "exampleJa": "せが たかくて、かみが みじかいです。"
+              },
+              {
+                "id": "character",
+                "whenEn": "Learner describes only character or background (kind, cheerful, funny, smart, a student …).",
+                "next": "n2_char",
+                "exampleJa": "げんきで、しんせつです。"
+              }
+            ],
+            "fallback": "n2_looks"
+          }
+        },
+        {
+          "id": "n2_looks",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。背が 高くて、すてきな 人ですね。",
+              "kana": "そうですか。せが たかくて、すてきな ひとですね。",
+              "en": "I see. Tall and good-looking, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_char",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。いい お友だちですね。",
+              "kana": "そうですか。いい おともだちですね。",
+              "en": "I see. A good friend to have.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "pond",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "この 公園は どうですか。",
+              "kana": "この こうえんは どうですか。",
+              "en": "How do you like this park?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look around: trees, a pond, people. Say what the park is like — two points joined with ～くて or ～で.",
+            "grammar": [
+              "g3",
+              "g4",
+              "g5"
+            ],
+            "hintJa": "＿＿くて、＿＿です。／＿＿で、＿＿です。",
+            "modelAnswers": [
+              "しずかで、きれいです。",
+              "ひろくて、ひとが おおいです。",
+              "きが おおくて、きれいですね。"
+            ],
+            "branches": [
+              {
+                "id": "nature",
+                "whenEn": "Learner talks about quiet, beauty, trees, the pond or green only.",
+                "next": "n4_nature",
+                "exampleJa": "しずかで、きれいです。"
+              },
+              {
+                "id": "big_lively",
+                "whenEn": "Learner mentions size, people, liveliness or fun.",
+                "next": "n4_big",
+                "exampleJa": "ひろくて、にぎやかです。"
+              }
+            ],
+            "fallback": "n4_nature"
+          }
+        },
+        {
+          "id": "n4_nature",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "ええ。木が 多くて、秋は とても きれいです。",
+              "kana": "ええ。きが おおくて、あきは とても きれいです。",
+              "en": "Yes. There are lots of trees, and autumn is very pretty.",
+              "gesture": "point",
+              "target": "sakura"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_big",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "ええ、広くて、にぎやかですね。日曜日は 人が 多いです。",
+              "kana": "ええ、ひろくて、にぎやかですね。にちようびは ひとが おおいです。",
+              "en": "Yes, it's big and lively. On Sundays there are lots of people.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "わたしは 毎朝 ここを さんぽしてから、朝ごはんを 食べます。",
+              "kana": "わたしは まいあさ ここを さんぽしてから、あさごはんを たべます。",
+              "en": "Every morning I have breakfast after a walk here.",
+              "gesture": "nod"
+            },
+            {
+              "who": "hara",
+              "ja": "朝、起きてから 何を しますか。",
+              "kana": "あさ、おきてから なにを しますか。",
+              "en": "What do you do after you get up in the morning?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her your morning: what do you do after you get up? Use ～てから or ～て、～て.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "おきてから、＿＿て、＿＿ます。",
+            "modelAnswers": [
+              "おきてから、シャワーを あびて、あさごはんを たべます。",
+              "ジョギングを してから、がっこうへ いきます。"
+            ],
+            "branches": [
+              {
+                "id": "active",
+                "whenEn": "The routine includes exercise: jogging, a walk, sport, cycling.",
+                "next": "n6_active",
+                "exampleJa": "ジョギングを してから、あさごはんを たべます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Any other routine: shower, breakfast, coffee, study, phone, going to school or work.",
+                "next": "n6_other",
+                "exampleJa": "シャワーを あびて、あさごはんを たべます。"
+              }
+            ],
+            "fallback": "n6_other"
+          }
+        },
+        {
+          "id": "n6_active",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "わあ、元気ですね。いいですね。",
+              "kana": "わあ、げんきですね。いいですね。",
+              "en": "My, you're energetic. Good for you.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_other",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "そうですか。朝は 忙しいですね。",
+              "kana": "そうですか。あさは いそがしいですね。",
+              "en": "I see. Mornings are busy, aren't they?",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "今日は お友だちに 会ってから、何を しますか。",
+              "kana": "きょうは おともだちに あってから、なにを しますか。",
+              "en": "What will you do today after you meet your friend?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her the plan with Minh: two or three actions in order, joined with the て-form.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "＿＿て、＿＿ます。",
+            "modelAnswers": [
+              "ばんごはんを たべて、えいがを みます。",
+              "かいものして、うちへ かえります。"
+            ],
+            "branches": [
+              {
+                "id": "food",
+                "whenEn": "The plan includes eating or drinking something.",
+                "next": "n8_food",
+                "exampleJa": "ばんごはんを たべて、えいがを みます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "The plan has no eating or drinking (film, shopping, study, sport, walk …).",
+                "next": "n8_other",
+                "exampleJa": "えいがを みて、かいものします。"
+              }
+            ],
+            "fallback": "n8_food"
+          }
+        },
+        {
+          "id": "n8_food",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "いいですね。駅の 前の そば屋は 安くて、おいしいですよ。",
+              "kana": "いいですね。えきの まえの そばやは やすくて、おいしいですよ。",
+              "en": "Lovely. The soba shop by the station is cheap and tasty.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_other",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "いいですね。若い 人は 元気で、いいですね。",
+              "kana": "いいですね。わかい ひとは げんきで、いいですね。",
+              "en": "Lovely. Young people have so much energy.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "すみません！バスが 来ませんでした。",
+              "kana": "すみません！バスが きませんでした。",
+              "en": "Sorry! The bus didn't come.",
+              "gesture": "wave"
+            },
+            {
+              "who": "hara",
+              "ja": "あ、お友だちですね。",
+              "kana": "あ、おともだちですね。",
+              "en": "Oh, this is your friend.",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Introduce Minh to Hara in one sentence with ～で: he is from Vietnam, a classmate, an engineering student, cheerful …",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "こちらは ミンさんです。＿＿で、＿＿です。",
+            "modelAnswers": [
+              "こちらは ミンさんです。ベトナムの ひとで、クラスの ともだちです。",
+              "ミンさんです。げんきで、しんせつな ひとです。"
+            ],
+            "branches": [
+              {
+                "id": "background",
+                "whenEn": "Learner says where Minh is from or what he is (Vietnamese, classmate, student, engineer).",
+                "next": "end_bg",
+                "exampleJa": "ミンさんです。ベトナムの ひとで、がくせいです。"
+              },
+              {
+                "id": "character",
+                "whenEn": "Learner describes only his character or looks.",
+                "next": "end_char",
+                "exampleJa": "ミンさんです。げんきで、しんせつです。"
+              }
+            ],
+            "fallback": "end_bg"
+          }
+        },
+        {
+          "id": "end_bg",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "ミンさん、はじめまして。原です。じゃ、いって いらっしゃい。",
+              "kana": "ミンさん、はじめまして。はらです。じゃ、いって いらっしゃい。",
+              "en": "Nice to meet you, Minh. I'm Hara. Off you go, then.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_char",
+          "say": [
+            {
+              "who": "hara",
+              "ja": "いい お友だちですね。じゃ、いって いらっしゃい。",
+              "kana": "いい おともだちですね。じゃ、いって いらっしゃい。",
+              "en": "What a nice friend. Off you go, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l16c",
+      "titleJa": "わたしの まち",
+      "titleEn": "My home town",
+      "scene": "classroom",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy spring day at the language school. Today's speaking practice is 'my town': Ms Hayakawa and your classmates Ana and Minh want to hear about your home town.",
+      "roleEn": "You are a student. Describe your real home town — its size, food and people — and how to get there from Japan.",
+      "missionsEn": [
+        {
+          "text": "Describe your town, its food and its people",
+          "grammar": [
+            "g3",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Explain how to get there from Japan",
+          "grammar": [
+            "g1",
+            "g6"
+          ]
+        },
+        {
+          "text": "Say what you will do after you go back",
+          "grammar": [
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana",
+        "minh"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "whiteboard",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "今日は 町の 話です。お国の 町は どんな 町ですか。",
+              "kana": "きょうは まちの はなしです。おくにの まちは どんな まちですか。",
+              "en": "Today we talk about towns. What is your home town like?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Describe your home town: two points in one sentence, joined with ～くて or ～で.",
+            "grammar": [
+              "g3",
+              "g4",
+              "g5"
+            ],
+            "hintJa": "わたしの まちは ＿＿くて、＿＿です。／＿＿で、＿＿です。",
+            "modelAnswers": [
+              "わたしの まちは おおきくて、にぎやかです。",
+              "しずかで、きれいな まちです。",
+              "プノンペンは ひとが おおくて、にぎやかです。"
+            ],
+            "branches": [
+              {
+                "id": "big_lively",
+                "whenEn": "The town is big, lively, busy, crowded or modern.",
+                "next": "n2_city",
+                "exampleJa": "おおきくて、にぎやかです。"
+              },
+              {
+                "id": "quiet_small",
+                "whenEn": "The town is quiet, small, green, old or in the countryside.",
+                "next": "n2_quiet",
+                "exampleJa": "しずかで、きれいです。"
+              }
+            ],
+            "fallback": "n2_city"
+          }
+        },
+        {
+          "id": "n2_city",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしの 町も 大きくて、にぎやかです。",
+              "kana": "わたしの まちも おおきくて、にぎやかです。",
+              "en": "My town is big and lively too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_quiet",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "いいですね。わたしの 町は バイクが 多くて、にぎやかです。",
+              "kana": "いいですね。わたしの まちは バイクが おおくて、にぎやかです。",
+              "en": "Nice. My town has lots of motorbikes and is lively.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "食べ物は どうですか。",
+              "kana": "たべものは どうですか。",
+              "en": "How is the food?"
+            }
+          ],
+          "listen": {
+            "promptEn": "What is the food like in your country or town? Use ＿＿は たべものが ～くて、～です — or name a dish or fruit.",
+            "grammar": [
+              "g5",
+              "g3"
+            ],
+            "hintJa": "＿＿は たべものが ＿＿くて、＿＿です。",
+            "modelAnswers": [
+              "カンボジアは たべものが やすくて、おいしいです。",
+              "くだものが あまくて、おいしいです。"
+            ],
+            "branches": [
+              {
+                "id": "specific",
+                "whenEn": "Learner names a specific dish, fruit or drink.",
+                "next": "n4_spec",
+                "exampleJa": "マンゴーが あまくて、おいしいです。"
+              },
+              {
+                "id": "general",
+                "whenEn": "Learner describes the food in general (cheap, tasty, spicy, sweet …).",
+                "next": "n4_gen",
+                "exampleJa": "たべものが やすくて、おいしいです。"
+              }
+            ],
+            "fallback": "n4_gen"
+          }
+        },
+        {
+          "id": "n4_spec",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わあ、いいですね。わたしも 食べたいです。",
+              "kana": "わあ、いいですね。わたしも たべたいです。",
+              "en": "Wow, nice. I want to eat that too.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_gen",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "ベトナムも 食べ物が 安くて、おいしいですよ。",
+              "kana": "ベトナムも たべものが やすくて、おいしいですよ。",
+              "en": "In Vietnam the food is cheap and tasty too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "町の 人は どうですか。",
+              "kana": "まちの ひとは どうですか。",
+              "en": "What are the people in your town like?"
+            }
+          ],
+          "listen": {
+            "promptEn": "What are the people like? Join two words with ～で or ～くて (しんせつ, げんき, あかるい, わかい …).",
+            "grammar": [
+              "g4",
+              "g3"
+            ],
+            "hintJa": "まちの ひとは ＿＿で、＿＿です。",
+            "modelAnswers": [
+              "まちの ひとは しんせつで、あかるいです。",
+              "わかい ひとが おおくて、げんきです。"
+            ],
+            "branches": [
+              {
+                "id": "kind",
+                "whenEn": "Learner says the people are kind, friendly or warm.",
+                "next": "n6_kind",
+                "exampleJa": "しんせつで、あかるいです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner says something else (young, many, busy, quiet, cheerful …).",
+                "next": "n6_other",
+                "exampleJa": "わかい ひとが おおくて、げんきです。"
+              }
+            ],
+            "fallback": "n6_kind"
+          }
+        },
+        {
+          "id": "n6_kind",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "しんせつで、明るい 人が 多いですね。いいですね。",
+              "kana": "しんせつで、あかるい ひとが おおいですね。いいですね。",
+              "en": "Lots of kind, cheerful people. That's lovely.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_other",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。おもしろいですね。",
+              "kana": "そうですか。おもしろいですね。",
+              "en": "I see. That's interesting.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "map_japan",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "日本から どうやって 行きますか。",
+              "kana": "にほんから どうやって いきますか。",
+              "en": "How do you get there from Japan?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Explain the way home in steps with the て-form: plane (ひこうき), then bus or car — get on, get off, change.",
+            "grammar": [
+              "g1",
+              "g6"
+            ],
+            "hintJa": "ひこうきに のって、＿＿で ＿＿ます。",
+            "modelAnswers": [
+              "ひこうきに のって、プノンペンで おります。",
+              "ひこうきで プノンペンへ いって、バスに のりかえます。"
+            ],
+            "branches": [
+              {
+                "id": "change",
+                "whenEn": "After the plane the learner takes a bus, car, taxi or another transport (changes).",
+                "next": "n8_change",
+                "exampleJa": "ひこうきに のって、プノンペンで バスに のりかえます。"
+              },
+              {
+                "id": "direct",
+                "whenEn": "Learner mentions only the plane (or one transport).",
+                "next": "n8_direct",
+                "exampleJa": "ひこうきに のって、プノンペンで おります。"
+              }
+            ],
+            "fallback": "n8_direct"
+          }
+        },
+        {
+          "id": "n8_change",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "飛行機を 降りてから、バスに 乗りますね。遠いですね。",
+              "kana": "ひこうきを おりてから、バスに のりますね。とおいですね。",
+              "en": "So you take a bus after you get off the plane. That's far.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_direct",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "飛行機ですね。遠くて、たいへんですね。",
+              "kana": "ひこうきですね。とおくて、たいへんですね。",
+              "en": "By plane. It's far — quite a trip.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "国へ 帰ってから、何を しますか。",
+              "kana": "くにへ かえってから、なにを しますか。",
+              "en": "What will you do after you go back to your country?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "What will you do after you go back home one day? Use くにへ かえってから、～.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "くにへ かえってから、＿＿ます。",
+            "modelAnswers": [
+              "くにへ かえってから、ITの かいしゃで はたらきます。",
+              "かえってから、かぞくに あって、ははの りょうりを たべます。"
+            ],
+            "branches": [
+              {
+                "id": "work_study",
+                "whenEn": "Learner talks about working, a company, a job or studying.",
+                "next": "n10_work",
+                "exampleJa": "かえってから、かいしゃで はたらきます。"
+              },
+              {
+                "id": "family_rest",
+                "whenEn": "Learner talks about family, friends, food, resting or travelling.",
+                "next": "n10_family",
+                "exampleJa": "かえってから、かぞくに あいます。"
+              }
+            ],
+            "fallback": "n10_work"
+          }
+        },
+        {
+          "id": "n10_work",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。日本語を 使って、働いて くださいね。",
+              "kana": "いいですね。にほんごを つかって、はたらいて くださいね。",
+              "en": "Wonderful. Do use your Japanese at work.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n10_family",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしも 家族に 会って、母の 料理を 食べたいです。",
+              "kana": "わたしも かぞくに あって、ははの りょうりを たべたいです。",
+              "en": "Me too — I want to see my family and eat my mother's cooking.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "みなさん、とても よかったです。じゃ、終わりましょう。",
+              "kana": "みなさん、とても よかったです。じゃ、おわりましょう。",
+              "en": "Very good, everyone. Let's finish here.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

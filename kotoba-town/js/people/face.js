@@ -27,6 +27,25 @@ export const FACE = {
   blush: [0.53, -0.33],
 };
 
+/**
+ * Resting expressions (look.expression). smile: mouth curve (1 = the default soft smile, < 0 turns the
+ * corners down); brow: + lowers the inner ends (stern), - lifts them (kind/worried); lid: upper lids rest
+ * lower (calm, sleepy, stern); open: the mouth rests a little open (a cheerful grin); cheek: smiling
+ * cheeks push the lower lids up; blush: blush strength; browY: brows up/down (R units); gazeY: eyes look
+ * down/up; headX/headZ: a small resting head pitch/tilt (radians) the body applies.
+ */
+export const EXPRESSIONS = {
+  neutral: { smile: 1, brow: 0, lid: 0, open: 0, cheek: 0, blush: 1, browY: 0, gazeY: 0, headX: 0, headZ: 0 },
+  smile: { smile: 1.3, brow: -0.15, lid: 0.04, open: 0, cheek: 0.4, blush: 1.15, browY: 0.008, gazeY: 0, headX: 0, headZ: 0.03 },
+  cheerful: { smile: 1.45, brow: -0.2, lid: 0, open: 0.34, cheek: 0.55, blush: 1.3, browY: 0.022, gazeY: 0, headX: -0.02, headZ: -0.04 },
+  gentle: { smile: 1.25, brow: -0.45, lid: 0.2, open: 0, cheek: 0.5, blush: 1.15, browY: 0.004, gazeY: -0.02, headX: 0.02, headZ: 0.05 },
+  calm: { smile: 0.95, brow: -0.25, lid: 0.15, open: 0, cheek: 0.2, blush: 0.9, browY: 0, gazeY: 0, headX: 0, headZ: 0 },
+  serious: { smile: 0.25, brow: 0.25, lid: 0.12, open: 0, cheek: 0, blush: 0.55, browY: -0.012, gazeY: 0, headX: -0.01, headZ: 0 },
+  stern: { smile: -0.45, brow: 0.75, lid: 0.24, open: 0, cheek: 0, blush: 0.25, browY: -0.03, gazeY: 0, headX: -0.03, headZ: 0 },
+  shy: { smile: 0.8, brow: -0.55, lid: 0.14, open: 0, cheek: 0.25, blush: 1.9, browY: 0.012, gazeY: -0.09, headX: 0.07, headZ: 0.06 },
+};
+export function expressionOf(look) { return EXPRESSIONS[look?.expression] || EXPRESSIONS.neutral; }
+
 const f = (n) => Number(n).toFixed(4);
 
 const GLSL = /* glsl */ `
@@ -39,6 +58,8 @@ uniform vec4 uState;   // x blink 0..1, y squint (laugh) 0..1, z mouth open 0..1
 uniform vec2 uGaze;    // iris offset in eye units
 uniform vec4 uStyle;   // x feminine 0..1, y age 0..1, z blush 0..1, w brow weight
 uniform vec2 uBeard;   // x moustache 0..1, y beard 0..1
+uniform vec4 uMood;    // resting expression: x smile curve, y brow tilt (+ stern), z lid droop, w mouth rest open
+uniform vec2 uMood2;   // x cheek raise, y brow offset (R units)
 varying vec2 vFaceUv;
 float gEye;            // where the eye is (for gloss)
 vec3 gEm;              // emissive (catch-lights)
@@ -92,9 +113,10 @@ vec3 faceColor() {
 
   // ---- brows
   {
-    vec2 b = (P - vec2(side * ${f(FACE.brow[0])}, ${f(FACE.brow[1])} + uState.w)) / 0.17;
+    vec2 b = (P - vec2(side * ${f(FACE.brow[0])}, ${f(FACE.brow[1])} + uState.w + uMood2.y)) / 0.17;
     float ox = b.x * side;                       // toward the outer end
-    float yc = 0.18 * (1.0 - ox * ox) - 0.06 * ox;
+    float tilt = uMood.y;                        // + inner ends down (stern), - inner ends up (kind)
+    float yc = 0.18 * (1.0 - ox * ox) * (1.0 - 0.45 * max(tilt, 0.0)) - 0.06 * ox + tilt * 0.3 * ox;
     float th = mix(0.12, 0.08, fem) * uStyle.w * (1.0 - 0.55 * smoothstep(0.0, 1.0, ox)) * (1.0 - 0.25 * smoothstep(-0.4, -1.0, ox));
     float d = max(abs(b.y - yc) - th, abs(b.x) - 1.0);
     col = mix(col, uBrowC, aa(d * 0.17));
@@ -108,8 +130,9 @@ vec3 faceColor() {
     float blink = clamp(max(uState.x, uState.y * 0.55), 0.0, 1.0);
     float xx = clamp(e.x, -1.0, 1.0);
     float top = sqrt(1.0 - xx * xx) * (0.8 + 0.08 * ox);                 // upper lid sits low over the iris
-    float bot = -sqrt(1.0 - xx * xx) * 0.98;
-    float lid = mix(top, bot + 0.04, blink);
+    float bot = -sqrt(1.0 - xx * xx) * 0.98 * (1.0 - 0.3 * uMood2.x);        // smiling cheeks lift the lower lid
+    float lid = mix(top, bot + 0.04, max(blink, uMood.z));
+    lid -= max(uMood.y, 0.0) * 0.16 * (1.0 - ox) * (1.0 - blink);       // stern: the lid slopes down to the inner corner
     float inX = abs(e.x) - 1.0;
     float open = aa(max(max(e.y - lid, bot - e.y), inX) * E.x);
     // iris: a circle in real space, big, touching the lid
@@ -156,9 +179,10 @@ vec3 faceColor() {
 
   // ---- mouth
   {
-    float mo = uState.z;
-    vec2 m = (P - vec2(${f(FACE.mouth[0])}, ${f(FACE.mouth[1])})) / vec2(mix(0.13, 0.105, mo), 0.12);
-    float yl = 0.24 * (m.x * m.x - 0.35);                    // smile: corners up
+    float mo = max(uState.z, uMood.w);
+    float sm = uMood.x;
+    vec2 m = (P - vec2(${f(FACE.mouth[0])}, ${f(FACE.mouth[1])})) / vec2(mix(0.13, 0.105, mo) * (1.0 + 0.12 * clamp(sm - 1.0, -0.6, 0.6)), 0.12);
+    float yl = 0.24 * sm * (m.x * m.x - 0.35);               // smile: corners up (sm < 0: corners down)
     float hw = 1.0 - m.x * m.x;
     // closed: a short curved line, thicker in the middle
     float line = max(abs(m.y - yl) - 0.07 * (0.45 + 0.55 * hw), abs(m.x) - 1.0);
@@ -247,6 +271,7 @@ export function makeFace(R, look, { browWeight = 1 } = {}) {
   const fem = look.sex === 'f';
   const age = look.age ?? 30;
   const extras = new Set(look.extras || []);
+  const ex = expressionOf(look);
   const hairCol = new THREE.Color(look.hair?.color || '#2b1d14');
   const brow = hairCol.clone().multiplyScalar(age >= 60 ? 0.85 : 0.72);
   const u = {
@@ -257,8 +282,10 @@ export function makeFace(R, look, { browWeight = 1 } = {}) {
     uLip: { value: new THREE.Color(fem ? '#b24f57' : '#94554d') },
     uState: { value: new THREE.Vector4(0, 0, 0, 0) },
     uGaze: { value: new THREE.Vector2(0, 0) },
-    uStyle: { value: new THREE.Vector4(fem ? 1 : 0, THREE.MathUtils.clamp((age - 50) / 25, 0, 1), fem ? 1 : 0.6, browWeight) },
+    uStyle: { value: new THREE.Vector4(fem ? 1 : 0, THREE.MathUtils.clamp((age - 50) / 25, 0, 1), (fem ? 1 : 0.6) * ex.blush, browWeight * (ex.brow > 0.3 ? 1.12 : 1)) },
     uBeard: { value: new THREE.Vector2(extras.has('beard') || extras.has('mustache') ? 1 : 0, extras.has('beard') ? 1 : 0) },
+    uMood: { value: new THREE.Vector4(ex.smile, ex.brow, ex.lid, ex.open) },
+    uMood2: { value: new THREE.Vector2(ex.cheek, ex.browY) },
   };
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
@@ -271,16 +298,18 @@ export function makeFace(R, look, { browWeight = 1 } = {}) {
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.3, gEye);')
       .replace('vec3 totalEmissiveRadiance = emissive;', `vec3 totalEmissiveRadiance = emissive + gEm + diffuseColor.rgb * ${SKIN_GLOW.toFixed(3)};`);
   };
-  mat.customProgramCacheKey = () => 'kotoba-face-v3';
+  mat.customProgramCacheKey = () => 'kotoba-face-v4';
   const mesh = new THREE.Mesh(geo, mat);
   mesh.name = 'face';
   mesh.frustumCulled = false;
   return {
     mesh,
     uniforms: u,
+    expression: ex,
+    /** Per-frame state; the resting expression is added on top (talking opens the mouth from its rest shape). */
     set({ blink = 0, squint = 0, mouth = 0, brow = 0, gazeX = 0, gazeY = 0 }) {
       u.uState.value.set(blink, squint, mouth, brow);
-      u.uGaze.value.set(gazeX, gazeY);
+      u.uGaze.value.set(gazeX, gazeY + ex.gazeY);
     },
   };
 }

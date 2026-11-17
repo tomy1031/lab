@@ -1,7 +1,7 @@
 // Load lessons and the voice index; text helpers (romaji) for display.
 import { resolveCharacter, audioPath } from './lines.js';
 
-export const LESSON_COUNT = 10;
+export const LESSON_COUNT = 20;
 /** ITビジネス編: 10 project episodes + 2 interviews. */
 export const BUSINESS_COUNT = 12;
 const base = new URL('../../', import.meta.url);
@@ -18,7 +18,7 @@ async function loadSeries(dir, prefix, count = LESSON_COUNT) {
   return out;
 }
 
-/** みんなの日本語編 (lessons 1–10). */
+/** みんなの日本語編 (lessons 1–20). */
 export async function loadLessons() {
   return (await loadSeries('lessons', 'l')).map((L) => ({ ...L, course: 'minna', no: L.lesson }));
 }
@@ -36,6 +36,15 @@ export async function loadCourses() {
     { id: 'minna', titleJa: 'みんなの日本語編', titleEn: 'Minna no Nihongo I', units: minna },
     { id: 'it', titleJa: 'ITビジネス編', titleEn: 'IT business', units: it },
   ].filter((c) => c.units.length);
+}
+
+/** The free-talk room's partners, topics and twists (data/freetalk.json), or null when it is missing. */
+export async function loadFreeTalk() {
+  try {
+    const r = await fetch(new URL('data/freetalk.json', base));
+    const d = r.ok ? await r.json() : null;
+    return d?.topics?.length && d.partners ? d : null;
+  } catch { return null; }
 }
 
 let voiceIndex = null;

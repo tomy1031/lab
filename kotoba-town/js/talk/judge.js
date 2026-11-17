@@ -204,6 +204,7 @@ export function readReport(args) {
     improveEn: String(args?.improve_en || '').trim(),
     pronunciationEn: String(args?.pronunciation_en || '').trim(),
     ...(args?.verdict || args?.criteria_scores ? readInterview(args) : {}),
+    ...(args?.corrections || args?.next_words || args?.good_ja ? readFree(args) : {}),
     source: 'live',
   };
 }
@@ -324,5 +325,133 @@ export function offlineInterviewReport(turns, rubric) {
     criteria,
     improvements: improvements.length ? improvements : ['Answer first, then give one concrete example.'],
     rewrite: w ? { questionJa: w.questionJa || '', answerJa: w.betterAnswer || w.modelAnswer || '' } : null,
+  };
+}
+
+// ------------------------------------------------------------ free-talk room
+/** How the partner talks at each level of the free-talk room. */
+export const FREE_LEVELS = {
+  easy: {
+    ja: 'やさしい', en: 'Easy · N5',
+    guide: 'The learner is a beginner (around JLPT N5, Minna no Nihongo lessons 1–10). Speak slowly and very simply: short です/ます sentences, basic everyday words, one idea per sentence, no long chains, no keigo. If they struggle, ask a yes/no question or give two choices (AですかBですか).',
+  },
+  normal: {
+    ja: 'ふつう', en: 'Normal · N4',
+    guide: 'The learner is around JLPT N4 (Minna no Nihongo up to about lesson 25: て-form, ない-form, dictionary and た-forms, 〜たい, 〜たことが あります, 〜と 思います). Speak at a gentle pace in short, natural sentences.',
+  },
+  hard: {
+    ja: 'むずかしい', en: 'Hard · N3',
+    guide: 'The learner is around JLPT N3. Talk naturally at a relaxed everyday pace with opinions, reasons and common spoken expressions; still keep each turn short so they get to talk.',
+  },
+};
+
+/** The free-talk room's functions: the usual verdict per utterance, and an end report with corrections and words. */
+export function freeTool({ nonBlocking = false } = {}) {
+  const decl = JSON.parse(JSON.stringify(JUDGE_TOOL.functionDeclarations));
+  Object.assign(decl[1].parameters.properties, {
+    good_ja: { type: 'ARRAY', items: { type: 'STRING' }, description: '1–3 things the learner said well, quoted in Japanese as they said them.' },
+    corrections: {
+      type: 'ARRAY',
+      description: 'The 2–4 most useful fixes from the conversation, most useful first.',
+      items: { type: 'OBJECT', properties: { heard: { type: 'STRING', description: 'What the learner said (Japanese).' }, better: { type: 'STRING', description: 'A natural, correct way to say it (Japanese).' }, tip_en: { type: 'STRING', description: 'Why, in one short English sentence.' } }, required: ['heard', 'better'] },
+    },
+    next_words: {
+      type: 'ARRAY',
+      description: '3–5 words or phrases that would have helped in this conversation.',
+      items: { type: 'OBJECT', properties: { ja: { type: 'STRING' }, kana: { type: 'STRING' }, en: { type: 'STRING' } }, required: ['ja', 'en'] },
+    },
+    level_en: { type: 'STRING', description: 'One short sentence: how their speaking sounded today (e.g. "Solid N5 — ready to add て-form").' },
+  });
+  if (nonBlocking) for (const d of decl) d.behavior = 'NON_BLOCKING';
+  return { functionDeclarations: decl };
+}
+
+/**
+ * System instruction for the free-talk room: the partner is played live, nothing is scripted.
+ * partner = resolved cast entry; info = data/freetalk.json partners[id]; topic = a topic entry (or the "anything" topic).
+ */
+export function freeSystemInstruction({ partner, info = {}, place, setupEn = '', topic, level = 'easy', style = 'polite', learnerName = '', news = [], mood = '' }) {
+  const L = FREE_LEVELS[level] || FREE_LEVELS.easy;
+  const casual = style === 'casual';
+  return [
+    `You are ${partner.nameJa}（${partner.kana}）, ${partner.roleEn}. Persona (Japanese): ${partner.personaJa}${partner.styleJa ? ` Speaking style: ${partner.styleJa}` : ''}`,
+    `This is "Kotoba Town", a Japanese speaking-practice game set in a small Japanese town. Right now you and the learner have a FREE CONVERSATION by voice — nothing is scripted. The learner is an IT student from Cambodia who studies Japanese${learnerName ? `; their name is ${learnerName}` : ''}.`,
+    `Place: ${place}${setupEn ? ` (${setupEn})` : ''}.${info.relationEn ? ` Who you are to the learner: ${info.relationEn}.` : ''}${info.likesEn ? ` You like: ${info.likesEn}.` : ''}`,
+    mood ? `Today you are ${mood} — let it colour how you talk, without overdoing it.` : '',
+    news.length ? `Small things from your own life today that you may mention naturally, one at a time, only when it fits: ${news.map((n) => `「${n}」`).join(' ')}` : '',
+    `Level: ${L.guide}`,
+    casual
+      ? 'Style: you are friends of about the same age — talk in friendly plain style (普通形, like lesson 20 of Minna no Nihongo: 〜だよ、〜する？、〜した). The learner may answer in plain style too; both styles are fine from them.'
+      : 'Style: polite です/ます style.',
+    topicLines(topic),
+    'How to talk:',
+    '- Be a warm, real conversation partner: react to what the learner says (へえ、そうなんですか／いいですね／たいへんでしたね), share a little about yourself, then usually ask ONE follow-up question. Keep every turn short: 1–3 short sentences, so the learner talks more than you.',
+    '- Speak only Japanese, slowly and clearly. Never speak English and never translate.',
+    '- Do not correct the learner out loud and do not explain grammar — the app shows corrections on the screen. Keep the conversation going. If they ask what a word means, explain it simply in Japanese.',
+    '- If you did not understand, do not pretend: say so kindly and check (すみません、〜ですか？／もう いちど いいですか).',
+    '- If the learner is stuck, help: ask a simpler yes/no question, or offer two choices.',
+    '- Follow the learner if they change the topic. Keep it friendly and safe: no politics, religion, romance or upsetting subjects.',
+    'How this session works:',
+    '- The app sends notes in square brackets ([START], [TOPIC], [TWIST], [NUDGE], [END]). They are instructions for you, never words of the learner. Follow them.',
+    '- Each time the learner finishes speaking, IMMEDIATELY call `judge_reply` (no speech before it). Use branch "free" for any Japanese answer (or repeat / dont_know / english / unclear). `heard` = exactly their words, in Japanese. Score their Japanese for their level (0–3). correction = a natural, correct way to say what they meant' + (casual ? ' (plain style is fine)' : ' (です/ます)') + '. tip_en = one short, kind English tip.',
+    '- After the function result, obey its "say" field: "nothing" = say nothing at all; otherwise follow its instruction and reply in character.',
+    '- The learner ALWAYS speaks Japanese, with a foreign accent (often South-East Asian). Hear every utterance as Japanese: if it sounds like another language, it is accented Japanese — find the closest Japanese words. Choose the english branch only when they clearly said English words or sentences.',
+    '- When a note starts with [END], call `final_report` once, then say nothing.',
+  ].filter(Boolean).join('\n');
+}
+
+function topicLines(topic) {
+  if (!topic || topic.id === 'any') return 'Topic: anything — start from something in your own life today or the place you are in, and follow whatever the learner likes to talk about.';
+  return [
+    `Topic: ${topic.titleJa} (${topic.titleEn}).${topic.kind === 'role' ? ' This is a ROLE-PLAY: stay in your real role and let the learner do their part.' : ''}`,
+    topic.situationEn ? `Situation: ${topic.situationEn}` : '',
+    topic.openerEn ? `How you open: ${topic.openerEn}` : '',
+    topic.ideasEn?.length ? `The learner may want to: ${topic.ideasEn.join('; ')}.` : '',
+  ].filter(Boolean).join('\n');
+}
+
+/** What the partner should say back, per kind of verdict (free-talk room). */
+export function freeReplyInstruction(result, { level = 'easy', style = 'polite' } = {}) {
+  const lv = (FREE_LEVELS[level] || FREE_LEVELS.easy).en;
+  const st = style === 'casual' ? 'friendly plain style' : 'polite です/ます';
+  const heard = result.heard ? `「${result.heard}」` : 'what they said';
+  switch (result.branch) {
+    case 'repeat': return `The learner asked you to repeat. Say your last sentence again, slower and in simpler words (${st}).`;
+    case 'dont_know': return `The learner did not understand. Say it again in much simpler Japanese (shorter sentences, easier words) or ask a yes/no question (${st}, ${lv}).`;
+    case 'english': return `The learner used English (${heard}). In one short Japanese sentence give them the Japanese words for it, then ask your question again simply (${st}). No English.`;
+    case 'unclear': return `You did not catch what the learner said. Say so kindly in one short sentence and ask them to say it again (${st}).`;
+    default: return `Reply in character to ${heard} as in a real conversation: react to it, maybe share something about yourself, then usually ask ONE follow-up question. 1–3 short sentences, ${st}, ${lv} level. No greetings.`;
+  }
+}
+
+/** The [END] note of the free-talk room. */
+export function freeEndNote({ turns, topics = [] }) {
+  const recap = turns.map((t, i) => `${i + 1}. heard: ${quote(t.heard || '')} | score ${t.score}${t.correction && t.correction !== t.heard ? ` | better: ${quote(t.correction)}` : ''}`).join('\n');
+  return `[END] The free conversation is over${topics.length ? ` (topics: ${topics.join(', ')})` : ''}. The learner's utterances:\n${recap || '(none)'}\nCall final_report now: stars, a short encouraging summary, strengths, what to practise next, 1–3 things they said well (good_ja), the 2–4 most useful corrections, 3–5 useful words for next time, and a one-line level note.`;
+}
+
+/** Free-talk report computed locally (Live did not answer in time). */
+export function offlineFreeReport(turns, words = []) {
+  const base = offlineReport(turns);
+  const fixes = turns.filter((t) => t.correction && t.heard && similarity(t.correction, t.heard) < 0.95);
+  return {
+    ...base,
+    summaryEn: turns.length ? `You talked ${turns.length} time${turns.length > 1 ? 's' : ''} in Japanese. ${base.summaryEn}` : 'Next time, try to say a few sentences — any Japanese is good practice!',
+    free: true,
+    good: turns.filter((t) => t.score >= 3).map((t) => t.heard).slice(0, 3),
+    corrections: fixes.sort((a, b) => a.score - b.score).slice(0, 4).map((t) => ({ heard: t.heard, better: t.correction, tipEn: t.tipEn || '' })),
+    words: words.slice(0, 5).map((w) => ({ ja: w.ja, kana: w.kana || '', en: w.en })),
+    levelEn: '',
+  };
+}
+
+function readFree(args) {
+  const arr = (v) => (Array.isArray(v) ? v : []);
+  return {
+    free: true,
+    good: list(args.good_ja).slice(0, 3),
+    corrections: arr(args.corrections).map((c) => ({ heard: String(c?.heard || '').trim(), better: String(c?.better || '').trim(), tipEn: String(c?.tip_en || '').trim() })).filter((c) => c.better).slice(0, 4),
+    words: arr(args.next_words).map((w) => ({ ja: String(w?.ja || '').trim(), kana: String(w?.kana || '').trim(), en: String(w?.en || '').trim() })).filter((w) => w.ja).slice(0, 5),
+    levelEn: String(args.level_en || '').trim(),
   };
 }
