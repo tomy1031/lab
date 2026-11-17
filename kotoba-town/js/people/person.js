@@ -783,7 +783,6 @@ export class Person {
       default:
         crewNeck(shade(top, 0.9));
     }
-    this.innerColor = inner;
 
     // ---- extras on the body
     if (type === 'apron' || extras.has('apron')) this._apron(type, { trunk, top, accent, h, onT, band, print, ta: (y) => Math.max(ta(y), pa(y)), tb: (y) => Math.max(tb(y), pb(y)), wSkirt, bump: trunkBump });
