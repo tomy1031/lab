@@ -27,7 +27,7 @@ export const LIVE_MODELS = [
   'gemini-2.5-flash-live',
 ];
 
-const WS_BASE = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
+const wsUrl = (version = 'v1beta') => `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${version}.GenerativeService.BidiGenerateContent`;
 const SETUP_TIMEOUT_MS = 9000;
 
 const decoder = new TextDecoder();
@@ -128,13 +128,13 @@ export class LiveSession {
 }
 
 /** Open one model; resolves after setupComplete, rejects with { reason } otherwise. */
-function openModel({ apiKey, model, setup, handlers, WebSocketImpl }) {
+function openModel({ apiKey, model, setup, handlers, WebSocketImpl, apiVersion }) {
   return new Promise((resolve, reject) => {
     const WS = WebSocketImpl || globalThis.WebSocket;
     if (!WS) { reject({ reason: 'noWebSocket' }); return; }
     let ws;
     try {
-      ws = new WS(`${WS_BASE}?key=${encodeURIComponent(apiKey)}`);
+      ws = new WS(`${wsUrl(apiVersion)}?key=${encodeURIComponent(apiKey)}`);
     } catch {
       reject({ reason: 'network' });
       return;
@@ -189,14 +189,14 @@ function openModel({ apiKey, model, setup, handlers, WebSocketImpl }) {
  * A bad key stops at once (every model would refuse it the same way).
  */
 /** setup may be an object or a function (model) → object, for options only some models accept. */
-export async function connectLive({ apiKey, setup, handlers = {}, models = LIVE_MODELS, preferred, WebSocketImpl }) {
+export async function connectLive({ apiKey, setup, handlers = {}, models = LIVE_MODELS, preferred, WebSocketImpl, apiVersion = 'v1beta' }) {
   if (!apiKey) return { ok: false, reason: 'noKey', tried: [] };
   const order = preferred ? [preferred, ...models.filter((m) => m !== preferred)] : models;
   const tried = [];
   let last = 'modelNotFound';
   for (const model of order) {
     try {
-      const session = await openModel({ apiKey, model, setup: typeof setup === 'function' ? setup(model) : setup, handlers, WebSocketImpl });
+      const session = await openModel({ apiKey, model, setup: typeof setup === 'function' ? setup(model) : setup, handlers, WebSocketImpl, apiVersion: typeof apiVersion === 'function' ? apiVersion(model) : apiVersion });
       return { ok: true, session, model, tried };
     } catch (e) {
       last = e?.reason || 'network';

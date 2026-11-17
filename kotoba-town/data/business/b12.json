@@ -372,7 +372,8 @@
               "who": "kuroiwa",
               "ja": "開発部長の 黒岩です。おかけください。",
               "kana": "かいはつぶちょうの くろいわです。おかけください。",
-              "en": "I'm Kuroiwa, the development manager. Sit down, please."
+              "en": "I'm Kuroiwa, the development manager. Sit down, please.",
+              "tts": "開発部長の、黒岩です。おかけください。"
             }
           ],
           "listen": {
@@ -466,7 +467,8 @@
               "who": "kuroiwa",
               "ja": "…そうですか。でも、それは ほかの 会社でも できますね。",
               "kana": "…そうですか。でも、それは ほかの かいしゃでも できますね。",
-              "en": "...I see. But you could do that at another company too."
+              "en": "...I see. But you could do that at another company too.",
+              "tts": "そうですか。でも、それは ほかの 会社でも できますね。"
             }
           ],
           "next": "n5q"
@@ -541,7 +543,8 @@
               "who": "kuroiwa",
               "ja": "…わかりました。次。",
               "kana": "…わかりました。つぎ。",
-              "en": "...All right. Next."
+              "en": "...All right. Next.",
+              "tts": "わかりました。次。"
             }
           ],
           "next": "n7"
@@ -566,7 +569,8 @@
               "ja": "……。そうですか。次に 行きます。",
               "kana": "……。そうですか。つぎに いきます。",
               "en": "... I see. Let's move on.",
-              "gesture": "think"
+              "gesture": "think",
+              "tts": "そうですか。次に 行きます。"
             }
           ],
           "next": "n7"
@@ -621,7 +625,8 @@
               "who": "kuroiwa",
               "ja": "…なるほど。では、うまく いかなかった ことは。どう しましたか。",
               "kana": "…なるほど。では、うまく いかなかった ことは。どう しましたか。",
-              "en": "...I see. Then what went wrong? What did you do about it?"
+              "en": "...I see. Then what went wrong? What did you do about it?",
+              "tts": "なるほど。では、うまく いかなかった ことは。どう しましたか。"
             }
           ],
           "listen": {
@@ -708,7 +713,8 @@
               "ja": "…わかりました。",
               "kana": "…わかりました。",
               "en": "...All right.",
-              "gesture": "nod"
+              "gesture": "nod",
+              "tts": "わかりました。"
             }
           ],
           "next": "n10"
@@ -784,7 +790,8 @@
               "who": "kuroiwa",
               "ja": "…そうですか。わかりました。",
               "kana": "…そうですか。わかりました。",
-              "en": "...I see. All right."
+              "en": "...I see. All right.",
+              "tts": "そうですか。わかりました。"
             }
           ],
           "next": "n12"
@@ -809,7 +816,8 @@
               "ja": "……。根拠が ありませんね。まあ、いいです。",
               "kana": "……。こんきょが ありませんね。まあ、いいです。",
               "en": "... You've given no evidence. Well, never mind.",
-              "gesture": "think"
+              "gesture": "think",
+              "tts": "根拠が ありませんね。まあ、いいです。"
             }
           ],
           "next": "n12"
@@ -980,7 +988,8 @@
               "who": "kuroiwa",
               "ja": "…最後の あいさつまでが 面接です。お疲れさまでした。",
               "kana": "…さいごの あいさつまでが めんせつです。おつかれさまでした。",
-              "en": "...The interview lasts until the final greeting. Thank you for coming."
+              "en": "...The interview lasts until the final greeting. Thank you for coming.",
+              "tts": "最後の あいさつまでが 面接です。お疲れさまでした。"
             }
           ],
           "learner": "stand",
@@ -1186,7 +1195,7 @@
               "ja": "自己紹介と 志望動機を、合わせて 1分で お願いします。",
               "kana": "じこしょうかいと しぼうどうきを、あわせて いっぷんで おねがいします。",
               "en": "Your self-introduction and your reason for applying — one minute in total, please.",
-              "tts": "じこしょうかいと しぼうどうきを、あわせて いっぷんで おねがいします。"
+              "tts": "自己紹介と、志望動機を 合わせて、1分で お願いします。"
             }
           ],
           "learner": "sit",
@@ -1306,7 +1315,8 @@
               "who": "kuroiwa",
               "ja": "…直して いる 途中、という ことですね。わかりました。",
               "kana": "…なおして いる とちゅう、という ことですね。わかりました。",
-              "en": "...So you're still working on it. All right."
+              "en": "...So you're still working on it. All right.",
+              "tts": "直して いる 途中、という ことですね。わかりました。"
             }
           ],
           "next": "n8"
@@ -1394,7 +1404,8 @@
               "who": "kuroiwa",
               "ja": "…いいでしょう。仕事の 話を 続けます。",
               "kana": "…いいでしょう。しごとの はなしを つづけます。",
-              "en": "...Very well. Let's go on with the job."
+              "en": "...Very well. Let's go on with the job.",
+              "tts": "いいでしょう。仕事の 話を 続けます。"
             }
           ],
           "next": "n10"
@@ -1407,7 +1418,8 @@
               "ja": "……。わかりました。次に 行きます。",
               "kana": "……。わかりました。つぎに いきます。",
               "en": "... All right. Let's move on.",
-              "gesture": "think"
+              "gesture": "think",
+              "tts": "わかりました。次に 行きます。"
             }
           ],
           "next": "n10"
@@ -1471,7 +1483,8 @@
               "who": "kuroiwa",
               "ja": "…口で 言うのは 簡単です。でも、覚えて おきます。",
               "kana": "…くちで いうのは かんたんです。でも、おぼえて おきます。",
-              "en": "...Saying it is easy. But I'll remember it."
+              "en": "...Saying it is easy. But I'll remember it.",
+              "tts": "口で 言うのは 簡単です。でも、覚えて おきます。"
             }
           ],
           "next": "n12"
@@ -1552,7 +1565,8 @@
               "who": "kuroiwa",
               "ja": "…わかりました。白石さん、どうぞ。",
               "kana": "…わかりました。しらいしさん、どうぞ。",
-              "en": "...All right. Go ahead, Ms Shiraishi."
+              "en": "...All right. Go ahead, Ms Shiraishi.",
+              "tts": "わかりました。白石さん、どうぞ。"
             }
           ],
           "next": "n14"
@@ -1743,7 +1757,7 @@
               "ja": "…はい。結果は 1週間以内に ご連絡します。出口は あちらです。",
               "kana": "…はい。けっかは いっしゅうかんいないに ごれんらくします。でぐちは あちらです。",
               "en": "...Yes. We'll contact you within a week. The exit is over there.",
-              "tts": "…はい。けっかは いっしゅうかんいないに ごれんらくします。でぐちは あちらです。",
+              "tts": "はい。結果は 1週間以内に ご連絡します。出口は あちらです。",
               "gesture": "point",
               "target": "door"
             }
