@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Validate scenario files against docs/SCENARIO_SPEC.md (みんなの日本語編, data/lessons/lNN.json)
-// and docs/BUSINESS_SPEC.md (ITビジネス編, data/business/bNN.json).
+// and docs/BUSINESS_SPEC.md (ITビジネス編, data/business/bNN.json), and the free-talk room's data/freetalk.json.
 //   node kotoba-town/tools/validate.mjs            (everything)
 //   node kotoba-town/tools/validate.mjs l03 b02    (only these)
 // Prints problems and per-variant stats; exits 1 on any error. Prints "OK" when clean.
@@ -210,6 +210,45 @@ for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f)
     console.log(`  · ${V} [${v.scene}] ${Object.keys(nodes).length} nodes, ${lines.length} lines, learner turns ${minListens}–${maxListens}`);
   }
   for (const g of gids) if (!targeted.has(g)) warn(L, `grammar ${g} is never targeted by a listen`);
+}
+
+// the free-talk room (data/freetalk.json): partners, topics and twists steer Gemini Live
+const freePath = path.join(root, 'data', 'freetalk.json');
+if (!only.length && fs.existsSync(freePath)) {
+  console.log('freetalk.json');
+  let d = null;
+  try { d = JSON.parse(fs.readFileSync(freePath, 'utf8')); } catch (e) { err('freetalk', `JSON: ${e.message}`); }
+  if (d) {
+    const LEVELS = ['easy', 'normal', 'hard'];
+    for (const [id, p] of Object.entries(d.partners || {})) {
+      if (!CAST[id]) err('freetalk', `partner ${id} is not in CAST`);
+      for (const pl of p.places || []) if (!SCENES[pl]) err('freetalk', `partner ${id}: unknown place ${pl}`);
+      if (!p.places?.length) err('freetalk', `partner ${id} needs places[]`);
+      if (p.worksAt && !p.places?.includes(p.worksAt)) err('freetalk', `partner ${id}: worksAt ${p.worksAt} is not in places`);
+      if ((p.newsJa || []).length !== (p.newsEn || []).length) err('freetalk', `partner ${id}: newsJa and newsEn differ in length`);
+    }
+    for (const id of Object.keys(CAST)) if (!d.partners?.[id]) warn('freetalk', `cast member ${id} is not a free-talk partner`);
+    const ids = new Set();
+    for (const t of d.topics || []) {
+      const T = `freetalk.${t.id}`;
+      if (!/^[a-z0-9_]+$/.test(t.id || '')) err(T, 'topic id must be snake_case');
+      if (ids.has(t.id) || t.id === 'any') err(T, 'duplicate or reserved topic id');
+      ids.add(t.id);
+      if (!['chat', 'role'].includes(t.kind)) err(T, 'kind must be chat or role');
+      for (const k of ['titleJa', 'titleEn', 'openerEn']) if (!isStr(t[k])) err(T, `missing ${k}`);
+      if (t.kind === 'role' && !isStr(t.situationEn)) err(T, 'a role-play needs situationEn');
+      if (!t.levels?.length || t.levels.some((l) => !LEVELS.includes(l))) err(T, `levels must be some of ${LEVELS.join(', ')}`);
+      for (const pl of t.places || []) if (!SCENES[pl]) err(T, `unknown place ${pl}`);
+      for (const pid of t.partners || []) if (!d.partners?.[pid]) err(T, `unknown partner ${pid}`);
+      if (!t.ideasEn?.length) err(T, 'ideasEn[] required (shown as hints)');
+      for (const w of t.wordsJa || []) if (!isStr(w.ja) || !isStr(w.en)) err(T, `word incomplete: ${JSON.stringify(w)}`);
+    }
+    for (const w of d.twists || []) {
+      if (!isStr(w.id) || !isStr(w.en)) err('freetalk', `twist incomplete: ${JSON.stringify(w)}`);
+      for (const pl of w.places || []) if (!SCENES[pl]) err(`freetalk.${w.id}`, `unknown place ${pl}`);
+    }
+    console.log(`  · ${Object.keys(d.partners || {}).length} partners, ${(d.topics || []).length} topics, ${(d.twists || []).length} twists`);
+  }
 }
 
 console.log(errors ? `\n${errors} error(s), ${warnings} warning(s)` : warnings ? `\nOK (${warnings} warning(s))` : '\nOK');

@@ -1,0 +1,1299 @@
+{
+  "lesson": 18,
+  "titleJa": "しゅみは なんですか",
+  "titleEn": "Hobbies and what you can do",
+  "summaryEn": "Use the dictionary form to say what you can do (～ことが できます), what your hobby is (しゅみは ～ことです) and what you do before something (～まえに). Accept invitations warmly with ぜひ.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "N／V(dictionary form) ことが できます (ability)",
+      "meaningEn": "can do N / can V — a skill you have",
+      "exampleJa": "わたしは ギターを ひく ことが できます。",
+      "exampleEn": "I can play the guitar."
+    },
+    {
+      "id": "g2",
+      "pattern": "V(dictionary form) ことが できます (possibility)",
+      "meaningEn": "it is possible to V here / at that time (allowed or available)",
+      "exampleJa": "カードで はらう ことが できますか。",
+      "exampleEn": "Can I pay by card?"
+    },
+    {
+      "id": "g3",
+      "pattern": "わたしの しゅみは N／V(dictionary form) ことです",
+      "meaningEn": "my hobby is N / doing V",
+      "exampleJa": "わたしの しゅみは しゃしんを とる ことです。",
+      "exampleEn": "My hobby is taking photos."
+    },
+    {
+      "id": "g4",
+      "pattern": "V(dictionary form)／Nの まえに、V2",
+      "meaningEn": "before doing V / before N, do V2 (always dictionary form, even about the past)",
+      "exampleJa": "ねる まえに、ほんを よみます。",
+      "exampleEn": "Before I go to bed, I read a book."
+    },
+    {
+      "id": "g5",
+      "pattern": "なかなか ＋ negative",
+      "meaningEn": "not easily, just can't seem to",
+      "exampleJa": "かんじは なかなか おぼえる ことが できません。",
+      "exampleEn": "I just can't seem to memorise kanji."
+    },
+    {
+      "id": "g6",
+      "pattern": "ぜひ",
+      "meaningEn": "by all means, definitely (strengthens a wish or an invitation)",
+      "exampleJa": "ぜひ いきたいです。",
+      "exampleEn": "I would definitely like to go."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "趣味",
+      "kana": "しゅみ",
+      "en": "hobby"
+    },
+    {
+      "ja": "できます",
+      "kana": "できます",
+      "en": "can, be able to"
+    },
+    {
+      "ja": "ひきます",
+      "kana": "ひきます",
+      "en": "play (piano, guitar)"
+    },
+    {
+      "ja": "歌います",
+      "kana": "うたいます",
+      "en": "sing"
+    },
+    {
+      "ja": "歌",
+      "kana": "うた",
+      "en": "song"
+    },
+    {
+      "ja": "ピアノ",
+      "kana": "ピアノ",
+      "en": "piano"
+    },
+    {
+      "ja": "ギター",
+      "kana": "ギター",
+      "en": "guitar"
+    },
+    {
+      "ja": "ジャズ",
+      "kana": "ジャズ",
+      "en": "jazz"
+    },
+    {
+      "ja": "コンサート",
+      "kana": "コンサート",
+      "en": "concert"
+    },
+    {
+      "ja": "予約します",
+      "kana": "よやくします",
+      "en": "reserve, book"
+    },
+    {
+      "ja": "払います",
+      "kana": "はらいます",
+      "en": "pay"
+    },
+    {
+      "ja": "現金",
+      "kana": "げんきん",
+      "en": "cash"
+    },
+    {
+      "ja": "国際",
+      "kana": "こくさい",
+      "en": "international"
+    },
+    {
+      "ja": "漢字",
+      "kana": "かんじ",
+      "en": "kanji"
+    },
+    {
+      "ja": "覚えます",
+      "kana": "おぼえます",
+      "en": "memorise"
+    },
+    {
+      "ja": "洗います",
+      "kana": "あらいます",
+      "en": "wash"
+    },
+    {
+      "ja": "はし",
+      "kana": "はし",
+      "en": "chopsticks"
+    },
+    {
+      "ja": "料理を 作ります",
+      "kana": "りょうりを つくります",
+      "en": "cook a dish"
+    },
+    {
+      "ja": "写真を 撮ります",
+      "kana": "しゃしんを とります",
+      "en": "take a photo"
+    },
+    {
+      "ja": "～まえに",
+      "kana": "～まえに",
+      "en": "before …"
+    },
+    {
+      "ja": "なかなか",
+      "kana": "なかなか",
+      "en": "not easily (with a negative)"
+    },
+    {
+      "ja": "ぜひ",
+      "kana": "ぜひ",
+      "en": "by all means"
+    },
+    {
+      "ja": "へえ",
+      "kana": "へえ",
+      "en": "oh, really! (interest)"
+    },
+    {
+      "ja": "ほんとうですか",
+      "kana": "ほんとうですか",
+      "en": "really?"
+    }
+  ],
+  "tipsEn": [
+    "Asking about hobbies (しゅみは なんですか) is a favourite small-talk question in Japan — it is friendly, not nosy. Have one ready!",
+    "まえに always follows the dictionary form, even when you talk about the past: にほんへ くる まえに、べんきょうしました.",
+    "ぜひ makes an invitation warm (ぜひ きて ください) and an acceptance enthusiastic (ぜひ いきたいです)."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-18.html",
+      "https://jpdb.io/textbook/9/minna-no-nihongo-i/18/lesson-18/vocabulary-list",
+      "https://ysc52.thu.edu.tw/wp-content/uploads/2022/08/第十八課興趣.pdf"
+    ],
+    "notesEn": "Lesson 18 introduces the dictionary form (group I: the い-row sound before ます becomes the う-row; group II: ます→る; します→する, きます→くる) and the first patterns that need it: N／V-dictionary ことが できます for ability and for what is possible in a place, わたしの しゅみは N／V-dictionary ことです, and V-dictionary／Nの／period まえに. It also brings なかなか with a negative and ぜひ. Natural situations are small talk about hobbies, saying what you can contribute or whether a shop takes cards or reservations, and routines before meals, bed or a trip. Typical mistakes are keeping the ます-form before こと or まえに (✗ひきます ことが できます), dropping こと (✗ひくが できます), ending the hobby sentence with the verb (✗しゅみは えいがを みます), matching the tense before まえに (✗きた まえに) and using なかなか with an affirmative. The three scenes are original: a rainy lunchtime at the café with a concert invitation, planning the school's international party, and chatting before dinner at the neighbours' house."
+  },
+  "variants": [
+    {
+      "id": "l18a",
+      "titleJa": "あめの ひの ジャズ",
+      "titleEn": "Rainy-day jazz at the café",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy spring lunchtime. The café is quiet, old jazz is playing, and the owner Sakamoto has time to chat. Your colleague Fujita is at your table — with news about Saturday.",
+      "roleEn": "You are a regular at the café. Talk about your real hobbies and what you can (or cannot) do.",
+      "missionsEn": [
+        {
+          "text": "Say what your hobby is",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Say whether you can play an instrument",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Answer the invitation (ぜひ!) and ask a practical question",
+          "grammar": [
+            "g6",
+            "g2"
+          ]
+        },
+        {
+          "text": "Say what you do before you go to bed",
+          "grammar": [
+            "g4"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto",
+        "fujita"
+      ],
+      "positions": {
+        "sakamoto": "counter",
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いらっしゃいませ。きょうは 雨ですから、ひまですよ。",
+              "kana": "いらっしゃいませ。きょうは あめですから、ひまですよ。",
+              "en": "Welcome. It's raining today, so I have plenty of time.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "休みの 日は 何を しますか。趣味は 何ですか。",
+              "kana": "やすみの ひは なにを しますか。しゅみは なんですか。",
+              "en": "What do you do on your days off? What is your hobby?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him your hobby. Use a verb: \"my hobby is …ing\".",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "わたしの しゅみは ＿＿ことです。",
+            "modelAnswers": [
+              "わたしの しゅみは えいがを みる ことです。",
+              "しゅみは おんがくを きく ことです。",
+              "しゅみは しゃしんを とる ことです。"
+            ],
+            "branches": [
+              {
+                "id": "music",
+                "whenEn": "Learner's hobby is about music (listening, singing, playing an instrument, concerts).",
+                "next": "n2_music",
+                "exampleJa": "しゅみは おんがくを きく ことです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner names any other hobby (films, sport, photos, games, cooking, travel…).",
+                "next": "n2_other",
+                "exampleJa": "しゅみは えいがを みる ことです。"
+              }
+            ],
+            "fallback": "n2_other"
+          }
+        },
+        {
+          "id": "n2_music",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "へえ、音楽ですか。いいですね。",
+              "kana": "へえ、おんがくですか。いいですね。",
+              "en": "Oh, music? How nice.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "へえ、それは おもしろいですね。",
+              "kana": "へえ、それは おもしろいですね。",
+              "en": "Oh, that's interesting.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "cd_player",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "わたしの 趣味は 古い ジャズを 聞く ことです。",
+              "kana": "わたしの しゅみは ふるい ジャズを きく ことです。",
+              "en": "My hobby is listening to old jazz.",
+              "gesture": "point",
+              "target": "cd_player"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "ピアノや ギターを ひく ことが できますか。",
+              "kana": "ピアノや ギターを ひく ことが できますか。",
+              "en": "Can you play the piano or the guitar?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Can you play an instrument? Say what you can play — or that you can't.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "はい、＿＿を ひく ことが できます。／いいえ、ひく ことが できません。",
+            "modelAnswers": [
+              "はい、ギターを すこし ひく ことが できます。",
+              "いいえ、ぜんぜん ひく ことが できません。"
+            ],
+            "branches": [
+              {
+                "id": "can_play",
+                "whenEn": "Learner says they can play an instrument (even a little).",
+                "next": "n4_yes",
+                "exampleJa": "はい、ピアノを すこし ひく ことが できます。"
+              },
+              {
+                "id": "cannot_play",
+                "whenEn": "Learner says they cannot play any instrument.",
+                "next": "n4_no",
+                "exampleJa": "いいえ、ひく ことが できません。"
+              }
+            ],
+            "fallback": "n4_no"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ほんとうですか。すごいですね。",
+              "kana": "ほんとうですか。すごいですね。",
+              "en": "Really? That's wonderful.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。わたしも ぜんぜん できません。",
+              "kana": "そうですか。わたしも ぜんぜん できません。",
+              "en": "I see. I can't play at all either.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "poster_concert",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "来週の 土曜日、ここで 小さい コンサートを します。",
+              "kana": "らいしゅうの どようび、ここで ちいさい コンサートを します。",
+              "en": "Next Saturday we're holding a little concert here.",
+              "gesture": "point",
+              "target": "poster_concert"
+            },
+            {
+              "who": "fujita",
+              "ja": "わたしが ギターを ひきます。ぜひ 来て ください。",
+              "kana": "わたしが ギターを ひきます。ぜひ きて ください。",
+              "en": "I'm playing the guitar. Do come!",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Answer Fujita's invitation: accept warmly with ぜひ — or decline softly.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "ぜひ ＿＿たいです。／すみません、どようびは ちょっと……。",
+            "modelAnswers": [
+              "ありがとう ございます。ぜひ いきたいです。",
+              "ぜひ ききたいです。",
+              "すみません。どようびは ちょっと……。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts or says they want to come / hear it.",
+                "next": "n6_yes",
+                "exampleJa": "ぜひ いきたいです。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines or says Saturday is difficult.",
+                "next": "n6_no",
+                "exampleJa": "すみません。どようびは ちょっと……。"
+              }
+            ],
+            "fallback": "n6_yes"
+          }
+        },
+        {
+          "id": "n6_yes",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ありがとう ございます。何か 質問が ありますか。",
+              "kana": "ありがとう ございます。なにか しつもんが ありますか。",
+              "en": "Thank you. Do you have any questions?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask something practical with ～ことが できますか: Can you reserve a ticket? Can you pay by card?",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿ことが できますか。",
+            "modelAnswers": [
+              "チケットを よやくする ことが できますか。",
+              "カードで はらう ことが できますか。"
+            ],
+            "branches": [
+              {
+                "id": "reserve",
+                "whenEn": "Learner asks whether they can reserve or buy a ticket/seat.",
+                "next": "n7_res",
+                "exampleJa": "チケットを よやくする ことが できますか。"
+              },
+              {
+                "id": "pay",
+                "whenEn": "Learner asks about how to pay (card, cash) or the price.",
+                "next": "n7_pay",
+                "exampleJa": "カードで はらう ことが できますか。"
+              }
+            ],
+            "fallback": "n7_res"
+          }
+        },
+        {
+          "id": "n6_no",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。残念ですね。じゃ、また 今度 おねがいします。",
+              "kana": "そうですか。ざんねんですね。じゃ、また こんど おねがいします。",
+              "en": "I see. That's a pity. Next time, then.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_res",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、予約する ことが できます。お金は コンサートの まえに 払って ください。",
+              "kana": "はい、よやくする ことが できます。おかねは コンサートの まえに はらって ください。",
+              "en": "Yes, you can reserve. Please pay before the concert.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_pay",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "すみません、カードで 払う ことが できません。現金で おねがいします。",
+              "kana": "すみません、カードで はらう ことが できません。げんきんで おねがいします。",
+              "en": "I'm sorry, you can't pay by card. Cash, please.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "わたしは 寝る まえに、ギターを ひきます。寝る まえに、何を しますか。",
+              "kana": "わたしは ねる まえに、ギターを ひきます。ねる まえに、なにを しますか。",
+              "en": "I play the guitar before I go to bed. What do you do before bed?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him what you do before you go to bed.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "ねる まえに、＿＿ます。",
+            "modelAnswers": [
+              "ねる まえに、ほんを よみます。",
+              "ねる まえに、おんがくを ききます。",
+              "ねる まえに、にほんごを べんきょうします。"
+            ],
+            "branches": [
+              {
+                "id": "music",
+                "whenEn": "Learner listens to or plays music before bed.",
+                "next": "end_music",
+                "exampleJa": "ねる まえに、おんがくを ききます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner does anything else before bed (reads, studies, phone, bath, diary…).",
+                "next": "end_other",
+                "exampleJa": "ねる まえに、ほんを よみます。"
+              }
+            ],
+            "fallback": "end_other"
+          }
+        },
+        {
+          "id": "end_music",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですね！じゃ、今度 わたしの ギターも 聞いて くださいね。",
+              "kana": "いいですね！じゃ、こんど わたしの ギターも きいて くださいね。",
+              "en": "Nice! Then listen to my guitar some time too.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_other",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "へえ、いいですね。じゃ、また あした 会社で 会いましょう。",
+              "kana": "へえ、いいですね。じゃ、また あした かいしゃで あいましょう。",
+              "en": "Oh, nice. Well, see you at the office tomorrow.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l18b",
+      "titleJa": "こくさいパーティー",
+      "titleEn": "Planning the international party",
+      "scene": "classroom",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A bright autumn morning at the language school. Next month there is an international party, and Ms Hayakawa wants to know what everyone can do for it.",
+      "roleEn": "You are a student in the class with Ana and Minh. Offer what you can really do, and be honest about kanji.",
+      "missionsEn": [
+        {
+          "text": "Say what you can do for the party",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Say whether you can write kanji",
+          "grammar": [
+            "g1",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say what time you can come on Saturday",
+          "grammar": [
+            "g2",
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell Ana your hobby",
+          "grammar": [
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana",
+        "minh"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "来月 学校で 国際パーティーが あります。",
+              "kana": "らいげつ がっこうで こくさいパーティーが あります。",
+              "en": "Next month there is an international party at the school.",
+              "gesture": "nod"
+            },
+            {
+              "who": "ana",
+              "ja": "わたしは ブラジルの 歌を 歌う ことが できます！",
+              "kana": "わたしは ブラジルの うたを うたう ことが できます！",
+              "en": "I can sing Brazilian songs!",
+              "gesture": "wave"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。あなたは 何が できますか。",
+              "kana": "いいですね。あなたは なにが できますか。",
+              "en": "Lovely. And what can you do?"
+            }
+          ],
+          "listen": {
+            "promptEn": "What can you do for the party? Cook a dish from home, sing, play something, take photos, make a website…",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "わたしは ＿＿ことが できます。",
+            "modelAnswers": [
+              "わたしは くにの りょうりを つくる ことが できます。",
+              "ギターを ひく ことが できます。",
+              "しゃしんを とる ことが できます。"
+            ],
+            "branches": [
+              {
+                "id": "cook",
+                "whenEn": "Learner can cook or make food or drinks.",
+                "next": "n2_cook",
+                "exampleJa": "くにの りょうりを つくる ことが できます。"
+              },
+              {
+                "id": "music",
+                "whenEn": "Learner can sing, dance or play an instrument.",
+                "next": "n2_music",
+                "exampleJa": "ギターを ひく ことが できます。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner offers any other skill (photos, computer, drawing, languages…).",
+                "next": "n2_other",
+                "exampleJa": "しゃしんを とる ことが できます。"
+              }
+            ],
+            "fallback": "n2_other"
+          }
+        },
+        {
+          "id": "n2_cook",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。じゃ、料理を おねがいします。",
+              "kana": "いいですね。じゃ、りょうりを おねがいします。",
+              "en": "Great. Then I'll ask you to do the cooking.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_music",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。じゃ、アナさんと いっしょに おねがいします。",
+              "kana": "いいですね。じゃ、アナさんと いっしょに おねがいします。",
+              "en": "Great. Then please perform together with Ana.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "へえ、いいですね。じゃ、それを おねがいします。",
+              "kana": "へえ、いいですね。じゃ、それを おねがいします。",
+              "en": "Oh, nice. Then I'll ask you to do that.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしは ポスターを 作ります。でも、漢字が……。",
+              "kana": "わたしは ポスターを つくります。でも、かんじが……。",
+              "en": "I'll make the poster. But the kanji…",
+              "gesture": "think"
+            },
+            {
+              "who": "minh",
+              "ja": "漢字を 書く ことが できますか。",
+              "kana": "かんじを かく ことが できますか。",
+              "en": "Can you write kanji?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Can you write kanji? Say yes (a little?) — or say you just can't seem to memorise them (なかなか).",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、すこし かく ことが できます。／いいえ、なかなか おぼえる ことが できません。",
+            "modelAnswers": [
+              "はい、すこし かく ことが できます。",
+              "いいえ。かんじは なかなか おぼえる ことが できません。"
+            ],
+            "branches": [
+              {
+                "id": "can_write",
+                "whenEn": "Learner says they can write (some) kanji.",
+                "next": "n4_yes",
+                "exampleJa": "はい、すこし かく ことが できます。"
+              },
+              {
+                "id": "cannot_write",
+                "whenEn": "Learner says they cannot write kanji or cannot remember them.",
+                "next": "n4_no",
+                "exampleJa": "いいえ、なかなか おぼえる ことが できません。"
+              }
+            ],
+            "fallback": "n4_no"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "よかったです。じゃ、いっしょに 書いて ください。",
+              "kana": "よかったです。じゃ、いっしょに かいて ください。",
+              "en": "That's a relief. Then please write it with me.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしもです。漢字は なかなか 覚える ことが できません。",
+              "kana": "わたしもです。かんじは なかなか おぼえる ことが できません。",
+              "en": "Me neither. I just can't seem to memorise kanji.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "whiteboard",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "パーティーは 土曜日の 6時からです。",
+              "kana": "パーティーは どようびの ろくじからです。",
+              "en": "The party starts at six on Saturday.",
+              "gesture": "point",
+              "target": "whiteboard"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "パーティーの まえに、買い物に 行きます。何時に 来る ことが できますか。",
+              "kana": "パーティーの まえに、かいものに いきます。なんじに くる ことが できますか。",
+              "en": "Before the party we'll go shopping. What time can you come?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what time you can come on Saturday. Can you come before the party to help with the shopping?",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "＿＿じに くる ことが できます。",
+            "modelAnswers": [
+              "4じに くる ことが できます。",
+              "すみません。しごとが ありますから、パーティーの まえに くる ことが できません。"
+            ],
+            "branches": [
+              {
+                "id": "early",
+                "whenEn": "Learner can come before six (in time for the shopping).",
+                "next": "n6_early",
+                "exampleJa": "4じに くる ことが できます。"
+              },
+              {
+                "id": "not_early",
+                "whenEn": "Learner can only come at six or later, or cannot come before the party.",
+                "next": "n6_late",
+                "exampleJa": "パーティーの まえに くる ことが できません。"
+              }
+            ],
+            "fallback": "n6_late"
+          }
+        },
+        {
+          "id": "n6_early",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "ありがとう ございます。じゃ、その 時間に ここで 会いましょう。",
+              "kana": "ありがとう ございます。じゃ、その じかんに ここで あいましょう。",
+              "en": "Thank you. Then let's meet here at that time.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_late",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "わかりました。だいじょうぶですよ。じゃ、6時に 来て ください。",
+              "kana": "わかりました。だいじょうぶですよ。じゃ、ろくじに きて ください。",
+              "en": "I understand. That's fine. Then please come at six.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "パーティーで 趣味の 話を しましょう。趣味は 何ですか。",
+              "kana": "パーティーで しゅみの はなしを しましょう。しゅみは なんですか。",
+              "en": "Let's talk about hobbies at the party. What's your hobby?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Ana your hobby with a verb (…ing).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "わたしの しゅみは ＿＿ことです。",
+            "modelAnswers": [
+              "わたしの しゅみは サッカーを する ことです。",
+              "しゅみは ゲームを する ことです。",
+              "しゅみは りょこうの しゃしんを とる ことです。"
+            ],
+            "branches": [
+              {
+                "id": "active",
+                "whenEn": "Learner's hobby is active or outdoors (sport, travel, walking, dancing…).",
+                "next": "n8_active",
+                "exampleJa": "しゅみは サッカーを する ことです。"
+              },
+              {
+                "id": "indoor",
+                "whenEn": "Learner's hobby is quiet or indoors (reading, games, films, music, cooking, drawing…).",
+                "next": "n8_indoor",
+                "exampleJa": "しゅみは えいがを みる ことです。"
+              }
+            ],
+            "fallback": "n8_indoor"
+          }
+        },
+        {
+          "id": "n8_active",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "いいですね！わたしも 外が 好きです。趣味は サッカーを する ことです。",
+              "kana": "いいですね！わたしも そとが すきです。しゅみは サッカーを する ことです。",
+              "en": "Nice! I like being outdoors too. My hobby is playing football.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_indoor",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "へえ、いいですね。わたしの 趣味は サッカーを する ことです。",
+              "kana": "へえ、いいですね。わたしの しゅみは サッカーを する ことです。",
+              "en": "Oh, nice. My hobby is playing football.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "じゃ、みなさん、土曜日は ぜひ 友だちと 来て ください。",
+              "kana": "じゃ、みなさん、どようびは ぜひ ともだちと きて ください。",
+              "en": "Well then, everyone, do come with your friends on Saturday.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l18c",
+      "titleJa": "ばんごはんの まえに",
+      "titleEn": "Before dinner at the Moris'",
+      "scene": "home",
+      "setup": {
+        "time": "evening",
+        "season": "summer",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A warm summer evening. Your neighbours Aya and Shun have invited you for dinner — Shun is cooking tempura, and there is time to chat before you eat.",
+      "roleEn": "You are their neighbour from abroad. Answer about yourself: chopsticks, cooking, how you learned Japanese, your hobby.",
+      "missionsEn": [
+        {
+          "text": "Say whether you can eat with chopsticks",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Say whether you can cook dishes from your country",
+          "grammar": [
+            "g1",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say what you did before you came to Japan",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell Aya your hobby",
+          "grammar": [
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "host",
+        "mori_shun": "host2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いらっしゃい。どうぞ こちらへ。",
+              "kana": "いらっしゃい。どうぞ こちらへ。",
+              "en": "Welcome! Come this way, please.",
+              "gesture": "beckon"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "きょうは てんぷらです。わたしの 趣味は 料理を 作る ことです。",
+              "kana": "きょうは てんぷらです。わたしの しゅみは りょうりを つくる ことです。",
+              "en": "It's tempura today. My hobby is cooking.",
+              "gesture": "nod"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "はしで 食べる ことが できますか。",
+              "kana": "はしで たべる ことが できますか。",
+              "en": "Can you eat with chopsticks?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Can you eat with chopsticks? Answer honestly.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "はい、たべる ことが できます。／いいえ、あまり ＿＿ことが できません。",
+            "modelAnswers": [
+              "はい、はしで たべる ことが できます。",
+              "すみません。はしで たべる ことが できません。"
+            ],
+            "branches": [
+              {
+                "id": "can",
+                "whenEn": "Learner can use chopsticks.",
+                "next": "n2_yes",
+                "exampleJa": "はい、たべる ことが できます。"
+              },
+              {
+                "id": "cannot",
+                "whenEn": "Learner cannot use chopsticks (well).",
+                "next": "n2_no",
+                "exampleJa": "いいえ、あまり できません。"
+              }
+            ],
+            "fallback": "n2_yes"
+          }
+        },
+        {
+          "id": "n2_yes",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "すごいですね。じゃ、はしを どうぞ。",
+              "kana": "すごいですね。じゃ、はしを どうぞ。",
+              "en": "Impressive. Here are your chopsticks, then.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "だいじょうぶですよ。フォークを 持って 来ます。",
+              "kana": "だいじょうぶですよ。フォークを もって きます。",
+              "en": "No problem at all. I'll bring a fork.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "食べる まえに、手を 洗って ください。あそこです。",
+              "kana": "たべる まえに、てを あらって ください。あそこです。",
+              "en": "Please wash your hands before we eat. Over there.",
+              "gesture": "point",
+              "target": "kitchen"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "国の 料理を 作る ことが できますか。",
+              "kana": "くにの りょうりを つくる ことが できますか。",
+              "en": "Can you cook dishes from your country?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Can you cook food from your country? Say what you can make — or admit you just can't manage it (なかなか).",
+            "grammar": [
+              "g1",
+              "g5"
+            ],
+            "hintJa": "はい、＿＿を つくる ことが できます。／いいえ、なかなか つくる ことが できません。",
+            "modelAnswers": [
+              "はい、カレーを つくる ことが できます。",
+              "いいえ。くにの りょうりは なかなか つくる ことが できません。"
+            ],
+            "branches": [
+              {
+                "id": "can_cook",
+                "whenEn": "Learner can cook something.",
+                "next": "n4_yes",
+                "exampleJa": "はい、カレーを つくる ことが できます。"
+              },
+              {
+                "id": "cannot_cook",
+                "whenEn": "Learner cannot cook (well).",
+                "next": "n4_no",
+                "exampleJa": "いいえ、なかなか つくる ことが できません。"
+              }
+            ],
+            "fallback": "n4_no"
+          }
+        },
+        {
+          "id": "n4_yes",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね。ぜひ 今度 教えて ください。",
+              "kana": "いいですね。ぜひ こんど おしえて ください。",
+              "en": "How nice. Do teach me some time.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。じゃ、主人が 教えますよ。",
+              "kana": "そうですか。じゃ、しゅじんが おしえますよ。",
+              "en": "I see. Then my husband will teach you!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "日本語が 上手ですね。日本へ 来る まえに、勉強しましたか。",
+              "kana": "にほんごが じょうずですね。にほんへ くる まえに、べんきょうしましたか。",
+              "en": "Your Japanese is good. Did you study before you came to Japan?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her what you did before you came to Japan: did you study Japanese? Where, how long? (Careful: it stays くる まえに.)",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "にほんへ くる まえに、＿＿で べんきょうしました。",
+            "modelAnswers": [
+              "はい。にほんへ くる まえに、だいがくで 1ねん べんきょうしました。",
+              "いいえ。にほんへ くる まえに、ぜんぜん べんきょうしませんでした。"
+            ],
+            "branches": [
+              {
+                "id": "studied",
+                "whenEn": "Learner studied Japanese before coming to Japan.",
+                "next": "n6_yes",
+                "exampleJa": "はい。くる まえに、1ねん べんきょうしました。"
+              },
+              {
+                "id": "not_studied",
+                "whenEn": "Learner did not study (or hardly studied) before coming.",
+                "next": "n6_no",
+                "exampleJa": "いいえ。くる まえに、べんきょうしませんでした。"
+              }
+            ],
+            "fallback": "n6_yes"
+          }
+        },
+        {
+          "id": "n6_yes",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。とても 上手ですよ。",
+              "kana": "そうですか。とても じょうずですよ。",
+              "en": "I see. You really are good.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_no",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "へえ、ほんとうですか。すごいですね。",
+              "kana": "へえ、ほんとうですか。すごいですね。",
+              "en": "Oh, really? That's amazing.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "garden",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "わたしの 趣味は 花の 写真を 撮る ことです。趣味は 何ですか。",
+              "kana": "わたしの しゅみは はなの しゃしんを とる ことです。しゅみは なんですか。",
+              "en": "My hobby is taking photos of flowers. What's yours?",
+              "gesture": "point",
+              "target": "garden"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aya your hobby with a verb (…ing).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "わたしの しゅみは ＿＿ことです。",
+            "modelAnswers": [
+              "わたしの しゅみは しゃしんを とる ことです。",
+              "しゅみは ほんを よむ ことです。",
+              "しゅみは サッカーを みる ことです。"
+            ],
+            "branches": [
+              {
+                "id": "photos",
+                "whenEn": "Learner's hobby is also photography (photos, camera, video).",
+                "next": "n8_photo",
+                "exampleJa": "しゅみは しゃしんを とる ことです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner names any other hobby.",
+                "next": "n8_other",
+                "exampleJa": "しゅみは ほんを よむ ことです。"
+              }
+            ],
+            "fallback": "n8_other"
+          }
+        },
+        {
+          "id": "n8_photo",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "わあ、わたしもです。今度 いっしょに 撮りましょう。",
+              "kana": "わあ、わたしもです。こんど いっしょに とりましょう。",
+              "en": "Oh, same as me! Let's take some together some time.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_other",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "へえ、おもしろいですね。主人の 趣味は 料理と 野球だけです。",
+              "kana": "へえ、おもしろいですね。しゅじんの しゅみは りょうりと やきゅうだけです。",
+              "en": "Oh, how interesting. My husband's hobbies are just cooking and baseball.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "すみません、もう 少し 待って ください。てんぷらは むずかしいです。",
+              "kana": "すみません、もう すこし まって ください。てんぷらは むずかしいです。",
+              "en": "Sorry, please wait a little longer. Tempura is tricky.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "国では、食べる まえに、何を しますか。",
+        "openerKana": "くにでは、たべる まえに、なにを しますか。",
+        "openerEn": "In your country, what do people do before eating?",
+        "topicEn": "Chat while the tempura cooks: customs before meals and before bed, hobbies, what the learner can do. Use ～ことが できます, しゅみは ～ことです and ～まえに; stay within lessons 1–18 (no た-form, no plain style).",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

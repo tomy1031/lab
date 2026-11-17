@@ -1,0 +1,5090 @@
+{
+  "about": "Free-talk room content: partners, topics and twists. Steers Gemini Live; nothing here is a script.",
+  "research": {
+    "notesEn": "Topics follow the Japan Foundation \"JF Standard\" topic list (self and family, home, free time, daily life, work, travel and transport, health, shopping, food, nature and weather, relationships, school, language and culture; society and technology only from B1), so easy topics stay with A1/A2 themes and hard topics add opinions, comparisons and hypotheticals. Role-plays follow the JF role-card pattern (a place, the learner's role, a goal, and a small complication such as \"the size is sold out\") and the advice from Japan Foundation teacher training that real conversation needs a situation, a purpose and an information gap, and that beginners need the topic, words and phrases prepared first — hence ideasEn, startersJa and wordsJa on every topic. Small talk in Japan opens with weather and seasons, then food, travel and hobbies; salary, age, politics and unfavourable country comparisons are avoided, so comparison topics are framed as \"how is it in Cambodia?\" without judging. Cambodia-specific hooks: Khmer New Year (three days in mid-April: going home, pagoda visits, water splashing, traditional games) against Japanese New Year, Pchum Ben against Obon (both honour ancestors), rainy/dry season against four seasons, motorbikes and tuk-tuks against trains, Angkor Wat, amok and kuy teav; and the learners' real motivation of IT work at Japanese companies (job fairs at CJCC, IT graduates hired by Japanese firms). Details and the level map are in docs/research/freetalk.md.",
+    "sources": [
+      "https://marugoto.jpf.go.jp/assets/docs/teacher/feature/15_topics.pdf",
+      "https://www.jfstandard.jpf.go.jp/pdf/roleplay/202311_A2_1.pdf",
+      "https://www.jfkl.org.my/wp-content/uploads/2023/01/211203_初級授業の「話す」について考えよう！.pdf",
+      "https://www.jpf.go.jp/j/urawa/j_rsorcs/methods/dl/kaiwa_U2P1_text.pdf",
+      "https://langoal.com/books/beginner-conversation.html",
+      "https://eikaiwa.weblio.jp/information/?p=63753",
+      "https://toranomon-ls.com/mastering-small-talk-a-guide-for-japanese-learners",
+      "https://cotoacademy.com/describe-talk-about-weather-in-japanese/",
+      "https://trykaiwa.com/blog/japanese-conversation-starters-that-work",
+      "https://en.wikipedia.org/wiki/Pchum_Ben",
+      "https://www.smithsonianmag.com/travel/festivals-dead-around-world-180953160/",
+      "https://helloangkor.com/events-festivals-and-holidays/sankranta-festival-khmer-new-year/",
+      "https://intocambodia.org/content/khmer-new-year",
+      "https://phnompenhpost.com/supplements-special-reports/young-cambodians-learning-japanese-widen-their-career-prospects",
+      "https://www.jica.go.jp/activities/schemes/tech_pro/japancenter/article/2023/1529766_36482.html",
+      "https://agora-web.jp/?p=171753"
+    ]
+  },
+  "partners": {
+    "mori_aya": {
+      "places": [
+        "apartment",
+        "home",
+        "park",
+        "cafe"
+      ],
+      "worksAt": null,
+      "relationEn": "your next-door neighbour, who works part-time at a flower shop",
+      "casual": false,
+      "likesEn": "flowers, tea and sweets, chatting with neighbours, small trips with her husband",
+      "newsJa": [
+        "きのう 花屋に きれいな バラが 来ました。",
+        "日曜日に 主人と 公園へ 行きました。",
+        "きのう スーパーで 安い りんごを 買いました。",
+        "今晩 カレーを 作ります。",
+        "友だちに おいしい お茶を もらいました。"
+      ],
+      "newsEn": [
+        "Beautiful roses arrived at the flower shop yesterday.",
+        "I went to the park with my husband on Sunday.",
+        "I bought cheap apples at the supermarket yesterday.",
+        "I am making curry tonight.",
+        "A friend gave me some delicious tea."
+      ]
+    },
+    "mori_shun": {
+      "places": [
+        "home",
+        "apartment",
+        "izakaya",
+        "park"
+      ],
+      "worksAt": null,
+      "relationEn": "your neighbour Aya's husband, who works at a bank",
+      "casual": false,
+      "likesEn": "baseball, cooking (especially fish), a quiet beer after work",
+      "newsJa": [
+        "きのう テレビで 野球を 見ました。",
+        "日曜日に 晩ごはんを 作りました。魚の 料理です。",
+        "今週は 銀行の 仕事が とても 忙しいです。",
+        "新しい 料理の 本を 買いました。",
+        "土曜日に 妻と デパートへ 行きます。"
+      ],
+      "newsEn": [
+        "I watched baseball on TV yesterday.",
+        "I cooked dinner on Sunday. A fish dish.",
+        "Work at the bank is very busy this week.",
+        "I bought a new cookbook.",
+        "I am going to the department store with my wife on Saturday."
+      ]
+    },
+    "aoki": {
+      "places": [
+        "office",
+        "cafe",
+        "izakaya",
+        "park"
+      ],
+      "worksAt": null,
+      "relationEn": "your cheerful colleague, the designer at Midori Design",
+      "casual": false,
+      "likesEn": "design, cafés and bakeries, films, art museums, cute stationery",
+      "newsJa": [
+        "新しい ポスターの デザインを 作りました。",
+        "きのう 友だちと 映画を 見ました。",
+        "駅の 近くに 新しい パン屋が あります。",
+        "昼ごはんは コンビニの サンドイッチでした。",
+        "週末に 美術館へ 行きます。"
+      ],
+      "newsEn": [
+        "I made a new poster design.",
+        "I saw a film with a friend yesterday.",
+        "There is a new bakery near the station.",
+        "Lunch was a sandwich from the convenience store.",
+        "I am going to the art museum at the weekend."
+      ]
+    },
+    "ogawa": {
+      "places": [
+        "office",
+        "izakaya",
+        "museum",
+        "park"
+      ],
+      "worksAt": null,
+      "relationEn": "the department manager (部長) at your company",
+      "casual": false,
+      "likesEn": "morning walks, history books, green tea, old films, his grown-up daughter",
+      "newsJa": [
+        "けさ 6時に 起きました。そして 公園を さんぽ しました。",
+        "先週 出張で 大阪へ 行きました。",
+        "娘に ネクタイを もらいました。",
+        "今日は 会議が 3つ あります。",
+        "週末に うちで 古い 映画を 見ます。"
+      ],
+      "newsEn": [
+        "I got up at six this morning and took a walk in the park.",
+        "I went to Osaka on a business trip last week.",
+        "My daughter gave me a necktie.",
+        "I have three meetings today.",
+        "I will watch an old film at home at the weekend."
+      ]
+    },
+    "fujita": {
+      "places": [
+        "office",
+        "izakaya",
+        "park",
+        "cafe"
+      ],
+      "worksAt": null,
+      "relationEn": "your colleague and friend, an engineer at Midori Design",
+      "casual": true,
+      "likesEn": "music (plays guitar), soccer, ramen, new gadgets",
+      "newsJa": [
+        "きのうの 晩 ラーメンを 食べました。",
+        "日曜日に 友だちと サッカーを しました。",
+        "新しい ギターを 買いました。",
+        "今週 新しい アプリの 仕事が あります。",
+        "土曜日に コンサートへ 行きます。"
+      ],
+      "newsEn": [
+        "I had ramen last night.",
+        "I played soccer with friends on Sunday.",
+        "I bought a new guitar.",
+        "I have work on a new app this week.",
+        "I am going to a concert on Saturday."
+      ]
+    },
+    "hayakawa": {
+      "places": [
+        "classroom",
+        "cafe",
+        "park"
+      ],
+      "worksAt": "classroom",
+      "relationEn": "your Japanese teacher at the language school",
+      "casual": false,
+      "likesEn": "books, kanji, temples in Kyoto, praising students, coffee between classes",
+      "newsJa": [
+        "きのう 学生の 作文を 読みました。とても おもしろいです。",
+        "来週 漢字の テストが あります。",
+        "新しい 日本語の 本を 買いました。",
+        "日曜日に 京都へ 行きました。お寺を 見ました。",
+        "けさ 学校で コーヒーを 飲みました。"
+      ],
+      "newsEn": [
+        "I read my students' compositions yesterday. They are very interesting.",
+        "There is a kanji test next week.",
+        "I bought a new Japanese book.",
+        "I went to Kyoto on Sunday and saw temples.",
+        "I had coffee at school this morning."
+      ]
+    },
+    "ana": {
+      "places": [
+        "classroom",
+        "cafe",
+        "park",
+        "konbini"
+      ],
+      "worksAt": null,
+      "relationEn": "your classmate from Brazil, also learning Japanese",
+      "casual": true,
+      "likesEn": "dancing, Brazilian food, Japanese pop songs, taking photos, her family back home",
+      "newsJa": [
+        "きのう 国の 母に 電話を かけました。",
+        "日曜日に ブラジルの 料理を 作りました。",
+        "漢字の 宿題が たくさん あります。",
+        "新しい 日本の 歌を 聞きました。とても 好きです。",
+        "週末に ダンスの クラスへ 行きます。"
+      ],
+      "newsEn": [
+        "I called my mother back home yesterday.",
+        "I cooked Brazilian food on Sunday.",
+        "I have a lot of kanji homework.",
+        "I listened to a new Japanese song. I like it a lot.",
+        "I am going to a dance class at the weekend."
+      ]
+    },
+    "minh": {
+      "places": [
+        "classroom",
+        "izakaya",
+        "park",
+        "station"
+      ],
+      "worksAt": null,
+      "relationEn": "your classmate from Vietnam, an engineering student",
+      "casual": true,
+      "likesEn": "sleeping in, computers, pho and noodles, online games, video calls with family",
+      "newsJa": [
+        "きのう たくさん 寝ました。",
+        "日曜日に 友だちと フォーを 食べました。",
+        "新しい パソコンを 買いました。ちょっと 高いです。",
+        "けさ バスで 学校へ 来ました。",
+        "今晩 ベトナムの 家族と ビデオ電話を します。"
+      ],
+      "newsEn": [
+        "I slept a lot yesterday.",
+        "I ate pho with a friend on Sunday.",
+        "I bought a new computer. It is a bit expensive.",
+        "I came to school by bus this morning.",
+        "Tonight I will video-call my family in Vietnam."
+      ]
+    },
+    "nishimura": {
+      "places": [
+        "depato",
+        "cafe",
+        "station"
+      ],
+      "worksAt": "depato",
+      "relationEn": "the clerk at the department store where you shop",
+      "casual": false,
+      "likesEn": "fashion, gift wrapping, seasonal sweets, tea with friends on her day off",
+      "newsJa": [
+        "今週 デパートで セールが あります。",
+        "きのう 新しい 冬の コートが 来ました。",
+        "休みの 日に 友だちと 喫茶店へ 行きました。",
+        "今日は お客様が とても 多いです。",
+        "来週から 6階で 北海道の 食べ物の フェアが あります。"
+      ],
+      "newsEn": [
+        "There is a sale at the department store this week.",
+        "New winter coats arrived yesterday.",
+        "I went to a café with a friend on my day off.",
+        "There are a lot of customers today.",
+        "From next week there is a Hokkaido food fair on the 6th floor."
+      ]
+    },
+    "okada": {
+      "places": [
+        "station",
+        "izakaya",
+        "park"
+      ],
+      "worksAt": "station",
+      "relationEn": "the station staff member at your local station",
+      "casual": false,
+      "likesEn": "trains, early mornings, his grandchild, a drink after the last shift",
+      "newsJa": [
+        "けさ 4時半に 起きました。",
+        "きのう 駅に 傘の 忘れ物が たくさん ありました。",
+        "来月 新しい 電車が 来ます。",
+        "休みの 日に 孫と 公園へ 行きました。",
+        "昼ごはんは 駅の 近くの 食堂で 食べます。"
+      ],
+      "newsEn": [
+        "I got up at 4:30 this morning.",
+        "Yesterday there were lots of forgotten umbrellas at the station.",
+        "A new train is coming next month.",
+        "I went to the park with my grandchild on my day off.",
+        "I eat lunch at a diner near the station."
+      ]
+    },
+    "ueda": {
+      "places": [
+        "museum",
+        "cafe",
+        "park"
+      ],
+      "worksAt": "museum",
+      "relationEn": "the receptionist at the art museum",
+      "casual": false,
+      "likesEn": "paintings, films, cake at the museum café, studying French",
+      "newsJa": [
+        "来週から 新しい 絵の 展覧会が あります。",
+        "きのう 外国の お客様が たくさん 来ました。",
+        "休みの 日に 一人で 映画を 見ました。",
+        "美術館の 喫茶店に 新しい ケーキが あります。",
+        "毎晩 フランス語を 勉強します。"
+      ],
+      "newsEn": [
+        "A new exhibition of paintings starts next week.",
+        "Many visitors from abroad came yesterday.",
+        "I watched a film alone on my day off.",
+        "The museum café has a new cake.",
+        "I study French every evening."
+      ]
+    },
+    "sakamoto": {
+      "places": [
+        "cafe",
+        "park",
+        "konbini"
+      ],
+      "worksAt": "cafe",
+      "relationEn": "the owner (マスター) of the café you often visit",
+      "casual": false,
+      "likesEn": "coffee, old jazz records, baking cakes, his grandchild",
+      "newsJa": [
+        "新しい ケーキを 作りました。りんごの ケーキです。",
+        "けさ いい コーヒーの 豆が 来ました。",
+        "きのう 古い ジャズの レコードを 買いました。",
+        "日曜日に 孫が 店へ 来ました。",
+        "来月 店で 小さい コンサートが あります。"
+      ],
+      "newsEn": [
+        "I made a new cake. It is an apple cake.",
+        "Some good coffee beans arrived this morning.",
+        "I bought an old jazz record yesterday.",
+        "My grandchild came to the shop on Sunday.",
+        "There is a small concert at the shop next month."
+      ]
+    },
+    "hara": {
+      "places": [
+        "park",
+        "cafe",
+        "clinic"
+      ],
+      "worksAt": null,
+      "relationEn": "an elderly lady you often meet on her daily walk in the park",
+      "casual": false,
+      "likesEn": "walking in the park, birds and flowers, her vegetable garden, letters from her grandchild",
+      "newsJa": [
+        "けさも 公園を さんぽ しました。",
+        "公園の 池に 鳥が たくさん います。",
+        "きのう 孫に 手紙を もらいました。",
+        "毎朝 6時に ラジオ体操を します。",
+        "うちの 庭に トマトが あります。"
+      ],
+      "newsEn": [
+        "I took a walk in the park this morning too.",
+        "There are many birds at the pond in the park.",
+        "I got a letter from my grandchild yesterday.",
+        "I do radio exercises at six every morning.",
+        "There are tomatoes in my garden."
+      ]
+    },
+    "noguchi": {
+      "places": [
+        "konbini",
+        "park",
+        "izakaya",
+        "station"
+      ],
+      "worksAt": "konbini",
+      "relationEn": "the part-timer at your convenience store, a university student your age",
+      "casual": true,
+      "likesEn": "karaoke, new konbini snacks and ice cream, video games, saving money for a trip",
+      "newsJa": [
+        "来週 大学の テストが あります。",
+        "きのう 夜 11時まで 働きました。",
+        "コンビニに 新しい アイスクリームが あります。",
+        "日曜日に 友だちと カラオケへ 行きました。",
+        "今 お金が あまり ありません。"
+      ],
+      "newsEn": [
+        "I have university exams next week.",
+        "I worked until 11 last night.",
+        "There is a new ice cream at the convenience store.",
+        "I went to karaoke with friends on Sunday.",
+        "I don't have much money right now."
+      ]
+    },
+    "murakami": {
+      "places": [
+        "office",
+        "interview",
+        "cafe",
+        "izakaya"
+      ],
+      "worksAt": null,
+      "relationEn": "the project leader of the development team at Midori Design, your senior at work",
+      "casual": false,
+      "likesEn": "well-run projects, good coffee, yoga, helping juniors grow",
+      "newsJa": [
+        "けさ チームの 会議が ありました。",
+        "来週 新しい プロジェクトが 始まります。",
+        "きのう 9時まで 会社で 働きました。",
+        "週末に ヨガの クラスへ 行きます。",
+        "新しい コーヒーメーカーを 買いました。"
+      ],
+      "newsEn": [
+        "We had a team meeting this morning.",
+        "A new project starts next week.",
+        "I worked at the office until nine yesterday.",
+        "I am going to a yoga class at the weekend.",
+        "I bought a new coffee maker."
+      ]
+    },
+    "takeuchi": {
+      "places": [
+        "station",
+        "cafe",
+        "park",
+        "depato"
+      ],
+      "worksAt": null,
+      "relationEn": "a friendly office worker you often run into around town",
+      "casual": false,
+      "likesEn": "hot springs, bakeries, lunch in the park, being on time",
+      "newsJa": [
+        "けさ 電車が 10分 遅れました。",
+        "今週は 仕事が 忙しいです。",
+        "昼休みに 公園で お弁当を 食べました。",
+        "週末に 母と 温泉へ 行きます。",
+        "駅の 近くの 新しい パン屋で パンを 買いました。"
+      ],
+      "newsEn": [
+        "The train was ten minutes late this morning.",
+        "Work is busy this week.",
+        "I ate my boxed lunch in the park at lunchtime.",
+        "I am going to a hot spring with my mother at the weekend.",
+        "I bought bread at the new bakery near the station."
+      ]
+    },
+    "ishida": {
+      "places": [
+        "clinic",
+        "park",
+        "cafe"
+      ],
+      "worksAt": "clinic",
+      "relationEn": "the doctor at the town clinic",
+      "casual": false,
+      "likesEn": "walking, mountains, healthy home-made lunches, mandarin oranges",
+      "newsJa": [
+        "今週は かぜの 人が 多いです。",
+        "毎朝 30分 歩きます。",
+        "休みの 日に 山へ 行きました。",
+        "昼ごはんは いつも お弁当です。",
+        "きのう 友だちに おいしい みかんを もらいました。"
+      ],
+      "newsEn": [
+        "Many people have colds this week.",
+        "I walk for thirty minutes every morning.",
+        "I went to the mountains on my day off.",
+        "My lunch is always a boxed lunch.",
+        "A friend gave me delicious mandarin oranges yesterday."
+      ]
+    },
+    "nakano": {
+      "places": [
+        "izakaya",
+        "konbini",
+        "park"
+      ],
+      "worksAt": "izakaya",
+      "relationEn": "the owner of the izakaya Daichi, where you sometimes eat",
+      "casual": false,
+      "likesEn": "fresh fish, talking with customers, baseball, inventing new dishes",
+      "newsJa": [
+        "けさ 市場で いい 魚を 買いました。",
+        "店に 新しい メニューが あります。からあげです。",
+        "きのうの 晩 お客さんが たくさん 来ました。",
+        "月曜日は 店の 休みです。うちで 寝ます。",
+        "日曜日に 息子と 野球を 見ました。"
+      ],
+      "newsEn": [
+        "I bought good fish at the market this morning.",
+        "There is a new item on the menu. Fried chicken.",
+        "Lots of customers came last night.",
+        "Monday is the shop holiday. I sleep at home.",
+        "I watched baseball with my son on Sunday."
+      ]
+    },
+    "kuroiwa": {
+      "places": [
+        "interview",
+        "station"
+      ],
+      "worksAt": null,
+      "relationEn": "the development manager at Kurogane System, a strict interviewer you have met",
+      "casual": false,
+      "likesEn": "precise answers, shogi, plain soba for lunch, punctuality",
+      "newsJa": [
+        "今週は 面接が たくさん あります。",
+        "けさ 7時に 会社へ 来ました。",
+        "昼ごはんは 毎日 同じ 店の そばです。",
+        "きのう 11時まで 資料を 読みました。",
+        "休みの 日は 一人で 将棋を します。"
+      ],
+      "newsEn": [
+        "I have many interviews this week.",
+        "I came to the office at seven this morning.",
+        "My lunch is soba from the same shop every day.",
+        "I read documents until eleven yesterday.",
+        "On my days off I play shogi alone."
+      ]
+    },
+    "shiraishi": {
+      "places": [
+        "interview",
+        "cafe",
+        "station"
+      ],
+      "worksAt": null,
+      "relationEn": "the HR officer at Kurogane System, the second interviewer",
+      "casual": false,
+      "likesEn": "schedules that run on time, tidy documents, her cat",
+      "newsJa": [
+        "今日は 面接が 4つ あります。",
+        "けさ 新しい 質問シートを 作りました。",
+        "昼休みは 15分だけです。",
+        "来月 会社の 説明会が あります。",
+        "うちに ねこが います。名前は クロです。"
+      ],
+      "newsEn": [
+        "I have four interviews today.",
+        "I made a new question sheet this morning.",
+        "My lunch break is only fifteen minutes.",
+        "There is a company information session next month.",
+        "I have a cat at home. Its name is Kuro."
+      ]
+    }
+  },
+  "topics": [
+    {
+      "id": "self_intro",
+      "kind": "chat",
+      "titleJa": "はじめまして",
+      "titleEn": "Getting to know each other",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "situationEn": "You have seen each other around town but never really talked. A relaxed first proper chat.",
+      "openerEn": "Say hello, give your own name and one thing about yourself, then ask where the learner is from and what they do.",
+      "ideasEn": [
+        "Say your name and that you are from Cambodia",
+        "Say you are an IT student",
+        "Say how long you have studied Japanese",
+        "Ask about their job or their day"
+      ],
+      "startersJa": [
+        "わたしは カンボジアから 来ました。",
+        "ITの 学生です。",
+        "お仕事は 何ですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "学生",
+          "kana": "がくせい",
+          "en": "student"
+        },
+        {
+          "ja": "国",
+          "kana": "くに",
+          "en": "country"
+        },
+        {
+          "ja": "仕事",
+          "kana": "しごと",
+          "en": "job, work"
+        },
+        {
+          "ja": "専門",
+          "kana": "せんもん",
+          "en": "major, speciality"
+        },
+        {
+          "ja": "カンボジア",
+          "kana": "カンボジア",
+          "en": "Cambodia"
+        },
+        {
+          "ja": "日本語",
+          "kana": "にほんご",
+          "en": "Japanese language"
+        }
+      ]
+    },
+    {
+      "id": "weekend",
+      "kind": "chat",
+      "titleJa": "週末の こと",
+      "titleEn": "Your weekend",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner did last weekend and mention your own weekend briefly. On harder levels also ask about plans for the next one.",
+      "ideasEn": [
+        "Say what you did on Saturday",
+        "Say where you went and with whom",
+        "Say how it was",
+        "Ask what they did"
+      ],
+      "startersJa": [
+        "週末は 何を しましたか。",
+        "わたしは 土曜日に 友だちと …",
+        "どこも 行きませんでした。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "週末",
+          "kana": "しゅうまつ",
+          "en": "weekend"
+        },
+        {
+          "ja": "土曜日",
+          "kana": "どようび",
+          "en": "Saturday"
+        },
+        {
+          "ja": "日曜日",
+          "kana": "にちようび",
+          "en": "Sunday"
+        },
+        {
+          "ja": "友だち",
+          "kana": "ともだち",
+          "en": "friend"
+        },
+        {
+          "ja": "映画",
+          "kana": "えいが",
+          "en": "film"
+        },
+        {
+          "ja": "買い物",
+          "kana": "かいもの",
+          "en": "shopping"
+        },
+        {
+          "ja": "休みます",
+          "kana": "やすみます",
+          "en": "to rest"
+        }
+      ]
+    },
+    {
+      "id": "daily_routine",
+      "kind": "chat",
+      "titleJa": "毎日の 生活",
+      "titleEn": "Your daily routine",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask what time the learner gets up and what a normal day looks like; compare with your own day.",
+      "ideasEn": [
+        "Say what time you get up and go to bed",
+        "Say when and where you study",
+        "Say what you do in the evening",
+        "Ask about their day"
+      ],
+      "startersJa": [
+        "毎朝 6時に 起きます。",
+        "8時から 4時まで 大学で 勉強します。",
+        "何時に 寝ますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "毎朝",
+          "kana": "まいあさ",
+          "en": "every morning"
+        },
+        {
+          "ja": "毎晩",
+          "kana": "まいばん",
+          "en": "every evening"
+        },
+        {
+          "ja": "起きます",
+          "kana": "おきます",
+          "en": "to get up"
+        },
+        {
+          "ja": "寝ます",
+          "kana": "ねます",
+          "en": "to go to bed"
+        },
+        {
+          "ja": "大学",
+          "kana": "だいがく",
+          "en": "university"
+        },
+        {
+          "ja": "昼ごはん",
+          "kana": "ひるごはん",
+          "en": "lunch"
+        },
+        {
+          "ja": "〜時半",
+          "kana": "〜じはん",
+          "en": "half past …"
+        }
+      ]
+    },
+    {
+      "id": "favorite_food",
+      "kind": "chat",
+      "titleJa": "好きな 食べ物",
+      "titleEn": "Favourite food",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask what food the learner likes and whether they have tried Japanese food; share your own favourite.",
+      "ideasEn": [
+        "Say what food you like and dislike",
+        "Say what Japanese food you know",
+        "Say what you ate today",
+        "Ask what they like"
+      ],
+      "startersJa": [
+        "わたしは めんの 料理が 好きです。",
+        "すしも 好きです。",
+        "どんな 食べ物が 好きですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "食べ物",
+          "kana": "たべもの",
+          "en": "food"
+        },
+        {
+          "ja": "好き",
+          "kana": "すき",
+          "en": "like"
+        },
+        {
+          "ja": "きらい",
+          "kana": "きらい",
+          "en": "dislike"
+        },
+        {
+          "ja": "おいしい",
+          "kana": "おいしい",
+          "en": "delicious"
+        },
+        {
+          "ja": "からい",
+          "kana": "からい",
+          "en": "spicy"
+        },
+        {
+          "ja": "あまい",
+          "kana": "あまい",
+          "en": "sweet"
+        },
+        {
+          "ja": "すし",
+          "kana": "すし",
+          "en": "sushi"
+        },
+        {
+          "ja": "ラーメン",
+          "kana": "ラーメン",
+          "en": "ramen"
+        }
+      ]
+    },
+    {
+      "id": "khmer_food",
+      "kind": "chat",
+      "titleJa": "カンボジアの 料理",
+      "titleEn": "Cambodian food",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "situationEn": "The partner has never eaten Cambodian food and is curious.",
+      "openerEn": "Say you have never tried Cambodian food and ask what the learner recommends. Be curious about ingredients and taste; on harder levels ask how it is made.",
+      "ideasEn": [
+        "Name a dish (amok, kuy teav noodles, lok lak) and say what is in it",
+        "Say whether it is spicy or sweet",
+        "Say when people eat it",
+        "Compare it with a Japanese dish"
+      ],
+      "startersJa": [
+        "アモックは 魚の 料理です。",
+        "あまり からくないです。",
+        "朝 クイティウを 食べます。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "料理",
+          "kana": "りょうり",
+          "en": "dish, cooking"
+        },
+        {
+          "ja": "魚",
+          "kana": "さかな",
+          "en": "fish"
+        },
+        {
+          "ja": "米",
+          "kana": "こめ",
+          "en": "rice"
+        },
+        {
+          "ja": "めん",
+          "kana": "めん",
+          "en": "noodles"
+        },
+        {
+          "ja": "ココナッツ",
+          "kana": "ココナッツ",
+          "en": "coconut"
+        },
+        {
+          "ja": "やさい",
+          "kana": "やさい",
+          "en": "vegetables"
+        },
+        {
+          "ja": "有名",
+          "kana": "ゆうめい",
+          "en": "famous"
+        },
+        {
+          "ja": "味",
+          "kana": "あじ",
+          "en": "taste"
+        }
+      ]
+    },
+    {
+      "id": "hometown",
+      "kind": "chat",
+      "titleJa": "わたしの ふるさと",
+      "titleEn": "Your hometown",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask which town in Cambodia the learner is from and what it is like; say a word about your own hometown in Japan.",
+      "ideasEn": [
+        "Say where your hometown is",
+        "Say what is there (river, market, temple)",
+        "Say whether it is big, quiet or lively",
+        "Ask about their hometown"
+      ],
+      "startersJa": [
+        "わたしの 町は プノンペンです。",
+        "大きい 川が あります。",
+        "にぎやかな 町です。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "ふるさと",
+          "kana": "ふるさと",
+          "en": "hometown"
+        },
+        {
+          "ja": "町",
+          "kana": "まち",
+          "en": "town"
+        },
+        {
+          "ja": "川",
+          "kana": "かわ",
+          "en": "river"
+        },
+        {
+          "ja": "市場",
+          "kana": "いちば",
+          "en": "market"
+        },
+        {
+          "ja": "お寺",
+          "kana": "おてら",
+          "en": "temple"
+        },
+        {
+          "ja": "にぎやか",
+          "kana": "にぎやか",
+          "en": "lively"
+        },
+        {
+          "ja": "静か",
+          "kana": "しずか",
+          "en": "quiet"
+        },
+        {
+          "ja": "いなか",
+          "kana": "いなか",
+          "en": "countryside"
+        }
+      ]
+    },
+    {
+      "id": "family",
+      "kind": "chat",
+      "titleJa": "家族の こと",
+      "titleEn": "Your family",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask how many people are in the learner's family and where they live; say a little about your own family.",
+      "ideasEn": [
+        "Say how many people are in your family",
+        "Say where your parents live and what they do",
+        "Talk about a brother or sister",
+        "Ask about their family"
+      ],
+      "startersJa": [
+        "家族は 5人です。",
+        "兄が 一人 います。",
+        "両親は シェムリアップに います。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "家族",
+          "kana": "かぞく",
+          "en": "family"
+        },
+        {
+          "ja": "両親",
+          "kana": "りょうしん",
+          "en": "parents"
+        },
+        {
+          "ja": "父",
+          "kana": "ちち",
+          "en": "(my) father"
+        },
+        {
+          "ja": "母",
+          "kana": "はは",
+          "en": "(my) mother"
+        },
+        {
+          "ja": "兄",
+          "kana": "あに",
+          "en": "(my) older brother"
+        },
+        {
+          "ja": "姉",
+          "kana": "あね",
+          "en": "(my) older sister"
+        },
+        {
+          "ja": "弟",
+          "kana": "おとうと",
+          "en": "(my) younger brother"
+        },
+        {
+          "ja": "妹",
+          "kana": "いもうと",
+          "en": "(my) younger sister"
+        }
+      ]
+    },
+    {
+      "id": "weather_today",
+      "kind": "chat",
+      "titleJa": "今日の 天気",
+      "titleEn": "Today's weather",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "situationEn": "Classic Japanese small talk: the weather comes first, then something else follows naturally.",
+      "openerEn": "Start with a remark about today's weather, the way Japanese small talk usually begins, then ask how the weather is in Cambodia now.",
+      "ideasEn": [
+        "Agree and add your own comment about the weather",
+        "Say how the weather is in Cambodia now",
+        "Say what weather you like",
+        "Say what you do on rainy days"
+      ],
+      "startersJa": [
+        "今日は いい 天気ですね。",
+        "カンボジアは 毎日 暑いです。",
+        "雨の 日は うちで 勉強します。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "天気",
+          "kana": "てんき",
+          "en": "weather"
+        },
+        {
+          "ja": "雨",
+          "kana": "あめ",
+          "en": "rain"
+        },
+        {
+          "ja": "晴れ",
+          "kana": "はれ",
+          "en": "sunny"
+        },
+        {
+          "ja": "くもり",
+          "kana": "くもり",
+          "en": "cloudy"
+        },
+        {
+          "ja": "暑い",
+          "kana": "あつい",
+          "en": "hot"
+        },
+        {
+          "ja": "寒い",
+          "kana": "さむい",
+          "en": "cold"
+        },
+        {
+          "ja": "涼しい",
+          "kana": "すずしい",
+          "en": "cool"
+        },
+        {
+          "ja": "傘",
+          "kana": "かさ",
+          "en": "umbrella"
+        }
+      ]
+    },
+    {
+      "id": "seasons",
+      "kind": "chat",
+      "titleJa": "季節の 話",
+      "titleEn": "Seasons: Japan and Cambodia",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Say which Japanese season you like and why, then ask about the seasons in Cambodia (rainy and dry season) and which the learner prefers.",
+      "ideasEn": [
+        "Explain that Cambodia has a rainy season and a dry season",
+        "Say which Japanese season you want to see and why",
+        "Compare how hot it gets",
+        "Ask what people do in each season in Japan"
+      ],
+      "startersJa": [
+        "カンボジアには 雨季と 乾季が あります。",
+        "雪を 見たことが ありません。",
+        "春と 秋と どちらが 好きですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "季節",
+          "kana": "きせつ",
+          "en": "season"
+        },
+        {
+          "ja": "春",
+          "kana": "はる",
+          "en": "spring"
+        },
+        {
+          "ja": "夏",
+          "kana": "なつ",
+          "en": "summer"
+        },
+        {
+          "ja": "秋",
+          "kana": "あき",
+          "en": "autumn"
+        },
+        {
+          "ja": "冬",
+          "kana": "ふゆ",
+          "en": "winter"
+        },
+        {
+          "ja": "雨季",
+          "kana": "うき",
+          "en": "rainy season"
+        },
+        {
+          "ja": "乾季",
+          "kana": "かんき",
+          "en": "dry season"
+        },
+        {
+          "ja": "雪",
+          "kana": "ゆき",
+          "en": "snow"
+        }
+      ]
+    },
+    {
+      "id": "new_year_compare",
+      "kind": "chat",
+      "titleJa": "お正月を くらべましょう",
+      "titleEn": "New Year: Khmer and Japanese",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Tell briefly what you do at Japanese New Year (visit a shrine, eat special food, see family) and ask what people do at Khmer New Year in April.",
+      "ideasEn": [
+        "Say that Khmer New Year is in April and lasts three days",
+        "Say you go back to your hometown and visit the pagoda",
+        "Talk about water splashing and traditional games",
+        "Ask what Japanese people eat at New Year"
+      ],
+      "startersJa": [
+        "カンボジアの お正月は 4月です。",
+        "みんな ふるさとへ 帰って、お寺へ 行きます。",
+        "水を かけて 遊びます。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "お正月",
+          "kana": "おしょうがつ",
+          "en": "New Year"
+        },
+        {
+          "ja": "4月",
+          "kana": "しがつ",
+          "en": "April"
+        },
+        {
+          "ja": "お寺",
+          "kana": "おてら",
+          "en": "temple, pagoda"
+        },
+        {
+          "ja": "神社",
+          "kana": "じんじゃ",
+          "en": "shrine"
+        },
+        {
+          "ja": "水",
+          "kana": "みず",
+          "en": "water"
+        },
+        {
+          "ja": "帰ります",
+          "kana": "かえります",
+          "en": "to go home"
+        },
+        {
+          "ja": "遊びます",
+          "kana": "あそびます",
+          "en": "to play"
+        },
+        {
+          "ja": "お祝い",
+          "kana": "おいわい",
+          "en": "celebration"
+        }
+      ]
+    },
+    {
+      "id": "obon_pchum_ben",
+      "kind": "chat",
+      "titleJa": "お盆と プチュンバン",
+      "titleEn": "Obon and Pchum Ben",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Explain in a sentence that Japanese families remember their ancestors at Obon in summer, then ask whether Cambodia has a similar festival and how it is different.",
+      "ideasEn": [
+        "Explain that Pchum Ben is a festival for ancestors, in September or October",
+        "Say that people bring food to the pagoda early in the morning",
+        "Say what is similar to Obon and what is different",
+        "Say what your own family does"
+      ],
+      "startersJa": [
+        "プチュンバンは 先祖の ための お祭りです。",
+        "お盆と 似て いると 思います。",
+        "朝 早く お寺に 食べ物を 持って 行きます。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "お盆",
+          "kana": "おぼん",
+          "en": "Obon"
+        },
+        {
+          "ja": "先祖",
+          "kana": "せんぞ",
+          "en": "ancestors"
+        },
+        {
+          "ja": "お祭り",
+          "kana": "おまつり",
+          "en": "festival"
+        },
+        {
+          "ja": "お寺",
+          "kana": "おてら",
+          "en": "temple, pagoda"
+        },
+        {
+          "ja": "お坊さん",
+          "kana": "おぼうさん",
+          "en": "monk"
+        },
+        {
+          "ja": "似て います",
+          "kana": "にて います",
+          "en": "to be similar"
+        },
+        {
+          "ja": "違います",
+          "kana": "ちがいます",
+          "en": "to be different"
+        },
+        {
+          "ja": "習慣",
+          "kana": "しゅうかん",
+          "en": "custom"
+        }
+      ]
+    },
+    {
+      "id": "hobbies",
+      "kind": "chat",
+      "titleJa": "しゅみ",
+      "titleEn": "Hobbies",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner does in their free time and mention one of your own hobbies; follow up on whatever they say.",
+      "ideasEn": [
+        "Say what your hobby is",
+        "Say how often and with whom you do it",
+        "Say when you started",
+        "Ask about their hobby"
+      ],
+      "startersJa": [
+        "しゅみは 音楽です。",
+        "休みの 日に 友だちと サッカーを します。",
+        "しゅみは 何ですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "しゅみ",
+          "kana": "しゅみ",
+          "en": "hobby"
+        },
+        {
+          "ja": "音楽",
+          "kana": "おんがく",
+          "en": "music"
+        },
+        {
+          "ja": "ゲーム",
+          "kana": "ゲーム",
+          "en": "game"
+        },
+        {
+          "ja": "写真",
+          "kana": "しゃしん",
+          "en": "photo"
+        },
+        {
+          "ja": "読みます",
+          "kana": "よみます",
+          "en": "to read"
+        },
+        {
+          "ja": "ひまな とき",
+          "kana": "ひまな とき",
+          "en": "in free time"
+        },
+        {
+          "ja": "ときどき",
+          "kana": "ときどき",
+          "en": "sometimes"
+        },
+        {
+          "ja": "上手",
+          "kana": "じょうず",
+          "en": "good at"
+        }
+      ]
+    },
+    {
+      "id": "music_movies",
+      "kind": "chat",
+      "titleJa": "音楽と 映画",
+      "titleEn": "Music and films",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask what kind of music or films the learner likes and name one you like; ask about a famous Cambodian singer or film.",
+      "ideasEn": [
+        "Say what kind of music you like",
+        "Name a singer or a film you like",
+        "Say when you listen to music",
+        "Ask what they recommend"
+      ],
+      "startersJa": [
+        "日本の 歌が 好きです。",
+        "よく スマホで 音楽を 聞きます。",
+        "どんな 映画が 好きですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "音楽",
+          "kana": "おんがく",
+          "en": "music"
+        },
+        {
+          "ja": "歌",
+          "kana": "うた",
+          "en": "song"
+        },
+        {
+          "ja": "歌手",
+          "kana": "かしゅ",
+          "en": "singer"
+        },
+        {
+          "ja": "映画",
+          "kana": "えいが",
+          "en": "film"
+        },
+        {
+          "ja": "聞きます",
+          "kana": "ききます",
+          "en": "to listen"
+        },
+        {
+          "ja": "見ます",
+          "kana": "みます",
+          "en": "to watch"
+        },
+        {
+          "ja": "有名",
+          "kana": "ゆうめい",
+          "en": "famous"
+        },
+        {
+          "ja": "おもしろい",
+          "kana": "おもしろい",
+          "en": "interesting, fun"
+        }
+      ]
+    },
+    {
+      "id": "anime_manga",
+      "kind": "chat",
+      "titleJa": "アニメと まんが",
+      "titleEn": "Anime and manga",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask whether the learner watches anime or reads manga and whether that helped their Japanese; admit which ones you know (or do not know) in keeping with your age.",
+      "ideasEn": [
+        "Name an anime you like and say what kind of story it is",
+        "Say which character you like and why",
+        "Say whether you watch it in Japanese",
+        "Ask what was popular when they were young"
+      ],
+      "startersJa": [
+        "子どもの ときから アニメを 見て います。",
+        "アニメで 日本語を 覚えました。",
+        "どんな アニメが 人気ですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "アニメ",
+          "kana": "アニメ",
+          "en": "anime"
+        },
+        {
+          "ja": "まんが",
+          "kana": "まんが",
+          "en": "manga"
+        },
+        {
+          "ja": "話",
+          "kana": "はなし",
+          "en": "story"
+        },
+        {
+          "ja": "人気",
+          "kana": "にんき",
+          "en": "popular"
+        },
+        {
+          "ja": "主人公",
+          "kana": "しゅじんこう",
+          "en": "main character"
+        },
+        {
+          "ja": "字幕",
+          "kana": "じまく",
+          "en": "subtitles"
+        },
+        {
+          "ja": "覚えます",
+          "kana": "おぼえます",
+          "en": "to memorise"
+        },
+        {
+          "ja": "最近",
+          "kana": "さいきん",
+          "en": "recently"
+        }
+      ]
+    },
+    {
+      "id": "sports",
+      "kind": "chat",
+      "titleJa": "スポーツ",
+      "titleEn": "Sports",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask whether the learner plays or watches any sport and say which one you like; ask what sport is popular in Cambodia.",
+      "ideasEn": [
+        "Say what sport you play or watch",
+        "Say that soccer and volleyball are popular in Cambodia",
+        "Say whether you are good at it",
+        "Invite them to play or watch together"
+      ],
+      "startersJa": [
+        "サッカーが 好きです。",
+        "あまり 上手じゃ ありません。",
+        "いっしょに しませんか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "スポーツ",
+          "kana": "スポーツ",
+          "en": "sport"
+        },
+        {
+          "ja": "サッカー",
+          "kana": "サッカー",
+          "en": "soccer"
+        },
+        {
+          "ja": "野球",
+          "kana": "やきゅう",
+          "en": "baseball"
+        },
+        {
+          "ja": "バレーボール",
+          "kana": "バレーボール",
+          "en": "volleyball"
+        },
+        {
+          "ja": "試合",
+          "kana": "しあい",
+          "en": "match"
+        },
+        {
+          "ja": "上手",
+          "kana": "じょうず",
+          "en": "good at"
+        },
+        {
+          "ja": "下手",
+          "kana": "へた",
+          "en": "bad at"
+        },
+        {
+          "ja": "泳ぎます",
+          "kana": "およぎます",
+          "en": "to swim"
+        }
+      ]
+    },
+    {
+      "id": "studying_japanese",
+      "kind": "chat",
+      "titleJa": "日本語の 勉強",
+      "titleEn": "Studying Japanese",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask how long the learner has studied Japanese and what is hard for them; encourage them and ask how they practise.",
+      "ideasEn": [
+        "Say how long you have studied",
+        "Say what is difficult (kanji, listening, speaking)",
+        "Say how you study",
+        "Ask for advice"
+      ],
+      "startersJa": [
+        "1年 日本語を 勉強しました。",
+        "漢字が むずかしいです。",
+        "毎晩 うちで 勉強します。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "勉強",
+          "kana": "べんきょう",
+          "en": "study"
+        },
+        {
+          "ja": "漢字",
+          "kana": "かんじ",
+          "en": "kanji"
+        },
+        {
+          "ja": "ことば",
+          "kana": "ことば",
+          "en": "word"
+        },
+        {
+          "ja": "文法",
+          "kana": "ぶんぽう",
+          "en": "grammar"
+        },
+        {
+          "ja": "会話",
+          "kana": "かいわ",
+          "en": "conversation"
+        },
+        {
+          "ja": "むずかしい",
+          "kana": "むずかしい",
+          "en": "difficult"
+        },
+        {
+          "ja": "試験",
+          "kana": "しけん",
+          "en": "exam"
+        },
+        {
+          "ja": "練習",
+          "kana": "れんしゅう",
+          "en": "practice"
+        }
+      ]
+    },
+    {
+      "id": "funny_japanese",
+      "kind": "chat",
+      "titleJa": "おもしろい 日本語",
+      "titleEn": "Funny and tricky Japanese",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask which Japanese word or expression the learner finds funny, strange or easy to mix up, and offer one yourself (for example words that sound alike).",
+      "ideasEn": [
+        "Name a word you like or often get wrong",
+        "Tell about a mistake you made in Japanese",
+        "Teach them a Khmer word (hello, thank you)",
+        "Ask what a word you heard means"
+      ],
+      "startersJa": [
+        "「びょういん」と「びよういん」を よく まちがえます。",
+        "クメール語で「ありがとう」は「オークン」です。",
+        "〜は どういう 意味ですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "意味",
+          "kana": "いみ",
+          "en": "meaning"
+        },
+        {
+          "ja": "発音",
+          "kana": "はつおん",
+          "en": "pronunciation"
+        },
+        {
+          "ja": "まちがえます",
+          "kana": "まちがえます",
+          "en": "to make a mistake"
+        },
+        {
+          "ja": "似て います",
+          "kana": "にて います",
+          "en": "to be similar"
+        },
+        {
+          "ja": "クメール語",
+          "kana": "クメールご",
+          "en": "Khmer language"
+        },
+        {
+          "ja": "あいさつ",
+          "kana": "あいさつ",
+          "en": "greeting"
+        },
+        {
+          "ja": "病院",
+          "kana": "びょういん",
+          "en": "hospital"
+        },
+        {
+          "ja": "美容院",
+          "kana": "びよういん",
+          "en": "hair salon"
+        }
+      ]
+    },
+    {
+      "id": "it_study",
+      "kind": "chat",
+      "titleJa": "ITの 勉強",
+      "titleEn": "Studying IT",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner studies in IT and what they have made so far; react with interest whatever your own knowledge of computers is.",
+      "ideasEn": [
+        "Say what you study (programming, web, networks)",
+        "Say what you have made or want to make",
+        "Say which part is fun and which is hard",
+        "Ask whether they use computers at work"
+      ],
+      "startersJa": [
+        "大学で プログラミングを 勉強して います。",
+        "友だちと アプリを 作りました。",
+        "ウェブサイトを 作るのが 好きです。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "プログラミング",
+          "kana": "プログラミング",
+          "en": "programming"
+        },
+        {
+          "ja": "アプリ",
+          "kana": "アプリ",
+          "en": "app"
+        },
+        {
+          "ja": "ウェブサイト",
+          "kana": "ウェブサイト",
+          "en": "website"
+        },
+        {
+          "ja": "パソコン",
+          "kana": "パソコン",
+          "en": "computer"
+        },
+        {
+          "ja": "作ります",
+          "kana": "つくります",
+          "en": "to make"
+        },
+        {
+          "ja": "授業",
+          "kana": "じゅぎょう",
+          "en": "class"
+        },
+        {
+          "ja": "課題",
+          "kana": "かだい",
+          "en": "assignment"
+        },
+        {
+          "ja": "チーム",
+          "kana": "チーム",
+          "en": "team"
+        }
+      ]
+    },
+    {
+      "id": "smartphone",
+      "kind": "chat",
+      "titleJa": "スマホと アプリ",
+      "titleEn": "Your phone and apps",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask which apps the learner uses every day and show mild curiosity about apps used in Cambodia.",
+      "ideasEn": [
+        "Say which apps you use every day",
+        "Say what you do with your phone (music, messages, study)",
+        "Say how many hours you use it",
+        "Ask which apps they use"
+      ],
+      "startersJa": [
+        "毎日 スマホで 音楽を 聞きます。",
+        "スマホで 日本語を 勉強します。",
+        "どんな アプリが 好きですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "スマホ",
+          "kana": "スマホ",
+          "en": "smartphone"
+        },
+        {
+          "ja": "アプリ",
+          "kana": "アプリ",
+          "en": "app"
+        },
+        {
+          "ja": "写真",
+          "kana": "しゃしん",
+          "en": "photo"
+        },
+        {
+          "ja": "メッセージ",
+          "kana": "メッセージ",
+          "en": "message"
+        },
+        {
+          "ja": "動画",
+          "kana": "どうが",
+          "en": "video"
+        },
+        {
+          "ja": "便利",
+          "kana": "べんり",
+          "en": "convenient"
+        },
+        {
+          "ja": "毎日",
+          "kana": "まいにち",
+          "en": "every day"
+        },
+        {
+          "ja": "使います",
+          "kana": "つかいます",
+          "en": "to use"
+        }
+      ]
+    },
+    {
+      "id": "ai_and_work",
+      "kind": "chat",
+      "titleJa": "AIと これからの 仕事",
+      "titleEn": "AI and the future of work",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Ask whether the learner uses AI tools for study or programming and what they think will change in jobs; give your own honest view from your own job.",
+      "ideasEn": [
+        "Say how you use AI when you study or code",
+        "Give one good point and one worry",
+        "Say what you think people will still need to do",
+        "Ask whether their work has changed"
+      ],
+      "startersJa": [
+        "プログラムを 書く とき、AIを 使って います。",
+        "便利ですが、自分で 考える ことも 大切だと 思います。",
+        "仕事は 変わると 思いますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "AI",
+          "kana": "エーアイ",
+          "en": "AI"
+        },
+        {
+          "ja": "技術",
+          "kana": "ぎじゅつ",
+          "en": "technology"
+        },
+        {
+          "ja": "将来",
+          "kana": "しょうらい",
+          "en": "future"
+        },
+        {
+          "ja": "変わります",
+          "kana": "かわります",
+          "en": "to change"
+        },
+        {
+          "ja": "便利",
+          "kana": "べんり",
+          "en": "convenient"
+        },
+        {
+          "ja": "心配",
+          "kana": "しんぱい",
+          "en": "worry"
+        },
+        {
+          "ja": "必要",
+          "kana": "ひつよう",
+          "en": "necessary"
+        },
+        {
+          "ja": "考えます",
+          "kana": "かんがえます",
+          "en": "to think"
+        }
+      ]
+    },
+    {
+      "id": "dream_job",
+      "kind": "chat",
+      "titleJa": "将来の 夢",
+      "titleEn": "Your dream for the future",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner wants to do after graduating and tell them what you wanted to be when you were young.",
+      "ideasEn": [
+        "Say what job you want",
+        "Say why",
+        "Say what you are doing now to get there",
+        "Ask how they chose their job"
+      ],
+      "startersJa": [
+        "将来 エンジニアに なりたいです。",
+        "日本の 会社で 働きたいです。",
+        "どうして 今の 仕事を 選びましたか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "夢",
+          "kana": "ゆめ",
+          "en": "dream"
+        },
+        {
+          "ja": "将来",
+          "kana": "しょうらい",
+          "en": "future"
+        },
+        {
+          "ja": "エンジニア",
+          "kana": "エンジニア",
+          "en": "engineer"
+        },
+        {
+          "ja": "卒業",
+          "kana": "そつぎょう",
+          "en": "graduation"
+        },
+        {
+          "ja": "働きます",
+          "kana": "はたらきます",
+          "en": "to work"
+        },
+        {
+          "ja": "会社",
+          "kana": "かいしゃ",
+          "en": "company"
+        },
+        {
+          "ja": "経験",
+          "kana": "けいけん",
+          "en": "experience"
+        },
+        {
+          "ja": "がんばります",
+          "kana": "がんばります",
+          "en": "to do one's best"
+        }
+      ]
+    },
+    {
+      "id": "work_in_japan",
+      "kind": "chat",
+      "titleJa": "日本で 働く こと",
+      "titleEn": "Working in Japan",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask why the learner is interested in working in Japan and what worries them; share something true about working life in Japan from your own position.",
+      "ideasEn": [
+        "Say why you want to work in Japan",
+        "Say what worries you (language, winter, being far from family)",
+        "Ask what Japanese companies expect",
+        "Ask about a normal working day"
+      ],
+      "startersJa": [
+        "日本の IT会社で 働きたいです。",
+        "日本語が ちょっと 心配です。",
+        "仕事は 何時から 何時までですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "働きます",
+          "kana": "はたらきます",
+          "en": "to work"
+        },
+        {
+          "ja": "会社",
+          "kana": "かいしゃ",
+          "en": "company"
+        },
+        {
+          "ja": "給料",
+          "kana": "きゅうりょう",
+          "en": "salary"
+        },
+        {
+          "ja": "残業",
+          "kana": "ざんぎょう",
+          "en": "overtime"
+        },
+        {
+          "ja": "心配",
+          "kana": "しんぱい",
+          "en": "worry"
+        },
+        {
+          "ja": "経験",
+          "kana": "けいけん",
+          "en": "experience"
+        },
+        {
+          "ja": "生活",
+          "kana": "せいかつ",
+          "en": "daily life"
+        },
+        {
+          "ja": "先輩",
+          "kana": "せんぱい",
+          "en": "senior colleague"
+        }
+      ]
+    },
+    {
+      "id": "travel_wish",
+      "kind": "chat",
+      "titleJa": "行きたい 所",
+      "titleEn": "Places you want to go",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask where the learner has travelled and where they want to go in Japan; recommend one place you like.",
+      "ideasEn": [
+        "Say where you went before",
+        "Say where you want to go in Japan and what you want to see",
+        "Ask what they recommend",
+        "Ask how to get there and how much it costs"
+      ],
+      "startersJa": [
+        "去年 シェムリアップへ 行きました。",
+        "京都へ 行きたいです。",
+        "どこが いいですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "旅行",
+          "kana": "りょこう",
+          "en": "trip"
+        },
+        {
+          "ja": "京都",
+          "kana": "きょうと",
+          "en": "Kyoto"
+        },
+        {
+          "ja": "富士山",
+          "kana": "ふじさん",
+          "en": "Mt Fuji"
+        },
+        {
+          "ja": "海",
+          "kana": "うみ",
+          "en": "sea"
+        },
+        {
+          "ja": "温泉",
+          "kana": "おんせん",
+          "en": "hot spring"
+        },
+        {
+          "ja": "新幹線",
+          "kana": "しんかんせん",
+          "en": "bullet train"
+        },
+        {
+          "ja": "ホテル",
+          "kana": "ホテル",
+          "en": "hotel"
+        },
+        {
+          "ja": "おみやげ",
+          "kana": "おみやげ",
+          "en": "souvenir"
+        }
+      ]
+    },
+    {
+      "id": "angkor_guide",
+      "kind": "chat",
+      "titleJa": "アンコールワットを あんない",
+      "titleEn": "Be a guide to Angkor Wat",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "situationEn": "The partner is thinking of visiting Cambodia on holiday and asks you, the local, for advice.",
+      "openerEn": "Say you would like to visit Cambodia some day and ask what to see, when to go and what to be careful about.",
+      "ideasEn": [
+        "Recommend Angkor Wat and say where it is",
+        "Say which month is good and why",
+        "Say how to get there from Phnom Penh",
+        "Recommend one food and one souvenir"
+      ],
+      "startersJa": [
+        "アンコールワットは シェムリアップに あります。",
+        "12月は 涼しくて いいですよ。",
+        "朝 早く 行った ほうが いいです。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "アンコールワット",
+          "kana": "アンコールワット",
+          "en": "Angkor Wat"
+        },
+        {
+          "ja": "遺跡",
+          "kana": "いせき",
+          "en": "ruins"
+        },
+        {
+          "ja": "世界遺産",
+          "kana": "せかいいさん",
+          "en": "World Heritage site"
+        },
+        {
+          "ja": "日の出",
+          "kana": "ひので",
+          "en": "sunrise"
+        },
+        {
+          "ja": "飛行機",
+          "kana": "ひこうき",
+          "en": "plane"
+        },
+        {
+          "ja": "バス",
+          "kana": "バス",
+          "en": "bus"
+        },
+        {
+          "ja": "観光",
+          "kana": "かんこう",
+          "en": "sightseeing"
+        },
+        {
+          "ja": "おすすめ",
+          "kana": "おすすめ",
+          "en": "recommendation"
+        }
+      ]
+    },
+    {
+      "id": "shopping_talk",
+      "kind": "chat",
+      "titleJa": "買い物の 話",
+      "titleEn": "Shopping",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask where the learner usually shops and what they bought recently; ask about markets in Cambodia.",
+      "ideasEn": [
+        "Say where you shop (market, supermarket, online)",
+        "Say what you bought and how much it was",
+        "Say what is cheap or expensive in Cambodia",
+        "Ask where they shop"
+      ],
+      "startersJa": [
+        "よく 市場で 買い物します。",
+        "きのう くつを 買いました。",
+        "これは 15ドルでした。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "買い物",
+          "kana": "かいもの",
+          "en": "shopping"
+        },
+        {
+          "ja": "市場",
+          "kana": "いちば",
+          "en": "market"
+        },
+        {
+          "ja": "スーパー",
+          "kana": "スーパー",
+          "en": "supermarket"
+        },
+        {
+          "ja": "安い",
+          "kana": "やすい",
+          "en": "cheap"
+        },
+        {
+          "ja": "高い",
+          "kana": "たかい",
+          "en": "expensive"
+        },
+        {
+          "ja": "くつ",
+          "kana": "くつ",
+          "en": "shoes"
+        },
+        {
+          "ja": "服",
+          "kana": "ふく",
+          "en": "clothes"
+        },
+        {
+          "ja": "いくら",
+          "kana": "いくら",
+          "en": "how much"
+        }
+      ]
+    },
+    {
+      "id": "animals",
+      "kind": "chat",
+      "titleJa": "動物と ペット",
+      "titleEn": "Animals and pets",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask whether the learner likes animals or has a pet and tell them about an animal in your own life.",
+      "ideasEn": [
+        "Say whether you have a pet and what its name is",
+        "Say which animal you like",
+        "Say what animals are in your town",
+        "Ask whether they like dogs or cats"
+      ],
+      "startersJa": [
+        "うちに 犬が います。",
+        "ねこが 好きです。",
+        "犬と ねこと どちらが 好きですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "動物",
+          "kana": "どうぶつ",
+          "en": "animal"
+        },
+        {
+          "ja": "犬",
+          "kana": "いぬ",
+          "en": "dog"
+        },
+        {
+          "ja": "ねこ",
+          "kana": "ねこ",
+          "en": "cat"
+        },
+        {
+          "ja": "鳥",
+          "kana": "とり",
+          "en": "bird"
+        },
+        {
+          "ja": "ペット",
+          "kana": "ペット",
+          "en": "pet"
+        },
+        {
+          "ja": "名前",
+          "kana": "なまえ",
+          "en": "name"
+        },
+        {
+          "ja": "かわいい",
+          "kana": "かわいい",
+          "en": "cute"
+        },
+        {
+          "ja": "ぞう",
+          "kana": "ぞう",
+          "en": "elephant"
+        }
+      ]
+    },
+    {
+      "id": "health_habits",
+      "kind": "chat",
+      "titleJa": "元気の ひみつ",
+      "titleEn": "Staying healthy",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner does to stay healthy and admit one good and one bad habit of your own.",
+      "ideasEn": [
+        "Say what you do for your health",
+        "Say how many hours you sleep",
+        "Admit a bad habit",
+        "Ask for their secret"
+      ],
+      "startersJa": [
+        "毎朝 30分 走って います。",
+        "夜 遅くまで ゲームを して しまいます。",
+        "元気の ひみつは 何ですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "健康",
+          "kana": "けんこう",
+          "en": "health"
+        },
+        {
+          "ja": "運動",
+          "kana": "うんどう",
+          "en": "exercise"
+        },
+        {
+          "ja": "走ります",
+          "kana": "はしります",
+          "en": "to run"
+        },
+        {
+          "ja": "やさい",
+          "kana": "やさい",
+          "en": "vegetables"
+        },
+        {
+          "ja": "寝ます",
+          "kana": "ねます",
+          "en": "to sleep"
+        },
+        {
+          "ja": "習慣",
+          "kana": "しゅうかん",
+          "en": "habit"
+        },
+        {
+          "ja": "気を つけます",
+          "kana": "きを つけます",
+          "en": "to take care"
+        },
+        {
+          "ja": "ストレス",
+          "kana": "ストレス",
+          "en": "stress"
+        }
+      ]
+    },
+    {
+      "id": "cooking",
+      "kind": "chat",
+      "titleJa": "料理を しますか",
+      "titleEn": "Do you cook?",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask whether the learner cooks and what they can make; talk about what you cooked recently and ask them to explain one dish step by step.",
+      "ideasEn": [
+        "Say whether you cook and how often",
+        "Explain how to make a simple dish in two or three steps",
+        "Say who cooks at home",
+        "Ask them for an easy Japanese recipe"
+      ],
+      "startersJa": [
+        "かんたんな 料理が できます。",
+        "まず やさいを 切って、それから 肉を 入れます。",
+        "作り方を 教えて ください。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "料理",
+          "kana": "りょうり",
+          "en": "cooking"
+        },
+        {
+          "ja": "作り方",
+          "kana": "つくりかた",
+          "en": "how to make"
+        },
+        {
+          "ja": "切ります",
+          "kana": "きります",
+          "en": "to cut"
+        },
+        {
+          "ja": "入れます",
+          "kana": "いれます",
+          "en": "to put in"
+        },
+        {
+          "ja": "焼きます",
+          "kana": "やきます",
+          "en": "to grill, fry"
+        },
+        {
+          "ja": "肉",
+          "kana": "にく",
+          "en": "meat"
+        },
+        {
+          "ja": "塩",
+          "kana": "しお",
+          "en": "salt"
+        },
+        {
+          "ja": "砂糖",
+          "kana": "さとう",
+          "en": "sugar"
+        }
+      ]
+    },
+    {
+      "id": "japan_questions",
+      "kind": "chat",
+      "titleJa": "日本の ふしぎ",
+      "titleEn": "Things you wonder about Japan",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "situationEn": "The learner gets to interview the partner about Japanese customs they find surprising.",
+      "openerEn": "Invite the learner to ask anything they find strange or interesting about life in Japan, and answer honestly from your own experience; then ask what would surprise you in Cambodia.",
+      "ideasEn": [
+        "Ask why trains are so punctual",
+        "Ask why people take off their shoes at home",
+        "Ask about bowing or exchanging gifts",
+        "Tell them one thing that would surprise them in Cambodia"
+      ],
+      "startersJa": [
+        "どうして 日本の 電車は 遅れませんか。",
+        "日本では うちで くつを ぬぎますね。",
+        "カンボジアでは バイクが とても 多いです。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "文化",
+          "kana": "ぶんか",
+          "en": "culture"
+        },
+        {
+          "ja": "習慣",
+          "kana": "しゅうかん",
+          "en": "custom"
+        },
+        {
+          "ja": "ふしぎ",
+          "kana": "ふしぎ",
+          "en": "strange, curious"
+        },
+        {
+          "ja": "びっくりします",
+          "kana": "びっくりします",
+          "en": "to be surprised"
+        },
+        {
+          "ja": "おじぎ",
+          "kana": "おじぎ",
+          "en": "bow"
+        },
+        {
+          "ja": "くつ",
+          "kana": "くつ",
+          "en": "shoes"
+        },
+        {
+          "ja": "ぬぎます",
+          "kana": "ぬぎます",
+          "en": "to take off"
+        },
+        {
+          "ja": "ルール",
+          "kana": "ルール",
+          "en": "rule"
+        }
+      ]
+    },
+    {
+      "id": "manners_compare",
+      "kind": "chat",
+      "titleJa": "マナーの ちがい",
+      "titleEn": "Manners: Japan and Cambodia",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Mention one Japanese manner (being quiet on the train, being on time) and ask how it is in Cambodia; compare without judging either country.",
+      "ideasEn": [
+        "Explain a Cambodian manner (greeting with sampeah, respect for older people)",
+        "Say what you must not do in Cambodia",
+        "Say which Japanese manner you find hard",
+        "Ask what to be careful about at a Japanese company"
+      ],
+      "startersJa": [
+        "カンボジアでは 手を 合わせて あいさつします。",
+        "人の 頭を さわっては いけません。",
+        "日本の 会社では 何に 気を つけたら いいですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "マナー",
+          "kana": "マナー",
+          "en": "manners"
+        },
+        {
+          "ja": "あいさつ",
+          "kana": "あいさつ",
+          "en": "greeting"
+        },
+        {
+          "ja": "失礼",
+          "kana": "しつれい",
+          "en": "rude"
+        },
+        {
+          "ja": "時間を 守ります",
+          "kana": "じかんを まもります",
+          "en": "to be on time"
+        },
+        {
+          "ja": "年上",
+          "kana": "としうえ",
+          "en": "older (person)"
+        },
+        {
+          "ja": "ていねい",
+          "kana": "ていねい",
+          "en": "polite"
+        },
+        {
+          "ja": "違い",
+          "kana": "ちがい",
+          "en": "difference"
+        },
+        {
+          "ja": "気を つけます",
+          "kana": "きを つけます",
+          "en": "to be careful"
+        }
+      ]
+    },
+    {
+      "id": "lottery",
+      "kind": "chat",
+      "titleJa": "宝くじが 当たったら",
+      "titleEn": "If you won the lottery",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Ask playfully what the learner would do if they won a huge lottery prize, and tell them your own (in-character) answer.",
+      "ideasEn": [
+        "Say what you would buy first",
+        "Say what you would do for your family",
+        "Say whether you would still work or study",
+        "Ask what they would do"
+      ],
+      "startersJa": [
+        "宝くじが 当たったら、家族に 家を 買います。",
+        "世界を 旅行したいです。",
+        "仕事を やめますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "宝くじ",
+          "kana": "たからくじ",
+          "en": "lottery"
+        },
+        {
+          "ja": "当たります",
+          "kana": "あたります",
+          "en": "to win"
+        },
+        {
+          "ja": "もし",
+          "kana": "もし",
+          "en": "if"
+        },
+        {
+          "ja": "お金",
+          "kana": "おかね",
+          "en": "money"
+        },
+        {
+          "ja": "貯金",
+          "kana": "ちょきん",
+          "en": "savings"
+        },
+        {
+          "ja": "世界",
+          "kana": "せかい",
+          "en": "world"
+        },
+        {
+          "ja": "やめます",
+          "kana": "やめます",
+          "en": "to quit"
+        },
+        {
+          "ja": "自由",
+          "kana": "じゆう",
+          "en": "free"
+        }
+      ]
+    },
+    {
+      "id": "desert_island",
+      "kind": "chat",
+      "titleJa": "無人島に 持って 行く もの",
+      "titleEn": "Three things for a desert island",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Ask which three things the learner would take to a desert island and tease them gently about the answers; give your own three.",
+      "ideasEn": [
+        "Name three things and give a reason for each",
+        "Say what you would miss most",
+        "Say who you would take with you",
+        "Ask what they would take"
+      ],
+      "startersJa": [
+        "スマホを 持って 行っても、電気が ありませんね。",
+        "ナイフが あれば、料理が できます。",
+        "何を 持って 行きますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "無人島",
+          "kana": "むじんとう",
+          "en": "desert island"
+        },
+        {
+          "ja": "持って 行きます",
+          "kana": "もって いきます",
+          "en": "to take along"
+        },
+        {
+          "ja": "電気",
+          "kana": "でんき",
+          "en": "electricity"
+        },
+        {
+          "ja": "ナイフ",
+          "kana": "ナイフ",
+          "en": "knife"
+        },
+        {
+          "ja": "火",
+          "kana": "ひ",
+          "en": "fire"
+        },
+        {
+          "ja": "必要",
+          "kana": "ひつよう",
+          "en": "necessary"
+        },
+        {
+          "ja": "理由",
+          "kana": "りゆう",
+          "en": "reason"
+        },
+        {
+          "ja": "さびしい",
+          "kana": "さびしい",
+          "en": "lonely"
+        }
+      ]
+    },
+    {
+      "id": "childhood",
+      "kind": "chat",
+      "titleJa": "子どもの とき",
+      "titleEn": "When you were a child",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask what the learner was like as a child and what they played; tell a small memory of your own childhood.",
+      "ideasEn": [
+        "Say what you liked to play",
+        "Say what you wanted to be",
+        "Tell about your school",
+        "Ask what games they played"
+      ],
+      "startersJa": [
+        "子どもの とき、よく 川で 遊びました。",
+        "先生に なりたかったです。",
+        "どんな 子どもでしたか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "子ども",
+          "kana": "こども",
+          "en": "child"
+        },
+        {
+          "ja": "小学校",
+          "kana": "しょうがっこう",
+          "en": "primary school"
+        },
+        {
+          "ja": "遊びます",
+          "kana": "あそびます",
+          "en": "to play"
+        },
+        {
+          "ja": "思い出",
+          "kana": "おもいで",
+          "en": "memory"
+        },
+        {
+          "ja": "なつかしい",
+          "kana": "なつかしい",
+          "en": "nostalgic"
+        },
+        {
+          "ja": "元気",
+          "kana": "げんき",
+          "en": "lively"
+        },
+        {
+          "ja": "けんか",
+          "kana": "けんか",
+          "en": "quarrel"
+        },
+        {
+          "ja": "〜の とき",
+          "kana": "〜の とき",
+          "en": "when …"
+        }
+      ]
+    },
+    {
+      "id": "town_tips",
+      "kind": "chat",
+      "titleJa": "この 町の おすすめ",
+      "titleEn": "Tips about this town",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "situationEn": "You are still new in town. The partner knows it well.",
+      "openerEn": "Ask whether the learner already knows the town and tell them one place you like; ask what they are looking for.",
+      "ideasEn": [
+        "Ask where a good cheap restaurant is",
+        "Ask where the supermarket or post office is",
+        "Say which places you already know",
+        "Ask what is near the station"
+      ],
+      "startersJa": [
+        "安い 食堂は どこに ありますか。",
+        "駅の 近くに 何が ありますか。",
+        "きのう 公園へ 行きました。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "近く",
+          "kana": "ちかく",
+          "en": "near"
+        },
+        {
+          "ja": "食堂",
+          "kana": "しょくどう",
+          "en": "diner"
+        },
+        {
+          "ja": "スーパー",
+          "kana": "スーパー",
+          "en": "supermarket"
+        },
+        {
+          "ja": "郵便局",
+          "kana": "ゆうびんきょく",
+          "en": "post office"
+        },
+        {
+          "ja": "図書館",
+          "kana": "としょかん",
+          "en": "library"
+        },
+        {
+          "ja": "公園",
+          "kana": "こうえん",
+          "en": "park"
+        },
+        {
+          "ja": "美術館",
+          "kana": "びじゅつかん",
+          "en": "art museum"
+        },
+        {
+          "ja": "おすすめ",
+          "kana": "おすすめ",
+          "en": "recommendation"
+        }
+      ]
+    },
+    {
+      "id": "birthday",
+      "kind": "chat",
+      "titleJa": "たんじょうびと プレゼント",
+      "titleEn": "Birthdays and presents",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask when the learner's birthday is and what present they got or gave recently; mention a present you received.",
+      "ideasEn": [
+        "Say when your birthday is",
+        "Say what you got and from whom",
+        "Say what you gave your mother or a friend",
+        "Ask when their birthday is"
+      ],
+      "startersJa": [
+        "たんじょうびは 5月 15日です。",
+        "友だちに 時計を もらいました。",
+        "母に 花を あげました。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "たんじょうび",
+          "kana": "たんじょうび",
+          "en": "birthday"
+        },
+        {
+          "ja": "プレゼント",
+          "kana": "プレゼント",
+          "en": "present"
+        },
+        {
+          "ja": "もらいます",
+          "kana": "もらいます",
+          "en": "to receive"
+        },
+        {
+          "ja": "あげます",
+          "kana": "あげます",
+          "en": "to give"
+        },
+        {
+          "ja": "花",
+          "kana": "はな",
+          "en": "flower"
+        },
+        {
+          "ja": "時計",
+          "kana": "とけい",
+          "en": "watch, clock"
+        },
+        {
+          "ja": "ケーキ",
+          "kana": "ケーキ",
+          "en": "cake"
+        },
+        {
+          "ja": "〜月〜日",
+          "kana": "〜がつ〜にち",
+          "en": "month and day"
+        }
+      ]
+    },
+    {
+      "id": "commute",
+      "kind": "chat",
+      "titleJa": "電車と バイク",
+      "titleEn": "Getting around: trains and motorbikes",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "openerEn": "Ask how the learner goes to school in Cambodia and how long it takes; say how you get to work.",
+      "ideasEn": [
+        "Say how you go to university",
+        "Say how long it takes",
+        "Explain that many people use motorbikes and tuk-tuks",
+        "Ask how they go to work"
+      ],
+      "startersJa": [
+        "バイクで 大学へ 行きます。",
+        "うちから 大学まで 20分です。",
+        "カンボジアに 電車は あまり ありません。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "バイク",
+          "kana": "バイク",
+          "en": "motorbike"
+        },
+        {
+          "ja": "電車",
+          "kana": "でんしゃ",
+          "en": "train"
+        },
+        {
+          "ja": "バス",
+          "kana": "バス",
+          "en": "bus"
+        },
+        {
+          "ja": "自転車",
+          "kana": "じてんしゃ",
+          "en": "bicycle"
+        },
+        {
+          "ja": "トゥクトゥク",
+          "kana": "トゥクトゥク",
+          "en": "tuk-tuk"
+        },
+        {
+          "ja": "歩いて",
+          "kana": "あるいて",
+          "en": "on foot"
+        },
+        {
+          "ja": "〜分",
+          "kana": "〜ふん",
+          "en": "… minutes"
+        },
+        {
+          "ja": "道",
+          "kana": "みち",
+          "en": "road"
+        }
+      ]
+    },
+    {
+      "id": "flowers_garden",
+      "kind": "chat",
+      "titleJa": "花と 庭",
+      "titleEn": "Flowers and gardens",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "places": [
+        "park",
+        "apartment",
+        "home",
+        "cafe"
+      ],
+      "partners": [
+        "mori_aya",
+        "hara",
+        "ishida",
+        "sakamoto"
+      ],
+      "openerEn": "Point out a flower or tree nearby (or one you have at home) and ask which flowers the learner likes and what grows in Cambodia.",
+      "ideasEn": [
+        "Say which flower or colour you like",
+        "Say what flowers or fruit trees there are in Cambodia",
+        "Say whether your family has a garden",
+        "Ask the name of a flower"
+      ],
+      "startersJa": [
+        "きれいな 花ですね。",
+        "あの 花は 何ですか。",
+        "うちの 庭に マンゴーの 木が あります。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "花",
+          "kana": "はな",
+          "en": "flower"
+        },
+        {
+          "ja": "庭",
+          "kana": "にわ",
+          "en": "garden"
+        },
+        {
+          "ja": "木",
+          "kana": "き",
+          "en": "tree"
+        },
+        {
+          "ja": "桜",
+          "kana": "さくら",
+          "en": "cherry blossom"
+        },
+        {
+          "ja": "バラ",
+          "kana": "バラ",
+          "en": "rose"
+        },
+        {
+          "ja": "はす",
+          "kana": "はす",
+          "en": "lotus"
+        },
+        {
+          "ja": "色",
+          "kana": "いろ",
+          "en": "colour"
+        },
+        {
+          "ja": "きれい",
+          "kana": "きれい",
+          "en": "pretty"
+        }
+      ]
+    },
+    {
+      "id": "old_days",
+      "kind": "chat",
+      "titleJa": "昔の この 町",
+      "titleEn": "This town in the old days",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "partners": [
+        "hara",
+        "sakamoto",
+        "okada",
+        "ogawa",
+        "nakano",
+        "ishida"
+      ],
+      "openerEn": "Tell the learner one thing that was different in this town when you were young, and ask how their own hometown has changed.",
+      "ideasEn": [
+        "Ask what the town was like long ago",
+        "Say how your hometown has changed (new buildings, more cars)",
+        "Say what you like better: then or now",
+        "Ask what they did without smartphones"
+      ],
+      "startersJa": [
+        "昔 この 町は どんな 町でしたか。",
+        "わたしの 町は 車が 多く なりました。",
+        "スマホが ない とき、何を して いましたか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "昔",
+          "kana": "むかし",
+          "en": "long ago"
+        },
+        {
+          "ja": "今",
+          "kana": "いま",
+          "en": "now"
+        },
+        {
+          "ja": "変わります",
+          "kana": "かわります",
+          "en": "to change"
+        },
+        {
+          "ja": "建物",
+          "kana": "たてもの",
+          "en": "building"
+        },
+        {
+          "ja": "便利",
+          "kana": "べんり",
+          "en": "convenient"
+        },
+        {
+          "ja": "にぎやか",
+          "kana": "にぎやか",
+          "en": "lively"
+        },
+        {
+          "ja": "若い",
+          "kana": "わかい",
+          "en": "young"
+        },
+        {
+          "ja": "〜年前",
+          "kana": "〜ねんまえ",
+          "en": "… years ago"
+        }
+      ]
+    },
+    {
+      "id": "city_or_country",
+      "kind": "chat",
+      "titleJa": "都会と いなか、どちらが いい？",
+      "titleEn": "City or countryside?",
+      "levels": [
+        "hard"
+      ],
+      "openerEn": "Ask whether the learner would rather live in a big city or in the countryside and why; take a mild opposite view for fun, then find common ground.",
+      "ideasEn": [
+        "Give your choice and two reasons",
+        "Compare Phnom Penh with a provincial town",
+        "Agree with one of their points, then add yours",
+        "Say where you want to live in ten years"
+      ],
+      "startersJa": [
+        "わたしは 都会の ほうが いいと 思います。",
+        "いなかは 静かですが、仕事が 少ないです。",
+        "たしかに そうですね。でも …"
+      ],
+      "wordsJa": [
+        {
+          "ja": "都会",
+          "kana": "とかい",
+          "en": "big city"
+        },
+        {
+          "ja": "いなか",
+          "kana": "いなか",
+          "en": "countryside"
+        },
+        {
+          "ja": "便利",
+          "kana": "べんり",
+          "en": "convenient"
+        },
+        {
+          "ja": "不便",
+          "kana": "ふべん",
+          "en": "inconvenient"
+        },
+        {
+          "ja": "自然",
+          "kana": "しぜん",
+          "en": "nature"
+        },
+        {
+          "ja": "家賃",
+          "kana": "やちん",
+          "en": "rent"
+        },
+        {
+          "ja": "意見",
+          "kana": "いけん",
+          "en": "opinion"
+        },
+        {
+          "ja": "たしかに",
+          "kana": "たしかに",
+          "en": "certainly, true"
+        }
+      ]
+    },
+    {
+      "id": "holiday_memory",
+      "kind": "chat",
+      "titleJa": "休みの 思い出",
+      "titleEn": "A holiday you remember",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "openerEn": "Ask about the best holiday or trip the learner ever had and tell a short one of your own.",
+      "ideasEn": [
+        "Say where you went and when",
+        "Say what you did there (use 〜たり 〜たり)",
+        "Say how it was",
+        "Say whether you want to go again"
+      ],
+      "startersJa": [
+        "去年 家族と 海へ 行きました。",
+        "泳いだり、魚を 食べたり しました。",
+        "とても 楽しかったです。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "思い出",
+          "kana": "おもいで",
+          "en": "memory"
+        },
+        {
+          "ja": "海",
+          "kana": "うみ",
+          "en": "sea"
+        },
+        {
+          "ja": "山",
+          "kana": "やま",
+          "en": "mountain"
+        },
+        {
+          "ja": "泊まります",
+          "kana": "とまります",
+          "en": "to stay overnight"
+        },
+        {
+          "ja": "泳ぎます",
+          "kana": "およぎます",
+          "en": "to swim"
+        },
+        {
+          "ja": "楽しい",
+          "kana": "たのしい",
+          "en": "fun"
+        },
+        {
+          "ja": "景色",
+          "kana": "けしき",
+          "en": "scenery"
+        },
+        {
+          "ja": "もう 一度",
+          "kana": "もう いちど",
+          "en": "once more"
+        }
+      ]
+    },
+    {
+      "id": "classmate_talk",
+      "kind": "chat",
+      "titleJa": "クラスメートと 宿題の 話",
+      "titleEn": "Classmates: homework and tests",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "places": [
+        "classroom",
+        "cafe",
+        "park"
+      ],
+      "partners": [
+        "ana",
+        "minh"
+      ],
+      "situationEn": "You and your classmate are both learners of Japanese, so nobody has to be perfect.",
+      "openerEn": "As a fellow learner speaking simple Japanese, complain a little about the kanji homework or the coming test and ask whether the learner has finished theirs.",
+      "ideasEn": [
+        "Say whether you did the homework",
+        "Say what is difficult in class",
+        "Suggest studying together",
+        "Ask about the test"
+      ],
+      "startersJa": [
+        "宿題は もう しましたか。",
+        "漢字の テストは いつですか。",
+        "いっしょに 勉強しませんか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "宿題",
+          "kana": "しゅくだい",
+          "en": "homework"
+        },
+        {
+          "ja": "テスト",
+          "kana": "テスト",
+          "en": "test"
+        },
+        {
+          "ja": "漢字",
+          "kana": "かんじ",
+          "en": "kanji"
+        },
+        {
+          "ja": "クラス",
+          "kana": "クラス",
+          "en": "class"
+        },
+        {
+          "ja": "先生",
+          "kana": "せんせい",
+          "en": "teacher"
+        },
+        {
+          "ja": "むずかしい",
+          "kana": "むずかしい",
+          "en": "difficult"
+        },
+        {
+          "ja": "やさしい",
+          "kana": "やさしい",
+          "en": "easy"
+        },
+        {
+          "ja": "いっしょに",
+          "kana": "いっしょに",
+          "en": "together"
+        }
+      ]
+    },
+    {
+      "id": "life_abroad",
+      "kind": "chat",
+      "titleJa": "外国の 生活",
+      "titleEn": "Living far from home",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "partners": [
+        "ana",
+        "minh"
+      ],
+      "situationEn": "Your classmate is a foreigner in Japan too. Compare notes on living abroad.",
+      "openerEn": "As a fellow foreign student speaking simple Japanese, say one thing you miss from your own country and one thing that surprised you in Japan, then ask the learner the same.",
+      "ideasEn": [
+        "Say what you miss from Cambodia",
+        "Say what surprised you in Japan",
+        "Say how often you call your family",
+        "Ask what they do when they feel homesick"
+      ],
+      "startersJa": [
+        "母の 料理が 食べたいです。",
+        "日本は 電車が 静かで、びっくりしました。",
+        "家族に よく 電話を かけますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "外国",
+          "kana": "がいこく",
+          "en": "foreign country"
+        },
+        {
+          "ja": "生活",
+          "kana": "せいかつ",
+          "en": "daily life"
+        },
+        {
+          "ja": "さびしい",
+          "kana": "さびしい",
+          "en": "lonely"
+        },
+        {
+          "ja": "国",
+          "kana": "くに",
+          "en": "home country"
+        },
+        {
+          "ja": "びっくりします",
+          "kana": "びっくりします",
+          "en": "to be surprised"
+        },
+        {
+          "ja": "慣れます",
+          "kana": "なれます",
+          "en": "to get used to"
+        },
+        {
+          "ja": "電話",
+          "kana": "でんわ",
+          "en": "phone call"
+        },
+        {
+          "ja": "なつかしい",
+          "kana": "なつかしい",
+          "en": "dear, missed"
+        }
+      ]
+    },
+    {
+      "id": "cafe_order",
+      "kind": "role",
+      "titleJa": "喫茶店で 注文",
+      "titleEn": "Ordering at the café",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "cafe"
+      ],
+      "partners": [
+        "sakamoto"
+      ],
+      "situationEn": "You are a customer at the café and want a drink and something sweet. On harder levels ask what he recommends and what is in today's cake.",
+      "openerEn": "Welcome the customer warmly as the café owner and ask what they would like; you may mention today's cake.",
+      "ideasEn": [
+        "Order a drink",
+        "Ask what cakes there are and how much they are",
+        "Ask for his recommendation",
+        "Pay and say thank you"
+      ],
+      "startersJa": [
+        "コーヒーを ください。",
+        "ケーキは 何が ありますか。",
+        "ぜんぶで いくらですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "コーヒー",
+          "kana": "コーヒー",
+          "en": "coffee"
+        },
+        {
+          "ja": "紅茶",
+          "kana": "こうちゃ",
+          "en": "black tea"
+        },
+        {
+          "ja": "ケーキ",
+          "kana": "ケーキ",
+          "en": "cake"
+        },
+        {
+          "ja": "おすすめ",
+          "kana": "おすすめ",
+          "en": "recommendation"
+        },
+        {
+          "ja": "ホット",
+          "kana": "ホット",
+          "en": "hot (drink)"
+        },
+        {
+          "ja": "アイス",
+          "kana": "アイス",
+          "en": "iced"
+        },
+        {
+          "ja": "一つ",
+          "kana": "ひとつ",
+          "en": "one (thing)"
+        },
+        {
+          "ja": "お会計",
+          "kana": "おかいけい",
+          "en": "the bill"
+        }
+      ]
+    },
+    {
+      "id": "izakaya_order",
+      "kind": "role",
+      "titleJa": "居酒屋で 注文",
+      "titleEn": "Ordering at the izakaya",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "izakaya"
+      ],
+      "partners": [
+        "nakano"
+      ],
+      "situationEn": "You are a customer at the izakaya Daichi, a little hungry, not sure what the dishes are. You do not drink alcohol tonight. Order drinks and food, ask about a dish you do not know, then ask for the bill.",
+      "openerEn": "Greet the customer loudly and cheerfully as the izakaya owner, hand over the hot towel and ask about drinks first.",
+      "ideasEn": [
+        "Order a soft drink",
+        "Ask what a dish on the wall is",
+        "Order two or three dishes with numbers",
+        "Ask for the bill"
+      ],
+      "startersJa": [
+        "ウーロン茶を 一つ おねがいします。",
+        "これは 何ですか。",
+        "やきとりを 二つ ください。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "注文",
+          "kana": "ちゅうもん",
+          "en": "order"
+        },
+        {
+          "ja": "ウーロン茶",
+          "kana": "ウーロンちゃ",
+          "en": "oolong tea"
+        },
+        {
+          "ja": "やきとり",
+          "kana": "やきとり",
+          "en": "grilled chicken skewers"
+        },
+        {
+          "ja": "えだまめ",
+          "kana": "えだまめ",
+          "en": "edamame"
+        },
+        {
+          "ja": "からあげ",
+          "kana": "からあげ",
+          "en": "fried chicken"
+        },
+        {
+          "ja": "二つ",
+          "kana": "ふたつ",
+          "en": "two (things)"
+        },
+        {
+          "ja": "おすすめ",
+          "kana": "おすすめ",
+          "en": "recommendation"
+        },
+        {
+          "ja": "お会計",
+          "kana": "おかいけい",
+          "en": "the bill"
+        }
+      ]
+    },
+    {
+      "id": "depato_present",
+      "kind": "role",
+      "titleJa": "デパートで プレゼントを 買う",
+      "titleEn": "Buying a present at the department store",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "depato"
+      ],
+      "partners": [
+        "nishimura"
+      ],
+      "situationEn": "You are a customer looking for a present (for your teacher, your mother or a friend's birthday) with a budget of about 3,000 yen. Explain who it is for, compare two items, decide, and ask for gift wrapping.",
+      "openerEn": "Greet the customer in very polite shop language and ask what they are looking for.",
+      "ideasEn": [
+        "Say who the present is for",
+        "Ask the price and say your budget",
+        "Ask to see another colour or a cheaper one",
+        "Decide and ask for wrapping"
+      ],
+      "startersJa": [
+        "母の たんじょうびの プレゼントです。",
+        "この ネクタイは いくらですか。",
+        "これを ください。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "プレゼント",
+          "kana": "プレゼント",
+          "en": "present"
+        },
+        {
+          "ja": "ネクタイ",
+          "kana": "ネクタイ",
+          "en": "necktie"
+        },
+        {
+          "ja": "かばん",
+          "kana": "かばん",
+          "en": "bag"
+        },
+        {
+          "ja": "色",
+          "kana": "いろ",
+          "en": "colour"
+        },
+        {
+          "ja": "予算",
+          "kana": "よさん",
+          "en": "budget"
+        },
+        {
+          "ja": "安い",
+          "kana": "やすい",
+          "en": "cheap"
+        },
+        {
+          "ja": "包みます",
+          "kana": "つつみます",
+          "en": "to wrap"
+        },
+        {
+          "ja": "〜円",
+          "kana": "〜えん",
+          "en": "… yen"
+        }
+      ]
+    },
+    {
+      "id": "depato_exchange",
+      "kind": "role",
+      "titleJa": "サイズを かえて もらう",
+      "titleEn": "Exchanging something that does not fit",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "depato"
+      ],
+      "partners": [
+        "nishimura"
+      ],
+      "situationEn": "Yesterday you bought a shirt here but it is too small. You have the receipt. Explain the problem and ask to exchange it for a bigger size; if that size is sold out, decide between another colour, waiting a week, or a refund.",
+      "openerEn": "Greet the customer politely and ask how you can help; when you hear the problem, check the receipt and the stock (you decide what is in stock).",
+      "ideasEn": [
+        "Say when you bought it and what is wrong",
+        "Ask for a bigger size",
+        "React if it is sold out and choose another option",
+        "Thank her"
+      ],
+      "startersJa": [
+        "きのう この シャツを 買いましたが、小さいです。",
+        "もっと 大きいのは ありますか。",
+        "とりかえて もらえますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "サイズ",
+          "kana": "サイズ",
+          "en": "size"
+        },
+        {
+          "ja": "シャツ",
+          "kana": "シャツ",
+          "en": "shirt"
+        },
+        {
+          "ja": "レシート",
+          "kana": "レシート",
+          "en": "receipt"
+        },
+        {
+          "ja": "とりかえます",
+          "kana": "とりかえます",
+          "en": "to exchange"
+        },
+        {
+          "ja": "売り切れ",
+          "kana": "うりきれ",
+          "en": "sold out"
+        },
+        {
+          "ja": "返品",
+          "kana": "へんぴん",
+          "en": "returning goods"
+        },
+        {
+          "ja": "大きい",
+          "kana": "おおきい",
+          "en": "big"
+        },
+        {
+          "ja": "小さい",
+          "kana": "ちいさい",
+          "en": "small"
+        }
+      ]
+    },
+    {
+      "id": "station_way",
+      "kind": "role",
+      "titleJa": "駅で 行き方を 聞く",
+      "titleEn": "Asking the way at the station",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "station"
+      ],
+      "partners": [
+        "okada"
+      ],
+      "situationEn": "You are at the station and want to go to the art museum (or another place in town) but do not know which train or exit to take. Ask the station staff which platform, how long it takes and how much the ticket is.",
+      "openerEn": "As station staff, notice the learner looking at the route map and ask briskly whether you can help.",
+      "ideasEn": [
+        "Say where you want to go",
+        "Ask which platform and which train",
+        "Ask how long it takes and the fare",
+        "Repeat the directions to check, then thank him"
+      ],
+      "startersJa": [
+        "すみません、美術館は どの 電車ですか。",
+        "何番線ですか。",
+        "いくらですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "〜番線",
+          "kana": "〜ばんせん",
+          "en": "platform number …"
+        },
+        {
+          "ja": "切符",
+          "kana": "きっぷ",
+          "en": "ticket"
+        },
+        {
+          "ja": "乗ります",
+          "kana": "のります",
+          "en": "to get on"
+        },
+        {
+          "ja": "降ります",
+          "kana": "おります",
+          "en": "to get off"
+        },
+        {
+          "ja": "乗り換え",
+          "kana": "のりかえ",
+          "en": "transfer"
+        },
+        {
+          "ja": "出口",
+          "kana": "でぐち",
+          "en": "exit"
+        },
+        {
+          "ja": "〜つ目",
+          "kana": "〜つめ",
+          "en": "the …th (stop)"
+        },
+        {
+          "ja": "どのくらい",
+          "kana": "どのくらい",
+          "en": "how long"
+        }
+      ]
+    },
+    {
+      "id": "station_lost",
+      "kind": "role",
+      "titleJa": "駅で 忘れ物",
+      "titleEn": "Lost property at the station",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "station"
+      ],
+      "partners": [
+        "okada"
+      ],
+      "situationEn": "You left your bag (or umbrella) on the train you just got off. Tell the station staff what it looks like, what is inside, and which train and car you were on.",
+      "openerEn": "As station staff, see that the learner looks worried and ask what happened; then ask the questions needed to find the item (colour, size, contents, which train).",
+      "ideasEn": [
+        "Say what you lost and where",
+        "Describe the colour, size and what is inside",
+        "Say which train you took and where you sat",
+        "Give your name and phone number"
+      ],
+      "startersJa": [
+        "電車に かばんを 忘れました。",
+        "黒くて 小さい かばんです。",
+        "中に さいふと ノートが あります。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "忘れ物",
+          "kana": "わすれもの",
+          "en": "lost property"
+        },
+        {
+          "ja": "忘れます",
+          "kana": "わすれます",
+          "en": "to forget, leave behind"
+        },
+        {
+          "ja": "かばん",
+          "kana": "かばん",
+          "en": "bag"
+        },
+        {
+          "ja": "さいふ",
+          "kana": "さいふ",
+          "en": "wallet"
+        },
+        {
+          "ja": "黒い",
+          "kana": "くろい",
+          "en": "black"
+        },
+        {
+          "ja": "〜両目",
+          "kana": "〜りょうめ",
+          "en": "car number …"
+        },
+        {
+          "ja": "連絡",
+          "kana": "れんらく",
+          "en": "contact"
+        },
+        {
+          "ja": "見つかります",
+          "kana": "みつかります",
+          "en": "to be found"
+        }
+      ]
+    },
+    {
+      "id": "clinic_visit",
+      "kind": "role",
+      "titleJa": "病院で",
+      "titleEn": "Seeing the doctor",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "clinic"
+      ],
+      "partners": [
+        "ishida"
+      ],
+      "situationEn": "You do not feel well (choose: a cold with a sore throat, a stomach ache, or a headache since last night). You are in the consultation room. Explain your symptoms and since when, answer the doctor's questions, and make sure you understand the advice about medicine and rest.",
+      "openerEn": "As the doctor, greet the patient gently and ask what is wrong today; speak slowly and check that they understand.",
+      "ideasEn": [
+        "Say where it hurts",
+        "Say since when and whether you have a fever",
+        "Ask whether you may go to school or take a bath",
+        "Ask how many times a day to take the medicine"
+      ],
+      "startersJa": [
+        "きのうから 頭が 痛いです。",
+        "熱が あります。",
+        "薬は 一日に 何回 飲みますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "頭",
+          "kana": "あたま",
+          "en": "head"
+        },
+        {
+          "ja": "のど",
+          "kana": "のど",
+          "en": "throat"
+        },
+        {
+          "ja": "おなか",
+          "kana": "おなか",
+          "en": "stomach"
+        },
+        {
+          "ja": "痛い",
+          "kana": "いたい",
+          "en": "painful"
+        },
+        {
+          "ja": "熱",
+          "kana": "ねつ",
+          "en": "fever"
+        },
+        {
+          "ja": "かぜ",
+          "kana": "かぜ",
+          "en": "a cold"
+        },
+        {
+          "ja": "薬",
+          "kana": "くすり",
+          "en": "medicine"
+        },
+        {
+          "ja": "せき",
+          "kana": "せき",
+          "en": "cough"
+        }
+      ]
+    },
+    {
+      "id": "konbini_shopping",
+      "kind": "role",
+      "titleJa": "コンビニで 買い物",
+      "titleEn": "Shopping at the convenience store",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "places": [
+        "konbini"
+      ],
+      "partners": [
+        "noguchi"
+      ],
+      "situationEn": "You are a customer buying lunch. You cannot find something (batteries, or the onigiri), so ask where it is. At the register answer the usual questions: warm the bento? a bag? chopsticks?",
+      "openerEn": "As the konbini clerk, greet the customer brightly; help them find things, then ask the usual register questions.",
+      "ideasEn": [
+        "Ask where something is",
+        "Ask whether they have a certain item",
+        "Answer about warming up the bento and the bag",
+        "Pay"
+      ],
+      "startersJa": [
+        "すみません、電池は どこですか。",
+        "はい、おねがいします。",
+        "ふくろは いりません。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "お弁当",
+          "kana": "おべんとう",
+          "en": "boxed lunch"
+        },
+        {
+          "ja": "おにぎり",
+          "kana": "おにぎり",
+          "en": "rice ball"
+        },
+        {
+          "ja": "電池",
+          "kana": "でんち",
+          "en": "battery"
+        },
+        {
+          "ja": "あたためます",
+          "kana": "あたためます",
+          "en": "to warm up"
+        },
+        {
+          "ja": "ふくろ",
+          "kana": "ふくろ",
+          "en": "bag"
+        },
+        {
+          "ja": "はし",
+          "kana": "はし",
+          "en": "chopsticks"
+        },
+        {
+          "ja": "たな",
+          "kana": "たな",
+          "en": "shelf"
+        },
+        {
+          "ja": "レジ",
+          "kana": "レジ",
+          "en": "register"
+        }
+      ]
+    },
+    {
+      "id": "konbini_parcel",
+      "kind": "role",
+      "titleJa": "コンビニで 荷物を 送る",
+      "titleEn": "Sending a parcel at the convenience store",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "konbini"
+      ],
+      "partners": [
+        "noguchi"
+      ],
+      "situationEn": "You want to send a box of presents to a friend in Osaka from the convenience store. Ask how to do it, what to write on the slip, how much it costs and when it arrives. On hard: you also need to receive a parcel that arrived for you.",
+      "openerEn": "As the konbini clerk, greet the customer and, seeing the box, ask whether they want to send it; explain the delivery slip in simple steps.",
+      "ideasEn": [
+        "Say you want to send a parcel and where to",
+        "Ask what to write on the slip",
+        "Ask how much it is and when it arrives",
+        "Say what is inside"
+      ],
+      "startersJa": [
+        "この 荷物を 大阪へ 送りたいです。",
+        "ここに 何を 書きますか。",
+        "いつ 着きますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "荷物",
+          "kana": "にもつ",
+          "en": "parcel"
+        },
+        {
+          "ja": "送ります",
+          "kana": "おくります",
+          "en": "to send"
+        },
+        {
+          "ja": "住所",
+          "kana": "じゅうしょ",
+          "en": "address"
+        },
+        {
+          "ja": "伝票",
+          "kana": "でんぴょう",
+          "en": "delivery slip"
+        },
+        {
+          "ja": "届きます",
+          "kana": "とどきます",
+          "en": "to be delivered"
+        },
+        {
+          "ja": "着きます",
+          "kana": "つきます",
+          "en": "to arrive"
+        },
+        {
+          "ja": "受け取ります",
+          "kana": "うけとります",
+          "en": "to receive"
+        },
+        {
+          "ja": "送料",
+          "kana": "そうりょう",
+          "en": "shipping fee"
+        }
+      ]
+    },
+    {
+      "id": "museum_ticket",
+      "kind": "role",
+      "titleJa": "美術館の 受付で",
+      "titleEn": "At the museum reception",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "museum"
+      ],
+      "partners": [
+        "ueda"
+      ],
+      "situationEn": "You are visiting the art museum. Buy a ticket (ask about a student discount), ask the closing time, whether photos are allowed and where the lockers are.",
+      "openerEn": "As the museum receptionist, welcome the visitor crisply and politely and ask how many tickets they need.",
+      "ideasEn": [
+        "Buy a ticket and ask the price",
+        "Ask what time the museum closes",
+        "Ask whether you may take photos",
+        "Ask where the lockers or the café are"
+      ],
+      "startersJa": [
+        "学生 一枚 おねがいします。",
+        "何時までですか。",
+        "写真は いいですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "切符",
+          "kana": "きっぷ",
+          "en": "ticket"
+        },
+        {
+          "ja": "〜枚",
+          "kana": "〜まい",
+          "en": "(counter for tickets)"
+        },
+        {
+          "ja": "学生",
+          "kana": "がくせい",
+          "en": "student"
+        },
+        {
+          "ja": "割引",
+          "kana": "わりびき",
+          "en": "discount"
+        },
+        {
+          "ja": "写真",
+          "kana": "しゃしん",
+          "en": "photo"
+        },
+        {
+          "ja": "絵",
+          "kana": "え",
+          "en": "painting"
+        },
+        {
+          "ja": "ロッカー",
+          "kana": "ロッカー",
+          "en": "locker"
+        },
+        {
+          "ja": "入口",
+          "kana": "いりぐち",
+          "en": "entrance"
+        }
+      ]
+    },
+    {
+      "id": "office_visit",
+      "kind": "role",
+      "titleJa": "会社の 受付で",
+      "titleEn": "Visiting an office",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "office"
+      ],
+      "partners": [
+        "aoki",
+        "fujita",
+        "ogawa"
+      ],
+      "situationEn": "You are a visitor (a student intern on your first day) arriving at Midori Design. You have an appointment with Murakami-san at 10:00. Say who you are and whom you came to see, and follow the small talk while you wait.",
+      "openerEn": "You happen to be at the entrance when the visitor arrives: greet them, ask who they are and whom they have come to see, then make small talk while they wait.",
+      "ideasEn": [
+        "Say your name and school",
+        "Say you have an appointment and with whom",
+        "Answer the small talk (was it easy to find?)",
+        "Ask where to wait or where the toilet is"
+      ],
+      "startersJa": [
+        "おはよう ございます。〜と 申します。",
+        "10時に 村上さんと 約束が あります。",
+        "こちらで 待っても いいですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "受付",
+          "kana": "うけつけ",
+          "en": "reception"
+        },
+        {
+          "ja": "約束",
+          "kana": "やくそく",
+          "en": "appointment"
+        },
+        {
+          "ja": "〜と 申します",
+          "kana": "〜と もうします",
+          "en": "my name is … (humble)"
+        },
+        {
+          "ja": "インターン",
+          "kana": "インターン",
+          "en": "intern"
+        },
+        {
+          "ja": "待ちます",
+          "kana": "まちます",
+          "en": "to wait"
+        },
+        {
+          "ja": "会議室",
+          "kana": "かいぎしつ",
+          "en": "meeting room"
+        },
+        {
+          "ja": "名刺",
+          "kana": "めいし",
+          "en": "business card"
+        },
+        {
+          "ja": "お世話に なります",
+          "kana": "おせわに なります",
+          "en": "thank you for having me"
+        }
+      ]
+    },
+    {
+      "id": "bank_account",
+      "kind": "role",
+      "titleJa": "銀行の ことを 聞く",
+      "titleEn": "Asking a banker about opening an account",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "home",
+        "apartment",
+        "izakaya"
+      ],
+      "partners": [
+        "mori_shun"
+      ],
+      "situationEn": "You need a Japanese bank account for your part-time pay. Your neighbour Shun works at a bank, so you ask him what you need to bring, how long it takes and how to use the ATM.",
+      "openerEn": "Ask how the learner is settling in; when they bring up the bank, explain calmly as a bank employee what is needed (you decide the details: residence card, seal or signature, address).",
+      "ideasEn": [
+        "Say why you need an account",
+        "Ask what to bring",
+        "Ask how long it takes and whether it costs money",
+        "Ask how to send money to Cambodia"
+      ],
+      "startersJa": [
+        "銀行の 口座を 作りたいです。",
+        "何が 必要ですか。",
+        "どのくらい かかりますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "銀行",
+          "kana": "ぎんこう",
+          "en": "bank"
+        },
+        {
+          "ja": "口座",
+          "kana": "こうざ",
+          "en": "account"
+        },
+        {
+          "ja": "通帳",
+          "kana": "つうちょう",
+          "en": "bankbook"
+        },
+        {
+          "ja": "在留カード",
+          "kana": "ざいりゅうカード",
+          "en": "residence card"
+        },
+        {
+          "ja": "はんこ",
+          "kana": "はんこ",
+          "en": "personal seal"
+        },
+        {
+          "ja": "住所",
+          "kana": "じゅうしょ",
+          "en": "address"
+        },
+        {
+          "ja": "送金",
+          "kana": "そうきん",
+          "en": "sending money"
+        },
+        {
+          "ja": "窓口",
+          "kana": "まどぐち",
+          "en": "counter"
+        }
+      ]
+    },
+    {
+      "id": "teacher_homework",
+      "kind": "role",
+      "titleJa": "先生と 宿題の 話",
+      "titleEn": "Talking to your teacher about homework",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "classroom"
+      ],
+      "partners": [
+        "hayakawa"
+      ],
+      "situationEn": "After class you talk to your teacher. Choose one: you forgot your homework at home, you did not understand one part, or you will be absent next week and want the homework early. Explain honestly and agree on what to do.",
+      "openerEn": "As the teacher, notice the learner staying behind after class and ask kindly whether something is the matter.",
+      "ideasEn": [
+        "Apologise and say what happened",
+        "Say which page or part you did not understand",
+        "Ask until when you can hand it in",
+        "Promise what you will do"
+      ],
+      "startersJa": [
+        "先生、すみません。宿題を うちに 忘れました。",
+        "ここが わかりません。",
+        "あした 持って 来ます。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "宿題",
+          "kana": "しゅくだい",
+          "en": "homework"
+        },
+        {
+          "ja": "忘れます",
+          "kana": "わすれます",
+          "en": "to forget"
+        },
+        {
+          "ja": "〜ページ",
+          "kana": "〜ページ",
+          "en": "page …"
+        },
+        {
+          "ja": "質問",
+          "kana": "しつもん",
+          "en": "question"
+        },
+        {
+          "ja": "出します",
+          "kana": "だします",
+          "en": "to hand in"
+        },
+        {
+          "ja": "〜までに",
+          "kana": "〜までに",
+          "en": "by …"
+        },
+        {
+          "ja": "休みます",
+          "kana": "やすみます",
+          "en": "to be absent"
+        },
+        {
+          "ja": "作文",
+          "kana": "さくぶん",
+          "en": "composition"
+        }
+      ]
+    },
+    {
+      "id": "teacher_advice",
+      "kind": "role",
+      "titleJa": "先生に 相談する",
+      "titleEn": "Asking your teacher for study advice",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "classroom",
+        "cafe"
+      ],
+      "partners": [
+        "hayakawa"
+      ],
+      "situationEn": "You want to pass the JLPT (N4 this year, N3 next year) but your listening and kanji are weak and you have little time because of university assignments. Ask your teacher for a study plan.",
+      "openerEn": "As the teacher, ask how the learner's studies are going; when they ask for advice, first find out how they study now, then give two or three concrete suggestions.",
+      "ideasEn": [
+        "Say your goal and when the exam is",
+        "Say what is weak and how you study now",
+        "Ask how to practise listening",
+        "Repeat the plan to confirm"
+      ],
+      "startersJa": [
+        "12月に N4を 受けたいです。",
+        "聞き取りが 苦手です。",
+        "どうやって 勉強したら いいですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "相談",
+          "kana": "そうだん",
+          "en": "consultation"
+        },
+        {
+          "ja": "試験",
+          "kana": "しけん",
+          "en": "exam"
+        },
+        {
+          "ja": "受けます",
+          "kana": "うけます",
+          "en": "to take (an exam)"
+        },
+        {
+          "ja": "聞き取り",
+          "kana": "ききとり",
+          "en": "listening"
+        },
+        {
+          "ja": "苦手",
+          "kana": "にがて",
+          "en": "weak at"
+        },
+        {
+          "ja": "目標",
+          "kana": "もくひょう",
+          "en": "goal"
+        },
+        {
+          "ja": "復習",
+          "kana": "ふくしゅう",
+          "en": "review"
+        },
+        {
+          "ja": "合格",
+          "kana": "ごうかく",
+          "en": "passing"
+        }
+      ]
+    },
+    {
+      "id": "interview_casual",
+      "kind": "role",
+      "titleJa": "やさしい 面接の 練習",
+      "titleEn": "A friendly practice interview",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "interview",
+        "office",
+        "cafe"
+      ],
+      "partners": [
+        "murakami"
+      ],
+      "situationEn": "Murakami-san offered to do a relaxed practice interview for an internship at Midori Design. You are the candidate: introduce yourself, say what you study, what you have built, why Japan, and ask one question at the end.",
+      "openerEn": "As a supportive senior, tell the learner this is only practice, then start with \"please introduce yourself\" and ask friendly follow-up questions; after a few answers give one short piece of advice.",
+      "ideasEn": [
+        "Introduce yourself in three sentences",
+        "Say what you study and what you made",
+        "Say why you want to work in Japan",
+        "Ask a question about the team"
+      ],
+      "startersJa": [
+        "〜と 申します。カンボジアから 来ました。",
+        "大学で ITを 勉強して います。",
+        "チームで アプリを 作った ことが あります。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "面接",
+          "kana": "めんせつ",
+          "en": "interview"
+        },
+        {
+          "ja": "自己紹介",
+          "kana": "じこしょうかい",
+          "en": "self-introduction"
+        },
+        {
+          "ja": "専門",
+          "kana": "せんもん",
+          "en": "major"
+        },
+        {
+          "ja": "経験",
+          "kana": "けいけん",
+          "en": "experience"
+        },
+        {
+          "ja": "理由",
+          "kana": "りゆう",
+          "en": "reason"
+        },
+        {
+          "ja": "得意",
+          "kana": "とくい",
+          "en": "good at"
+        },
+        {
+          "ja": "チーム",
+          "kana": "チーム",
+          "en": "team"
+        },
+        {
+          "ja": "よろしく お願いします",
+          "kana": "よろしく おねがいします",
+          "en": "pleased to meet you"
+        }
+      ]
+    },
+    {
+      "id": "interview_strict",
+      "kind": "role",
+      "titleJa": "きびしい 面接",
+      "titleEn": "A strict job interview",
+      "levels": [
+        "hard"
+      ],
+      "places": [
+        "interview"
+      ],
+      "partners": [
+        "kuroiwa"
+      ],
+      "situationEn": "You are a candidate for a junior engineer position at Kurogane System. The interviewer keeps asking \"why?\" and \"concretely?\". Stay calm, answer with the conclusion first, give one concrete example with a number, and admit honestly what you cannot do yet.",
+      "openerEn": "As the strict interviewer, start without small talk: ask for a one-minute self-introduction, then press every vague answer with \"なぜですか\" or \"具体的には\". Never be rude; acknowledge a good answer with a short nod.",
+      "ideasEn": [
+        "Give a short self-introduction",
+        "State your strength with a concrete example",
+        "Explain why this company",
+        "Answer a weakness question honestly",
+        "Ask one question at the end"
+      ],
+      "startersJa": [
+        "結論から 申しますと、…",
+        "具体的には、3人の チームで …",
+        "まだ 経験は ありませんが、…"
+      ],
+      "wordsJa": [
+        {
+          "ja": "志望理由",
+          "kana": "しぼうりゆう",
+          "en": "reason for applying"
+        },
+        {
+          "ja": "強み",
+          "kana": "つよみ",
+          "en": "strength"
+        },
+        {
+          "ja": "弱み",
+          "kana": "よわみ",
+          "en": "weakness"
+        },
+        {
+          "ja": "具体的",
+          "kana": "ぐたいてき",
+          "en": "concrete"
+        },
+        {
+          "ja": "結論",
+          "kana": "けつろん",
+          "en": "conclusion"
+        },
+        {
+          "ja": "経験",
+          "kana": "けいけん",
+          "en": "experience"
+        },
+        {
+          "ja": "担当",
+          "kana": "たんとう",
+          "en": "in charge of"
+        },
+        {
+          "ja": "御社",
+          "kana": "おんしゃ",
+          "en": "your company (spoken)"
+        }
+      ]
+    },
+    {
+      "id": "interview_hr",
+      "kind": "role",
+      "titleJa": "人事の 質問",
+      "titleEn": "HR questions at the interview",
+      "levels": [
+        "hard"
+      ],
+      "places": [
+        "interview"
+      ],
+      "partners": [
+        "shiraishi"
+      ],
+      "situationEn": "Second part of the interview at Kurogane System: the HR officer checks facts from her sheet (when you can start, your Japanese level, where you will live, overtime, salary expectations) and watches the clock. Answer briefly and exactly, and ask her about training or working hours.",
+      "openerEn": "As the HR officer, say that you have a few questions to confirm and ten minutes; go through them in a business-like way and note the answers.",
+      "ideasEn": [
+        "Say when you graduate and when you can start",
+        "Say your JLPT level and how you keep studying",
+        "Answer about overtime and moving to Japan",
+        "Ask about training or working hours"
+      ],
+      "startersJa": [
+        "来年の 3月に 卒業する 予定です。",
+        "4月から 働く ことが できます。",
+        "研修は ありますか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "人事",
+          "kana": "じんじ",
+          "en": "HR"
+        },
+        {
+          "ja": "卒業",
+          "kana": "そつぎょう",
+          "en": "graduation"
+        },
+        {
+          "ja": "予定",
+          "kana": "よてい",
+          "en": "plan"
+        },
+        {
+          "ja": "入社",
+          "kana": "にゅうしゃ",
+          "en": "joining a company"
+        },
+        {
+          "ja": "残業",
+          "kana": "ざんぎょう",
+          "en": "overtime"
+        },
+        {
+          "ja": "給料",
+          "kana": "きゅうりょう",
+          "en": "salary"
+        },
+        {
+          "ja": "研修",
+          "kana": "けんしゅう",
+          "en": "training"
+        },
+        {
+          "ja": "勤務時間",
+          "kana": "きんむじかん",
+          "en": "working hours"
+        }
+      ]
+    },
+    {
+      "id": "garbage_day",
+      "kind": "role",
+      "titleJa": "ごみの 日を 聞く",
+      "titleEn": "Asking the neighbour about garbage day",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "apartment"
+      ],
+      "partners": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "situationEn": "You have just moved into the apartment and do not know the rubbish rules. You meet your neighbour in the corridor: ask which days are for which rubbish, where to put it and by what time.",
+      "openerEn": "Greet your new neighbour warmly in the corridor; when they ask, explain the rubbish days and place (you decide them, e.g. burnable on Monday and Thursday, plastic on Wednesday, by 8 a.m.).",
+      "ideasEn": [
+        "Greet and say you moved in recently",
+        "Ask what day the rubbish goes out",
+        "Ask where and until what time",
+        "Ask about bottles, cans or plastic"
+      ],
+      "startersJa": [
+        "すみません、ごみの 日は いつですか。",
+        "どこに 出しますか。",
+        "何時までですか。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "ごみ",
+          "kana": "ごみ",
+          "en": "rubbish"
+        },
+        {
+          "ja": "燃える ごみ",
+          "kana": "もえる ごみ",
+          "en": "burnable rubbish"
+        },
+        {
+          "ja": "プラスチック",
+          "kana": "プラスチック",
+          "en": "plastic"
+        },
+        {
+          "ja": "びん",
+          "kana": "びん",
+          "en": "bottle"
+        },
+        {
+          "ja": "かん",
+          "kana": "かん",
+          "en": "can"
+        },
+        {
+          "ja": "出します",
+          "kana": "だします",
+          "en": "to put out"
+        },
+        {
+          "ja": "〜曜日",
+          "kana": "〜ようび",
+          "en": "day of the week"
+        },
+        {
+          "ja": "ごみ置き場",
+          "kana": "ごみおきば",
+          "en": "rubbish collection point"
+        }
+      ]
+    },
+    {
+      "id": "invite_friend",
+      "kind": "role",
+      "titleJa": "友だちを さそう",
+      "titleEn": "Inviting a friend out",
+      "levels": [
+        "easy",
+        "normal",
+        "hard"
+      ],
+      "partners": [
+        "fujita",
+        "ana",
+        "minh",
+        "noguchi",
+        "aoki"
+      ],
+      "situationEn": "You want to invite your friend to do something this weekend (a film, soccer in the park, ramen, the museum). Their first date does not work for them, so you have to find another day, then fix the time and meeting place.",
+      "openerEn": "Chat for a moment as a friend; when invited, be happy but say that the first day suggested is not possible (give a reason), so that the learner has to propose another time.",
+      "ideasEn": [
+        "Ask whether they are free at the weekend",
+        "Invite them with 〜ませんか",
+        "Suggest another day",
+        "Decide the time and place to meet"
+      ],
+      "startersJa": [
+        "土曜日は ひまですか。",
+        "いっしょに 映画を 見ませんか。",
+        "10時に 駅で 会いましょう。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "ひま",
+          "kana": "ひま",
+          "en": "free (time)"
+        },
+        {
+          "ja": "いっしょに",
+          "kana": "いっしょに",
+          "en": "together"
+        },
+        {
+          "ja": "約束",
+          "kana": "やくそく",
+          "en": "promise, plan"
+        },
+        {
+          "ja": "都合",
+          "kana": "つごう",
+          "en": "convenience"
+        },
+        {
+          "ja": "残念",
+          "kana": "ざんねん",
+          "en": "a pity"
+        },
+        {
+          "ja": "会います",
+          "kana": "あいます",
+          "en": "to meet"
+        },
+        {
+          "ja": "〜時に",
+          "kana": "〜じに",
+          "en": "at … o'clock"
+        },
+        {
+          "ja": "じゃ、また",
+          "kana": "じゃ、また",
+          "en": "see you"
+        }
+      ]
+    },
+    {
+      "id": "home_visit",
+      "kind": "role",
+      "titleJa": "お宅を 訪問する",
+      "titleEn": "Visiting a Japanese home",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "places": [
+        "home"
+      ],
+      "partners": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "situationEn": "The Moris invited you to their home for tea. You brought a small present from Cambodia. Greet them at the door, hand over the present, accept tea and cake politely, compliment the house, and say goodbye when it is time.",
+      "openerEn": "As the host, welcome the guest at the door, invite them in and offer slippers and tea; show interest in the present.",
+      "ideasEn": [
+        "Say the polite phrases when entering",
+        "Give the present and say what it is",
+        "Accept or politely refuse a second cup",
+        "Compliment something and say thank you when leaving"
+      ],
+      "startersJa": [
+        "おじゃまします。",
+        "これは カンボジアの お茶です。どうぞ。",
+        "そろそろ 失礼します。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "おじゃまします",
+          "kana": "おじゃまします",
+          "en": "excuse me for coming in"
+        },
+        {
+          "ja": "おみやげ",
+          "kana": "おみやげ",
+          "en": "souvenir, present"
+        },
+        {
+          "ja": "どうぞ",
+          "kana": "どうぞ",
+          "en": "here you are"
+        },
+        {
+          "ja": "いただきます",
+          "kana": "いただきます",
+          "en": "(said before eating)"
+        },
+        {
+          "ja": "お茶",
+          "kana": "おちゃ",
+          "en": "tea"
+        },
+        {
+          "ja": "すてき",
+          "kana": "すてき",
+          "en": "lovely"
+        },
+        {
+          "ja": "スリッパ",
+          "kana": "スリッパ",
+          "en": "slippers"
+        },
+        {
+          "ja": "失礼します",
+          "kana": "しつれいします",
+          "en": "I must be going"
+        }
+      ]
+    },
+    {
+      "id": "ask_day_off",
+      "kind": "role",
+      "titleJa": "休みを お願いする",
+      "titleEn": "Asking for a day off",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "office"
+      ],
+      "partners": [
+        "murakami",
+        "ogawa"
+      ],
+      "situationEn": "You are an intern at Midori Design. You need next Friday off (a university exam, or your sister's wedding at home). Ask your superior politely, explain the reason, and say how your task will be covered.",
+      "openerEn": "As the superior at your desk, notice the learner waiting to speak and ask what it is; when they ask for the day off, ask about the state of their current task before deciding.",
+      "ideasEn": [
+        "Ask whether they have a moment",
+        "Ask for the day off and give the reason",
+        "Report how far your task is and who will cover",
+        "Thank them"
+      ],
+      "startersJa": [
+        "今、少し よろしいですか。",
+        "来週の 金曜日に 休みを いただきたいんですが。",
+        "仕事は 木曜日までに 終わらせます。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "休み",
+          "kana": "やすみ",
+          "en": "day off"
+        },
+        {
+          "ja": "お願い",
+          "kana": "おねがい",
+          "en": "request"
+        },
+        {
+          "ja": "理由",
+          "kana": "りゆう",
+          "en": "reason"
+        },
+        {
+          "ja": "試験",
+          "kana": "しけん",
+          "en": "exam"
+        },
+        {
+          "ja": "結婚式",
+          "kana": "けっこんしき",
+          "en": "wedding"
+        },
+        {
+          "ja": "予定",
+          "kana": "よてい",
+          "en": "schedule"
+        },
+        {
+          "ja": "終わります",
+          "kana": "おわります",
+          "en": "to finish"
+        },
+        {
+          "ja": "申し訳 ありません",
+          "kana": "もうしわけ ありません",
+          "en": "I am very sorry"
+        }
+      ]
+    },
+    {
+      "id": "bug_help",
+      "kind": "role",
+      "titleJa": "先輩に バグの 相談",
+      "titleEn": "Asking a senior for help with a bug",
+      "levels": [
+        "normal",
+        "hard"
+      ],
+      "places": [
+        "office",
+        "cafe"
+      ],
+      "partners": [
+        "fujita",
+        "murakami"
+      ],
+      "situationEn": "You are an intern on the development team. The login screen of the app you are working on shows an error since this morning and you have been stuck for two hours. Ask a senior for help: say what you wanted to do, what happens, and what you already tried.",
+      "openerEn": "As a senior engineer, see the learner frowning at the screen and ask how it is going; when they explain, ask what they tried and when it started, and praise asking early.",
+      "ideasEn": [
+        "Ask whether they have time now",
+        "Say what happens and since when",
+        "Say what you already tried",
+        "Confirm what you will do next"
+      ],
+      "startersJa": [
+        "すみません、今 ちょっと いいですか。",
+        "ログインの 画面で エラーが 出ます。",
+        "もう 一度 入れて みましたが、だめでした。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "バグ",
+          "kana": "バグ",
+          "en": "bug"
+        },
+        {
+          "ja": "エラー",
+          "kana": "エラー",
+          "en": "error"
+        },
+        {
+          "ja": "画面",
+          "kana": "がめん",
+          "en": "screen"
+        },
+        {
+          "ja": "ログイン",
+          "kana": "ログイン",
+          "en": "login"
+        },
+        {
+          "ja": "動きます",
+          "kana": "うごきます",
+          "en": "to work, run"
+        },
+        {
+          "ja": "原因",
+          "kana": "げんいん",
+          "en": "cause"
+        },
+        {
+          "ja": "調べます",
+          "kana": "しらべます",
+          "en": "to check, look into"
+        },
+        {
+          "ja": "直します",
+          "kana": "なおします",
+          "en": "to fix"
+        }
+      ]
+    },
+    {
+      "id": "park_photo",
+      "kind": "role",
+      "titleJa": "写真を お願いする",
+      "titleEn": "Asking someone to take your photo",
+      "levels": [
+        "easy",
+        "normal"
+      ],
+      "places": [
+        "park",
+        "museum",
+        "station"
+      ],
+      "partners": [
+        "hara",
+        "takeuchi",
+        "ueda",
+        "okada",
+        "ishida"
+      ],
+      "situationEn": "You want a photo of yourself in a nice spot to send to your family in Cambodia. Ask the person nearby to take it, explain what should be in the picture, thank them, and chat a little about who the photo is for.",
+      "openerEn": "You are nearby (on your walk or at work); when the learner asks, agree kindly, ask what should be in the photo and afterwards ask who they will send it to.",
+      "ideasEn": [
+        "Politely ask them to take a photo",
+        "Say what you want in the picture",
+        "Ask for one more",
+        "Say who you will send it to"
+      ],
+      "startersJa": [
+        "すみません、写真を おねがいします。",
+        "もう 一枚 おねがいします。",
+        "家族に 送ります。"
+      ],
+      "wordsJa": [
+        {
+          "ja": "写真",
+          "kana": "しゃしん",
+          "en": "photo"
+        },
+        {
+          "ja": "とります",
+          "kana": "とります",
+          "en": "to take (a photo)"
+        },
+        {
+          "ja": "押します",
+          "kana": "おします",
+          "en": "to press"
+        },
+        {
+          "ja": "もう 一枚",
+          "kana": "もう いちまい",
+          "en": "one more (photo)"
+        },
+        {
+          "ja": "後ろ",
+          "kana": "うしろ",
+          "en": "behind"
+        },
+        {
+          "ja": "家族",
+          "kana": "かぞく",
+          "en": "family"
+        },
+        {
+          "ja": "送ります",
+          "kana": "おくります",
+          "en": "to send"
+        },
+        {
+          "ja": "きれい",
+          "kana": "きれい",
+          "en": "beautiful"
+        }
+      ]
+    }
+  ],
+  "twists": [
+    {
+      "id": "rain",
+      "en": "It suddenly starts raining outside; the partner notices and comments, maybe asks whether the learner has an umbrella.",
+      "places": [
+        "park",
+        "cafe",
+        "station",
+        "apartment",
+        "konbini"
+      ]
+    },
+    {
+      "id": "phone",
+      "en": "The partner's phone buzzes; they glance at it and tell you briefly who it was."
+    },
+    {
+      "id": "dog",
+      "en": "A small dog runs by, chased by its laughing owner; the partner reacts and asks whether the learner likes dogs.",
+      "places": [
+        "park"
+      ]
+    },
+    {
+      "id": "train_late",
+      "en": "An announcement says the train is about ten minutes late; the partner sighs or explains and comments on it.",
+      "places": [
+        "station"
+      ]
+    },
+    {
+      "id": "coffee_spill",
+      "en": "Someone nearby (or the partner) spills a little coffee; a quick apology, a napkin, a laugh, then back to the chat.",
+      "places": [
+        "cafe",
+        "office"
+      ]
+    },
+    {
+      "id": "birthday",
+      "en": "The partner remembers that today is the birthday of someone they know (a family member or colleague) and asks the learner for a present idea."
+    },
+    {
+      "id": "boss_calls",
+      "en": "The partner gets a short call from work, excuses themselves politely, answers in two sentences and comes back with an apology.",
+      "places": [
+        "cafe",
+        "izakaya",
+        "park",
+        "station",
+        "depato"
+      ]
+    },
+    {
+      "id": "drill_announcement",
+      "en": "A calm announcement says that this is only a test of the emergency broadcast for next week's earthquake drill; the partner explains what a drill is and asks whether Cambodia has earthquakes.",
+      "places": [
+        "station",
+        "depato",
+        "office",
+        "museum",
+        "classroom"
+      ]
+    },
+    {
+      "id": "cat",
+      "en": "The neighbourhood cat strolls up and sits down nearby; the partner tells the learner its name.",
+      "places": [
+        "konbini",
+        "apartment",
+        "park"
+      ]
+    },
+    {
+      "id": "petals",
+      "en": "The wind blows petals or leaves (according to the season) over both of you; the partner comments on the season.",
+      "places": [
+        "park"
+      ]
+    },
+    {
+      "id": "free_sample",
+      "en": "The partner offers the learner a small taste of something new (a sweet, a snack, a piece of cake) and asks how it is.",
+      "places": [
+        "cafe",
+        "depato",
+        "konbini",
+        "izakaya",
+        "home"
+      ]
+    },
+    {
+      "id": "favorite_song",
+      "en": "A song the partner loves starts playing in the background; they say so and ask what music the learner likes.",
+      "places": [
+        "cafe",
+        "izakaya",
+        "konbini",
+        "depato"
+      ]
+    },
+    {
+      "id": "khmer_word",
+      "en": "The partner suddenly asks how to say \"thank you\" or \"hello\" in Khmer, tries to repeat it and asks whether the pronunciation is right."
+    },
+    {
+      "id": "acquaintance",
+      "en": "Someone the partner knows from town passes by and waves; the partner waves back and tells the learner in one sentence who it was.",
+      "places": [
+        "park",
+        "station",
+        "cafe",
+        "depato",
+        "konbini",
+        "apartment"
+      ]
+    },
+    {
+      "id": "stomach",
+      "en": "The partner's stomach rumbles; they laugh, admit they skipped a meal and ask what the learner ate today."
+    },
+    {
+      "id": "compliment",
+      "en": "The partner suddenly notices how much the learner's Japanese has improved, says so sincerely and asks how they practise."
+    },
+    {
+      "id": "show_photo",
+      "en": "The partner shows a photo on their phone (their pet, grandchild, a dish they made, a place they visited) and asks whether the learner has a photo of home."
+    },
+    {
+      "id": "poster",
+      "en": "The partner notices a poster for a local event (a concert, an exhibition, the town festival) and asks whether the learner would like to go.",
+      "places": [
+        "cafe",
+        "museum",
+        "station",
+        "clinic",
+        "konbini"
+      ]
+    },
+    {
+      "id": "vending",
+      "en": "The partner feels thirsty and offers to get drinks from the vending machine; they ask what the learner would like.",
+      "places": [
+        "park",
+        "station"
+      ]
+    },
+    {
+      "id": "closing_time",
+      "en": "Quiet closing-time music starts; the partner explains that the place closes soon but says there are still a few minutes.",
+      "places": [
+        "depato",
+        "museum",
+        "cafe",
+        "konbini"
+      ]
+    },
+    {
+      "id": "word_quiz",
+      "en": "The partner playfully gives the learner a one-word quiz: they point at something nearby and ask what it is called in Japanese, then praise or teach the word."
+    },
+    {
+      "id": "kanpai",
+      "en": "The table next to yours shouts a cheerful \"kanpai!\"; the partner laughs and explains the custom, then asks what people say in Cambodia.",
+      "places": [
+        "izakaya"
+      ]
+    },
+    {
+      "id": "hot_today",
+      "en": "The partner fans themselves and remarks how warm (or chilly, according to the season) it is today, and asks whether this is normal weather in Cambodia."
+    },
+    {
+      "id": "delivery",
+      "en": "A delivery person arrives with a parcel; the partner deals with it in a few seconds and tells the learner what they ordered.",
+      "places": [
+        "apartment",
+        "home",
+        "office",
+        "konbini"
+      ]
+    }
+  ]
+}

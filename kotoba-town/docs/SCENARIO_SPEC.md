@@ -222,3 +222,43 @@ short English tip. So:
   plausible answers.
 - `modelAnswers` must be correct, natural and *at this lesson's level*.
 - `promptEn` tells the learner what to do without giving the Japanese away.
+
+---
+
+## 7. Lessons 11–20 (second half of 『みんなの日本語 初級I』 up to lesson 20)
+
+Same format, same rules (3 variants per lesson, original writing, town cast, `exampleJa` on every branch,
+12–18 spoken lines, ≤ 45 characters per line, 4–6 learner turns). The **level discipline** moves with
+the lesson: NPC lines in lesson *N* use grammar from lessons 1…*N* only.
+
+| lesson | grammar it trains (research the details) | ideas for places (pick 3 different) |
+|---|---|---|
+| 11 | counters いくつ・〜つ・〜人・〜台・〜枚・〜回, periods 〜時間・〜日・〜週間・〜か月・〜年, 〜に 〜回, 〜だけ, 〜ぐらい | post/stamps & parcels at the konbini or depato, family size at home, how long you have studied Japanese |
+| 12 | past of adjectives and nouns (〜かったです, 〜でした, 〜じゃ ありませんでした), comparisons AはBより, AとBと どちらが, 〜の ほうが, 〜の 中で 何が いちばん | after a trip or a festival (park, office), choosing between two things in a shop |
+| 13 | 〜が ほしいです, 〜たいです, 〜へ 〜に 行きます (purpose) | ordering & paying 別々に (izakaya or café), weekend plans, a shopping wish |
+| 14 | て-form, 〜て ください, 〜て います (in progress), 〜ましょうか | asking for help at the station/office, offering help, directions |
+| 15 | 〜ても いいですか, 〜ては いけません, 〜て います (state: 住んで/結婚して/知って/働いて) | museum rules (写真を とっても いいですか), family talk at home, office rules |
+| 16 | 〜て、〜て (sequence), 〜てから, adjective て-form (〜くて／〜で), AはBが〜 | how to use the ticket machine / ATM, describing a town or a person |
+| 17 | ない-form, 〜ないで ください, 〜なければ なりません, 〜なくても いいです, 〜までに | at the clinic (the doctor's advice), deadlines at the office, home rules |
+| 18 | dictionary form, 〜ことが できます, 趣味は 〜ことです, 〜まえに | hobbies chat, what you can do, before doing something |
+| 19 | た-form, 〜たことが あります, 〜たり 〜たり します, 〜く なります／〜に なります | experiences (富士山, すし …), what you did at the weekend, getting better after being ill |
+| 20 | plain (casual) style 普通形 between friends | friends at the izakaya or the park (藤田, アナ, ミン, 野口 speak casually; keep it natural) |
+
+New since lesson 11:
+- **New scenes** `clinic` and `izakaya` (see the catalog below and `SCENES` in `js/content/cast.js`).
+- **New cast**: `ishida` 石田 みちこ (いしだ みちこ) — doctor at the town clinic, 50s, kind, clear (voice Achernar);
+  `nakano` 中野 だいち (なかの だいち) — owner of the izakaya 「だいち」, 40s, cheerful, loud (voice Sadachbia).
+- From lesson 20, friends may speak in plain style (that is the lesson). Elders and staff stay polite.
+
+| scene | what it looks like | slots | props (zone) |
+|---|---|---|---|
+| `clinic` | A small town clinic: reception counter with a nurse window, waiting room with benches, magazines and a health poster; through a door the consultation room with the doctor's desk, monitor and an examination bed | `reception` behind the counter, `doctor` sitting at the desk in the consultation room, `npc1` beside the learner (a companion or another patient), `phone` | `insurance_card` (near), `questionnaire` (near), `thermometer` (near), `bench` (near), `medicine` (npc), `exam_bed` (npc), `doctor_desk` (npc), `clinic_sign` (far), `clock` (far), `poster` (far), `calendar` (far), `window` (far), `door` (far), `magazine` (far) |
+| `izakaya` | A cosy izakaya: the learner sits at a low table; wooden counter with stools, hand-written menu strips on the wall, red lanterns, noren at the door, a fish tank | `staff` standing at the table, `npc1` sitting across, `npc2` sitting beside npc1, `phone` | `menu` (near), `beer` (near), `edamame` (near), `oshibori` (near), `chopsticks` (near), `yakitori` (npc), `sake` (npc), `menu_strips` (far), `lantern` (far), `counter` (far), `register` (far), `clock` (far), `noren` (far), `fish_tank` (far) |
+
+**Moving the learner** (works in any lesson, not only interviews): a node may carry `"learner": "walk" | "sit" | "stand"`
+(applied before that node's lines).
+- `clinic`: the learner starts in the waiting room in front of the reception counter (talk to `reception`).
+  `"learner": "walk"` moves them into the consultation room onto the patient stool in front of the doctor,
+  then `"learner": "sit"` sits them down (talk to `doctor`). Put the walk on the node where the nurse calls them in.
+- `izakaya`: the learner arrives standing at the end of the table; use `"learner": "sit"` on the first node
+  (or when they are shown to the table) so they sit with the others.

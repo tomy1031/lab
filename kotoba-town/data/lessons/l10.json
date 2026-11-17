@@ -273,7 +273,7 @@
                 "id": "other_item",
                 "whenEn": "Learner asks for any other item.",
                 "next": "n2_none",
-                "exampleJa": "すみません。きっては ありませんか。"
+                "exampleJa": "すみません。ノートは ありませんか。"
               }
             ],
             "fallback": "n2_denchi"
