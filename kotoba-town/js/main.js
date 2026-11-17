@@ -184,13 +184,13 @@ async function boot() {
 
   function openMenu() {
     if (state.where === 'town' || state.where === 'title' || state.menu) return;
-    const prev = { draw: board.panel.drawFn, visible: board.panel.visible, mode: boardMode };
+    const prev = { draw: board.panel.drawFn, visible: board.panel.visible, mode: boardMode, h: board.panel.canvas.height };
     state.menu = true;
     boardMode = 'follow'; boardFollow.update(0, true);
     const resume = () => {
       state.menu = false;
       boardMode = prev.mode;
-      if (prev.visible && prev.draw) board.panel.draw(prev.draw); else board.hide();
+      if (prev.visible && prev.draw) { board.panel.setHeight(prev.h); board.panel.draw(prev.draw); } else board.hide();
     };
     board.message('メニュー · Menu', 'Go back to the town square, or keep going here.', [
       { label: 'つづける · Resume', onClick: resume },

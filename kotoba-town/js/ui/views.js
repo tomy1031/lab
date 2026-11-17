@@ -1,7 +1,7 @@
 // The game's UI pieces, drawn on Panels: speech bubble, the learner's turn card, the big board
 // (lesson list, scenario cards, briefing, report) and toasts.
 import * as THREE from 'three';
-import { Panel, THEME, rr, font, wrap, card, nameTag, stars, star, text, shade } from './panel.js';
+import { Panel, THEME, rr, font, wrap, card, nameTag, stars, star, text, shade, fitWrap } from './panel.js';
 import { toRomaji } from '../content/index.js';
 import { RUBRIC_INFO, VERDICTS } from '../talk/judge.js';
 
@@ -82,9 +82,13 @@ export class SpeechBubble {
       const n = Math.ceil([...t.main].length * this.progress);
       const shown = [...t.main].slice(0, n).join('');
       let y = top + 52;
-      const px = t.main.length > 34 ? 44 : 52;
+      // the whole line always fits: smaller type for long lines, room kept for the romaji / English
+      g.font = font(30, 700);
+      const below = (t.en ? Math.min(2, wrap(g, t.en, W - 170).length) * 30 * 1.45 + 6 : 0) + (t.romaji ? 2 * 26 * 1.45 + 4 : 0);
+      const fit = fitWrap(g, t.main, W - 170, bh - 52 - below - 40, [52, 46, 40, 35, 31, 28], { weight: 800, lh: 1.32 });
+      const px = fit.px;
       g.font = font(px, 800);
-      const lines = wrap(g, t.main, W - 170);
+      const lines = fit.lines;
       let used = 0;
       g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top';
       for (const l of lines) {
@@ -133,9 +137,27 @@ export class TurnCard {
     if (this.state?.mode === 'listen' || this.state?.mode === 'free') this.redraw();
   }
 
+  /** How tall the card must be to show the prompt, hint and every example in full at a readable size. */
+  needHeight(s) {
+    if (s.mode !== 'listen' && s.mode !== 'free') return 860;
+    const g = this.panel.g; const W = this.panel.canvas.width;
+    const m = (str, px, mw, weight = 700) => { g.font = font(px, weight); return wrap(g, str, mw).length * px * 1.45; };
+    let y = 140 + Math.min(m(s.promptEn || '', 34, W - 240), 170) + 10;
+    if (s.heard) y += Math.min(m(`🎤 ${s.heard}`, 31, W - 160), 110) + 54;
+    if (s.showHint && s.hintJa) y += Math.min(m(`💡 ${s.hintJa}`, 33, W - 160, 800), 120) + 58;
+    if (s.notice) y += 2 * 30 * 1.45 + 6;
+    if (s.choices?.length) {
+      y += 40;
+      g.font = font(28, 800);
+      for (const c of s.choices.slice(0, 4)) y += Math.max(74, wrap(g, c, W - 160).length * 28 * 1.3 + 30) + 12;
+    }
+    return Math.min(1500, Math.max(860, Math.ceil(y + 146)));
+  }
+
   redraw() {
     const s = this.state; if (!s) return;
     const p = this.panel;
+    p.setHeight(this.needHeight(s));
     p.draw((g, W, H) => {
       card(g, 10, 10, W - 20, H - 30, { fill: s.mode === 'npc' ? '#f7f2e6' : THEME.cream });
       // header
@@ -198,31 +220,47 @@ export class TurnCard {
         if (f.tipEn) y = text(g, f.tipEn, 60, y + 4, W - 120, 32, { color: '#6c7d8a', maxLines: 3 });
         return;
       }
-      // listen / free
-      y = text(g, s.promptEn || '', 60, y, W - 240, 40, { maxLines: 3 });
+      // listen / free — every text is shown in full (wrapped, smaller type only when it must)
+      const by = H - 130;
+      const pf = fitWrap(g, s.promptEn || '', W - 240, 170, [40, 34, 30, 27]);
+      y = text(g, s.promptEn || '', 60, y, W - 240, pf.px);
       y += 10;
       if (s.heard) {
-        g.fillStyle = '#f1eadb'; rr(g, 50, y, W - 100, 90, 26); g.fill();
-        text(g, `🎤 ${s.heard}`, 76, y + 22, W - 160, 36, { color: THEME.ink, maxLines: 1 });
-        y += 104;
+        const hf = fitWrap(g, `🎤 ${s.heard}`, W - 160, 110, [36, 31, 27, 24]);
+        g.fillStyle = '#f1eadb'; rr(g, 50, y, W - 100, hf.height + 40, 26); g.fill();
+        text(g, `🎤 ${s.heard}`, 76, y + 20, W - 160, hf.px, { color: THEME.ink });
+        y += hf.height + 54;
       }
       if (s.showHint && s.hintJa) {
-        g.fillStyle = '#fff3cf'; rr(g, 50, y, W - 100, 96, 26); g.fill();
-        text(g, `💡 ${s.hintJa}`, 76, y + 24, W - 160, 38, { color: '#8a6416', weight: 800, maxLines: 1 });
-        y += 110;
+        const kf = fitWrap(g, `💡 ${s.hintJa}`, W - 160, 120, [38, 33, 29, 25], { weight: 800 });
+        g.fillStyle = '#fff3cf'; rr(g, 50, y, W - 100, kf.height + 44, 26); g.fill();
+        text(g, `💡 ${s.hintJa}`, 76, y + 22, W - 160, kf.px, { color: '#8a6416', weight: 800 });
+        y += kf.height + 58;
       }
       if (s.notice) { y = text(g, s.notice, 60, y, W - 120, 30, { color: THEME.red, maxLines: 2 }) + 6; }
       if (s.choices?.length) {
         g.font = font(26, 700); g.fillStyle = THEME.soft; g.textAlign = 'left'; g.textBaseline = 'top';
         g.fillText(s.live ? 'Examples — say one, or your own answer:' : 'Read one aloud, then tap it:', 60, y);
         y += 40;
-        for (const [i, c] of s.choices.slice(0, 4).entries()) {
-          p.button(`c${i}`, 50, y, W - 100, 74, c, () => this.h.choose(c), { color: '#ffffff', fg: THEME.ink, outline: THEME.line, size: 34 });
-          y += 86;
+        // the largest type at which every example fits as a whole (several lines per button if needed)
+        const list = s.choices.slice(0, 4);
+        const room = by - 16 - y;
+        let size = 34; let laid = null;
+        for (const px of [34, 30, 27, 24, 21, 19]) {
+          g.font = font(px, 800);
+          const rows = list.map((c) => wrap(g, c, W - 160));
+          const hs = rows.map((r) => Math.max(74, r.length * px * 1.3 + 30));
+          const total = hs.reduce((a, b) => a + b, 0) + (list.length - 1) * 12;
+          size = px; laid = { rows, hs };
+          if (total <= room) break;
+        }
+        for (const [i, c] of list.entries()) {
+          const h = laid.hs[i];
+          p.button(`c${i}`, 50, y, W - 100, h, c, () => this.h.choose(c), { color: '#ffffff', fg: THEME.ink, outline: THEME.line, size, lines: laid.rows[i], lineHeight: size * 1.3 });
+          y += h + 12;
         }
       }
       // bottom buttons
-      const by = H - 130;
       if (s.mode === 'free') {
         p.button('finish', W / 2 - 170, by, 340, 84, 'おわる · Finish', () => this.h.finish(), { color: THEME.blue });
         return;
@@ -268,6 +306,7 @@ export class Board {
    * courses: [{ id, titleJa, titleEn, units: [...] }]; starsOf(variantId, mode).
    */
   courses({ courses, active, starsOf, onTab, onPick }) {
+    this.panel.setHeight(1100);
     this.panel.visible = true;
     const course = courses.find((c) => c.id === active) || courses[0];
     this.panel.draw((g, W, H, p) => {
@@ -313,6 +352,7 @@ export class Board {
   }
 
   variants(lesson, starsOf, onPick, onBack, sceneName) {
+    this.panel.setHeight(1100);
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
@@ -347,21 +387,38 @@ export class Board {
 
   /** Briefing with the two ways to play: れんしゅう (with examples and hints) and ほんばん (no help, needs the key). */
   briefing({ lesson, variant, cast, live, onPractice, onReal, onBack, note }) {
+    // Everything is shown in full: the panel grows taller for long briefs (interviews) instead of cutting
+    // text; type only shrinks a little before that.
+    const W0 = 1800; const g0 = this.panel.g;
+    const people = `People: ${cast.map((c) => `${c.nameJa}（${c.roleEn}）`).join('、 ')}`;
+    const measure = (k) => {
+      const h = (str, px, mw, weight = 700) => { g0.font = font(px * k, weight); return wrap(g0, str, mw).length * px * k * 1.45; };
+      return h(variant.briefEn, 31, W0 - 160, 500) + 8 + h(`🧑 ${variant.roleEn}`, 28, W0 - 160) + 14 + 70
+        + variant.missionsEn.reduce((a, m) => a + h(`☐ ${m.text}`, 29, W0 - 260) + 6, 0) + 10 + h(people, 26, W0 - 160);
+    };
+    const top = 136 + 42 * 1.45; // below the English title
+    const bottom = 330 + 30; // mode boxes + buttons
+    let k = 1;
+    for (const kk of [1, 0.94, 0.88]) { k = kk; if (top + measure(kk) + bottom <= 1100) break; }
+    const H0 = Math.min(1900, Math.max(1100, Math.ceil(top + measure(k) + bottom + 20)));
+    this.panel.setHeight(H0);
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
       nameTag(g, 70, 44, `${unitLabel(lesson)} · ${variant.titleJa}`, colorFor(lesson.id), THEME.ink, 40);
       let y = text(g, variant.titleEn, 80, 136, W - 160, 42, { weight: 800, maxLines: 1 });
-      y = text(g, variant.briefEn, 80, y + 8, W - 160, 31, { color: THEME.ink, weight: 500, maxLines: 4 });
-      y = text(g, `🧑 ${variant.roleEn}`, 80, y + 8, W - 160, 28, { color: THEME.soft, maxLines: 2 });
+      y = text(g, variant.briefEn, 80, y + 8, W - 160, 31 * k, { color: THEME.ink, weight: 500 });
+      y = text(g, `🧑 ${variant.roleEn}`, 80, y + 8, W - 160, 28 * k, { color: THEME.soft });
       y += 14;
-      g.fillStyle = '#eef6f1'; rr(g, 70, y, W - 140, 56 + variant.missionsEn.length * 50, 30); g.fill();
-      g.font = font(28, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
+      g.font = font(29 * k, 700);
+      const mh = variant.missionsEn.reduce((a, m) => a + wrap(g, `☐ ${m.text}`, W - 260).length * 29 * k * 1.45 + 6, 0);
+      g.fillStyle = '#eef6f1'; rr(g, 70, y, W - 140, 62 + mh, 30); g.fill();
+      g.font = font(28 * k, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
       g.fillText('Missions', 100, y + 16);
-      variant.missionsEn.forEach((m, i) => text(g, `☐ ${m.text}`, 110, y + 62 + i * 50, W - 260, 29, { maxLines: 1 }));
-      y += 70 + variant.missionsEn.length * 50;
-      g.font = font(26, 700); g.fillStyle = THEME.soft;
-      g.fillText(`People: ${cast.map((c) => `${c.nameJa}（${c.roleEn}）`).join('、 ')}`.slice(0, 120), 80, y);
+      let my = y + 58;
+      variant.missionsEn.forEach((m) => { my = text(g, `☐ ${m.text}`, 110, my, W - 260, 29 * k) + 6; });
+      y += 72 + mh;
+      text(g, people, 80, y, W - 160, 26 * k, { color: THEME.soft });
       // the two modes
       const bx = 70; const bw = (W - 140 - 30) / 2; const by = H - 330;
       g.fillStyle = '#eef6f1'; rr(g, bx, by, bw, 168, 30); g.fill();
@@ -378,6 +435,7 @@ export class Board {
   report(args) {
     if (args.report?.interview) { this.interviewReport(args); return; }
     const { lesson, variant, report, turns, missions, mode, onRetry, onReal, onNext, onOther, onTown } = args;
+    this.panel.setHeight(1100);
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
@@ -393,7 +451,7 @@ export class Board {
       ly = text(g, `🌱 ${report.improveEn}`, 80, ly + 10, colW, 28, { color: '#a3622a', maxLines: 3 });
       if (report.pronunciationEn) ly = text(g, `🗣️ ${report.pronunciationEn}`, 80, ly + 10, colW, 28, { color: '#2f6db3', maxLines: 2 });
       ly += 14;
-      missions.forEach((m) => { ly = text(g, `${m.done ? '☑' : '☐'} ${m.text}`, 80, ly, colW, 28, { color: m.done ? THEME.ink : THEME.soft, maxLines: 1 }); });
+      missions.forEach((m) => { ly = text(g, `${m.done ? '☑' : '☐'} ${m.text}`, 80, ly, colW, 26, { color: m.done ? THEME.ink : THEME.soft, maxLines: 2 }); });
       // turn list
       let ty = y + 10; const tx = 120 + colW;
       g.font = font(28, 800); g.fillStyle = THEME.ink; g.textAlign = 'left'; g.textBaseline = 'top';
@@ -401,9 +459,8 @@ export class Board {
       for (const t of turns.slice(-6)) {
         if (ty > H - 260) break;
         stars(g, tx, ty + 2, t.score, 3, 26);
-        text(g, t.heard || '—', tx + 110, ty, colW - 120, 28, { maxLines: 1 });
-        ty += 38;
-        if (t.correction && t.correction !== t.heard) { text(g, `→ ${t.correction}`, tx + 110, ty, colW - 120, 26, { color: THEME.leafDark, maxLines: 1 }); ty += 36; }
+        ty = Math.max(ty + 38, text(g, t.heard || '—', tx + 110, ty, colW - 120, 26, { maxLines: 2 }));
+        if (t.correction && t.correction !== t.heard) ty = text(g, `→ ${t.correction}`, tx + 110, ty, colW - 120, 24, { color: THEME.leafDark, maxLines: 2 }) + 4;
         ty += 10;
       }
       const by = H - 160;
@@ -422,6 +479,7 @@ export class Board {
   /** Job interview result: verdict, the interviewer's rubric, what to improve, a better answer; page 2 lists every answer. */
   interviewReport(args, page = 'summary') {
     const { lesson, variant, report, turns, mode, onRetry, onReal, onNext, onOther, onTown } = args;
+    this.panel.setHeight(1100);
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
@@ -474,7 +532,7 @@ export class Board {
         for (const t of rows) {
           if (ty > H - 260) break;
           stars(g, 80, ty + 4, t.score, 3, 22);
-          text(g, `Q. ${t.questionJa || t.promptEn}`, 180, ty, W - 260, 22, { color: THEME.soft, maxLines: 1, weight: 700 });
+          text(g, `Q. ${t.questionJa || t.promptEn}`, 180, ty, W - 260, 21, { color: THEME.soft, maxLines: 1, weight: 700 });
           text(g, `🎤 ${t.heard || '—'}`, 180, ty + 28, (W - 280) / 2, 22, { maxLines: 2 });
           const better = t.betterAnswer || (t.score < 2 ? t.modelAnswer : '');
           if (better) text(g, `→ ${better}`, 180 + (W - 260) / 2, ty + 28, (W - 280) / 2, 22, { color: THEME.leafDark, maxLines: 2, weight: 700 });
@@ -495,6 +553,7 @@ export class Board {
   }
 
   message(title, body, buttons = []) {
+    this.panel.setHeight(1100);
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });

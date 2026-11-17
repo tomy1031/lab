@@ -68,6 +68,24 @@ export class Panel {
     }
   }
 
+  /** Change the canvas height (the panel grows/shrinks in the world, width stays). Call before draw(). */
+  setHeight(hPx) {
+    hPx = Math.round(hPx);
+    if (hPx === this.canvas.height) return;
+    this.canvas.height = hPx;
+    const old = this.tex;
+    this.tex = new THREE.CanvasTexture(this.canvas);
+    this.tex.colorSpace = THREE.SRGBColorSpace;
+    this.tex.anisotropy = old.anisotropy;
+    this.tex.minFilter = THREE.LinearMipmapLinearFilter;
+    this.mesh.material.map = this.tex;
+    this.mesh.material.needsUpdate = true;
+    old.dispose();
+    this.hM = this.wM * hPx / this.canvas.width;
+    this.mesh.geometry.dispose();
+    this.mesh.geometry = new THREE.PlaneGeometry(this.wM, this.hM);
+  }
+
   get visible() { return this.mesh.visible; }
   set visible(v) { this.mesh.visible = v; }
 
@@ -95,9 +113,16 @@ export class Panel {
     g.fillStyle = opts.fg || '#ffffff';
     g.font = font(opts.size || h * 0.42, 800);
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    let label2 = label;
-    while (g.measureText(label2).width > w - h * 0.5 && label2.length > 2) label2 = `${label2.slice(0, -2)}…`;
-    g.fillText(label2, x + w / 2, y + h / 2 + (hover ? -2 : 0) + 1);
+    if (opts.lines) {
+      // several lines (long answers are shown in full)
+      const lh = opts.lineHeight || (opts.size || h * 0.42) * 1.3;
+      const top = y + h / 2 - ((opts.lines.length - 1) * lh) / 2 + (hover ? -2 : 0) + 1;
+      opts.lines.forEach((l, i) => g.fillText(l, x + w / 2, top + i * lh));
+    } else {
+      let label2 = label;
+      while (g.measureText(label2).width > w - h * 0.5 && label2.length > 2) label2 = `${label2.slice(0, -2)}…`;
+      g.fillText(label2, x + w / 2, y + h / 2 + (hover ? -2 : 0) + 1);
+    }
     g.restore();
     if (!opts.disabled) this.buttons.push({ id, x, y, w, h, onClick });
   }
@@ -188,6 +213,21 @@ export function star(g, cx, cy, r, color) {
 }
 
 /** Draw wrapped text, returns the y after the last line. */
+/**
+ * The largest font size (from `sizes`, biggest first) at which `str` wraps into maxW and fits in maxH.
+ * Returns { px, lines, height }. Used so long sentences are shown in full instead of being cut.
+ */
+export function fitWrap(g, str, maxW, maxH, sizes = [40, 34, 30, 26, 22], { weight = 700, lh = 1.45 } = {}) {
+  let best = null;
+  for (const px of sizes) {
+    g.font = font(px, weight);
+    const lines = wrap(g, str, maxW);
+    best = { px, lines, height: lines.length * px * lh };
+    if (best.height <= maxH) return best;
+  }
+  return best;
+}
+
 export function text(g, str, x, y, maxW, px, { color = THEME.ink, weight = 700, lh = 1.45, align = 'left', maxLines = 99 } = {}) {
   g.font = font(px, weight);
   g.fillStyle = color; g.textAlign = align; g.textBaseline = 'top';
