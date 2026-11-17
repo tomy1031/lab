@@ -93,10 +93,14 @@ export class Navi {
     this.root.visible = this.enabled;
   }
 
-  /** Float beside the learner (scenes). side: how far to the left (m). */
-  follow({ side = 0.62, ahead = 0.82, below = 0.42, height = 0.4 } = {}) {
+  /**
+   * Float beside the learner (scenes). side: how far to the left (m); shift: how far the bubble leans toward
+   * the middle of the view (0 when the big board is open, so the bubble stays clear of it).
+   */
+  follow({ side = 0.62, ahead = 0.82, below = 0.42, height = 0.4, shift = 0.17 } = {}) {
     this.mode = 'follow';
     this.offset = { side, ahead, below };
+    this.shift = shift;
     this.scale = height;
     this.yaw = null;
     this.placed = false;
@@ -218,7 +222,7 @@ export class Navi {
     if (this.bubble.visible) {
       const p = this.root.position.clone(); p.y += this.scale * 1.12 + this.bubble.hM * 0.5;
       if (this.mode === 'stand') p.x += 0.25; // keep clear of the board's edge
-      else if (this.yaw !== null) { p.x -= Math.cos(this.yaw) * 0.17; p.z += Math.sin(this.yaw) * 0.17; } // toward the middle of the view
+      else if (this.yaw !== null && this.shift) { p.x -= Math.cos(this.yaw) * this.shift; p.z += Math.sin(this.yaw) * this.shift; } // toward the middle of the view
       this.bubble.placeFacing(p, head);
       this.bubble.mesh.scale.setScalar(this.mode === 'stand' ? 1 : 0.62);
     }

@@ -224,7 +224,7 @@ async function boot() {
     sound.fanfare(report.stars);
     boardMode = 'follow';
     boardFollow.update(0, true);
-    navi.follow({ side: 0.72, ahead: 0.95, below: 0.5 });
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
     setTimeout(() => navi.event({ type: 'report', free: true, stars: report.stars }), 600);
     board.freeReport({
       report, turns, partner, place, topics,
@@ -253,7 +253,7 @@ async function boot() {
     amb.start(v.scene, { weather: v.setup?.weather, time: v.setup?.time });
     boardMode = 'follow';
     boardFollow.update(0, true);
-    navi.follow({ side: 0.72, ahead: 0.95, below: 0.5 });
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
     setTimeout(() => { if (state.where === 'brief') navi.say(NAVI_LINES.brief, { ms: 5500, pose: 'wave', force: true }); }, 900);
     const live = !!store.apiKey;
     board.briefing({
@@ -289,7 +289,7 @@ async function boot() {
     if (!again) { store.record(v.id, report.stars, mode); sound.fanfare(report.stars); }
     boardMode = 'follow';
     boardFollow.update(0, true);
-    navi.follow({ side: 0.72, ahead: 0.95, below: 0.5 });
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
     if (!again) setTimeout(() => navi.event({ type: 'report', stars: report.stars }), 600);
     // ITビジネス編 follows one story: offer the next episode (same pattern letter when it exists)
     const course = courses.find((c) => c.id === L.course);
