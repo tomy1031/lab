@@ -17,6 +17,7 @@ import { createFood } from './food.js';
 import { createFlask } from './flask.js';
 import { createWindfan } from './windfan.js';
 import { createWaybell } from './waybell.js';
+import { createRadiance, RADIANT } from './radiance.js';
 import { PROJECTILE_MAX } from '../core/config.js';
 import { getGems, getSprites } from '../core/gems.js';
 const HANDS = ['left', 'right'];
@@ -137,6 +138,7 @@ export async function createItems(ctx) {
     inst.heldBy = hand;
     inst.wasHeld = true;
     if (inst.state.hanging) inst.state.hanging = false;
+    inst.placed = false;
     inst.flying = false; inst.thrown = null; inst.stuck = false; inst.sleeping = false; inst.pulled = null;
     inst.vel.set(0, 0, 0); inst.angVel.set(0, 0, 0);
     held[hand] = inst;
@@ -228,6 +230,8 @@ export async function createItems(ctx) {
   const fan = createWindfan(ctx, I);
   const bell = createWaybell(ctx, I);
   I.torch = torch; I.bomb = bomb; I.melee = melee;
+  const radiance = createRadiance(ctx, I);         // the enchanted sword's glow (held and in the world)
+  I.radiance = radiance;
 
   function collect(inst) {
     // a counted bundle or a material: straight into the bag
@@ -243,6 +247,7 @@ export async function createItems(ctx) {
     defs,
     handlesXButton: true,          // the X button rings the waybell here (ui checks this flag)
     models,                        // shared item geometries (holster marks reuse them)
+    get radiance() { return I.radiance; },   // the enchanted sword's glow (tests / tuning)
     held,
     pulling,
     get worldItems() { return world; },
@@ -250,7 +255,9 @@ export async function createItems(ctx) {
       const inst = makeInstance(itemId, { state, owned, count });
       if (!inst) return null;
       if (pos) inst.pos.copy(pos); else inst.pos.copy(ctx.player?.pos || ctx.rig.position).y += 1;
-      if (quat) inst.quat.copy(quat);
+      // a given orientation means "placed" (a sword standing on its pedestal): kept as is, not laid down or
+      // dropped to the ground below; it becomes an ordinary item once a hand takes it
+      if (quat) { inst.quat.copy(quat); inst.placed = true; }
       else inst.quat.setFromAxisAngle(_v.set(0, 1, 0), Math.random() * Math.PI * 2);
       if (vel) inst.vel.copy(vel);
       inst.sleeping = !vel || !!inst.state.hanging;      // fruit hanging on a tree stays put until grabbed
@@ -383,8 +390,9 @@ export async function createItems(ctx) {
     budget() {
       let calls = 0, tris = 0;
       for (const [id, p] of pools) if (p.mesh && p.mesh.count > 0) { calls++; tris += models.trianglesOf(id) * p.mesh.count; }
-      for (const h of HANDS) if (held[h]) { calls++; tris += models.trianglesOf(held[h].id); }
-      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls()
+      for (const h of HANDS) if (held[h]) { calls += Math.max(1, held[h].mesh.geometry.groups.length); tris += models.trianglesOf(held[h].id); }
+      for (const inst of world) if (RADIANT.has(inst.id) && inst.mesh.visible) { calls += Math.max(1, inst.mesh.geometry.groups.length); tris += models.trianglesOf(inst.id); }
+      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls() + radiance.drawCalls()
         + (sprites.count > 0 ? 1 : 0) + (shadows.visible ? 1 : 0) + (gems.count > 0 ? 1 : 0);
       return { drawCalls: calls + extra, triangles: Math.round(tris + sprites.count * 2 + shadows.count * 2 + gems.count * 8), pools: pools.size };
     },
@@ -451,6 +459,12 @@ export async function createItems(ctx) {
         inst.object3D.position.copy(inst.pos);
         inst.object3D.quaternion.copy(inst.quat);
         const d2 = inst.pos.distanceToSquared(pp);
+        if (RADIANT.has(inst.id)) {
+          // the hero blade keeps its own mesh in the world (steel and gold looks + its glow), not the matte pool
+          inst.mesh.visible = d2 <= POOL_DIST2;
+          if (inst.fx.aura) inst.fx.aura.visible = inst.mesh.visible;
+          continue;
+        }
         if (d2 > POOL_DIST2) continue;
         const p = pool(inst.id);
         ensureCap(inst.id, p, p.n + 1);
@@ -495,6 +509,7 @@ export async function createItems(ctx) {
         const inst = held[h];
         if (inst) inst.mesh.scale.setScalar(inst.state.bites > 0 ? 0.8 : 1);
       }
+      radiance.update(dt);
     },
   };
   I.items = items;

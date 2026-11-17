@@ -179,5 +179,71 @@ export function createGrab(ctx, P, holsters) {
     }
   }
 
-  return { update(dt) { update(dt); updateAffordances(dt); }, tryGrab, release, wristPoint };
+  // ── item:hover — what a hand would take if it closed now (name labels, §10.6), debounced ──
+  // VR: the same order as tryGrab (quiver arrow > holster slot > waybell at the wrist > world item in reach,
+  // 0.25 m to enter, 0.32 m to stay). PC: the right hand reports what E would take (near the feet, else what
+  // the reticle looks at). A new target must hold for 0.12 s, a leave for 0.22 s (0 when the hand took it).
+  const mkHover = () => ({ id: null, uid: 0, source: null, slot: null, pid: null, puid: 0, psrc: null, pslot: null, pt: 0 });
+  const hov = { left: mkHover(), right: mkHover() };
+  const cand = { id: null, uid: 0, source: null, slot: null };
+  function setCand(id, uid, source, slot) { cand.id = id; cand.uid = uid; cand.source = source; cand.slot = slot; }
+  function hoverCandidate(hand) {
+    setCand(null, 0, null, null);
+    const items = ctx.items;
+    if (!items || items.isStub || items.held[hand] || items.pulling?.[hand]) return;
+    const hd = input.hands[hand];
+    const H = hov[hand];
+    if (!ctx.flags.xr) {
+      if (hand !== 'right') return;
+      let t = items.nearestGrabbable(input.head.pos, 1.5, true);
+      if (!t) {
+        _d.set(0, 0, -1).applyQuaternion(input.head.quat);
+        t = items.rayGrabbable(input.head.pos, _d, 2.5, 14);
+      }
+      if (t) setCand(t.id, t.uid, 'world', null);
+      return;
+    }
+    if (!hd.tracked) return;
+    const I = inv();
+    const oh = items.held[other(hand)];
+    if (oh && oh.id === 'bow' && nearShoulder(hand)) {
+      if (!I || I.has?.('arrow')) setCand('arrow', 0, 'holster', 'quiver');
+      return;
+    }
+    const slot = holsters.handIn(hand);
+    if (slot) {
+      const id = holsters.contentOf(slot, hand);
+      if (id) { setCand(id, 0, 'holster', slot); return; }
+    }
+    if (hand === 'right' && input.hands.left.tracked && hd.pos.distanceTo(wristPoint(_w)) < 0.13 && !items.isHeld('waybell') && (!I || I.has?.('waybell'))) {
+      setCand('waybell', 0, 'holster', 'wrist');
+      return;
+    }
+    let t = items.nearestGrabbable(hd.pos, 0.25);
+    if (!t && H.source === 'world') {                      // hysteresis: keep the current one a little longer
+      const t2 = items.nearestGrabbable(hd.pos, 0.32);
+      if (t2 && t2.uid === H.uid) t = t2;
+    }
+    if (t) setCand(t.id, t.uid, 'world', null);
+  }
+  function updateHover(dt) {
+    for (const hand of HANDS) {
+      const H = hov[hand];
+      hoverCandidate(hand);
+      if (cand.id === H.id && cand.uid === H.uid && cand.source === H.source && cand.slot === H.slot) { H.pt = 0; H.pid = H.id; H.puid = H.uid; H.psrc = H.source; H.pslot = H.slot; continue; }
+      if (cand.id !== H.pid || cand.uid !== H.puid || cand.source !== H.psrc || cand.slot !== H.pslot) {
+        H.pid = cand.id; H.puid = cand.uid; H.psrc = cand.source; H.pslot = cand.slot; H.pt = 0;
+      }
+      H.pt += dt;
+      const took = !!ctx.items?.held?.[hand];
+      if (!took && H.pt < (cand.id ? 0.12 : 0.22)) continue;
+      // a change of target is a leave of the old one (if any) and an enter of the new one
+      const leave = H.id ? { hand, itemId: null, source: H.source, uid: H.uid || null, slot: H.slot } : null;
+      H.id = cand.id; H.uid = cand.uid; H.source = cand.source; H.slot = cand.slot; H.pt = 0;
+      if (leave) ctx.events.emit('item:hover', leave);
+      if (cand.id) ctx.events.emit('item:hover', { hand, itemId: cand.id, source: cand.source, uid: cand.uid || null, slot: cand.slot });
+    }
+  }
+
+  return { update(dt) { update(dt); updateAffordances(dt); if (dt > 0 && P.enabled) updateHover(dt); }, tryGrab, release, wristPoint, hover: hov };
 }

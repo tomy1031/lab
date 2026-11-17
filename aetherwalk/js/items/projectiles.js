@@ -69,6 +69,11 @@ export function createProjectiles(ctx, I) {
     const w = ctx.world;
     let g = inst.pos.y - 0.5;
     try { g = w.groundAt(inst.pos.x, inst.pos.z, inst.pos.y + 0.3); } catch { /* stub */ }
+    if (inst.placed) {                                   // set down on purpose (a pedestal): stays exactly so
+      inst.vel.set(0, 0, 0); inst.angVel.set(0, 0, 0);
+      inst.sleeping = true; inst.thrown = null; inst.flying = false;
+      return;
+    }
     if (LONG.has(inst.id) && !inst.stuck) {
       _f.set(0, 0, -1).applyQuaternion(inst.quat);
       _f.y = 0;

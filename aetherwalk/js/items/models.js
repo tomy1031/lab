@@ -10,13 +10,15 @@ import * as THREE from 'three';
 import { GeoBuilder, triCount } from '../core/geo.js';
 
 const C = {
-  steel: 0xc3ced8, steelHi: 0xf2f7fb, steelLo: 0x8796a3, gold: 0xc0903a, goldHi: 0xd8ab55, goldLo: 0x8a6224,
+  steel: 0xa3aeb9, steelHi: 0xf2f7fb, steelLo: 0x5c6773, steelBevel: 0xc6d0da, steelFlat: 0x7a8692, gold: 0xc0903a, goldHi: 0xd8ab55, goldLo: 0x8a6224,
   cyan: 0x7fe9ff, white: 0xfffbe8, leather: 0x5e3c26, leatherHi: 0x7a5134, wood: 0x8a6440, woodHi: 0xa77d50, woodLo: 0x5f4129,
   dark: 0x3d2c1f, cloth: 0xb79a6a, pitch: 0x2a1d14, red: 0xd9473a, apple: 0xd8432f, baked: 0xa8582e, glow: 0x62e6ff,
   cream: 0xf1e6cc, ice: 0x9fe3f5, honey: 0xf2c66b, rock: 0x8d8a85, bomb: 0x6e2024, bombDot: 0xffb347, green: 0x5fae4a,
   glass: 0x9fc8d6, paper: 0xf6eedb,
 };
 const R90 = Math.PI / 2;
+/** the sword's blade (item space, −Z toward the tip): shared with the enchantment glow (radiance.js) */
+export const SWORD_BLADE = Object.freeze({ z0: -0.052, z1: -0.74, tipZ: -0.85, w0: 0.024, w1: 0.017, t: 0.0058 });
 
 // ── colour helpers (item space) ──
 const fract = (x) => x - Math.floor(x);
@@ -63,12 +65,15 @@ function blade(b, { z0, z1, tipZ, w0, w1, t, fullerTo = 0.7, color = C.steel, in
       const f = Math.min(1, Math.max(0, (z0 - z) / span));
       const w = w0 + (w1 - w0) * Math.min(1, f / ((z0 - z1) / span));
       const e = Math.abs(y) / Math.max(1e-4, w);
-      if (e > 0.95 || z <= z1 + 1e-4) c.lerp(MIXC.setHex(C.steelHi), 0.85);            // the honed edge / tip
-      else if (Math.abs(x) < t * 0.6 && e < 0.1) {                                        // the fuller
-        c.lerp(MIXC.setHex(C.steelLo), 0.5);
-        if (inlay) c.lerp(MIXC.setHex(C.cyan), 0.35);
-        c.ao = 0.8;
-      } else if (e > 0.5) c.lerp(MIXC.setHex(C.steelHi), 0.25);
+      // polished steel without an environment map: the colour across each face carries the reflection —
+      // a dark fuller, the flat darker by it and lighter toward the bevel, a bright honed edge and point
+      if (e > 0.95 || z <= tipZ + 1e-4) c.setHex(C.steelHi);
+      else if (Math.abs(x) < t * 0.6 && e < 0.1) {
+        c.setHex(C.steelLo);
+        if (inlay) c.lerp(MIXC.setHex(C.cyan), 0.18);
+        c.ao = 0.75;
+      } else if (e > 0.5) c.setHex(C.steelBevel);
+      else c.setHex(C.steelFlat);
     },
   });
 }
@@ -108,7 +113,7 @@ function wrapProfile(r, len, turns, depth = 0.0012) {
 
 const BUILD = {
   sword(b) {
-    blade(b, { z0: -0.052, z1: -0.74, tipZ: -0.85, w0: 0.024, w1: 0.017, t: 0.0058 });
+    blade(b, SWORD_BLADE);
     // crossguard ≈ 2.7 × the blade's width, swept slightly toward the blade, ball finials; a round quillon block
     sweep(b, [[0, -0.056, -0.0525], [0, -0.036, -0.0485], [0, -0.013, -0.0465], [0, 0.013, -0.0465], [0, 0.036, -0.0485], [0, 0.056, -0.0525]],
       [[0.0042, 0.0046], [0.0048, 0.0054], [0.0058, 0.0066], [0.0058, 0.0066], [0.0048, 0.0054], [0.0042, 0.0046]], 6, C.gold, { metal: 'gold' });
