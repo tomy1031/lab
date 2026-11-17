@@ -1,6 +1,6 @@
 // js/game/pickups.js — light shards (auto-collect), enemy drops, chests, gathering points (OPUS-B)
 import * as THREE from 'three';
-import { heightAt, fx, emit, toast, spawnList, findProp, setPropState, anchorOf, playerPos } from './util.js';
+import { heightAt, fx, flash, emit, toast, spawnList, findProp, setPropState, anchorOf, playerPos } from './util.js';
 
 const MAX_SHARDS = 48;
 
@@ -22,6 +22,10 @@ export function createPickups(ctx, G) {
   const _p = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(1, 1, 1);
   const _a = new THREE.Vector3();
   let chestT = 0, gatherT = 0, pendingShard = 0, shardToastT = 0;
+  // the Wayfarer Blade on the camp pedestal: a real world item you grip (spawned when you come within 3 m)
+  const ped = { inst: null, failed: false };
+  const _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion(), _yAxis = new THREE.Vector3(0, 1, 0), _xAxis = new THREE.Vector3(1, 0, 0);
+  const itemsReal = () => { const it = ctx.items; return !!(it && !it.isStub && typeof it.spawn === 'function'); };
 
   const chests = [];
   const gathers = [];
@@ -74,9 +78,12 @@ export function createPickups(ctx, G) {
       }
     },
     pedestalChest() { return chests.find((c) => c.pedestal) || null; },
+    /** is this world item the pedestal's sword? (inventory adds it quietly; we celebrate here) */
+    isPedestalUid(uid) { return !!ped.inst && ped.inst.uid === uid; },
     openChest(entry, silent = false) {
       const Q = G.quest;
       if (Q.chests.includes(entry.id)) return;
+      if (entry.pedestal) dropPedestalSword(entry, false);
       Q.chests.push(entry.id);
       if (entry.pedestal) { setPropState(entry.prop, entry.prop && entry.prop.kind === 'pedestal' ? 'taken' : 'open', true); if (entry.prop) Q.props[entry.prop.id] = { taken: true }; }
       else setPropState(entry.prop, 'open', true);
@@ -93,6 +100,7 @@ export function createPickups(ctx, G) {
       fx(ctx, 'shard', _a, { count: 24, color: 0xffd76a, speed: 2.5 });
       emit(ctx, 'chest:open', { id: entry.id, loot });
       if (!entry.pedestal) toast(ctx, '宝箱をあけた', names.join('・'), 'item', 4000);
+      else celebrateSword();
       G.requestSave && G.requestSave();
     },
     onDawn() {
@@ -155,9 +163,8 @@ export function createPickups(ctx, G) {
       for (const c of chests) {
         if (G.quest.chests.includes(c.id)) continue;
         const d = Math.hypot(_p.x - c.x, _p.z - c.z);
+        if (c.pedestal) { pedestalTick(c, d); continue; }
         if (d > 1.5) continue;
-        // the pedestal sword waits until the camp fire is lit (§8.1 stage 1)
-        if (c.pedestal) { const camp = G.checkpoints && G.checkpoints.byId('camp_meadow'); if (camp && !camp.lit) continue; }
         if (c.c.hiddenBy) {
           const h = ctx.world && ctx.world.props && ctx.world.props.byId && ctx.world.props.byId[c.c.hiddenBy];
           if (h && h.state && !(h.state.broken || h.state.burnt || h.state.melted)) continue;
@@ -208,6 +215,74 @@ export function createPickups(ctx, G) {
       }
     }
   }
+
+  // ── the pedestal sword ──
+  function pedestalTick(c, d) {
+    // already carried one (debug, a skipped stage): the pedestal is simply empty
+    if (G.inventory.has('sword')) { if (!ped.inst || !ped.inst.heldBy) P.openChest(c, true); return; }
+    if (itemsReal() && !ped.failed) {
+      if (!ped.inst && d < 3.0) spawnPedestalSword(c);
+      else if (ped.inst && !ped.inst.heldBy && d > 25) dropPedestalSword(c, true);
+      return;
+    }
+    // hand-less / stub items: walk up to it
+    if (d <= 1.5) P.openChest(c);
+  }
+  function pedestalPose(c, outPos, outQuat) {
+    const prop = c.prop;
+    anchorOf(prop, 'item', _a);
+    const y = prop && prop.anchors && prop.anchors.item ? _a.y : heightAt(ctx, c.x, c.z) + 1.5;
+    outPos.set(prop ? prop.x : c.x, y, prop ? prop.z : c.z);
+    // blade (model −Z) points down into the stone; the guard faces the way the pedestal faces
+    const yaw = prop && Number.isFinite(prop.yaw) ? prop.yaw : 0;
+    _q2.setFromAxisAngle(_yAxis, -yaw);
+    _q3.setFromAxisAngle(_xAxis, -Math.PI / 2);
+    outQuat.copy(_q2).multiply(_q3);
+  }
+  function spawnPedestalSword(c) {
+    let inst = null;
+    try {
+      pedestalPose(c, _a, _q);
+      inst = ctx.items.spawn('sword', { pos: _a.clone(), owned: true });
+    } catch (e) { inst = null; }
+    if (!inst) { ped.failed = true; return; }
+    // stand it in the stone the way the prop sword stood (spawn lays long items flat)
+    inst.pos.copy(_a); inst.quat.copy(_q);
+    inst.vel.set(0, 0, 0);
+    inst.sleeping = true;
+    if (inst.object3D) { inst.object3D.position.copy(inst.pos); inst.object3D.quaternion.copy(inst.quat); }
+    ped.inst = inst;
+    setPropState(c.prop, 'taken', true);        // hide the prop's own sword (the real one takes its place)
+  }
+  /** take the real sword away again (you walked off) and show the prop sword */
+  function dropPedestalSword(c, restoreProp) {
+    const inst = ped.inst;
+    if (!inst) return;
+    ped.inst = null;
+    if (!inst.heldBy) { try { ctx.items.despawn(inst); } catch (e) { /* ignore */ } }
+    if (restoreProp) setPropState(c.prop, 'taken', false);
+  }
+  function celebrateSword() {
+    const c = P.pedestalChest();
+    if (c) { anchorOf(c.prop, 'item', _a); if (!c.prop) _a.set(c.x, heightAt(ctx, c.x, c.z) + 1.4, c.z); }
+    else playerPos(ctx, _a).y += 1.3;
+    fx(ctx, 'shard', _a, { count: 30, color: 0xffd76a, speed: 2.6 });
+    flash(ctx, _a, { color: 0x7fe9ff, size: 3.5, life: 0.5 });
+    emit(ctx, 'ui:title', { text: '旅人の剣を手に入れた', sub: 'WAYFARER BLADE' });
+    toast(ctx, '振って斬る・強く振ると強打', 'SWING TO SLASH · SWING HARD FOR A STRONG HIT', 'item', 5500);
+  }
+  ctx.events?.on?.('item:grab', (e) => {
+    if (!e || !ped.inst || e.uid !== ped.inst.uid) return;
+    const c = P.pedestalChest();
+    ped.inst = null;
+    if (!c) return;
+    const Q = G.quest;
+    if (!Q.chests.includes(c.id)) Q.chests.push(c.id);
+    if (c.prop) Q.props[c.prop.id] = { taken: true };
+    emit(ctx, 'chest:open', { id: c.id, loot: [{ itemId: 'sword', count: 1 }] });
+    celebrateSword();
+    G.requestSave && G.requestSave(true);
+  });
 
   // a hand took a gathered item: one fewer on the tree
   ctx.events?.on?.('item:grab', (e) => {

@@ -14,7 +14,7 @@ import { createProps } from './props.js';
 import { createShrines } from './shrines.js';
 import { createSeeds } from './seeds.js';
 import { createBot } from './bot.js';
-import { ITEM_INFO } from './itemInfo.js';
+import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
 
@@ -39,6 +39,15 @@ export async function createGame(ctx) {
   G.seeds = createSeeds(ctx, G);
   G.bot = createBot(ctx, G);
   G.itemInfo = (id) => G.inventory.def(id) || ITEM_INFO[id] || null;
+  /** [jp, en] one-line usage hint, or null */
+  G.itemHint = (id) => ITEM_HINTS[id] || null;
+  /** how many times the hand label has taught this item (saved in quest.flags.hints) */
+  G.hintSeen = (id, bump = false) => {
+    const f = G.quest.flags;
+    const h = f.hints || (f.hints = {});
+    if (bump) h[id] = (h[id] || 0) + 1;
+    return h[id] || 0;
+  };
 
   const _p = new THREE.Vector3();
   let saveT = AUTOSAVE, saveSoon = -1, deathT = 0;

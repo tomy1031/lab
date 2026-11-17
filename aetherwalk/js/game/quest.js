@@ -11,24 +11,36 @@ export const STAGES = [
   { text: '凪の心臓を鎮める', en: 'Calm the Stillheart' },
   { text: '風の戻った島を旅する', en: 'Wander the windswept isle' },
 ];
-const TUT = [
-  { id: 'tut_walk', text: 'その場で足踏みして歩こう', en: 'STEP IN PLACE TO WALK' },
-  { id: 'tut_run', text: '腕も振って、もっと速く足踏み（走る）', en: 'STEP FASTER TO JOG' },
+export const TUT = [
+  { id: 'tut_walk', text: 'その場で足踏みして歩こう', en: 'STEP IN PLACE TO WALK', goal: 16 },
+  { id: 'tut_run', text: '腕も振って速く足踏み（走る）', en: 'SWING YOUR ARMS · STEP FASTER TO JOG', goal: 10 },
   { id: 'tut_branch', text: '枝の松明を拾おう（グリップ）', en: 'PICK UP THE BRANCH' },
   { id: 'tut_apple', text: '陽りんごを口へ運んで食べよう', en: 'EAT THE SUN APPLE' },
-  { id: 'tut_dummy', text: '木人を剣か枝で叩こう', en: 'STRIKE THE DUMMY' },
+  { id: 'tut_dummy', text: '木人を枝で叩こう', en: 'STRIKE THE DUMMY' },
+];
+// stage 1, shown on the tutorial board as the start of the main quest
+export const MAIN1 = [
+  { id: 'm_light', text: '石舞台の燭台で松明に火を移す', en: 'LIGHT THE BRANCH AT THE BRAZIER' },
+  { id: 'm_camp', text: '野営地の焚き火に火を灯す', en: 'LIGHT THE CAMPFIRE' },
+  { id: 'm_sword', text: '台座の剣を握って手に取る', en: 'GRIP THE SWORD ON THE PEDESTAL' },
 ];
 const REGIONS = ['meadow', 'forest', 'canyon', 'peaks'];
 
 export function createQuest(ctx, G) {
   const _p = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
-  let applying = false, objT = 0, lastObjKey = '', tutSpawned = false;
+  let applying = false, objT = 0, lastObjKey = '', tutSpawned = false, tutClosed = false;
+  const tutPrev = [false, false, false, false, false];
+  const tutItems = { torch: null, apple: null };          // the lesson's branch and apple (world items)
+  // reusable guide targets for the world markers (no per-frame allocation)
+  const targets = [0, 1, 2, 3].map(() => ({ x: 0, y: 0, z: 0, primary: false, kind: '' }));
+  const _t = new THREE.Vector3();
+  let startBrazier;
   const Q = {
     stage: 0, objective: null,
     towers: { meadow: false, forest: false, canyon: false, peaks: false },
     shrines: {}, seeds: [], chests: [], props: {}, flags: {},
     tut: { walk: 0, run: 0, branch: false, apple: false, dummy: false },
-    STAGES,
+    STAGES, TUT, MAIN1, tutItems,
     get stageText() { return STAGES[Q.stage] ? STAGES[Q.stage].text : ''; },
     setStage(n, opts = {}) {
       n = Math.max(0, Math.min(6, n | 0));
@@ -83,7 +95,23 @@ export function createQuest(ctx, G) {
       emit(ctx, 'quest:guide', { x: o.x, z: o.z });
       return true;
     },
-    skipTutorial() { if (Q.stage === 0) Q.setStage(1); },
+    skipTutorial() { if (Q.stage === 0) { closeTutorial(true); Q.setStage(1); } },
+    /** step i of the lesson done? */
+    tutDone(i) {
+      const t = Q.tut;
+      return [t.walk >= 16, t.run >= 10, !!t.branch, !!t.apple, !!t.dummy][i] || false;
+    },
+    tutIndex: () => tutIndex(),
+    /** stage-1 sub-steps for the board */
+    mainDone(i) {
+      const camp = G.checkpoints && G.checkpoints.byId('camp_meadow');
+      const lit = !!(camp && camp.lit);
+      if (i === 0) return lit || torchLit();
+      if (i === 1) return lit;
+      return G.inventory.has('sword');
+    },
+    torchLit: () => torchLit(),
+    guideTargets,
     serialize() {
       return { stage: Q.stage, towers: { ...Q.towers }, shrines: JSON.parse(JSON.stringify(Q.shrines)), seeds: Q.seeds.slice(),
         chests: Q.chests.slice(), props: JSON.parse(JSON.stringify(Q.props)), flags: { ...Q.flags, killed: { ...(G.enemies ? G.enemies.killedForever : {}) }, gather: G.pickups ? G.pickups.serializeGather() : {} } };
@@ -154,8 +182,8 @@ export function createQuest(ctx, G) {
         const c = L('camp_meadow');
         const camp = G.checkpoints && G.checkpoints.byId('camp_meadow');
         const ped = G.pickups && G.pickups.pedestalChest();
-        if (camp && camp.lit && ped) setObjective('pedestal', '台座の剣を手に取ろう', ped.x, ped.z);
-        else setObjective('camp_meadow', camp && camp.lit ? '台座の剣を手に取ろう' : '松明に火を灯し、野営地の焚き火へ運ぼう', c ? c.x : _p.x, c ? c.z : _p.z);
+        if (camp && camp.lit && ped && !G.inventory.has('sword')) setObjective('pedestal', '台座の剣を握って手に取ろう', ped.x, ped.z);
+        else setObjective('camp_meadow', '松明に火を灯し、野営地の焚き火へ運ぼう', c ? c.x : _p.x, c ? c.z : _p.z);
         break;
       }
       case 2: { const t = L('tower_meadow'); setObjective('tower_meadow', '風見の鐘塔の頂上で鐘を鳴らそう', t ? t.x : _p.x, t ? t.z : _p.z); break; }
@@ -201,13 +229,75 @@ export function createQuest(ctx, G) {
     return 5;
   }
   function tutAdvance() {
+    tutCheck();
+    if (Q.stage !== 0) return;
     const before = lastObjKey;
     refreshObjective();
-    if (lastObjKey !== before && Q.stage === 0) {
-      const i = tutIndex();
-      if (i < TUT.length) toast(ctx, TUT[i].text, TUT[i].en, 'quest', 4000, 'tut');
-      else { toast(ctx, 'よくできました — 石舞台の燭台で松明に火を移し、野営地へ', 'TUTORIAL DONE', 'quest', 5000); Q.setStage(1); }
+    const i = tutIndex();
+    if (i >= TUT.length) { closeTutorial(false); Q.setStage(1); return; }
+    if (lastObjKey !== before) toast(ctx, TUT[i].text, TUT[i].en, 'quest', 4000, 'tut');
+  }
+  /** tick off every step that just became done (in any order) */
+  function tutCheck() {
+    if (Q.stage !== 0) return;
+    for (let i = 0; i < TUT.length; i++) {
+      if (tutPrev[i] || !Q.tutDone(i)) continue;
+      tutPrev[i] = true;
+      emit(ctx, 'tutorial:step', { index: i, id: TUT[i].id });
     }
+  }
+  function closeTutorial(skipped) {
+    if (tutClosed) return;
+    tutClosed = true;
+    emit(ctx, 'tutorial:done', { skipped: !!skipped });
+  }
+  function torchLit() {
+    const h = ctx.items && ctx.items.held;
+    if (!h) return false;
+    for (const k of ['left', 'right']) { const i = h[k]; if (i && i.id === 'torch' && i.state && i.state.lit) return true; }
+    return false;
+  }
+  function onGround(inst) { return !!inst && !inst.heldBy && (ctx.items && ctx.items.worldItems ? ctx.items.worldItems.includes(inst) : true); }
+  function put(n, x, y, z, primary, kind) {
+    const o = targets[n];
+    o.x = x; o.y = y; o.z = z; o.primary = primary; o.kind = kind;
+    return n + 1;
+  }
+  /** where the gold arrows point now: the lesson's next thing, then the brazier, the campfire and the pedestal */
+  function guideTargets(out) {
+    out.length = 0;
+    let n = 0;
+    if (Q.stage === 0) {
+      const t = Q.tut;
+      if (!t.branch && onGround(tutItems.torch)) n = put(n, tutItems.torch.pos.x, tutItems.torch.pos.y, tutItems.torch.pos.z, true, 'item');
+      else if (!t.apple && onGround(tutItems.apple)) n = put(n, tutItems.apple.pos.x, tutItems.apple.pos.y, tutItems.apple.pos.z, true, 'item');
+      else if (!t.dummy) {
+        const d = G.props && G.props.dummies && G.props.dummies[0];
+        if (d) n = put(n, d.c.x, d.c.y + 0.5, d.c.z, true, 'dummy');
+      }
+    } else if (Q.stage === 1) {
+      const camp = G.checkpoints && G.checkpoints.byId('camp_meadow');
+      const lit = !!(camp && camp.lit);
+      let primaryUsed = false;
+      if (!lit && !torchLit()) {
+        if (startBrazier === undefined) startBrazier = (G.checkpoints && G.checkpoints.braziers.find((q) => q.id === 'brazier_start')) || null;
+        const b = startBrazier && startBrazier.lit ? startBrazier : null;
+        if (b) { n = put(n, b.firePos.x, b.firePos.y + 0.25, b.firePos.z, true, 'fire'); primaryUsed = true; }
+      }
+      if (camp && !lit) {
+        anchorOf(camp.prop, 'fire', _t);
+        if (!camp.prop) _t.set(camp.x, heightAt(ctx, camp.x, camp.z) + 0.5, camp.z);
+        n = put(n, _t.x, _t.y + 0.4, _t.z, !primaryUsed, 'fire');
+      }
+      const ped = G.pickups && G.pickups.pedestalChest();
+      if (ped && !G.inventory.has('sword') && !Q.chests.includes(ped.id)) {
+        anchorOf(ped.prop, 'item', _t);
+        if (!ped.prop) _t.set(ped.x, heightAt(ctx, ped.x, ped.z) + 1.2, ped.z);
+        n = put(n, ped.prop ? ped.prop.x : _t.x, _t.y + 0.3, ped.prop ? ped.prop.z : _t.z, n === 0, 'pedestal');
+      }
+    }
+    for (let i = 0; i < n; i++) out.push(targets[i]);
+    return out;
   }
 
   function spawnTutorialItems() {
@@ -224,9 +314,9 @@ export function createQuest(ctx, G) {
     const fx_ = Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = Math.sin(yaw);
     try {
       const bx = sp.x + fx_ * 1.6 - rx * 0.9, bz = sp.z + fz * 1.6 - rz * 0.9;
-      items.spawn('torch', { pos: new THREE.Vector3(bx, heightAt(ctx, bx, bz) + 0.15, bz), owned: true });
+      tutItems.torch = items.spawn('torch', { pos: new THREE.Vector3(bx, heightAt(ctx, bx, bz) + 0.15, bz), owned: true });
       const ax = sp.x + fx_ * 1.4 + rx * 0.8, az = sp.z + fz * 1.4 + rz * 0.8;
-      items.spawn('apple', { pos: new THREE.Vector3(ax, heightAt(ctx, ax, az) + 0.12, az) });
+      tutItems.apple = items.spawn('apple', { pos: new THREE.Vector3(ax, heightAt(ctx, ax, az) + 0.12, az) });
     } catch (e) { /* items stub */ }
   }
 
@@ -248,7 +338,7 @@ export function createQuest(ctx, G) {
       if (Q.stage === 0) {
         // leaving the stage area finishes the lesson (it can always be skipped)
         const st = landmark(ctx, 'start');
-        if (st && Math.hypot(_p.x - st.x, _p.z - st.z) > 45) Q.setStage(1);
+        if (st && Math.hypot(_p.x - st.x, _p.z - st.z) > 45) { closeTutorial(true); Q.setStage(1); }
       }
       if (Q.stage === 1) {
         const camp = G.checkpoints && G.checkpoints.byId('camp_meadow');
@@ -272,7 +362,7 @@ export function createQuest(ctx, G) {
   ctx.events?.on?.('item:consume', (e) => { if (Q.stage === 0 && e && e.itemId && e.itemId.startsWith('apple')) { Q.tut.apple = true; tutAdvance(); } });
   ctx.events?.on?.('dummy:hit', () => { if (Q.stage === 0) { Q.tut.dummy = true; tutAdvance(); } });
   ctx.events?.on?.('hit', (e) => { if (Q.stage === 0 && e && e.targetKind === 'dummy') { Q.tut.dummy = true; tutAdvance(); } });
-  ctx.events?.on?.('fire:lit', (e) => { if (e && e.id === 'camp_meadow' && Q.stage <= 1) { if (Q.stage === 0) Q.setStage(1); G.inventory.add('flask', 1); refreshObjective(); } });
+  ctx.events?.on?.('fire:lit', (e) => { if (e && e.id === 'camp_meadow' && Q.stage <= 1) { if (Q.stage === 0) { closeTutorial(true); Q.setStage(1); } G.inventory.add('flask', 1); refreshObjective(); } });
   // (the waybell item and the X button draw their own ribbon in items/waybell.js; guide() serves the wrist menu)
 
   return Q;

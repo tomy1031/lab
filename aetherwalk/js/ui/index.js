@@ -2,6 +2,8 @@
 // titles 2 m ahead, the left-wrist menu, and the PC overlay. Listens to events; others call toast/title only.
 import * as THREE from 'three';
 import { createHud, createToasts } from './hud.js';
+import { createTutorial } from './tutorial.js';
+import { createLabels } from './labels.js';
 import { createWrist } from './wrist.js';
 import { createOverlay } from './overlay.js';
 
@@ -58,7 +60,7 @@ export async function createUI(ctx) {
       S.hudVisible = !!b;
       document.body.classList.toggle('aw-nohud', !b);
       // hide every board at once (the wrist band lives on the left hand) — ART_REVIEW B-P3-1
-      if (!b) { hud.hideAll(); toasts.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
+      if (!b) { hud.hideAll(); toasts.hideAll(); ui.tutorial.hideAll(); ui.labels.hideAll(); if (ui.wrist.open) ui.closeMenu(); }
     },
     toast, title,
     openMenu(page = 'map') {
@@ -81,6 +83,8 @@ export async function createUI(ctx) {
   };
   ui.wrist = createWrist(ctx, S, ui);
   ui.overlay = createOverlay(ctx, S, ui);
+  ui.tutorial = createTutorial(ctx, S, ui);
+  ui.labels = createLabels(ctx, S, ui);
   ui.hud = hud;
 
   function isVR() { return !!(ctx.renderer && ctx.renderer.xr && ctx.renderer.xr.isPresenting) || !!(ctx.flags && ctx.flags.xr); }
@@ -240,6 +244,8 @@ export async function createUI(ctx) {
     S.menuOpen = ui.wrist.open;
     hud.update(dt, vr);
     toasts.update(dt, vr);
+    ui.tutorial.update(dt, vr);
+    ui.labels.update(dt, vr);
     ui.wrist.update(dt, vr);
     ui.overlay.update(dt, isVR() || forceVR);   // ?vrhud shows what the headset shows (no PC overlay)
     // fade
