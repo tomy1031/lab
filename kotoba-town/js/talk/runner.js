@@ -14,7 +14,7 @@ const shuffle = (arr) => arr.map((x) => [Math.random(), x]).sort((a, b) => a[0] 
 
 export class Runner {
   constructor(o) {
-    Object.assign(this, o); // lesson, variant, stage, bubble, turn, toast, sound, mic, settings, apiKey, onDone, log
+    Object.assign(this, o); // lesson, variant, stage, bubble, turn, toast, sound, mic, settings, apiKey, onDone, log, events
     this.chars = Object.fromEntries(this.variant.characters.map((c) => { const r = resolveCharacter(c); return [r.id, r]; }));
     this.main = resolveCharacter(this.variant.characters[0]);
     this.nodes = Object.fromEntries(this.variant.nodes.map((n) => [n.id, n]));
@@ -33,6 +33,9 @@ export class Runner {
   }
 
   get live() { return !!this.brain?.live; }
+
+  /** Tell the guide (ネクマックス) what is happening: listen, judged, hint, npc. */
+  emit(ev) { try { this.events?.({ exam: this.mode === 'real', ...ev }); } catch (e) { this.log('navi', String(e)); } }
 
   // ------------------------------------------------------------- lifecycle
   async begin() {
@@ -124,6 +127,7 @@ export class Runner {
   /** Speak scripted lines (picking one of the alternatives). */
   async say(lines, { remember = true } = {}) {
     this.npcBusy = true;
+    if (lines.length) this.emit({ type: 'npc' });
     this.closeMic();
     this.turn.set({ mode: 'npc', promptEn: 'Listen…', mic: this.mic.state, settings: this.settings });
     const spoken = [];
@@ -217,6 +221,7 @@ export class Runner {
     return new Promise((resolve) => {
       this.cur = { node, li, attempts: 0, reacts: 0, resolve, showHint: false, choices: null, heard: '', question: this.lastSpoken || [] };
       this.k += 1;
+      this.emit({ type: 'listen', k: this.k });
       if (this.live) {
         this.brain.setTurn(turnNote({ k: this.k, character: this.main, npcLines: this.lastSpoken || [], listen: li, grammar: this.lesson.grammar }), li.branches.map((b) => b.id));
       }
@@ -248,7 +253,7 @@ export class Runner {
   armIdle() {
     clearTimeout(this.idleTimer); clearTimeout(this.idleTimer2);
     if (this.cur?.free || this.mode === 'real') return; // ほんばん: no automatic help
-    this.idleTimer = setTimeout(() => { if (this.cur && !this.cur.showHint) { this.cur.showHint = true; this.sound.blip('hint'); this.promptCard(); } }, 14000);
+    this.idleTimer = setTimeout(() => { if (this.cur && !this.cur.showHint) { this.cur.showHint = true; this.sound.blip('hint'); this.promptCard(); this.emit({ type: 'hint' }); } }, 14000);
     this.idleTimer2 = setTimeout(() => { if (this.cur) { this.cur.showChoices = true; this.cur.choices ||= shuffle(this.cur.li.branches.map((b) => b.exampleJa)); this.promptCard(); } }, 30000);
   }
 
@@ -394,6 +399,7 @@ export class Runner {
 
   record(r) {
     const c = this.cur;
+    this.emit({ type: 'judged', score: r.score ?? 0 });
     this.turns.push({
       nodeId: c.node?.id, promptEn: c.free ? 'Free talk' : c.li.promptEn, heard: r.heard || '', score: r.score ?? 0,
       correction: r.correction || '', tipEn: r.tipEn || '', branch: r.branch, grammar: c.li?.grammar || [], grammarUsed: r.grammarUsed || [],
