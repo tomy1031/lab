@@ -113,16 +113,21 @@ async function boot() {
       lesson: L, variant: v, stage, bubble, turn, toast, sound, mic, settings: store.settings, apiKey: store.apiKey, log,
       mode: state.mode,
       onDone: (res) => showReport(L, v, res, state.mode),
+      // interviews: the considered evaluation arrives later and replaces the quick one on the result page
+      onReview: (report, improved) => {
+        if (!KT.lastReport || KT.lastReport.variant !== v.id || state.where !== 'report') return;
+        if (improved) toast.show('面接官の くわしい 評価が とどきました · Detailed evaluation ready', 3000);
+        showReport(L, v, { ...KT.lastReport, report }, KT.lastReport.mode, { again: true });
+      },
     });
     KT.runner = runner;
     follow.update(0, true);
     try { await runner.begin(); } catch (e) { KT.errors.push(String(e?.stack || e)); console.error(e); toast.show(`Error: ${e.message}`, 5000); }
   }
 
-  function showReport(L, v, { report, turns, missions }, mode) {
+  function showReport(L, v, { report, turns, missions }, mode, { again = false } = {}) {
     state.where = 'report';
-    store.record(v.id, report.stars, mode);
-    sound.fanfare(report.stars);
+    if (!again) { store.record(v.id, report.stars, mode); sound.fanfare(report.stars); }
     boardMode = 'follow';
     boardFollow.update(0, true);
     // ITビジネス編 follows one story: offer the next episode (same pattern letter when it exists)
@@ -137,7 +142,7 @@ async function boot() {
       onOther: () => { board.hide(); goTown().then(() => showVariants(L)); },
       onTown: () => goTown(),
     });
-    KT.lastReport = { report, turns, missions, mode };
+    KT.lastReport = { report, turns, missions, mode, variant: v.id };
   }
 
   // ---------------------------------------------------------------- landing

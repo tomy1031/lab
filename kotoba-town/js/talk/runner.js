@@ -480,16 +480,24 @@ export class Runner {
     let report = null;
     const rubric = this.interview ? this.lesson.rubric || [] : null;
     if (this.interview) {
-      // the considered evaluation (a thinking model reads the whole interview) and Live's quick one, in parallel
-      const [review, quick] = await Promise.all([
-        this.apiKey ? reviewInterview({ apiKey: this.apiKey, lesson: this.lesson, variant: this.variant, turns: this.turns, level: this.settings.reviewLevel || 'HIGH', timeoutMs: 75000, log: (m) => this.log('review', m) }).catch(() => null) : null,
-        this.live ? this.brain.report(endNote({ turns: this.turns, rubric }), 30000) : null,
-      ]);
+      // Live's own evaluation comes in a few seconds and is shown right away; a model that thinks first
+      // reads the whole interview in the background and replaces it if it answers (review.js)
+      const quick = this.live ? await this.brain.report(endNote({ turns: this.turns, rubric }), 30000) : null;
       const local = offlineInterviewReport(this.turns, rubric);
-      if (review) report = { ...local, ...review };
-      else if (quick?.interview) report = { ...local, ...quick, model: this.brain?.model || null };
+      if (quick?.interview) report = { ...local, ...quick, model: this.brain?.model || null };
       else if (quick) report = { ...local, ...quick, interview: true, verdict: local.verdict, criteria: local.criteria, improvements: local.improvements, rewrite: local.rewrite, model: this.brain?.model || null };
       else report = local;
+      if (this.apiKey && this.settings.thinkingReview !== false) {
+        report.reviewPending = true;
+        const base = report;
+        this.review = reviewInterview({ apiKey: this.apiKey, lesson: this.lesson, variant: this.variant, turns: this.turns, level: this.settings.reviewLevel || 'HIGH', timeoutMs: 90000, log: (m) => this.log('review', m) })
+          .catch(() => null)
+          .then((r) => {
+            const done = r ? { ...base, ...r, reviewPending: false, stars: r.stars || base.stars } : { ...base, reviewPending: false };
+            this.onReview?.(done, !!r);
+            return done;
+          });
+      }
     } else if (this.live) report = await this.brain.report(endNote({ turns: this.turns }), 15000);
     if (!report) report = offlineReport(this.turns);
     this.toast.hide();
