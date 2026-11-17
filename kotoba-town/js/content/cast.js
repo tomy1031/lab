@@ -133,6 +133,14 @@ export const CAST = {
     look: { sex: 'm', age: 20, height: 1.75, build: 0.92, skin: SKIN.light, hair: { style: 'wavy', color: '#3b2a1c' },
       outfit: { type: 'konbini', top: '#3a8f6b', bottom: '#2a2d33', accent: '#ffffff' }, extras: ['badge'] },
   },
+  murakami: {
+    nameJa: '村上 なおみ', kana: 'むらかみ なおみ', roleEn: 'Project leader of the development team at Midori Design',
+    voice: 'Callirrhoe',
+    styleJa: '仕事が できる 先輩らしく、落ち着いて、はっきり、やさしく。',
+    personaJa: '30代の プロジェクトリーダー。みどりデザインの 開発チームを まとめて いる。落ち着いて いて、報連相を ていねいに 教える。',
+    look: { sex: 'f', age: 36, height: 1.63, build: 1.0, skin: '#ecc5a6', hair: { style: 'long', color: '#2a1c14' },
+      outfit: { type: 'blouse', top: '#4f6d8f', bottom: '#2d3440', accent: '#f2ede2' }, extras: ['lanyard', 'earrings'] },
+  },
   takeuchi: {
     nameJa: '竹内 えみ', kana: 'たけうち えみ', roleEn: 'Office worker you meet around town',
     voice: 'Kore', personaJa: '40代の 会社員。てきぱき して いて 親切。',
@@ -145,7 +153,7 @@ export const CAST = {
 /** Scene catalog: slots and props (zone = near | npc | far, relative to the learner). */
 export const SCENES = {
   office: {
-    nameEn: 'Office', slots: ['npc1', 'npc2', 'reception', 'phone'],
+    nameEn: 'Office', slots: ['npc1', 'npc2', 'npc3', 'reception', 'phone'],
     props: { business_card: 'near', my_desk: 'near', pc: 'near', logo_wall: 'far', coffee_machine: 'far', whiteboard: 'far', plant: 'npc', clock: 'far', calendar: 'npc', phone_desk: 'npc', aoki_desk: 'npc', cup: 'npc', meeting_room: 'far', toilet_sign: 'far', elevator: 'far', door: 'far' },
   },
   classroom: {

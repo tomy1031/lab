@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Validate lesson scenario files against docs/SCENARIO_SPEC.md.
-//   node kotoba-town/tools/validate.mjs            (all data/lessons/l*.json)
-//   node kotoba-town/tools/validate.mjs l03 l04    (only these)
+// Validate scenario files against docs/SCENARIO_SPEC.md (みんなの日本語編, data/lessons/lNN.json)
+// and docs/BUSINESS_SPEC.md (ITビジネス編, data/business/bNN.json).
+//   node kotoba-town/tools/validate.mjs            (everything)
+//   node kotoba-town/tools/validate.mjs l03 b02    (only these)
 // Prints problems and per-variant stats; exits 1 on any error. Prints "OK" when clean.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,11 +11,14 @@ import { CAST, SCENES, GESTURES, VOICES, TIMES, SEASONS, WEATHERS } from '../js/
 import { variantLines, resolveCharacter } from '../js/content/lines.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dir = path.join(root, 'data', 'lessons');
+const COURSES = [
+  { dir: path.join(root, 'data', 'lessons'), prefix: 'l', numberField: 'lesson', variants: 3, maxLen: 45 },
+  { dir: path.join(root, 'data', 'business'), prefix: 'b', numberField: 'unit', variants: 2, maxLen: 55 },
+];
 const only = process.argv.slice(2).map((a) => a.replace(/\.json$/, ''));
-const files = fs.existsSync(dir)
-  ? fs.readdirSync(dir).filter((f) => /^l\d\d\.json$/.test(f) && (!only.length || only.includes(f.slice(0, 3))))
-  : [];
+const files = COURSES.flatMap((c) => (fs.existsSync(c.dir)
+  ? fs.readdirSync(c.dir).filter((f) => new RegExp(`^${c.prefix}\\d\\d\\.json$`).test(f) && (!only.length || only.includes(f.slice(0, 3)))).map((f) => ({ f, c }))
+  : []));
 
 let errors = 0;
 let warnings = 0;
@@ -26,13 +30,17 @@ const KANA_ONLY = /^[぀-ゟ゠-ヿ　-〿！-～\s0-9A-Za-z・ー〜～…、�
 
 if (!files.length) { console.log('no lesson files found'); process.exit(1); }
 
-for (const file of files.sort()) {
+for (const { f: file, c: course } of files.sort((a, b) => a.f.localeCompare(b.f))) {
   console.log(`${file}`);
   let data;
-  try { data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')); } catch (e) { err(file, `JSON: ${e.message}`); continue; }
+  try { data = JSON.parse(fs.readFileSync(path.join(course.dir, file), 'utf8')); } catch (e) { err(file, `JSON: ${e.message}`); continue; }
   const L = file.slice(0, 3);
   const n = Number(file.slice(1, 3));
-  if (data.lesson !== n) err(L, `lesson must be ${n}`);
+  if (data[course.numberField] !== n) err(L, `${course.numberField} must be ${n}`);
+  if (course.prefix === 'b') {
+    for (const k of ['course', 'storyJa', 'storyEn', 'levelEn']) if (!isStr(data[k])) err(L, `missing ${k}`);
+    if (data.course !== 'it') err(L, 'course must be "it"');
+  }
   for (const k of ['titleJa', 'titleEn', 'summaryEn']) if (!isStr(data[k])) err(L, `missing ${k}`);
   const gids = new Set();
   if (!Array.isArray(data.grammar) || !data.grammar.length) err(L, 'grammar[] required');
@@ -47,13 +55,13 @@ for (const file of files.sort()) {
   if (!Array.isArray(data.tipsEn) || !data.tipsEn.length) warn(L, 'tipsEn[] recommended');
   if (!data.research || !Array.isArray(data.research.sources) || !data.research.sources.length) err(L, 'research.sources[] required');
   if (!isStr(data.research?.notesEn)) err(L, 'research.notesEn required');
-  if (!Array.isArray(data.variants) || data.variants.length !== 3) err(L, 'exactly 3 variants required');
+  if (!Array.isArray(data.variants) || data.variants.length !== course.variants) err(L, `exactly ${course.variants} variants required`);
 
   const targeted = new Set();
   const vids = new Set();
   for (const v of data.variants || []) {
     const V = v.id || '?';
-    if (!new RegExp(`^${L}[abc]$`).test(V)) err(V, `variant id must be ${L}a/${L}b/${L}c`);
+    if (!new RegExp(`^${L}[abc]$`).test(V)) err(V, `variant id must be ${L}a/${L}b${course.variants > 2 ? `/${L}c` : ''}`);
     if (vids.has(V)) err(V, 'duplicate variant id');
     vids.add(V);
     for (const k of ['titleJa', 'titleEn', 'briefEn', 'roleEn']) if (!isStr(v[k])) err(V, `missing ${k}`);
@@ -111,7 +119,7 @@ for (const file of files.sort()) {
         if (!chars[line.who]) err(W, `say.who "${line.who}" not in characters`);
         for (const l of [line, ...(line.alts || [])]) {
           if (!isStr(l.ja) || !isStr(l.kana) || !isStr(l.en)) err(W, `line needs ja, kana, en: ${JSON.stringify(l).slice(0, 80)}`);
-          if (jaLen(l.ja) > 45) err(W, `line longer than 45 chars: ${l.ja}`);
+          if (jaLen(l.ja) > course.maxLen) err(W, `line longer than ${course.maxLen} chars: ${l.ja}`);
           if (l.kana && !KANA_ONLY.test(l.kana)) err(W, `kana must not contain kanji: ${l.kana}`);
         }
         if (line.gesture && !GESTURES.includes(line.gesture)) err(W, `unknown gesture ${line.gesture}`);
@@ -168,11 +176,12 @@ for (const file of files.sort()) {
     dfs(v.start, 0, new Set([v.start]));
     if (v.freeTalk) {
       if (!isStr(v.freeTalk.openerJa) || !isStr(v.freeTalk.openerEn) || !isStr(v.freeTalk.topicEn)) err(V, 'freeTalk needs openerJa, openerEn, topicEn');
-      if (v.freeTalk.openerJa && jaLen(v.freeTalk.openerJa) > 45) err(V, 'freeTalk.openerJa longer than 45 chars');
+      if (v.freeTalk.openerJa && jaLen(v.freeTalk.openerJa) > course.maxLen) err(V, `freeTalk.openerJa longer than ${course.maxLen} chars`);
     }
     const lines = variantLines(v);
-    if (lines.length > 22) err(V, `${lines.length} spoken lines — keep it to 12–18 (voice budget)`);
-    else if (lines.length > 18) warn(V, `${lines.length} spoken lines (target 12–18)`);
+    const maxLines = course.prefix === 'b' ? 24 : 22;
+    if (lines.length > maxLines) err(V, `${lines.length} spoken lines — keep it to ${course.prefix === 'b' ? '14–20' : '12–18'} (voice budget)`);
+    else if (lines.length > maxLines - 4) warn(V, `${lines.length} spoken lines (target ${course.prefix === 'b' ? '14–20' : '12–18'})`);
     if (minListens < 3) warn(V, `a path with only ${minListens} learner turn(s) (aim 4–6)`);
     console.log(`  · ${V} [${v.scene}] ${Object.keys(nodes).length} nodes, ${lines.length} lines, learner turns ${minListens}–${maxListens}`);
   }

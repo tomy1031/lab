@@ -17,10 +17,17 @@ export const store = {
   saveSettings() { write(SKEY, this.settings); },
   get apiKey() { try { return localStorage.getItem(KKEY) || ''; } catch { return ''; } },
   set apiKey(v) { try { if (v) localStorage.setItem(KKEY, v.trim()); else localStorage.removeItem(KKEY); } catch { /* */ } },
-  record(variantId, stars) {
-    const p = this.progress[variantId] || { stars: 0, plays: 0 };
-    p.stars = Math.max(p.stars, stars); p.plays += 1; p.at = Date.now();
+  /** mode: 'practice' (れんしゅう) | 'real' (ほんばん). Best stars are kept per mode. */
+  record(variantId, stars, mode = 'practice') {
+    const p = this.progress[variantId] || { plays: 0 };
+    if (p.stars !== undefined && p.practice === undefined) { p.practice = p.stars; delete p.stars; } // older saves
+    p[mode] = Math.max(p[mode] || 0, stars); p.plays += 1; p.at = Date.now();
     this.progress[variantId] = p;
     write(PKEY, this.progress);
+  },
+  starsOf(variantId, mode) {
+    const p = this.progress[variantId];
+    if (!p) return 0;
+    return mode === 'practice' ? (p.practice ?? p.stars ?? 0) : (p.real ?? 0);
   },
 };

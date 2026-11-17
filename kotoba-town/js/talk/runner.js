@@ -24,6 +24,8 @@ export class Runner {
     this.stopped = false;
     this.npcBusy = false;
     this.log = o.log || (() => {});
+    // 'practice' = れんしゅう: answer examples shown from the start, hints. 'real' = ほんばん: no examples, no hints.
+    this.mode = o.mode === 'real' && o.apiKey ? 'real' : 'practice';
   }
 
   get live() { return !!this.brain?.live; }
@@ -54,6 +56,11 @@ export class Runner {
       const ok = await this.brain.connect();
       this.toast.show(ok ? `Gemini Live ✓ (${this.brain.model})` : `Gemini Live: ${this.liveErrorText(this.brain.lastError || 'offline')} — offline practice`, 3000);
       if (!ok) this.brain = null;
+    }
+    if (this.mode === 'real' && !this.brain) {
+      // ほんばん needs Gemini Live to judge free answers; without it, fall back to れんしゅう
+      this.mode = 'practice';
+      this.toast.show('ほんばんは Gemini に つながらないので、れんしゅうに します', 4000);
     }
     await this.go(this.variant.start);
   }
@@ -204,14 +211,15 @@ export class Runner {
 
   promptCard(extra = {}) {
     const c = this.cur; if (!c) return;
-    const offline = !this.live;
-    if (offline && !c.choices) c.choices = shuffle(c.li.branches.map((b) => b.exampleJa).filter(Boolean));
+    const practice = this.mode === 'practice';
+    if (practice && !c.choices && !c.free) c.choices = shuffle(c.li.branches.map((b) => b.exampleJa).filter(Boolean));
     this.turn.set({
       mode: c.free ? 'free' : 'listen',
+      exam: !practice,
       promptEn: c.free ? this.variant.freeTalk.topicEn : c.li.promptEn,
       hintJa: c.li?.hintJa,
-      showHint: c.showHint,
-      choices: offline || c.showChoices ? c.choices || shuffle(c.li.branches.map((b) => b.exampleJa)) : null,
+      showHint: practice && c.showHint,
+      choices: practice && !c.free ? c.choices : null,
       heard: c.heard,
       mic: this.mic.state,
       live: this.live,
@@ -222,7 +230,7 @@ export class Runner {
 
   armIdle() {
     clearTimeout(this.idleTimer); clearTimeout(this.idleTimer2);
-    if (this.cur?.free) return;
+    if (this.cur?.free || this.mode === 'real') return; // ほんばん: no automatic help
     this.idleTimer = setTimeout(() => { if (this.cur && !this.cur.showHint) { this.cur.showHint = true; this.sound.blip('hint'); this.promptCard(); } }, 14000);
     this.idleTimer2 = setTimeout(() => { if (this.cur) { this.cur.showChoices = true; this.cur.choices ||= shuffle(this.cur.li.branches.map((b) => b.exampleJa)); this.promptCard(); } }, 30000);
   }
@@ -235,7 +243,7 @@ export class Runner {
 
   /** Turn-card buttons. */
   hint() {
-    if (!this.cur || this.cur.free) return;
+    if (!this.cur || this.cur.free || this.mode === 'real') return;
     if (!this.cur.showHint) this.cur.showHint = true;
     else { this.cur.showChoices = true; this.cur.choices ||= shuffle(this.cur.li.branches.map((b) => b.exampleJa)); }
     this.promptCard();
@@ -289,7 +297,6 @@ export class Runner {
         return 'nothing';
       case 'dont_know':
         c.attempts += 1; c.showHint = true;
-        if (c.attempts >= 2) { c.showChoices = true; c.choices ||= shuffle(li.branches.map((b) => b.exampleJa)); }
         this.npcRespond('slow');
         return 'nothing';
       case 'english':
@@ -400,7 +407,7 @@ export class Runner {
     await new Promise((resolve) => {
       this.cur = { free: true, count: 0, resolve, li: { grammar: [] }, heard: '' };
       this.k += 1;
-      this.brain.setTurn(freeTalkNote({ k: this.k, character: this.main, freeTalk: ft, lessonNo: this.lesson.lesson }), ['free']);
+      this.brain.setTurn(freeTalkNote({ k: this.k, character: this.main, freeTalk: ft, lessonNo: this.lesson.lesson, course: this.lesson.course }), ['free']);
       this.promptCard();
       this.openMic();
     });

@@ -26,15 +26,15 @@ export function font(px, weight = 700) { return `${weight} ${Math.round(px)}px $
 export function wrap(g, text, maxW) {
   const out = [];
   for (const para of String(text ?? '').split('\n')) {
-    const latin = /^[\x00-\x7f‘-”…—–]*$/.test(para);
-    const tokens = latin ? para.split(/(\s+)/) : [...para.replace(/ /g, ' ')];
+    // Latin words stay whole; Japanese characters can break anywhere (but not before 、。」 etc.)
+    const tokens = para.match(/[A-Za-z0-9\u00c0-\u024f'’"“”,.!?:;()\[\]\-–—/&%+#@*·…]+|\s+|./gsu) || [];
     let line = '';
     for (const t of tokens) {
       const test = line + t;
       if (g.measureText(test).width > maxW && line.trim()) {
-        if (!latin && /^[、。」』）！？ー ]$/.test(t)) { line = test; continue; }
+        if (/^[、。」』）！？ー]$/.test(t)) { line = test; continue; }
         out.push(line.trimEnd());
-        line = latin ? t.trimStart() : t;
+        line = /^\s+$/.test(t) ? '' : t;
       } else line = test;
     }
     out.push(line.trimEnd());

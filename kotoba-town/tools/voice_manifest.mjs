@@ -12,12 +12,17 @@ import { variantLines, utilityLines, resolveCharacter } from '../js/content/line
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const utilityOnly = process.argv.includes('--utility-only');
-const lessonDir = path.join(root, 'data', 'lessons');
-const lessons = fs.existsSync(lessonDir)
-  ? fs.readdirSync(lessonDir).filter((f) => /^l\d\d\.json$/.test(f)).sort().map((f) => JSON.parse(fs.readFileSync(path.join(lessonDir, f), 'utf8')))
-  : [];
+// みんなの日本語編 (data/lessons/lNN.json) and ITビジネス編 (data/business/bNN.json)
+const lessons = [['lessons', 'l'], ['business', 'b']].flatMap(([dir, prefix]) => {
+  const d = path.join(root, 'data', dir);
+  return fs.existsSync(d)
+    ? fs.readdirSync(d).filter((f) => new RegExp(`^${prefix}\\d\\d\\.json$`).test(f)).sort().map((f) => JSON.parse(fs.readFileSync(path.join(d, f), 'utf8')))
+    : [];
+});
 
 const BASE_STYLE = '日本語を 習い始めた 人に 話して います。はっきり、少し ゆっくり 読んで ください。';
+// ITビジネス編: a colleague or client talking to a new engineer from abroad
+const BUSINESS_STYLE = '仕事の 場面です。日本語を 勉強中の 外国人の 新人エンジニアに 話して います。ふつうの 仕事の 話し方で、はっきり、少し ゆっくり 読んで ください。';
 const hash = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 10);
 const entries = [];
 const chars = new Map(Object.entries(CAST).map(([id, c]) => [id, { id, ...c }]));
@@ -28,7 +33,7 @@ if (!utilityOnly) {
       for (const c of v.characters) { const r = resolveCharacter(c); if (r) chars.set(r.id, r); }
       for (const line of variantLines(v)) {
         const ch = chars.get(line.who);
-        entries.push({ id: line.id, who: line.who, voice: line.voice, text: line.text, style: `${BASE_STYLE}${ch?.styleJa || ''}` });
+        entries.push({ id: line.id, who: line.who, voice: line.voice, text: line.text, style: `${lesson.course === 'it' ? BUSINESS_STYLE : BASE_STYLE}${ch?.styleJa || ''}` });
       }
     }
   }

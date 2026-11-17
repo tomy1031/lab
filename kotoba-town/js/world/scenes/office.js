@@ -71,7 +71,7 @@ export default function build({ setup }) {
   g.add(cup);
   const book = K.box(0.16, 0.03, 0.23, K.mat('#4c7bb5'), { x: -1.2, y: 0.72, z: -1.45, ry: 0.2 }); g.add(book);
   const plantN = K.prop('plant', K.plant(1.1, 4), { labelJa: 'き', labelEn: 'plant' });
-  plantN.position.set(1.0, 0, -2.0);
+  plantN.position.set(1.45, 0, -2.45);
   g.add(plantN);
   // low partition with the calendar
   const part = K.box(0.06, 1.2, 1.6, K.mat('#d7d2c8', { rough: 0.9 }), { x: -2.15, z: -1.55 });
@@ -138,6 +138,7 @@ export default function build({ setup }) {
     slots: {
       npc1: K.spot(-0.15, -1.35, 0),
       npc2: K.spot(-0.95, -1.95, 0.45),
+      npc3: K.spot(0.62, -1.7, -0.35), // third colleague in a stand-up meeting
       reception: K.spot(-1.2, -8.05, 0),
       phone: null,
     },

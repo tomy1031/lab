@@ -13,9 +13,13 @@ const shotsAt = args.includes('--shots') ? args[args.indexOf('--shots') + 1] : n
 let ids = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--shots');
 if (args.includes('--all')) {
   ids = [];
-  for (const f of fs.readdirSync(new URL('../data/lessons/', import.meta.url)).filter((x) => /^l\d\d\.json$/.test(x)).sort()) {
-    const l = JSON.parse(fs.readFileSync(new URL(`../data/lessons/${f}`, import.meta.url)));
-    ids.push(...l.variants.map((v) => v.id));
+  for (const [dir, prefix] of [['lessons', 'l'], ['business', 'b']]) {
+    const d = new URL(`../data/${dir}/`, import.meta.url);
+    if (!fs.existsSync(d)) continue;
+    for (const f of fs.readdirSync(d).filter((x) => new RegExp(`^${prefix}\\d\\d\\.json$`).test(x)).sort()) {
+      const l = JSON.parse(fs.readFileSync(new URL(f, d)));
+      ids.push(...l.variants.map((v) => v.id));
+    }
   }
 }
 if (!ids.length) ids = ['l01a'];

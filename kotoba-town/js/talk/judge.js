@@ -40,17 +40,25 @@ export const JUDGE_TOOL = {
 };
 
 /** System instruction for the main character of a variant. */
+/** Who the learner is and what they can handle — differs per course. */
+export function learnerLevel(lesson) {
+  if (lesson.course === 'it') {
+    return `The learner is a junior engineer from abroad who works at みどりデザイン (a small web/app company in the town) and practises business Japanese for IT work (${lesson.levelEn || 'around JLPT N4–N3'}). This is episode ${lesson.unit} of the story 「${lesson.storyJa}」 (${lesson.storyEn}): ${lesson.titleEn} — ${lesson.summaryEn}${lesson.previouslyEn ? ` Story so far: ${lesson.previouslyEn}` : ''} Judge the business message too (conclusion first, clear facts, polite set phrases), not only grammar.`;
+  }
+  return `The learner is a beginner who has studied up to lesson ${lesson.lesson} of Minna no Nihongo I. Lesson theme: ${lesson.titleEn} — ${lesson.summaryEn}`;
+}
+
 export function systemInstruction({ lesson, variant, character, learnerName }) {
-  const lv = lesson.lesson;
+  const lv = lesson.course === 'it' ? 'N4–N3 business' : `lesson-${lesson.lesson}`;
   return [
     `You are ${character.nameJa}（${character.kana}）, ${character.roleEn}. Persona (Japanese): ${character.personaJa}`,
-    `This is "Kotoba Town", a Japanese speaking-practice game set in a small Japanese town. The learner is a beginner who has studied up to lesson ${lv} of Minna no Nihongo I. Lesson theme: ${lesson.titleEn} — ${lesson.summaryEn}`,
+    `This is "Kotoba Town", a Japanese speaking-practice game set in a small Japanese town. ${learnerLevel(lesson)}`,
     `Scene: ${variant.briefEn} The learner's role: ${variant.roleEn}${learnerName ? ` The learner's name is ${learnerName}.` : ''}`,
     'How this session works:',
     '- The app plays your scripted lines from recordings and moves the story forward. You never start a topic, never ask the next scripted question, and never speak first.',
     '- Before each learner turn the app sends a note that starts with [TURN]. It says what you just said, what the learner should do, the target grammar and the branch options.',
     '- Each time the learner finishes speaking, IMMEDIATELY call `judge_reply` (no speech before it). Judge meaning first, then grammar. Be fair to beginners: accept simple but correct answers; a foreign accent is fine. Never invent words the learner did not say.',
-    '- After the function result, obey its "say" field: "nothing" = say nothing at all. "react" = reply in character with ONE short polite sentence (です/ます, lesson-level words, max 15 words) that answers what the learner said or asked; do not ask a new question. "chat" = reply in character with 1–2 short sentences at the learner\'s level, then ask one simple question back.',
+    `- After the function result, obey its "say" field: "nothing" = say nothing at all. "react" = reply in character with ONE short polite sentence (です/ます, ${lv} level, max 15 words) that answers what the learner said or asked; do not ask a new question. "chat" = reply in character with 1–2 short sentences at the learner's level, then ask one simple question back.`,
     '- Speak only Japanese, slowly and clearly, as you would to a beginner. Never speak English.',
     '- When a note starts with [END], call `final_report` once, then say nothing.',
   ].join('\n');
@@ -77,11 +85,11 @@ export function turnNote({ k, character, npcLines, listen, grammar }) {
 }
 
 /** The [TURN] note for open conversation after the script. */
-export function freeTalkNote({ k, character, freeTalk, lessonNo }) {
+export function freeTalkNote({ k, character, freeTalk, lessonNo, course }) {
   return [
     `[TURN ${k}] Mode: free talk.`,
     `Topic: ${freeTalk.topicEn}`,
-    `Chat naturally as ${character.nameJa}, using only grammar up to lesson ${lessonNo}.`,
+    course === 'it' ? `Chat naturally as ${character.nameJa}, in clear polite business Japanese for a junior engineer.` : `Chat naturally as ${character.nameJa}, using only grammar up to lesson ${lessonNo}.`,
     'For any Japanese answer use branch "free" (or english / unclear / repeat / dont_know). Score it as usual.',
   ].join('\n');
 }

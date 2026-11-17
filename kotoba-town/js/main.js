@@ -8,7 +8,7 @@ import { Mic } from './audio/mic.js';
 import { Ambience } from './audio/ambience.js';
 import { Stage } from './world/stage.js';
 import { SCENES } from './content/cast.js';
-import { loadLessons, loadVoiceIndex, charactersOf } from './content/index.js';
+import { loadCourses, loadVoiceIndex, charactersOf } from './content/index.js';
 import { SpeechBubble, TurnCard, Board, Toast, LazyFollow } from './ui/views.js';
 import { Runner } from './talk/runner.js';
 import { LIVE_MODELS } from './talk/live.js';
@@ -26,7 +26,8 @@ async function boot() {
   const mic = new Mic(sound);
   const amb = new Ambience(sound);
   const stage = new Stage(app, sound);
-  const [lessons] = await Promise.all([loadLessons(), loadVoiceIndex(), fontReady]);
+  const [courses] = await Promise.all([loadCourses(), loadVoiceIndex(), fontReady]);
+  const units = courses.flatMap((c) => c.units);
   const bubble = new SpeechBubble(app);
   const toast = new Toast(app);
   const board = new Board(app, sound);
@@ -47,7 +48,7 @@ async function boot() {
     board.panel.mesh.scale.setScalar(boardMode === 'follow' ? 0.62 : 1);
   });
 
-  const state = { lesson: null, variant: null, where: 'title' };
+  const state = { lesson: null, variant: null, where: 'title', course: courses[0]?.id || 'minna', mode: 'practice' };
   KT.state = state; KT.app = app; KT.stage = stage; KT.store = store;
 
   // ------------------------------------------------------------------ places
@@ -65,13 +66,20 @@ async function boot() {
     await stage.fade(0, 400);
   }
 
+  const starsOf = (id, mode) => store.starsOf(id, mode);
+
   function showLessons() {
-    board.lessons(lessons, store.progress, (L) => showVariants(L));
+    board.courses({
+      courses, active: state.course, starsOf,
+      onTab: (id) => { state.course = id; showLessons(); },
+      onPick: (L) => showVariants(L),
+    });
   }
 
   function showVariants(L) {
     state.lesson = L;
-    board.variants(L, store.progress, (v) => openVariant(L, v), showLessons, (s) => SCENE_NAMES[s] || s);
+    state.course = L.course;
+    board.variants(L, starsOf, (v) => openVariant(L, v), showLessons, (s) => SCENE_NAMES[s] || s);
   }
 
   async function openVariant(L, v) {
@@ -89,41 +97,47 @@ async function boot() {
     board.briefing({
       lesson: L, variant: v, cast: cast.map((c) => c.char), live,
       note: mic.state !== 'on' && live ? '🎙️ The microphone is not available — allow it in the browser to talk with Gemini Live.' : null,
-      onStart: () => start(L, v), onBack: () => goTown(),
+      onPractice: () => start(L, v, 'practice'), onReal: () => start(L, v, 'real'), onBack: () => goTown(),
     });
     await stage.fade(0, 450);
   }
 
-  async function start(L, v) {
+  async function start(L, v, mode = 'practice') {
     board.hide();
     state.where = 'talk';
+    state.mode = mode === 'real' && store.apiKey ? 'real' : 'practice';
     await sound.unlock();
     stage.ensureSpeakers();
     if (mic.state !== 'on') await mic.start();
     runner = new Runner({
       lesson: L, variant: v, stage, bubble, turn, toast, sound, mic, settings: store.settings, apiKey: store.apiKey, log,
-      onDone: (res) => showReport(L, v, res),
+      mode: state.mode,
+      onDone: (res) => showReport(L, v, res, state.mode),
     });
     KT.runner = runner;
     follow.update(0, true);
     try { await runner.begin(); } catch (e) { KT.errors.push(String(e?.stack || e)); console.error(e); toast.show(`Error: ${e.message}`, 5000); }
   }
 
-  function showReport(L, v, { report, turns, missions }) {
+  function showReport(L, v, { report, turns, missions }, mode) {
     state.where = 'report';
-    store.record(v.id, report.stars);
+    store.record(v.id, report.stars, mode);
     sound.fanfare(report.stars);
     boardMode = 'follow';
     boardFollow.update(0, true);
-    const others = L.variants.filter((x) => x.id !== v.id);
+    // ITビジネス編 follows one story: offer the next episode (same pattern letter when it exists)
+    const course = courses.find((c) => c.id === L.course);
+    const next = L.course === 'it' ? course?.units.find((u) => u.no === L.no + 1) : null;
+    const nextVariant = next ? next.variants[L.variants.indexOf(v)] || next.variants[0] : null;
     board.report({
-      lesson: L, variant: v, report, turns, missions,
+      lesson: L, variant: v, report, turns, missions, mode,
       onRetry: () => openVariant(L, v),
+      onReal: mode === 'practice' && store.apiKey ? () => openVariant(L, v) : null,
+      onNext: nextVariant ? () => openVariant(next, nextVariant) : null,
       onOther: () => { board.hide(); goTown().then(() => showVariants(L)); },
       onTown: () => goTown(),
     });
-    KT.lastReport = { report, turns, missions };
-    void others;
+    KT.lastReport = { report, turns, missions, mode };
   }
 
   // ---------------------------------------------------------------- landing
@@ -233,15 +247,15 @@ async function boot() {
   document.body.classList.add('ready');
   KT.ready = true;
 
-  KT.open = (vId) => { const L = lessons.find((x) => x.variants.some((v) => v.id === vId)); return openVariant(L, L.variants.find((v) => v.id === vId)); };
-  KT.start = () => start(state.lesson, state.variant);
+  KT.open = (vId) => { const L = units.find((x) => x.variants.some((v) => v.id === vId)); return openVariant(L, L.variants.find((v) => v.id === vId)); };
+  KT.start = (mode = 'practice') => start(state.lesson, state.variant, mode);
   KT.goTown = goTown;
 
   // test hook: jump straight into a variant (?play=l01a)
   const q = new URLSearchParams(location.search);
   if (q.get('play')) {
     const vId = q.get('play');
-    const L = lessons.find((x) => x.variants.some((v) => v.id === vId));
+    const L = units.find((x) => x.variants.some((v) => v.id === vId));
     if (L) { landing.classList.add('hide'); document.body.classList.remove('landing'); await openVariant(L, L.variants.find((v) => v.id === vId)); }
   }
 }

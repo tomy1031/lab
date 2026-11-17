@@ -5,6 +5,11 @@ import { Panel, THEME, rr, font, wrap, card, nameTag, stars, star, text, shade }
 import { toRomaji } from '../content/index.js';
 
 const NAME_COLORS = ['#ffd36b', '#9ad8b7', '#f6b3c6', '#a9cdf0', '#f7c08a', '#c9b6ef'];
+/** 「だい 3 か」 for the textbook course, 「第2話 · story」 for ITビジネス編. */
+export function unitLabel(L) {
+  return L.course === 'it' ? `${L.episodeJa || `第${L.no}話`} · ${L.storyJa}` : `だい ${L.no} か · Lesson ${L.no}`;
+}
+
 export const colorFor = (id) => NAME_COLORS[[...String(id)].reduce((s, c) => s + c.charCodeAt(0), 0) % NAME_COLORS.length];
 
 /** Choose what to show for a Japanese line according to the settings. */
@@ -116,7 +121,9 @@ export class TurnCard {
       card(g, 10, 10, W - 20, H - 30, { fill: s.mode === 'npc' ? '#f7f2e6' : THEME.cream });
       // header
       const listening = s.mode === 'listen' || s.mode === 'free';
-      nameTag(g, 50, 40, listening ? (s.mode === 'free' ? 'フリートーク · Free talk' : 'あなたの ばん · Your turn') : s.mode === 'feedback' ? 'ひょうか · Feedback' : 'きいて · Listen', listening ? THEME.leaf : s.mode === 'feedback' ? THEME.sun : '#d9cdb8', listening ? '#ffffff' : THEME.ink, 36);
+      const tagW = nameTag(g, 50, 40, listening ? (s.mode === 'free' ? 'フリートーク · Free talk' : 'あなたの ばん · Your turn') : s.mode === 'feedback' ? 'ひょうか · Feedback' : 'きいて · Listen', listening ? THEME.leaf : s.mode === 'feedback' ? THEME.sun : '#d9cdb8', listening ? '#ffffff' : THEME.ink, 36);
+      // which mode we are in: れんしゅう (practice, with examples) or ほんばん (real, no help)
+      nameTag(g, 50 + tagW + 16, 46, s.exam ? 'ほんばん' : 'れんしゅう', s.exam ? '#f7a35c' : '#d7ecdf', s.exam ? '#ffffff' : THEME.leafDark, 28);
       // mic indicator
       const cx = W - 120; const cy = 92;
       const micOn = listening && s.mic === 'on';
@@ -165,7 +172,7 @@ export class TurnCard {
       if (s.notice) { y = text(g, s.notice, 60, y, W - 120, 30, { color: THEME.red, maxLines: 2 }) + 6; }
       if (s.choices?.length) {
         g.font = font(26, 700); g.fillStyle = THEME.soft; g.textAlign = 'left'; g.textBaseline = 'top';
-        g.fillText(s.live ? 'Say one of these (or your own answer):' : 'Read one aloud, then tap it:', 60, y);
+        g.fillText(s.live ? 'Examples — say one, or your own answer:' : 'Read one aloud, then tap it:', 60, y);
         y += 40;
         for (const [i, c] of s.choices.slice(0, 4).entries()) {
           p.button(`c${i}`, 50, y, W - 100, 74, c, () => this.h.choose(c), { color: '#ffffff', fg: THEME.ink, outline: THEME.line, size: 34 });
@@ -178,9 +185,15 @@ export class TurnCard {
         p.button('finish', W / 2 - 170, by, 340, 84, 'おわる · Finish', () => this.h.finish(), { color: THEME.blue });
         return;
       }
-      p.button('hint', 50, by, 300, 84, 'ヒント · Hint', () => this.h.hint(), { color: THEME.sun, fg: THEME.ink });
-      p.button('again', 370, by, 300, 84, 'もういちど', () => this.h.again(), { color: '#a9cdf0', fg: THEME.ink });
-      p.button('skip', 690, by, 300, 84, 'スキップ', () => this.h.skip(), { color: '#e8dccb', fg: THEME.soft });
+      if (s.exam) {
+        // ほんばん: no hints or examples — only ask to hear it again, or give up on this turn
+        p.button('again', 50, by, 460, 84, 'もういちど きく', () => this.h.again(), { color: '#a9cdf0', fg: THEME.ink });
+        p.button('skip', 530, by, 460, 84, 'スキップ', () => this.h.skip(), { color: '#e8dccb', fg: THEME.soft });
+      } else {
+        p.button('hint', 50, by, 300, 84, 'ヒント · Hint', () => this.h.hint(), { color: THEME.sun, fg: THEME.ink });
+        p.button('again', 370, by, 300, 84, 'もういちど', () => this.h.again(), { color: '#a9cdf0', fg: THEME.ink });
+        p.button('skip', 690, by, 300, 84, 'スキップ', () => this.h.skip(), { color: '#e8dccb', fg: THEME.soft });
+      }
     });
   }
 }
@@ -208,42 +221,63 @@ export class Board {
 
   hide() { this.panel.visible = false; }
 
-  lessons(list, progress, onPick, extra) {
+  /**
+   * The town board: course tabs and the 10 units of the chosen course.
+   * courses: [{ id, titleJa, titleEn, units: [...] }]; starsOf(variantId, mode).
+   */
+  courses({ courses, active, starsOf, onTab, onPick }) {
     this.panel.visible = true;
+    const course = courses.find((c) => c.id === active) || courses[0];
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
       g.textBaseline = 'alphabetic';
-      nameTag(g, 70, 44, 'ことばタウン · Kotoba Town', THEME.leaf, '#ffffff', 46);
-      g.font = font(32, 700); g.fillStyle = THEME.soft; g.textAlign = 'right';
-      g.fillText('Minna no Nihongo I · 1–10', W - 80, 92);
-      const cols = 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 360;
-      list.forEach((L, i) => {
-        const x = 80 + (i % cols) * (cw + 28); const y = 150 + Math.floor(i / cols) * (ch + 34);
-        const got = L.variants.reduce((s, v) => s + (progress[v.id]?.stars || 0), 0);
+      nameTag(g, 70, 40, 'ことばタウン', THEME.leaf, '#ffffff', 40);
+      // course tabs
+      let tx = 470;
+      for (const c of courses) {
+        const on = c.id === course.id;
+        p.button(`tab-${c.id}`, tx, 36, 560, 78, `${c.titleJa} · ${c.titleEn}`, () => onTab(c.id), { color: on ? THEME.sun : '#f1eadb', fg: THEME.ink, size: 30 });
+        tx += 590;
+      }
+      const cols = 5; const cw = (W - 160 - (cols - 1) * 28) / cols; const ch = 380;
+      course.units.forEach((L, i) => {
+        const x = 80 + (i % cols) * (cw + 28); const y = 150 + Math.floor(i / cols) * (ch + 30);
+        const real = L.variants.reduce((s2, v) => s2 + starsOf(v.id, 'real'), 0);
+        const prac = L.variants.reduce((s2, v) => s2 + starsOf(v.id, 'practice'), 0);
         const hover = p.hoverId === L.id;
         g.fillStyle = THEME.shadow; rr(g, x + 3, y + 10, cw, ch, 40); g.fill();
         g.fillStyle = hover ? '#fff6dc' : '#ffffff'; rr(g, x, y - (hover ? 4 : 0), cw, ch, 40); g.fill();
-        g.fillStyle = colorFor(L.id); g.beginPath(); g.arc(x + 70, y + 74, 46, 0, Math.PI * 2); g.fill();
-        g.font = font(46, 800); g.fillStyle = THEME.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillText(String(L.lesson), x + 70, y + 76);
+        g.fillStyle = colorFor(L.id); g.beginPath(); g.arc(x + 66, y + 70, 44, 0, Math.PI * 2); g.fill();
+        g.font = font(44, 800); g.fillStyle = THEME.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(String(L.no), x + 66, y + 72);
         g.textAlign = 'left'; g.textBaseline = 'top';
-        text(g, L.titleJa, x + 28, y + 140, cw - 56, 38, { weight: 800, maxLines: 2 });
-        text(g, L.titleEn, x + 28, y + 236, cw - 56, 26, { color: THEME.soft, maxLines: 2, weight: 500 });
-        for (let k = 0; k < 9; k++) star(g, x + 36 + (k % 9) * 26, y + ch - 40, 11, k < got ? THEME.sun : '#ece3d2');
+        if (L.course === 'it') {
+          g.font = font(22, 800); g.fillStyle = THEME.soft;
+          g.fillText(`${L.storyKey}  ${L.episodeJa || ''}`, x + 124, y + 56);
+        }
+        text(g, L.titleJa, x + 26, y + 132, cw - 52, 36, { weight: 800, maxLines: 2 });
+        text(g, L.titleEn, x + 26, y + 222, cw - 52, 24, { color: THEME.soft, maxLines: 2, weight: 500 });
+        const max = L.variants.length * 3;
+        g.font = font(20, 800); g.fillStyle = THEME.leafDark; g.fillText('れんしゅう', x + 26, y + ch - 82);
+        g.fillStyle = '#c9772e'; g.fillText('ほんばん', x + 26, y + ch - 50);
+        for (let k = 0; k < max; k++) {
+          star(g, x + 150 + k * 22, y + ch - 72, 9, k < prac ? '#9ad8b7' : '#ece3d2');
+          star(g, x + 150 + k * 22, y + ch - 40, 9, k < real ? THEME.sun : '#ece3d2');
+        }
         p.buttons.push({ id: L.id, x, y, w: cw, h: ch, onClick: () => onPick(L) });
       });
-      extra?.(g, W, H, p);
     });
   }
 
-  variants(lesson, progress, onPick, onBack, sceneName) {
+  variants(lesson, starsOf, onPick, onBack, sceneName) {
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
-      nameTag(g, 70, 44, `だい ${lesson.lesson} か · Lesson ${lesson.lesson}`, colorFor(lesson.id), THEME.ink, 44);
+      nameTag(g, 70, 44, unitLabel(lesson), colorFor(lesson.id), THEME.ink, 44);
       text(g, `${lesson.titleJa} — ${lesson.titleEn}`, 80, 130, W - 160, 40, { weight: 800, maxLines: 1 });
-      text(g, lesson.summaryEn, 80, 186, W - 160, 30, { color: THEME.soft, maxLines: 2, weight: 500 });
-      const cw = (W - 160 - 2 * 32) / 3; const ch = 640;
+      text(g, lesson.course === 'it' && lesson.previouslyEn ? `${lesson.summaryEn}  ·  Story so far: ${lesson.previouslyEn}` : lesson.summaryEn, 80, 186, W - 160, 28, { color: THEME.soft, maxLines: 2, weight: 500 });
+      const n = lesson.variants.length;
+      const cw = (W - 160 - (n - 1) * 32) / n; const ch = 640;
       lesson.variants.forEach((v, i) => {
         const x = 80 + i * (cw + 32); const y = 270;
         const hover = p.hoverId === v.id;
@@ -253,46 +287,58 @@ export class Board {
         g.font = font(30, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'middle';
         g.fillText(`📍 ${sceneName(v.scene)}${v.call ? ' · 📞' : ''}`, x + 46, y + 56);
         g.font = font(24, 700); g.fillStyle = THEME.soft;
-        g.fillText(`${v.setup?.time || ''} · ${v.setup?.season || ''}${v.setup?.weather === 'rain' ? ' · rain' : ''}`, x + 46, y + 100);
+        g.fillText(lesson.course === 'it' ? `パターン ${String.fromCharCode(65 + i)}` : `${v.setup?.time || ''} · ${v.setup?.season || ''}${v.setup?.weather === 'rain' ? ' · rain' : ''}`, x + 46, y + 100);
         let yy = text(g, v.titleJa, x + 30, y + 160, cw - 60, 40, { weight: 800, maxLines: 2 });
         yy = text(g, v.titleEn, x + 30, yy + 4, cw - 60, 28, { color: THEME.soft, maxLines: 2 });
-        text(g, v.briefEn, x + 30, yy + 18, cw - 60, 27, { color: '#6c7d8a', weight: 500, maxLines: 7 });
-        stars(g, x + 30, y + ch - 80, progress[v.id]?.stars || 0, 3, 46);
+        text(g, v.briefEn, x + 30, yy + 18, cw - 60, 27, { color: '#6c7d8a', weight: 500, maxLines: n > 2 ? 7 : 6 });
+        g.font = font(24, 800); g.textBaseline = 'middle';
+        g.fillStyle = THEME.leafDark; g.fillText('れんしゅう', x + 30, y + ch - 104);
+        stars(g, x + 170, y + ch - 126, starsOf(v.id, 'practice'), 3, 40);
+        g.fillStyle = '#c9772e'; g.fillText('ほんばん', x + 30, y + ch - 52);
+        stars(g, x + 170, y + ch - 74, starsOf(v.id, 'real'), 3, 40);
         p.buttons.push({ id: v.id, x, y, w: cw, h: ch, onClick: () => onPick(v) });
       });
       p.button('back', 80, H - 150, 320, 84, '← もどる · Back', onBack, { color: '#e8dccb', fg: THEME.ink });
     });
   }
 
-  briefing({ lesson, variant, cast, live, onStart, onBack, note }) {
+  /** Briefing with the two ways to play: れんしゅう (with examples and hints) and ほんばん (no help, needs the key). */
+  briefing({ lesson, variant, cast, live, onPractice, onReal, onBack, note }) {
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
-      nameTag(g, 70, 44, `だい ${lesson.lesson} か · ${variant.titleJa}`, colorFor(lesson.id), THEME.ink, 42);
-      let y = text(g, variant.titleEn, 80, 140, W - 160, 44, { weight: 800, maxLines: 1 });
-      y = text(g, variant.briefEn, 80, y + 10, W - 160, 34, { color: THEME.ink, weight: 500, maxLines: 4 });
-      y = text(g, `🧑 ${variant.roleEn}`, 80, y + 10, W - 160, 30, { color: THEME.soft, maxLines: 2 });
-      y += 20;
-      g.fillStyle = '#eef6f1'; rr(g, 70, y, W - 140, 60 + variant.missionsEn.length * 58, 30); g.fill();
-      g.font = font(30, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
-      g.fillText('Missions', 100, y + 20);
-      variant.missionsEn.forEach((m, i) => text(g, `☐ ${m.text}`, 110, y + 70 + i * 58, W - 260, 32, { maxLines: 1 }));
-      y += 80 + variant.missionsEn.length * 58;
-      g.font = font(28, 700); g.fillStyle = THEME.soft;
-      g.fillText(`People: ${cast.map((c) => `${c.nameJa}（${c.roleEn}）`).join('、 ')}`.slice(0, 120), 80, y + 4);
-      g.fillStyle = live ? '#e3f1fb' : '#fdf0e2'; rr(g, 70, H - 280, W - 140, 104, 30); g.fill();
-      text(g, note || (live ? '🎙️ Gemini Live is on: speak naturally — the mic stays on and turns green when it is your turn.' : '📝 Offline practice: no API key, so you read an answer aloud and tap it. Add a Gemini key in Settings for real conversation.'), 100, H - 262, W - 200, 26, { color: live ? '#2f6db3' : '#a3622a', maxLines: 2 });
-      p.button('start', W - 520, H - 160, 440, 96, 'はじめる · Start', onStart, { color: THEME.leaf, size: 42 });
-      p.button('back', 80, H - 150, 320, 84, '← もどる', onBack, { color: '#e8dccb', fg: THEME.ink });
+      nameTag(g, 70, 44, `${unitLabel(lesson)} · ${variant.titleJa}`, colorFor(lesson.id), THEME.ink, 40);
+      let y = text(g, variant.titleEn, 80, 136, W - 160, 42, { weight: 800, maxLines: 1 });
+      y = text(g, variant.briefEn, 80, y + 8, W - 160, 31, { color: THEME.ink, weight: 500, maxLines: 4 });
+      y = text(g, `🧑 ${variant.roleEn}`, 80, y + 8, W - 160, 28, { color: THEME.soft, maxLines: 2 });
+      y += 14;
+      g.fillStyle = '#eef6f1'; rr(g, 70, y, W - 140, 56 + variant.missionsEn.length * 50, 30); g.fill();
+      g.font = font(28, 800); g.fillStyle = THEME.leafDark; g.textAlign = 'left'; g.textBaseline = 'top';
+      g.fillText('Missions', 100, y + 16);
+      variant.missionsEn.forEach((m, i) => text(g, `☐ ${m.text}`, 110, y + 62 + i * 50, W - 260, 29, { maxLines: 1 }));
+      y += 70 + variant.missionsEn.length * 50;
+      g.font = font(26, 700); g.fillStyle = THEME.soft;
+      g.fillText(`People: ${cast.map((c) => `${c.nameJa}（${c.roleEn}）`).join('、 ')}`.slice(0, 120), 80, y);
+      // the two modes
+      const bx = 70; const bw = (W - 140 - 30) / 2; const by = H - 330;
+      g.fillStyle = '#eef6f1'; rr(g, bx, by, bw, 168, 30); g.fill();
+      text(g, '📗 れんしゅう · Practice — answer examples are shown from the start, hints help you. Read one aloud or say your own answer.', bx + 26, by + 22, bw - 52, 25, { color: THEME.leafDark, maxLines: 4 });
+      g.fillStyle = live ? '#fff1e3' : '#f2eee6'; rr(g, bx + bw + 30, by, bw, 168, 30); g.fill();
+      text(g, live ? '🎯 ほんばん · Real — no examples, no hints. Just listen and answer, like at work or in town. Judged by Gemini Live.' : '🎯 ほんばん · Real needs a Gemini API key (せってい · Settings). Without it, practise first.', bx + bw + 56, by + 22, bw - 52, 25, { color: live ? '#a3622a' : THEME.soft, maxLines: 4 });
+      if (note) text(g, note, 80, by - 44, W - 160, 24, { color: THEME.red, maxLines: 1 });
+      p.button('back', 80, H - 140, 260, 84, '← もどる', onBack, { color: '#e8dccb', fg: THEME.ink });
+      p.button('practice', 380, H - 140, 600, 90, 'れんしゅう · Practice', onPractice, { color: THEME.leaf, size: 38 });
+      p.button('real', 1010, H - 140, 600, 90, 'ほんばん · Real', onReal, { color: '#f7a35c', size: 38, disabled: !live });
     });
   }
 
-  report({ lesson, variant, report, turns, missions, onRetry, onOther, onTown, onFree }) {
+  report({ lesson, variant, report, turns, missions, mode, onRetry, onReal, onNext, onOther, onTown }) {
     this.panel.visible = true;
     this.panel.draw((g, W, H, p) => {
       card(g, 10, 10, W - 20, H - 30, { r: 60 });
-      nameTag(g, 70, 44, 'けっか · Results', THEME.sun, THEME.ink, 44);
-      g.font = font(30, 700); g.fillStyle = THEME.soft; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
+      const tw = nameTag(g, 70, 44, 'けっか · Results', THEME.sun, THEME.ink, 44);
+      nameTag(g, 70 + tw + 18, 52, mode === 'real' ? 'ほんばん' : 'れんしゅう', mode === 'real' ? '#f7a35c' : '#d7ecdf', mode === 'real' ? '#ffffff' : THEME.leafDark, 32);
+      g.font = font(28, 700); g.fillStyle = THEME.soft; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
       g.fillText(`${lesson.titleJa} · ${variant.titleJa}${report.source === 'live' ? ' · judged by Gemini Live' : ''}`, W - 80, 92);
       stars(g, 80, 130, report.stars, 3, 84);
       let y = text(g, report.summaryEn, 420, 130, W - 500, 32, { weight: 700, maxLines: 4 });
@@ -316,10 +362,15 @@ export class Board {
         ty += 10;
       }
       const by = H - 160;
-      p.button('retry', 80, by, 380, 90, 'もう いちど · Retry', onRetry, { color: THEME.leaf });
-      p.button('other', 490, by, 420, 90, 'ほかの ばめん · Other', onOther, { color: '#a9cdf0', fg: THEME.ink });
-      if (onFree) p.button('free', 940, by, 380, 90, 'フリートーク', onFree, { color: THEME.pink, fg: THEME.ink });
-      p.button('town', W - 420, by, 340, 90, 'まちへ · Town', onTown, { color: '#e8dccb', fg: THEME.ink });
+      const buttons = [
+        ['retry', 'もう いちど · Retry', onRetry, THEME.leaf, '#ffffff'],
+        onReal && ['real', 'ほんばんに ちょうせん', onReal, '#f7a35c', '#ffffff'],
+        onNext && ['next', 'つぎの 話へ · Next', onNext, THEME.sun, THEME.ink],
+        ['other', 'ほかの ばめん', onOther, '#a9cdf0', THEME.ink],
+        ['town', 'まちへ · Town', onTown, '#e8dccb', THEME.ink],
+      ].filter(Boolean);
+      const bw = (W - 160 - (buttons.length - 1) * 24) / buttons.length;
+      buttons.forEach(([id, label, fn, color, fg], i) => p.button(id, 80 + i * (bw + 24), by, bw, 90, label, fn, { color, fg, size: 32 }));
     });
   }
 

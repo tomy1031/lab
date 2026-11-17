@@ -4,16 +4,36 @@ import { resolveCharacter, audioPath } from './lines.js';
 export const LESSON_COUNT = 10;
 const base = new URL('../../', import.meta.url);
 
-export async function loadLessons() {
+async function loadSeries(dir, prefix) {
   const out = [];
   for (let n = 1; n <= LESSON_COUNT; n++) {
-    const id = `l${String(n).padStart(2, '0')}`;
+    const id = `${prefix}${String(n).padStart(2, '0')}`;
     try {
-      const r = await fetch(new URL(`data/lessons/${id}.json`, base));
+      const r = await fetch(new URL(`data/${dir}/${id}.json`, base));
       if (r.ok) out.push({ id, ...(await r.json()) });
-    } catch { /* missing lesson */ }
+    } catch { /* missing unit */ }
   }
   return out;
+}
+
+/** みんなの日本語編 (lessons 1–10). */
+export async function loadLessons() {
+  return (await loadSeries('lessons', 'l')).map((L) => ({ ...L, course: 'minna', no: L.lesson }));
+}
+
+/** ITビジネス編 (episodes in story order). storyKey = A, B … in order of appearance. */
+export async function loadBusiness() {
+  const units = await loadSeries('business', 'b');
+  const stories = [...new Set(units.map((u) => u.storyJa))];
+  return units.map((u) => ({ ...u, course: 'it', no: u.unit, storyKey: String.fromCharCode(65 + stories.indexOf(u.storyJa)) }));
+}
+
+export async function loadCourses() {
+  const [minna, it] = await Promise.all([loadLessons(), loadBusiness()]);
+  return [
+    { id: 'minna', titleJa: 'みんなの日本語編', titleEn: 'Minna no Nihongo I', units: minna },
+    { id: 'it', titleJa: 'ITビジネス編', titleEn: 'IT business', units: it },
+  ].filter((c) => c.units.length);
 }
 
 let voiceIndex = null;
