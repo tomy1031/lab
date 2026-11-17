@@ -146,7 +146,10 @@ export function createTutorial(ctx, S, ui) {
     frame('旅のはじまり', 'MAIN QUEST');
     let cur = 0;
     while (cur < 3 && Q.mainDone(cur)) cur++;
-    text(g, '野営地の焚き火に火を灯し、台座の剣を手に入れよう', 48, 174, { size: 38, weight: 700, color: C.gold, maxW: W - 96 });
+    // the step to do right now (phase-aware: take / light / carry (with the distance) / touch / relight / sword)
+    const h = Q.campHint;
+    const now = h && h.text ? h.text + (h.phase === 'carry' ? `（あと ${Math.max(1, Math.round(h.dist))} m）` : '') : '野営地の焚き火に火を灯し、台座の剣を手に入れよう';
+    text(g, '▶ ' + now, 48, 174, { size: 38, weight: 800, color: C.gold, maxW: W - 96 });
     for (let i = 0; i < 3; i++) {
       const y = 200 + i * 104, isDone = Q.mainDone(i), isCur = i === cur;
       if (isCur) { roundRect(g, 30, y + 6, W - 60, 92, 18); g.fillStyle = 'rgba(255,215,106,0.2)'; g.fill(); g.lineWidth = 4; g.strokeStyle = C.gold; g.stroke(); }
@@ -164,7 +167,7 @@ export function createTutorial(ctx, S, ui) {
   }
   function signature(Q) {
     if (mode === 'tutorial') return `t|${Q.tutIndex()}|${Math.min(16, Q.tut.walk)}|${Math.min(10, Q.tut.run)}|${Q.tutDone(2)}${Q.tutDone(3)}${Q.tutDone(4)}`;
-    if (mode === 'main') return `m|${Q.mainDone(0)}${Q.mainDone(1)}${Q.mainDone(2)}`;
+    if (mode === 'main') { const h = Q.campHint || {}; return `m|${Q.mainDone(0)}${Q.mainDone(1)}${Q.mainDone(2)}|${h.phase}|${h.phase === 'carry' ? Math.round(h.dist / 5) : 0}`; }
     return '';
   }
   function setMode(m) { if (mode === m) return; pendingMode = m; fadeTo = 0; }
@@ -229,14 +232,22 @@ export function createTutorial(ctx, S, ui) {
           _s.setScalar(k);
           _m.compose(_p.set(tg.x, tg.y + 0.42 * k + bob, tg.z), _q, _s);
           arrows.setMatrixAt(n, _m);
-          // the floor under it (terrain or the stone stage / a platform)
-          let gy = tg.y - 0.15;
-          try { gy = ctx.world.groundAt ? ctx.world.groundAt(tg.x, tg.z, tg.y + 0.3) : ctx.world.heightAt(tg.x, tg.z); } catch (e) { /* stub */ }
-          if (!Number.isFinite(gy) || gy > tg.y) gy = tg.y - 0.15;
-          const rr = (tg.kind === 'fire' ? 0.75 : tg.kind === 'pedestal' ? 0.85 : 0.38) * (1 + 0.08 * Math.sin(t * 3 + n)) * Math.max(1, k * 0.6);
+          let ry, rr;
+          if (tg.kind === 'bowl') {
+            // up close with a burning torch: a pulsing ring hovering at the fire bowl's rim — "touch here"
+            ry = tg.y - 0.18;
+            rr = 0.62 * (1 + 0.14 * Math.sin(t * 6));
+          } else {
+            // the floor under it (terrain or the stone stage / a platform)
+            let gy = tg.y - 0.15;
+            try { gy = ctx.world.groundAt ? ctx.world.groundAt(tg.x, tg.z, tg.y + 0.3) : ctx.world.heightAt(tg.x, tg.z); } catch (e) { /* stub */ }
+            if (!Number.isFinite(gy) || gy > tg.y) gy = tg.y - 0.15;
+            ry = gy + 0.035;
+            rr = (tg.kind === 'fire' ? 0.75 : tg.kind === 'pedestal' ? 0.85 : 0.38) * (1 + 0.08 * Math.sin(t * 3 + n)) * Math.max(1, k * 0.6);
+          }
           _s.set(rr, 1, rr);
           _q.identity();
-          _m.compose(_h.set(tg.x, gy + 0.035, tg.z), _q, _s);
+          _m.compose(_h.set(tg.x, ry, tg.z), _q, _s);
           rings.setMatrixAt(n, _m);
           n++;
         }

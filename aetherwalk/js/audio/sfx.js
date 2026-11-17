@@ -118,6 +118,14 @@ export function createSfx(S, buses) {
       S.burst({ dur: 0.5, type: 'lowpass', freq: 300, sweepTo: 1600, gain: 0.35, dest: d, attack: 0.05, buf: S.brown });
       for (let i = 0; i < 6; i++) S.burst({ t: ac.currentTime + 0.1 + Math.random() * 0.6, dur: 0.02, type: 'highpass', freq: 2500, gain: 0.12, dest: d });
     },
+    /** a fire bowl catching (≈0.8 s): crackles that build, under a soft rising whoosh */
+    catching({ dest }) {
+      const d = dest || buses.sfx, t0 = ac.currentTime;
+      S.burst({ dur: 0.85, type: 'lowpass', freq: 220, sweepTo: 900, gain: 0.16, dest: d, attack: 0.55, buf: S.brown });
+      for (let i = 0; i < 14; i++) { const k = i / 13; S.burst({ t: t0 + k * 0.78 + Math.random() * 0.04, dur: 0.012 + Math.random() * 0.02, type: 'highpass', freq: 1700 + Math.random() * 2400, gain: 0.04 + 0.12 * k, dest: d }); }
+    },
+    /** a torch going out: a short hiss */
+    fizzle({ dest }) { S.burst({ dur: 0.4, type: 'highpass', freq: 3200, sweepTo: 1400, gain: 0.1, dest: dest || buses.sfx, attack: 0.01 }); },
     crackle({ dest }) { S.burst({ dur: 0.015 + Math.random() * 0.02, type: 'highpass', freq: 1800 + Math.random() * 2000, gain: 0.05 + Math.random() * 0.06, dest: dest || buses.amb }); },
     eat({ dest }) { const d = dest || buses.sfx, t = ac.currentTime; for (let i = 0; i < 3; i++) S.burst({ t: t + i * 0.11, dur: 0.06, type: 'bandpass', freq: 2200, q: 1.2, gain: 0.18, dest: d }); },
     drink({ dest }) { const d = dest || buses.sfx, t = ac.currentTime; for (let i = 0; i < 3; i++) S.tone(300 + i * 40, { t: t + i * 0.16, decay: 0.1, gain: 0.12, dest: d, glideTo: 520 + i * 40, glideTime: 0.08 }); },

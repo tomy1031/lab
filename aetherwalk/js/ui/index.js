@@ -39,6 +39,11 @@ export async function createUI(ctx) {
     const t = typeof opts === 'string' ? { sub: opts } : opts;
     // drop exact repeats waiting in the queue; keep the queue short
     if (S.toastQueue.some((q) => q.text === text) || (S.currentToast && S.currentToast.text === text)) return;
+    // a newer step of the same kind (tag) replaces the older one: the queued one is dropped, the showing one ends soon
+    if (t.tag && t.tag !== 'tut') {
+      for (let i = S.toastQueue.length - 1; i >= 0; i--) if (S.toastQueue[i].tag === t.tag) S.toastQueue.splice(i, 1);
+      if (S.currentToast && S.currentToast.tag === t.tag) S.currentToast.left = Math.min(S.currentToast.left, 300);
+    }
     S.toastQueue.push({ text, sub: t.sub || '', kind: t.kind || 'info', ms: t.ms || 3000, tag: t.tag || null });
     while (S.toastQueue.length > 4) S.toastQueue.shift();
   }
