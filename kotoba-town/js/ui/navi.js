@@ -218,6 +218,7 @@ export class Navi {
     if (this.bubble.visible) {
       const p = this.root.position.clone(); p.y += this.scale * 1.12 + this.bubble.hM * 0.5;
       if (this.mode === 'stand') p.x += 0.25; // keep clear of the board's edge
+      else if (this.yaw !== null) { p.x -= Math.cos(this.yaw) * 0.17; p.z += Math.sin(this.yaw) * 0.17; } // toward the middle of the view
       this.bubble.placeFacing(p, head);
       this.bubble.mesh.scale.setScalar(this.mode === 'stand' ? 1 : 0.62);
     }
