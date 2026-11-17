@@ -80,7 +80,6 @@ export default function build({ setup }) {
   // posts and ceiling beams
   for (const [x, z] of [[X0 + 0.07, ZK + 0.07], [KX, ZK + 0.02], [X1 - 0.07, ZK + 0.07], [X0 + 0.07, ZS - 0.07], [X1 - 0.07, ZS - 0.07], [X1 - 0.07, -2.0], [X0 + 0.07, 0.6]]) g.add(K.box(0.15, H, 0.15, M.dark, { x, z, cast: false }));
   for (const z of [-3.75, -2.55, -1.35, -0.15, 1.05, 2.1]) g.add(K.box(X1 - X0, 0.15, 0.15, M.dark, { x: (X0 + X1) / 2, y: H - 0.15, z, cast: false }));
-  g.add(K.box(0.18, 0.2, ZS - ZK, M.dark, { x: 0.15, y: H - 0.2, z: (ZS + ZK) / 2, cast: false }));
   for (const z of [-5.0, -5.9]) g.add(K.box(X1 - KX, 0.12, 0.12, M.dark, { x: (KX + X1) / 2, y: H - 0.12, z, cast: false }));
 
   // ------------------------------------------------------------------ the learner's table (テーブル席)
@@ -341,13 +340,13 @@ export default function build({ setup }) {
     const lowT = new THREE.Group();
     lowT.add(K.box(w, 0.04, 0.62, M.top, { y: 0.29 }));
     for (const [lx, lz] of [[-w / 2 + 0.06, -0.25], [w / 2 - 0.06, -0.25], [-w / 2 + 0.06, 0.25], [w / 2 - 0.06, 0.25]]) lowT.add(K.box(0.05, 0.29, 0.05, M.dark, { x: lx, z: lz }));
-    add(lowT, x, TH, 1.95);
-    for (const dx of w > 1 ? [-0.3, 0.3] : [0]) for (const dz of [-0.48, 0.48]) add(K.rbox(0.48, 0.06, 0.46, 0.03, dz < 0 ? M.zabuB : M.zabuA), x + dx, TH, 1.95 + dz);
+    add(lowT, x, TH, 1.86);
+    for (const dx of w > 1 ? [-0.3, 0.3] : [0]) for (const dz of [-0.46, 0.44]) add(K.rbox(0.46, 0.06, 0.44, 0.03, dz < 0 ? M.zabuB : M.zabuA), x + dx, TH, 1.86 + dz);
   }
-  add(beerMug(M, false, 0.0), -2.55, TH + 0.33, 1.9);
-  add(beerMug(M, false, 0.1), -2.05, TH + 0.33, 2.05, 1.2);
-  add(smallPlate(M, M.indigo), -2.3, TH + 0.33, 1.8);
-  add(sakeSet(A, M), 0.15, TH + 0.33, 1.95, 0.6);
+  add(beerMug(M, false, 0.0), -2.55, TH + 0.33, 1.8);
+  add(beerMug(M, false, 0.1), -2.05, TH + 0.33, 1.95, 1.2);
+  add(smallPlate(M, M.indigo), -2.3, TH + 0.33, 1.7);
+  add(sakeSet(A, M), 0.15, TH + 0.33, 1.86, 0.6);
   // a row of small festival lanterns above the tatami room
   const small = [T.region(128, 64, (c, W, Hh) => paperTex(c, W, Hh, '#d23a2c', '#7a1a14')), T.region(128, 64, (c, W, Hh) => paperTex(c, W, Hh, '#f4e9d2', '#c23a2c'))];
   g.add(rod(0.004, 0.004, XT - X0 - 0.3, M.black, { x: (X0 + XT) / 2, y: 2.36, z: ZS - 0.22, rz: Math.PI / 2 }, 3));
@@ -356,9 +355,18 @@ export default function build({ setup }) {
   add(fujiPicture(T, M), -2.2, 1.55, ZS - 0.015, Math.PI);
   g.add(K.box(1.0, 0.035, 0.22, M.light, { x: -0.3, y: 1.42, z: ZS - 0.11 }));
   for (let i = 0; i < 4; i++) add(sakeBottle(A, M, bottleCols[i], labelRegions[i + 2], 1), -0.65 + i * 0.23, 1.455, ZS - 0.12, Math.PI);
-  add(pendant(A, M, 0.7), -2.3, H, 1.95);
+  add(pendant(A, M, 0.55), -2.3, H, 1.86);
   // a plant in the corner by the entrance
   add(K.plant(1.1, 7), X0 + 0.3, 0, -4.32);
+
+  // small red / white lanterns along the beam over the tables (glow at night)
+  for (let i = 0; i < 5; i++) {
+    add(chochin(small[i % 2], 0.08, 0.22, M, lit), -1.6 + i * 1.2, 2.32, -2.55, i * 0.9);
+  }
+  // a little shelf with a daruma on the left wall
+  g.add(K.box(0.2, 0.03, 0.62, M.light, { x: X0 + 0.1, y: 1.92, z: -0.05 }));
+  add(daruma(A, M), X0 + 0.11, 1.95, -0.2, Math.PI / 2);
+  add(sakeBottle(A, M, bottleCols[0], labelRegions[0], 0.62), X0 + 0.1, 1.95, 0.12, Math.PI / 2);
 
   // ------------------------------------------------------------------ lights
   const k = lit ? 1.25 : 0.9;
@@ -368,7 +376,7 @@ export default function build({ setup }) {
   for (const o of [menu, beer, edamame, oshibori, hashi, yakitori, sake, menuStrips, lantern, counter, reg, clk, noren, fishTankProp]) props[o.userData.propId] = o;
   atlasize(g, A);
 
-  const staffPos = { x: 1.06, z: -0.72 };
+  const staffPos = { x: 0.98, z: -0.9 };
   return K.finalize({
     group: g,
     spawn: K.spot(0, 0, 0),
@@ -393,12 +401,12 @@ function materials() {
     floor: K.mat('#ffffff', { map: K.woodTex('#5c3e27', [5, 7], 9), rough: 0.55 }),
     plaster: K.mat('#ffffff', { map: K.noiseTex('#e4cfa8', 0.06, [5, 2], 'izakaya'), rough: 0.95 }),
     panel: K.mat('#ffffff', { map: K.woodTex('#5a3a22', [6, 1], 12), rough: 0.55 }),
-    ceil: K.mat('#ffffff', { map: K.woodTex('#4a3220', [4, 6], 14), rough: 0.85 }),
+    ceil: K.mat('#ffffff', { map: K.woodTex('#7a5636', [4, 6], 14), rough: 0.85 }),
     top: K.mat('#ffffff', { map: K.woodTex('#a87442', [2, 1], 4), rough: 0.35 }),
     tile: K.mat('#ffffff', { map: K.tileTex('#f1ede4', '#ebe6db', 8, [7, 3], '#c7c0b2'), rough: 0.3 }),
     kfloor: K.mat('#ffffff', { map: K.tileTex('#8f8a82', '#858078', 6, [6, 2], '#6c675f'), rough: 0.6 }),
     tatami: K.mat('#ffffff', { map: K.tatamiTex([5, 1]), rough: 0.9 }),
-    dark: K.mat('#33231a', { rough: 0.55 }),
+    dark: K.mat('#3a281c', { rough: 0.55 }),
     panelWood: K.mat('#6a4428', { rough: 0.55 }),
     wood: K.mat('#7a5232', { rough: 0.5 }),
     light: K.mat('#c9a271', { rough: 0.5 }),
@@ -413,7 +421,7 @@ function materials() {
     cream: K.mat('#efe3c8', { rough: 0.28 }),
     stone: K.mat('#8d8a84', { rough: 0.9 }),
     glass: K.glassMat(),
-    beer: K.mat('#e2a032', { rough: 0.12 }),
+    beer: K.mat('#f4b43a', { rough: 0.32 }),
     foam: K.mat('#fbf6ea', { rough: 0.9 }),
     zabuA: K.mat('#34466e', { rough: 0.85 }),
     zabuB: K.mat('#7d3030', { rough: 0.85 }),
@@ -788,6 +796,14 @@ function paperTex(c, W, Hh, base, band) {
   c.fillRect(0, Hh * 0.45, W, Hh * 0.06);
 }
 
+/** fillText that shrinks the font until the text fits maxW. */
+function fitText(c, t, x, y, maxW, size, weight = 700) {
+  let s = size;
+  c.font = `${weight} ${s}px ${K.JP_FONT}`;
+  while (c.measureText(t).width > maxW && s > 6) { s *= 0.94; c.font = `${weight} ${s}px ${K.JP_FONT}`; }
+  c.fillText(t, x, y);
+}
+
 /** Text written top to bottom (縦書き): ー turns, small kana shift to the upper right. */
 function drawVertical(c, cx, y0, text, size, color, weight = 800) {
   c.fillStyle = color; c.font = `${weight} ${size}px ${K.JP_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -830,8 +846,16 @@ function fishTank(A, T, M) {
   for (const [x, z, s] of [[-0.35, -0.08, 0.07], [0.3, 0.05, 0.05], [0.05, -0.12, 0.045]]) grp.add(K.mesh(new THREE.DodecahedronGeometry(s, 0), rockM, { x, y: B + 0.06, z }));
   const weed = K.mat('#4f8a46', { rough: 0.7 });
   for (const [x, z, h] of [[-0.45, -0.12, 0.22], [-0.4, -0.1, 0.16], [0.42, -0.14, 0.2], [0.47, -0.11, 0.26]]) grp.add(K.mesh(new THREE.ConeGeometry(0.015, h, 4), weed, { x, y: B + 0.04 + h / 2, z }));
+  const back = A.region(128, 64, (c, W, Hh) => {
+    const gr = c.createLinearGradient(0, 0, 0, Hh);
+    gr.addColorStop(0, '#9fdcea'); gr.addColorStop(0.6, '#4f9fb8'); gr.addColorStop(1, '#2f6f86');
+    c.fillStyle = gr; c.fillRect(0, 0, W, Hh);
+    const r = K.rng(9);
+    for (let i = 0; i < 30; i++) { c.fillStyle = `rgba(255,255,255,${r() * 0.18})`; c.beginPath(); c.arc(r() * W, r() * Hh * 0.6, 2 + r() * 6, 0, Math.PI * 2); c.fill(); }
+  });
+  grp.add(A.plane(TW - 0.05, TH - 0.06, back, { glow: true, y: B + TH / 2, z: -TD / 2 + 0.02 }));
   grp.add(K.box(TW - 0.02, TH, TD - 0.02, M.glass, { y: B, cast: false }));
-  grp.add(K.box(TW - 0.05, TH - 0.08, TD - 0.05, K.mat('#4f9a96', { rough: 0.1, opacity: 0.2 }), { y: B + 0.01, cast: false }));
+  grp.add(K.box(TW - 0.05, TH - 0.08, TD - 0.05, K.mat('#6fc4c8', { rough: 0.1, opacity: 0.16, emissive: '#0d3a40' }), { y: B + 0.01, cast: false }));
   const frame = K.mat('#2b2a28', { metal: 0.4, rough: 0.4 });
   for (const [x, z] of [[-TW / 2, -TD / 2], [TW / 2, -TD / 2], [-TW / 2, TD / 2], [TW / 2, TD / 2]]) grp.add(K.box(0.025, TH, 0.025, frame, { x, y: B, z }));
   grp.add(K.box(TW + 0.02, 0.05, TD + 0.02, frame, { y: B + TH }));
@@ -1027,16 +1051,16 @@ function specialsBoard(T, M, time, season) {
   const r = T.region(w * 380, h * 380, (c, W, Hh) => {
     c.fillStyle = '#f3e8cf'; c.fillRect(0, 0, W, Hh);
     c.textBaseline = 'middle';
-    c.fillStyle = '#b0261c'; c.font = `800 ${Hh * 0.2}px ${K.JP_FONT}`; c.textAlign = 'center';
-    c.fillText(lunch ? 'ランチ' : 'きょうの おすすめ', W / 2, Hh * 0.17);
+    c.fillStyle = '#b0261c'; c.textAlign = 'center';
+    fitText(c, lunch ? 'ランチ' : 'きょうの おすすめ', W / 2, Hh * 0.17, W * 0.9, Hh * 0.2, 800);
     c.fillStyle = '#3b2a1e'; c.font = `700 ${Hh * 0.09}px ${K.JP_FONT}`;
     c.fillText(lunch ? '11:30〜14:00' : '17:00〜23:00', W / 2, Hh * 0.33);
     items.forEach(([n, p], i) => {
       const y = Hh * (0.5 + i * 0.16);
       c.font = `700 ${Hh * 0.105}px ${K.JP_FONT}`; c.fillStyle = '#1f1712';
       if (!p) { c.textAlign = 'center'; c.font = `700 ${Hh * 0.085}px ${K.JP_FONT}`; c.fillText(n, W / 2, y); return; }
-      c.textAlign = 'left'; c.fillText(n, W * 0.07, y);
-      c.textAlign = 'right'; c.fillStyle = '#b0261c'; c.fillText(p, W * 0.93, y);
+      c.textAlign = 'left'; fitText(c, n, W * 0.07, y, W * 0.6, Hh * 0.105, 700);
+      c.textAlign = 'right'; c.fillStyle = '#b0261c'; fitText(c, p, W * 0.93, y, W * 0.26, Hh * 0.105, 700);
     });
   });
   b.add(T.plane(w, h, r, { z: 0.017 }));
@@ -1143,6 +1167,24 @@ function tvSet(A, M) {
   });
   tv.add(A.textAtlas.plane(0.62, 0.35, scr, { glow: true, y: 0.2, z: 0.026 }));
   return tv;
+}
+
+function daruma(A, M) {
+  const d = new THREE.Group();
+  const red = K.mat('#c8302a', { rough: 0.35 });
+  const body = K.mesh(new THREE.SphereGeometry(0.075, 14, 10), red, { y: 0.075 });
+  body.scale.set(1, 1.08, 0.95);
+  d.add(body);
+  const face = A.region(64, 64, (c, W, Hh) => {
+    c.fillStyle = '#f6efe2'; c.beginPath(); c.ellipse(W / 2, Hh / 2, W * 0.46, Hh * 0.42, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#1f1a17';
+    c.beginPath(); c.arc(W * 0.33, Hh * 0.45, 6, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = '#1f1a17'; c.lineWidth = 2; c.beginPath(); c.arc(W * 0.67, Hh * 0.45, 6, 0, Math.PI * 2); c.stroke();
+    c.lineWidth = 3; c.beginPath(); c.moveTo(W * 0.2, Hh * 0.28); c.lineTo(W * 0.42, Hh * 0.32); c.moveTo(W * 0.8, Hh * 0.28); c.lineTo(W * 0.58, Hh * 0.32); c.stroke();
+    c.beginPath(); c.arc(W / 2, Hh * 0.62, 8, 0.2, Math.PI - 0.2); c.stroke();
+  });
+  d.add(A.plane(0.075, 0.07, face, { y: 0.095, z: 0.064 }));
+  return d;
 }
 
 function smallPlant(scale, seed) {

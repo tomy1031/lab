@@ -41,7 +41,7 @@ export const EXPRESSIONS = {
   gentle: { smile: 1.25, brow: -0.45, lid: 0.2, open: 0, cheek: 0.5, blush: 1.15, browY: 0.004, gazeY: -0.02, headX: 0.02, headZ: 0.05 },
   calm: { smile: 0.95, brow: -0.25, lid: 0.15, open: 0, cheek: 0.2, blush: 0.9, browY: 0, gazeY: 0, headX: 0, headZ: 0 },
   serious: { smile: 0.25, brow: 0.25, lid: 0.12, open: 0, cheek: 0, blush: 0.55, browY: -0.012, gazeY: 0, headX: -0.01, headZ: 0 },
-  stern: { smile: -0.45, brow: 0.75, lid: 0.24, open: 0, cheek: 0, blush: 0.25, browY: -0.03, gazeY: 0, headX: -0.03, headZ: 0 },
+  stern: { smile: -0.45, brow: 0.75, lid: 0.12, open: 0, cheek: 0, blush: 0.25, browY: -0.045, gazeY: 0, headX: -0.03, headZ: 0 },
   shy: { smile: 0.8, brow: -0.55, lid: 0.14, open: 0, cheek: 0.25, blush: 1.9, browY: 0.012, gazeY: -0.09, headX: 0.07, headZ: 0.06 },
 };
 export function expressionOf(look) { return EXPRESSIONS[look?.expression] || EXPRESSIONS.neutral; }
@@ -116,7 +116,7 @@ vec3 faceColor() {
     vec2 b = (P - vec2(side * ${f(FACE.brow[0])}, ${f(FACE.brow[1])} + uState.w + uMood2.y)) / 0.17;
     float ox = b.x * side;                       // toward the outer end
     float tilt = uMood.y;                        // + inner ends down (stern), - inner ends up (kind)
-    float yc = 0.18 * (1.0 - ox * ox) * (1.0 - 0.45 * max(tilt, 0.0)) - 0.06 * ox + tilt * 0.3 * ox;
+    float yc = 0.18 * (1.0 - ox * ox) * (1.0 - 0.6 * max(tilt, 0.0)) - 0.06 * ox + tilt * (tilt > 0.0 ? 0.5 : 0.3) * ox;
     float th = mix(0.12, 0.08, fem) * uStyle.w * (1.0 - 0.55 * smoothstep(0.0, 1.0, ox)) * (1.0 - 0.25 * smoothstep(-0.4, -1.0, ox));
     float d = max(abs(b.y - yc) - th, abs(b.x) - 1.0);
     col = mix(col, uBrowC, aa(d * 0.17));
@@ -132,7 +132,7 @@ vec3 faceColor() {
     float top = sqrt(1.0 - xx * xx) * (0.8 + 0.08 * ox);                 // upper lid sits low over the iris
     float bot = -sqrt(1.0 - xx * xx) * 0.98 * (1.0 - 0.3 * uMood2.x);        // smiling cheeks lift the lower lid
     float lid = mix(top, bot + 0.04, max(blink, uMood.z));
-    lid -= max(uMood.y, 0.0) * 0.16 * (1.0 - ox) * (1.0 - blink);       // stern: the lid slopes down to the inner corner
+    lid -= max(uMood.y, 0.0) * 0.26 * (1.0 - ox) * (1.0 - blink);       // stern: the lid slopes down to the inner corner
     float inX = abs(e.x) - 1.0;
     float open = aa(max(max(e.y - lid, bot - e.y), inX) * E.x);
     // iris: a circle in real space, big, touching the lid
