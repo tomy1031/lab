@@ -13,6 +13,7 @@ const LAYERS = {
   home: ['room', 'clock'],
   konbini: ['hum', 'fridge', 'door'],
   izakaya: ['murmur', 'cups', 'room'],
+  clinic: ['room', 'clock', 'hvac'],
 };
 
 export class Ambience {

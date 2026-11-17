@@ -211,7 +211,7 @@ export default function build({ setup }) {
   ent.traverse((o) => { o.castShadow = false; });
   add(A.paint(4.2, 3.2, 90, (c, W, Hh) => drawView(c, W, Hh, env, 'street'), { glow: true }), (ENT.x0 + ENT.x1) / 2, GY + 1.5, ZS + 1.3, Math.PI);
   add(K.mesh(new THREE.PlaneGeometry(4.2, 1.3), M.pave, { rx: -Math.PI / 2, cast: false }), (ENT.x0 + ENT.x1) / 2, GY + 0.002, ZS + 0.65);
-  add(A.paint(1.2, 0.6, 220, (c, W, Hh) => drawDoormat(c, W, Hh, rain), { rx: -Math.PI / 2, receive: true }), (ENT.x0 + ENT.x1) / 2, GY + 0.006, ZS - 0.4, Math.PI);
+  add(A.paint(1.2, 0.6, 220, (c, W, Hh) => drawDoormat(c, W, Hh, rain), { rx: -Math.PI / 2, rz: Math.PI, receive: true }), (ENT.x0 + ENT.x1) / 2, GY + 0.006, ZS - 0.4);
   add(shoeLocker(A, M), X1, GY, 3.3, -Math.PI / 2);
   add(umbrellaStand(M, rain), 0.88, GY, 3.52);
   add(slipperRack(A, M), 2.98, 0, 2.53);

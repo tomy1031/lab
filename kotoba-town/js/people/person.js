@@ -345,12 +345,12 @@ function tubeGeo(points, r, segs = 24, radial = 6) {
 // body sections, in units of the height (y from the floor); widths are scaled by build
 const TORSO = {
   m: {
-    a: [[0.40, 0.106], [0.47, 0.106], [0.53, 0.099], [0.58, 0.094], [0.64, 0.097], [0.70, 0.102], [0.75, 0.105], [0.78, 0.103], [0.8, 0.097], [0.815, 0.086], [0.828, 0.069], [0.838, 0.05], [0.844, 0.035], [0.848, 0.028]],
-    b: [[0.40, 0.076], [0.47, 0.075], [0.53, 0.067], [0.58, 0.062], [0.64, 0.064], [0.70, 0.067], [0.75, 0.068], [0.78, 0.066], [0.8, 0.061], [0.815, 0.055], [0.828, 0.047], [0.838, 0.038], [0.844, 0.031], [0.848, 0.026]],
+    a: [[0.40, 0.106], [0.47, 0.106], [0.53, 0.099], [0.58, 0.094], [0.64, 0.097], [0.70, 0.102], [0.75, 0.105], [0.78, 0.103], [0.8, 0.097], [0.815, 0.085], [0.828, 0.067], [0.84, 0.047], [0.848, 0.033], [0.853, 0.029]],
+    b: [[0.40, 0.076], [0.47, 0.075], [0.53, 0.067], [0.58, 0.062], [0.64, 0.064], [0.70, 0.067], [0.75, 0.068], [0.78, 0.066], [0.8, 0.061], [0.815, 0.055], [0.828, 0.047], [0.84, 0.037], [0.848, 0.03], [0.853, 0.027]],
   },
   f: {
-    a: [[0.40, 0.111], [0.47, 0.11], [0.52, 0.097], [0.57, 0.084], [0.63, 0.087], [0.69, 0.092], [0.75, 0.093], [0.78, 0.091], [0.8, 0.086], [0.815, 0.077], [0.828, 0.062], [0.838, 0.045], [0.844, 0.031], [0.848, 0.025]],
-    b: [[0.40, 0.078], [0.47, 0.077], [0.52, 0.067], [0.57, 0.059], [0.63, 0.062], [0.69, 0.065], [0.75, 0.064], [0.78, 0.061], [0.8, 0.057], [0.815, 0.051], [0.828, 0.043], [0.838, 0.035], [0.844, 0.028], [0.848, 0.023]],
+    a: [[0.40, 0.111], [0.47, 0.11], [0.52, 0.097], [0.57, 0.084], [0.63, 0.087], [0.69, 0.092], [0.75, 0.093], [0.78, 0.091], [0.8, 0.086], [0.815, 0.076], [0.828, 0.06], [0.84, 0.042], [0.848, 0.03], [0.853, 0.026]],
+    b: [[0.40, 0.078], [0.47, 0.077], [0.52, 0.067], [0.57, 0.059], [0.63, 0.062], [0.69, 0.065], [0.75, 0.064], [0.78, 0.061], [0.8, 0.057], [0.815, 0.051], [0.828, 0.043], [0.84, 0.034], [0.848, 0.027], [0.853, 0.024]],
   },
 };
 const PELVIS = {
@@ -460,16 +460,18 @@ export class Person {
     for (const s of [-1, 1]) {
       const th = this.bone(this.hips, [s * legX, -h(0.02), 0], 'thigh');
       const kn = this.bone(th, [0, -thighL, 0], 'knee');
+      const km = this.bone(th, [0, -thighL, 0], 'kneeMid');
       const ft = this.bone(kn, [0, -shinL, 0], 'foot');
-      this.legs.push({ s, th, kn, ft });
+      this.legs.push({ s, th, kn, km, ft });
     }
     this.arms = [];
     for (const s of [-1, 1]) {
       const sh = this.bone(this.chest, [s * shX, torsoLen * 0.855, -h(0.004)], 'shoulder');
       const ua = this.bone(sh, [0, 0, 0], 'upperArm');
       const el = this.bone(ua, [0, -upperArm, 0], 'elbow');
+      const em = this.bone(ua, [0, -upperArm, 0], 'elbowMid');
       const hd = this.bone(el, [0, -foreArm, 0], 'hand');
-      this.arms.push({ s, sh, ua, el, hd, pose: { curl: 0.5, index: 0.4, thumb: 0.1 } });
+      this.arms.push({ s, sh, ua, el, em, hd, pose: { curl: 0.5, index: 0.4, thumb: 0.1 } });
     }
     this.neck = this.bone(this.chest, [0, torsoLen * 0.97, -h(0.004)], 'neck');
     this.head = this.bone(this.neck, [0, h(0.032), 0], 'head');
@@ -480,9 +482,11 @@ export class Person {
     const yWaist = hipY + h(0.035);
     const wTrunk = (p) => { const t = smooth(yWaist - h(0.045), yWaist + h(0.075), p.y); return [[this.hips, 1 - t], [this.chest, t]]; };
     const kneeY = hipY - h(0.02) - thighL;
-    const wLeg = (l) => (p) => { const t = smooth(kneeY + h(0.034), kneeY - h(0.034), p.y); return [[l.th, 1 - t], [l.kn, t]]; };
+    // across a joint: upper bone → half-angle mid bone → lower bone (keeps the joint round when bent)
+    const joint = (a, m, b, t) => [[a, (1 - t) * (1 - t)], [m, 2 * t * (1 - t)], [b, t * t]];
+    const wLeg = (l) => (p) => joint(l.th, l.km, l.kn, smooth(kneeY + h(0.04), kneeY - h(0.04), p.y));
     const elbowY = shY - upperArm;
-    const wArm = (a) => (p) => { const t = smooth(elbowY + h(0.022), elbowY - h(0.022), p.y); return [[a.ua, 1 - t], [a.el, t]]; };
+    const wArm = (a) => (p) => joint(a.ua, a.em, a.el, smooth(elbowY + h(0.03), elbowY - h(0.03), p.y));
     // below the seat, the front of skirts and coat tails follows the thighs and, past the knee, the shins
     // (so sitting lays them over the lap and lets them fall at the knee); the back mostly stays with the hips
     // (the seat bone folds the back under the thighs: it is sat on)
@@ -512,8 +516,8 @@ export class Person {
     let tb = tucked ? tb0 : (y) => smax(tb0(y), pb(y) + h(0.012) * clear(y), h(0.012));
     if (tucked) { const p0 = pa; const q0 = pb; const k = (y) => smooth(h(0.55), h(0.585), y); pa = (y) => Math.max(p0(y), ta0(y) + h(0.005) * k(y)); pb = (y) => Math.max(q0(y), tb0(y) + h(0.005) * k(y)); }
     if (type === 'happi') { const a0 = ta; const b0 = tb; ta = (y) => a0(y) + h(0.006) * smooth(h(0.6), h(0.45), y); tb = (y) => b0(y) + h(0.005) * smooth(h(0.6), h(0.45), y); }
-    const tcz = curve([[h(0.8), 0], [h(0.848), -h(0.004)]]);
-    const tn = curve([[h(0.4), 2.45], [h(0.78), 2.5], [h(0.835), 2.2], [h(0.848), 2.0]]);
+    const tcz = curve([[h(0.8), 0], [h(0.853), -h(0.004)]]);
+    const tn = curve([[h(0.4), 2.45], [h(0.78), 2.5], [h(0.835), 2.2], [h(0.853), 2.0]]);
     const bust = f ? h(old ? 0.005 : 0.009) : 0;
     const belly = !f && b > 1.04 ? h((b - 1) * 0.11) : 0;
     const trunkBump = (x, y, co) => {
@@ -523,20 +527,20 @@ export class Person {
       if (belly) z += belly * Math.exp(-((x / h(0.075)) ** 2) - (((y - h(0.565)) / h(0.065)) ** 2));
       return z * co ** 1.5;
     };
-    const trunk = new Surf((y) => [ta(y), tb(y), tcz(y), tn(y)], h(0.4), h(0.848), { bump: trunkBump, w: wTrunk });
+    const trunk = new Surf((y) => [ta(y), tb(y), tcz(y), tn(y)], h(0.4), h(0.853), { bump: trunkBump, w: wTrunk });
     const pelvisS = new Surf((y) => [pa(y), pb(y), 0, 2.4], h(0.436), h(0.6), {
       bump: (x, y, co) => (co < 0 ? -h(0.004) * Math.exp(-(((y - h(0.47)) / h(0.04)) ** 2)) * (-co) ** 1.5 : trunkBump(x, y, co)),
       w: wPelvis,
     });
     const hemY = tucked ? h(0.565) : jacket ? h(0.443) : type === 'happi' ? h(0.448) : h(0.468);
     trunk.y0 = hemY;
-    this.addW(trunk.mesh({ nu: 36, nv: 26 }), top, wTrunk);
+    this.addW(trunk.mesh({ nu: 32, nv: 24 }), top, wTrunk);
     // the inside of the hem (seen from below when sitting or bowing)
-    if (!tucked) this.addW(trunk.mesh({ nu: 36, nv: 1, y0: hemY, y1: hemY + h(0.012), off: -h(0.0015), flip: true }), shade(top, 0.55), wTrunk);
+    if (!tucked) this.addW(trunk.mesh({ nu: 32, nv: 1, y0: hemY, y1: hemY + h(0.012), off: -h(0.0015), flip: true }), shade(top, 0.55), wTrunk);
     this.addW(pelvisS.mesh({ nu: 28, nv: 9 }), bottom, wPelvis);
 
     // neck
-    const neckR = h(f ? 0.021 : 0.024);
+    const neckR = h(f ? 0.0225 : 0.0255);
     this.add(new THREE.CylinderGeometry(neckR * 0.95, neckR, h(0.075), 14, 1, true), skin, this.neck, [0, h(0.022), 0]);
 
     // helpers for layers on the trunk
@@ -555,7 +559,7 @@ export class Person {
       const uv = (x, y) => [lerp(r.u0, r.u1, side > 0 ? (x - X0) / (X1 - X0) : (X1 - x) / (X1 - X0)), lerp(r.v0, r.v1, (y - Y0) / (Y1 - Y0))];
       this.addW(layerGeo(S, panelShape(() => X0, () => X1, Y0, Y1, 3, 4), { off: h(o.off ?? 0.003), side, uv }), { color: new THREE.Color(1, 1, 1), bucket: 'print' }, S.w);
     };
-    const collarBand = (mat, { r = neckR + h(0.004), hgt = h(0.02), y = h(0.836) } = {}) => {
+    const collarBand = (mat, { r = neckR + h(0.004), hgt = h(0.02), y = h(0.84) } = {}) => {
       const g = new THREE.CylinderGeometry(r * 0.97, r * 1.06, hgt, 18, 1, true);
       const gi = new THREE.CylinderGeometry(r * 0.93, r * 1.02, hgt, 18, 1, true); gi.scale(-1, 1, 1);
       for (const geo of [g, gi]) { geo.scale(1, 1, 0.95); this.add(geo, geo === g ? mat : shade(mat, 0.8), this.chest, [0, y + hgt / 2 - yWaist, -h(0.004)]); }
@@ -569,7 +573,7 @@ export class Person {
       collarBand(mat, { hgt: h(0.012) });
       both([[0.003, 0.835], [0.03, 0.839], [0.043, 0.826], [0.04, 0.812], [0.026, 0.806], [0.01, 0.81]], mat, { off: 0.0025, thick: 0.002 });
     };
-    const crewNeck = (mat) => band(0.837, 0.847, mat, { off: 0.001, thick: 0.0028, rib: 0.06, nu: 30 });
+    const crewNeck = (mat) => band(0.842, 0.852, mat, { off: 0.001, thick: 0.0028, rib: 0.06, nu: 30 });
     const lapels = (yV, mat, { w = 0.06, notch = true, yTop = 0.836 } = {}) => {
       const k = f ? 0.88 : 1;
       both(notch
@@ -651,7 +655,7 @@ export class Person {
         inner = accent;
         vNeck(yV - 0.004, 0.036, inner);
         if (type === 'teacher') roundCollar(shade(accent, 1.02));
-        else band(0.828, 0.84, inner, { off: 0.0006, thick: 0.0015, rib: 0.08 });
+        else band(0.836, 0.849, inner, { off: 0.0006, thick: 0.0015, rib: 0.08 });
         const edge = shade(top, 0.9);
         both([[0.004, yV - 0.006], [0.036, 0.836], [0.045, 0.834], [0.013, yV - 0.012], [0.013, 0.468], [0.004, 0.468]], edge, { off: 0.001, thick: 0.0018 });
         strip(0, 0.468, yV - 0.006, 0.0024, shade(top, 0.62), 0.0024);
@@ -840,22 +844,19 @@ export class Person {
       const wl = wLeg(l);
       if (skirt) {
         const prof = [[-0.468, 0.0165], [-0.445, 0.0185], [-0.4, 0.023], [-0.33, 0.0285], [-0.275, 0.026], [-0.2475, 0.0265], [-0.18, 0.031], [-0.08, 0.037], [0, 0.04], [0.025, 0.034], [0.038, 0.018], [0.042, 0.002]].map(([yy, r]) => [y(yy), h(r) * lw]);
-        this.addW(latheSurf(prof, { cx: p0.x, cz: 0, zs: 0.98 }).mesh({ nu: 14, nv: 22 }), tightC, wl);
+        this.addW(latheSurf(prof, { cx: p0.x, cz: 0, zs: 0.98 }).mesh({ nu: 12, nv: 20 }), tightC, wl);
       } else {
         const r0 = (f ? 0.047 : 0.049) * bw;
         const prof = [[-0.467, 0.035], [-0.44, 0.0348], [-0.36, 0.0365], [-0.25, 0.0395], [-0.15, 0.0435], [-0.06, r0 - 0.0015], [0, r0], [0.03, r0 * 0.82], [0.045, r0 * 0.42], [0.05, 0.002]].map(([yy, r]) => [y(yy), h(r) * (yy > -0.25 ? 1 : lw)]);
         const leg = latheSurf(prof, { cx: p0.x, zs: 1.0, w: wl });
-        this.addW(leg.mesh({ nu: 14, nv: 20 }), bottom, wl);
+        this.addW(leg.mesh({ nu: 12, nv: 18 }), bottom, wl);
         // inside of the hem
-        this.addW(leg.mesh({ nu: 14, nv: 1, y0: y(-0.467), y1: y(-0.455), off: -h(0.0012), flip: true }), shade(bottom, 0.5), wl);
+        this.addW(leg.mesh({ nu: 12, nv: 1, y0: y(-0.467), y1: y(-0.455), off: -h(0.0012), flip: true }), shade(bottom, 0.5), wl);
         // front crease (dressy trousers) or an outer seam (jeans, casual)
         const crease = jacket || type === 'shirt' || type === 'labcoat' || (type === 'cardigan' && f) || type === 'polo';
         if (crease) this.addW(layerGeo(leg, panelShape(() => p0.x - h(0.0012), () => p0.x + h(0.0012), y(-0.462), y(-0.06), 1, 8), { off: h(0.0006) }), shade(bottom, luma(bottom) < 0.2 ? 1.28 : 0.9), wl);
         if (type === 'casual') this.addW(bandGeo(leg, y(-0.464), y(-0.442), { off: h(0.0015), thick: h(0.002), nu: 16 }), shade(bottom, 1.18), wl);
       }
-      // knee filler (keeps the knee round when it bends)
-      const kr = skirt ? h(0.025) * lw : h(0.0375) * lw;
-      this.add(new THREE.SphereGeometry(kr, 10, 7), skirt ? tightC : bottom, l.kn, [0, -kr * 0.1, -kr * 0.12]);
     }
     this._shoes(type, f, old, { h, skirt, tightC, skin, bottom, top });
 
@@ -907,8 +908,8 @@ export class Person {
     else prof.push([sleeveEnd, R(0.68)], [sleeveEnd + 0.016, R(0.67)], [-0.27, R(0.7)], [-0.17, R(0.82)], [-0.09, R(0.92)], [-0.03, R(0.99)]);
     prof.push([0.0, R(1.0)], [0.4 * ra / this.H, R(0.92)], [0.72 * ra / this.H, R(0.7)], [0.92 * ra / this.H, R(0.38)], [ra / this.H, R(0.02)]);
     const sl = latheSurf(prof.map(([yy, r]) => [y(yy), r]), { cx: p0.x, cz: p0.z, zs: 0.94, w });
-    this.addW(sl.mesh({ nu: 14, nv: sleeve.len === 'long' ? 22 : 14 }), sleeve.mat, w);
-    if (sleeve.len !== 'long') this.addW(sl.mesh({ nu: 14, nv: 1, y0: y(sleeveEnd), y1: y(sleeveEnd + 0.012), off: -h(0.0012), flip: true }), shade(sleeve.mat, 0.5), w);
+    this.addW(sl.mesh({ nu: 12, nv: sleeve.len === 'long' ? 20 : 13 }), sleeve.mat, w);
+    if (sleeve.len !== 'long') this.addW(sl.mesh({ nu: 12, nv: 1, y0: y(sleeveEnd), y1: y(sleeveEnd + 0.012), off: -h(0.0012), flip: true }), shade(sleeve.mat, 0.5), w);
     if (sleeve.cuff) {
       const yc = sleeve.len === 'long' ? [cuffY, cuffY + 0.02] : [sleeveEnd, sleeveEnd + 0.013];
       this.addW(bandGeo(sl, y(yc[0]), y(yc[1]), { off: h(0.0012), thick: h(0.0018), nu: 14, rib: sleeve.cuffRib }), sleeve.cuff, w);
@@ -919,10 +920,7 @@ export class Person {
     const sk = [[wrist - 0.008, R(0.5)], [wrist + 0.006, R(0.52)], [wrist + 0.05, R(0.58)], [-0.2, R(0.68)], [-0.17, R(0.72)], [-0.1, R(0.8)], [-0.05, R(0.84)]].filter(([yy]) => yy <= skinTop + 1e-6);
     if (sk.length < 3) sk.push([skinTop, R(0.6)]);
     const skS = latheSurf(sk.map(([yy, r]) => [y(yy), r]), { cx: p0.x, cz: p0.z, zs: 0.92, w });
-    this.addW(skS.mesh({ nu: 12, nv: Math.max(4, sk.length * 2) }), skin, w);
-    // elbow filler
-    const er = sleeve.len === 'long' ? R(0.8) : sleeve.len === 'wide' ? R(1.18) : R(0.7);
-    this.add(new THREE.SphereGeometry(er, 10, 7), sleeve.len === 'short' ? skin : sleeve.mat, el, [0, 0, 0], [0, 0, 0], [1, 1, 0.94]);
+    this.addW(skS.mesh({ nu: 10, nv: Math.max(3, Math.round(sk.length * 1.6)) }), skin, w);
 
     // hand (the palm faces the thigh: -s·x; the thumb is in front: +z)
     const k = this.H * (f ? 0.94 : 1) * (1 + (b - 1) * 0.35);
@@ -1015,7 +1013,7 @@ export class Person {
         this.add(new THREE.SphereGeometry(1, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), footC, ft, [0, sTop - 0.001 * fs, zc - 0.004 * fs], [0, 0, 0], [ballW * 0.86, 0.036 * fs, hl * 0.88]);
         this.add(new THREE.CylinderGeometry(0.018 * fs, 0.02 * fs, 0.03 * fs, 10), footC, ft, [0, sTop + 0.012 * fs, zh + 0.022 * fs]);
         if (style === 'sandal') {
-          for (let i = 0; i < 5; i++) this.add(new THREE.SphereGeometry(0.0052 * fs, 6, 4), skin, ft, [(i - 2) * 0.0085 * fs, sTop + 0.004 * fs, zt - (0.012 + Math.abs(i - 1.2) * 0.003) * fs]);
+          for (let i = 0; i < 5; i++) this.add(new THREE.SphereGeometry(0.0052 * fs, 5, 3), skin, ft, [(i - 2) * 0.0085 * fs, sTop + 0.004 * fs, zt - (0.012 + Math.abs(i - 1.2) * 0.003) * fs]);
           for (const [z, r] of [[zc + 0.02 * fs, 0.026], [zc - 0.024 * fs, 0.024]]) {
             const st = new THREE.TorusGeometry(r * fs, 0.004 * fs, 5, 12, Math.PI);
             this.add(st, upper, ft, [0, sTop, z], [0, Math.PI / 2, 0], [1, 1, 1.5]);
@@ -1146,8 +1144,8 @@ export class Person {
     const cloth = C(L.outfit?.accent || '#f4f1ea');
     const line = C(L.outfit?.top || '#2f4a7a');
     const pos = []; const nor = [];
-    const N = 44; const el = (az) => lerp(0.5, 0.18, (1 - Math.cos(az)) / 2);
-    const w = 0.085;
+    const N = 44; const el = (az) => lerp(0.44, 0.24, (1 - Math.cos(az)) / 2);
+    const w = 0.1;
     const P = (az, d, r) => headPoint(az, el(az) + d, R * r, R);
     const _e1 = new THREE.Vector3(); const _e2 = new THREE.Vector3();
     const quad = (a, b, c, d, n) => {
@@ -1156,7 +1154,7 @@ export class Person {
       for (const v of vs) pos.push(v.x, v.y + hcy, v.z);
       for (let i = 0; i < 6; i++) nor.push(n[i % n.length].x, n[i % n.length].y, n[i % n.length].z);
     };
-    const ro = 1.16; const ri = 1.12;
+    const ro = 1.125; const ri = 1.075;
     for (let i = 0; i < N; i++) {
       const a0 = (i / N) * Math.PI * 2; const a1 = ((i + 1) / N) * Math.PI * 2;
       const o00 = P(a0, -w, ro); const o01 = P(a0, w, ro); const o10 = P(a1, -w, ro); const o11 = P(a1, w, ro);
@@ -1185,7 +1183,7 @@ export class Person {
     }
     // knot and tails at the back, a little to the side
     const az = Math.PI * 0.86;
-    const k = headPoint(az, el(az), R * 1.2, R);
+    const k = headPoint(az, el(az), R * 1.17, R);
     const knot = new THREE.SphereGeometry(R * 0.13, 10, 7); knot.scale(1, 0.8, 0.75);
     this.add(knot, cloth, this.head, [k.p.x, k.p.y + hcy, k.p.z]);
     for (const s of [-1, 1]) {
@@ -1378,6 +1376,8 @@ export class Person {
       if (r?.brow) browExtra = Math.max(browExtra, r.brow);
     }
     this.gestures = this.gestures.filter((g) => g.t < g.dur);
+    for (const a of this.arms) a.em.quaternion.identity().slerp(a.el.quaternion, 0.5);
+    for (const l of this.legs) l.km.quaternion.identity().slerp(l.kn.quaternion, 0.5);
     this._fingers();
     this.face.set({ blink: closed, squint, mouth: this.mouth, brow: (browUp + browExtra) / this.headR, gazeX, gazeY });
   }
