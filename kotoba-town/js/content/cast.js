@@ -29,7 +29,8 @@ const SKIN = { light: '#f3d2b8', fair: '#ecc5a6', medium: '#d9a985', tan: '#c08a
  * look:
  *  sex 'f'|'m', age (years), height (m), build (0.85 slim … 1.2 sturdy), skin (hex),
  *  hair { style, color }, outfit { type, top, bottom, accent }, extras [..]
- * hair styles: bob, short, long, ponytail, bun, crew, side_part, gray_short, bald_top, wavy
+ * hair styles: bob, short, long, ponytail, bun, crew, side_part, gray_short, bald, bald_top, wavy
+ *  beard (hex, optional): colour of the painted beard / moustache (default: the hair colour)
  * outfit types: suit, blouse, cardigan, shirt, store_uniform, station_uniform, museum_uniform,
  *               apron, hoodie, polo, konbini, teacher, casual, labcoat, happi
  * extras: glasses, cap, badge, beard, mustache, scarf, tie, earrings, apron, lanyard, headband
@@ -116,7 +117,7 @@ export const CAST = {
     nameJa: '坂本 じろう', kana: 'さかもと じろう', roleEn: 'Owner of the café',
     voice: 'Achird', personaJa: '喫茶店の マスター。60代。あごひげ。あたたかい おじいさん。',
     styleJa: 'あたたかく、ゆったり、やさしい おじいさんの ように。',
-    look: { expression: 'gentle', sex: 'm', age: 64, height: 1.68, build: 1.12, skin: SKIN.medium, hair: { style: 'bald_top', color: '#cfcac2' },
+    look: { expression: 'gentle', sex: 'm', age: 64, height: 1.68, build: 1.12, skin: SKIN.medium, hair: { style: 'bald', color: '#cfcac2' }, beard: '#8a7264',
       outfit: { type: 'apron', top: '#efe9dc', bottom: '#3d2f26', accent: '#6b4a32' }, extras: ['beard', 'apron'] },
   },
   hara: {
