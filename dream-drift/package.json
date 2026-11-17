@@ -2,6 +2,7 @@
   "name": "dream-drift",
   "private": true,
   "description": "DREAM DRIFT — kart racing with 8 karts on 4 fantasy courses; gamepad / keyboard / touch / hand gestures (three.js + MediaPipe, no build step)",
+  "type": "module",
   "scripts": {
     "serve": "node -e \"require('./tests/serve.cjs')(8080).then(()=>console.log('http://127.0.0.1:8080/'))\"",
     "test": "node tests/gestures.mjs && node tests/smoke.cjs",
