@@ -150,7 +150,7 @@ export class Game {
   closeMenu() {
     const restart = this.menu.hide();
     this.paused = false;
-    if (restart) this.start();
+    if (restart || this.sim.phase === 'over') this.start();
   }
 
   /** the racket's rotation relative to the controller's pointing ray (see config: racketTilt / racketRoll) */

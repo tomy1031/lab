@@ -50,7 +50,7 @@ export class Sim {
     this.stats = this.freshStats();
     this.cpu.setLevel(this.get('level'));
     this.cpu.friendly = mode === 'rally';
-    if (this.bot) this.bot.setLevel(Math.max(3, this.get('level'))), this.bot.handSign = this.handSign();
+    if (this.bot) { this.bot.setLevel(Math.max(3, this.get('level'))); this.bot.handSign = this.handSign(); }
     this.cpuActive = mode === 'match' || mode === 'rally';
     this.score = mode === 'match' ? new Score({ sets: this.get('sets'), games: this.get('games'), tiebreak: true, noAd: this.get('noAd'), first: this.get('firstServe') }) : null;
     this.live = false; this.holder = null;

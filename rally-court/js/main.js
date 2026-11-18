@@ -42,7 +42,7 @@ const game = new Game({ renderer, scene, camera, rig, settings, input, demo, see
 game.player.isXR = () => renderer.xr.isPresenting;
 game.autoSwing = params.has('autoswing');
 if (lite) { game.world.crowd.visible = false; scene.traverse((o) => { o.castShadow = false; }); }
-RC.game = game; RC.settings = settings; RC.THREE = THREE;
+RC.game = game; RC.settings = settings; RC.THREE = THREE; RC.renderer = renderer;
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
@@ -79,7 +79,7 @@ const snap = () => JSON.stringify(sessionKeys.map((k) => settings.get(k)));
 
 document.getElementById('play-pc').onclick = () => {
   game.sound.start();
-  if (!playing || snap() !== menuSnapshot) { game.start(); playing = true; }
+  if (!playing || snap() !== menuSnapshot || game.sim.phase === 'over') { game.start(); playing = true; }
   menuSnapshot = snap();
   showMenu(false);
 };

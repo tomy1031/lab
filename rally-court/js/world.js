@@ -1,6 +1,7 @@
 // js/world.js — the stadium: court to ITF dimensions (lines, net with its sag, posts and singles sticks),
 // three surfaces, windscreens, stands with a crowd, umpire's chair, sky and sunlight.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { COURT, netHeight } from './physics.js';
 
 const SURF_STYLE = {
@@ -152,13 +153,12 @@ export class World {
 
   buildLines(kind) {
     const mat = new THREE.MeshStandardMaterial({ color: kind === 'clay' ? 0xf4efe6 : 0xffffff, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-    const lines = new THREE.Group();
+    const geos = [];
     const add = (x0, x1, z0, z1) => {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), mat);
-      m.rotation.x = -Math.PI / 2;
-      m.position.set((x0 + x1) / 2, 0.0015, (z0 + z1) / 2);
-      m.receiveShadow = true;
-      lines.add(m);
+      const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0);
+      g.rotateX(-Math.PI / 2);
+      g.translate((x0 + x1) / 2, 0.0015, (z0 + z1) / 2);
+      geos.push(g);
     };
     const L = COURT.halfLen, S = COURT.singlesHalfW, D = COURT.doublesHalfW, SV = COURT.serviceZ, w = 0.05;
     for (const s of [-1, 1]) {
@@ -175,6 +175,8 @@ export class World {
       add(s > 0 ? S - w : -S, s > 0 ? S : -S + w, -L, L);     // singles sidelines
       add(s > 0 ? D - w : -D, s > 0 ? D : -D + w, -L, L);     // doubles sidelines
     }
+    const lines = new THREE.Mesh(mergeGeometries(geos), mat);    // one draw call
+    lines.receiveShadow = true;
     this.surfaceGroup.add(lines);
   }
 
@@ -274,18 +276,18 @@ export class World {
     ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02;
     g.add(ground);
     // stands: tiers of seating around the court
-    const tierMat = new THREE.MeshStandardMaterial({ color: 0x3b4655, roughness: 0.9 });
-    const seatsMatA = new THREE.MeshStandardMaterial({ color: 0x2a5d8f, roughness: 0.8 });
+    const tierMat = new THREE.MeshLambertMaterial({ color: 0x3b4655 });
+    const seatsMatA = new THREE.MeshLambertMaterial({ color: 0x2a5d8f });
+    const tierGeos = [], seatGeos = [];
     const crowdPos = [];
     const stand = (len, along, out, ry, tiers = 12) => {
       // along: unit (x,z) along the stand; out: unit (x,z) away from the court; origin at the wall
       for (let t = 0; t < tiers; t++) {
         const h = 2.4 + t * 0.42, d = 1.2 + t * 0.85;
-        const step = new THREE.Mesh(new THREE.BoxGeometry(len, 0.42, 0.85), t % 2 ? tierMat : seatsMatA);
-        step.position.set(out.x * d + out.ox, h - 0.21, out.z * d + out.oz);
-        step.rotation.y = ry;
-        step.receiveShadow = false;
-        g.add(step);
+        const step = new THREE.BoxGeometry(len, 0.42, 0.85);
+        step.rotateY(ry);
+        step.translate(out.x * d + out.ox, h - 0.21, out.z * d + out.oz);
+        (t % 2 ? tierGeos : seatGeos).push(step);
         for (let k = 0; k < len / 0.55; k++) {
           if (Math.random() < 0.18) continue;
           const a = -len / 2 + 0.3 + k * 0.55;
@@ -297,10 +299,11 @@ export class World {
     stand(FX * 2 + 6, { x: 1, z: 0 }, { x: 0, z: 1, ox: 0, oz: FZ + 0.4 }, Math.PI, 7);
     stand(FZ * 2, { x: 0, z: 1 }, { x: -1, z: 0, ox: -FX - 0.4, oz: 0 }, Math.PI / 2);
     stand(FZ * 2, { x: 0, z: 1 }, { x: 1, z: 0, ox: FX + 0.4, oz: 0 }, -Math.PI / 2);
+    g.add(new THREE.Mesh(mergeGeometries(tierGeos), tierMat), new THREE.Mesh(mergeGeometries(seatGeos), seatsMatA));
     // crowd: one instanced mesh (torso + head merged)
-    const torso = new THREE.CylinderGeometry(0.17, 0.2, 0.55, 6);
+    const torso = new THREE.CylinderGeometry(0.17, 0.2, 0.55, 6, 1, true);
     torso.translate(0, 0.28, 0);
-    const head = new THREE.SphereGeometry(0.11, 6, 5);
+    const head = new THREE.SphereGeometry(0.11, 5, 4);
     head.translate(0, 0.68, 0);
     const merged = mergeGeos([torso, head]);
     const crowdMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
@@ -347,17 +350,18 @@ export class World {
       g.add(lamp);
     }
     // a skyline of the city beyond
-    const city = new THREE.Group();
     const bm = new THREE.MeshLambertMaterial({ color: 0x8c9bb0 });
+    const cityGeos = [];
     for (let i = 0; i < 46; i++) {
       const a = (i / 46) * Math.PI * 2;
       const r = 120 + Math.random() * 60;
       const h = 15 + Math.random() * 45;
-      const b = new THREE.Mesh(new THREE.BoxGeometry(10 + Math.random() * 14, h, 10 + Math.random() * 14), bm);
-      b.position.set(Math.cos(a) * r, h / 2 - 1, Math.sin(a) * r);
-      city.add(b);
+      const b = new THREE.BoxGeometry(10 + Math.random() * 14, h, 10 + Math.random() * 14);
+      b.rotateY(a);
+      b.translate(Math.cos(a) * r, h / 2 - 1, Math.sin(a) * r);
+      cityGeos.push(b);
     }
-    g.add(city);
+    g.add(new THREE.Mesh(mergeGeometries(cityGeos), bm));
     this.group.add(g);
   }
 
