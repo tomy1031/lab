@@ -175,12 +175,18 @@ export class Sim {
         Object.assign(this.ball.p, r.toss.p); Object.assign(this.ball.v, r.toss.v);
         this.ball.w.x = this.ball.w.y = this.ball.w.z = 0; this.ball.rolling = this.ball.stopped = false;
         this.live = true; this.holder = null;
-        this.cpu.serveSchedule(predict(this.ball, this.surf, 2, 1), this.stepN + 1);
+        this.cpu.serveSchedule(predict(this.ball, this.surf, 2, 1), this.stepN + 1, { surf: this.surf });
       }
     }
     if (this.bot && this.phase === 'serve-p' && this.bot.serve) {
       const r = this.bot.serveUpdate(dt);
-      if (r && r.toss) { this.holder = 'p'; this.toss(r.toss.p, r.toss.v); this.bot.serveSchedule(predict(this.ball, this.surf, 2, 1), this.stepN + 1); }
+      if (r && r.toss) { this.holder = 'p'; this.toss(r.toss.p, r.toss.v); this.bot.serveSchedule(predict(this.ball, this.surf, 2, 1), this.stepN + 1, { surf: this.surf }); }
+    }
+    // the CPU decides its shot a little before the contact (not on the contact frame)
+    for (const c of this.bot ? [this.cpu, this.bot] : [this.cpu]) {
+      if ((c === this.bot || this.cpuActive) && c.plan && !c.shot && this.live && c.time >= c.reactUntil && this.pred) {
+        c.prepare(this.pred, { surf: this.surf, opp: c === this.cpu ? this.body : this.cpu.s, mode: this.mode, oppHand: c === this.cpu ? this.handSign() : 1 });
+      }
     }
     if (this.mode === 'machine' && this.machineNext != null && this.time >= this.machineNext) {
       this.machineNext += this.get('machineInterval');
@@ -238,7 +244,7 @@ export class Sim {
   }
 
   cpuHit(cpu) {
-    const ctx = { surf: this.surf, opp: cpu === this.cpu ? this.body : this.cpu.s, mode: this.mode };
+    const ctx = { surf: this.surf, opp: cpu === this.cpu ? this.body : this.cpu.s, mode: this.mode, oppHand: cpu === this.cpu ? this.handSign() : 1 };
     let res;
     if (cpu.serve && cpu.serve.hitStep === this.stepN) {
       res = cpu.serveHit(this.ball, ctx);
@@ -311,11 +317,12 @@ export class Sim {
     this.emit({ type: 'result', res: r });
     if (r.type === 'serve-in') {
       if (this.judge.server === 'p') { this.stats.servesIn++; }
+      if (m === 'serve') { this.emit({ type: 'call', ja: 'IN', en: '', quiet: true }); this.finishBall(1.6); }
       return;
     }
     if (r.type === 'in') {
       if (this.judge.lastHitter === 'p') this.stats.returnsIn++;
-      if (this.judge.lastHitter === 'p') this.emit({ type: 'call', ja: 'IN', en: '', quiet: true });
+      if (this.judge.lastHitter === 'p' && m !== 'match') this.emit({ type: 'call', ja: 'IN', en: '', quiet: true });
       return;
     }
     if (r.type === 'retoss') {

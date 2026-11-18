@@ -29,7 +29,7 @@ export class Cpu {
     this.level = LEVELS[3];
     this.levelN = 3;
     this.time = 0;
-    this.plan = null; this.hitStep = -1; this.reactUntil = 0;
+    this.plan = null; this.hitStep = -1; this.reactUntil = 0; this.shot = null;
     this.target = { x: 0, z: side * 12.6 };
     this.swing = null;
     this.serve = null;
@@ -40,7 +40,7 @@ export class Cpu {
   place(x, z) {
     Object.assign(this.s, { x, z, vx: 0, vz: 0 });
     this.target = { x, z };
-    this.plan = null; this.hitStep = -1; this.swing = null; this.serve = null;
+    this.plan = null; this.hitStep = -1; this.swing = null; this.serve = null; this.shot = null;
   }
   readyPos(bounce) {
     const x = bounce ? Math.max(-2.2, Math.min(2.2, bounce.x * 0.35)) : 0;
@@ -49,7 +49,7 @@ export class Cpu {
 
   /** a new flight began. pred: prediction from now; step0: the current physics step; from: who sent it */
   onBall(pred, step0, from, ctx) {
-    this.plan = null; this.hitStep = -1;
+    this.plan = null; this.hitStep = -1; this.shot = null;
     if (from === this.who) {
       // recover toward the middle of the possible replies
       const b = findEvent(pred, 'bounce', -this.side);
@@ -73,7 +73,7 @@ export class Cpu {
   }
 
   /** the ball is going out / the point is over: just go back */
-  idle(home) { this.plan = null; this.hitStep = -1; this.target = home || this.readyPos(null); }
+  idle(home) { this.plan = null; this.hitStep = -1; this.shot = null; this.target = home || this.readyPos(null); }
 
   update(dt) {
     this.time += dt;
@@ -108,21 +108,46 @@ export class Cpu {
   }
 
   /**
+   * Decide the shot ahead of the contact (a few frames after reacting), from the predicted state of the ball at
+   * the contact — so the solving doesn't land on the contact frame. pred: the flight's prediction.
+   */
+  prepare(pred, ctx) {
+    const plan = this.plan;
+    if (!plan || this.shot || plan.i > pred.n) return;
+    const i = plan.i;
+    const c = { x: pred.x[i], y: pred.y[i], z: pred.z[i] };
+    const vin = Math.hypot(pred.vx[i], pred.vy[i], pred.vz[i]);
+    const tol = 0.28 + this.level.stretch;
+    const stretch = plan.reachable ? 0 : Math.min(1, plan.short / tol);
+    this.shot = this.chooseShot(c, vin, stretch, ctx);
+  }
+
+  /**
    * Called at the planned step: hit the ball (mutates ball.v / ball.w). ctx: { surf, opp:{x,z}, mode }.
    * Returns { ok, kind, kmh } or { ok: false } for a miss.
    */
   hit(ball, ctx) {
     const plan = this.plan;
-    this.plan = null; this.hitStep = -1;
+    const shot = this.shot;
+    this.plan = null; this.hitStep = -1; this.shot = null;
     if (!plan) return { ok: false };
-    const lv = this.level, r = this.rand;
     const d = Math.hypot(this.s.x - plan.stance.x, this.s.z - plan.stance.z);
-    const tol = 0.28 + lv.stretch;
+    const tol = 0.28 + this.level.stretch;
     if (this.swing) this.swing.tHit = this.time;
     if (d > tol) return { ok: false, reason: 'late' };
     const stretch = Math.max(0, d - 0.12) / tol;
-    const c = { x: ball.p.x, y: ball.p.y, z: ball.p.z };
-    const vin = vlen(ball.v);
+    const sh = shot || this.chooseShot({ x: ball.p.x, y: ball.p.y, z: ball.p.z }, vlen(ball.v), stretch, ctx);
+    ball.v.x = sh.v.x; ball.v.y = sh.v.y; ball.v.z = sh.v.z;
+    ball.w.x = sh.w.x; ball.w.y = sh.w.y; ball.w.z = sh.w.z;
+    ball.rolling = false; ball.stopped = false;
+    if (this.swing) { this.swing.slice = sh.kind === 'slice'; this.swing.cH = ball.p.y; }
+    this.lastShot = { kind: sh.kind, kmh: sh.kmh, rpm: sh.rpm };
+    return { ok: true, kind: sh.kind, kmh: sh.kmh };
+  }
+
+  /** pick a target, pace and spin from contact point c, solve the launch and add the execution error */
+  chooseShot(c, vin, stretch, ctx) {
+    const lv = this.level, r = this.rand;
     const S = COURT.singlesHalfW, L = COURT.halfLen;
     const tz = -this.side;                       // the half to aim at
     const opp = ctx.opp || { x: 0, z: tz * 12 };
@@ -133,7 +158,7 @@ export class Cpu {
       spd = Math.min(spd, 18 + this.levelN * 2.6) * (0.9 + 0.15 * r());
       margin = 1.5;
       this.alt = !this.alt;
-      const fhX = tz > 0 ? 1 : -1;                 // the receiver's forehand side (right-handed)
+      const fhX = (tz > 0 ? 1 : -1) * (ctx.oppHand || 1);   // the receiver's forehand side
       T = { x: (this.alt ? fhX : -fhX) * (1.2 + r() * 1.3), z: tz * (L - 2.6 - r() * 1.6) };
     } else {
       if (stretch > 0.55 || c.y < 0.42) { kind = 'slice'; spin = -(70 + 60 * r()); spd *= 0.72; margin *= 1.3; }
@@ -166,7 +191,7 @@ export class Cpu {
     if (!sol.ok) {
       // nothing sensible: a defensive floater down the middle
       sol = solveSafe(c, { x: 0, z: tz * (L - 3) }, 14, 60, ctx.surf, 0.5);
-      if (!sol.ok) { ball.v.x = 0; ball.v.y = 6; ball.v.z = tz * 12; ball.w.x = ball.w.y = ball.w.z = 0; return { ok: true, kind: 'push', kmh: 50 }; }
+      if (!sol.ok) return { v: { x: 0, y: 6, z: tz * 12 }, w: { x: 0, y: 0, z: 0 }, kind: 'push', kmh: 50, rpm: 0 };
     }
     // execution error: more on fast incoming balls, when stretched, and for weaker levels
     const diff = 1 + 1.4 * stretch + Math.max(0, (vin - 24) / 14) + (kind === 'smash' ? 0.5 : 0);
@@ -176,15 +201,10 @@ export class Cpu {
     const dsp = 1 + gauss(r) * 0.03 * diff;
     let { x: vx, y: vy, z: vz } = sol.v;
     const sp = Math.hypot(vx, vy, vz) * dsp;
-    let th = Math.asin(vy / Math.hypot(vx, vy, vz)) + dth;
+    const th = Math.asin(vy / Math.hypot(vx, vy, vz)) + dth;
     const ph = Math.atan2(vx, vz) + dph;
     vx = sp * Math.cos(th) * Math.sin(ph); vz = sp * Math.cos(th) * Math.cos(ph); vy = sp * Math.sin(th);
-    ball.v.x = vx; ball.v.y = vy; ball.v.z = vz;
-    ball.w.x = sol.w.x; ball.w.y = sol.w.y; ball.w.z = sol.w.z;
-    ball.rolling = false; ball.stopped = false;
-    if (this.swing) { this.swing.slice = kind === 'slice'; this.swing.cH = c.y; }
-    this.lastShot = { kind, kmh: sp * 3.6, rpm: Math.abs(spin) * 60 / (2 * Math.PI) };
-    return { ok: true, kind, kmh: sp * 3.6 };
+    return { v: { x: vx, y: vy, z: vz }, w: { ...sol.w }, kind, kmh: sp * 3.6, rpm: Math.abs(spin) * 60 / (2 * Math.PI) };
   }
 
   // ── service ───────────────────────────────────────────────────────────
@@ -214,7 +234,7 @@ export class Cpu {
     return null;
   }
   /** after the toss: the step at which the falling ball is at the contact height (pred from the toss) */
-  serveSchedule(pred, step0) {
+  serveSchedule(pred, step0, ctx) {
     let apex = 0;
     for (let i = 1; i <= pred.n; i++) if (pred.y[i] < pred.y[i - 1]) { apex = i; break; }
     let i = apex;
@@ -222,13 +242,27 @@ export class Cpu {
     this.serve.hitStep = step0 + i;
     this.serve.tHit = this.time + i * H;
     this.hitStep = step0 + i;
+    // decide the serve now (the toss is predictable), not on the contact frame
+    this.serve.shot = this.chooseServe({ x: pred.x[i], y: pred.y[i], z: pred.z[i] }, ctx);
   }
   /** hit the serve (mutates the ball). ctx: { surf }. */
   serveHit(ball, ctx) {
     const sv = this.serve;
-    const lv = this.level, r = this.rand;
     this.hitStep = -1;
-    const c = { x: ball.p.x, y: ball.p.y, z: ball.p.z };
+    const sh = sv.shot || this.chooseServe({ x: ball.p.x, y: ball.p.y, z: ball.p.z }, ctx);
+    ball.v.x = sh.v.x; ball.v.y = sh.v.y; ball.v.z = sh.v.z;
+    ball.w.x = sh.w.x; ball.w.y = sh.w.y; ball.w.z = sh.w.z;
+    this.lastShot = { kind: sv.second ? 'kick' : 'serve', kmh: sh.kmh, rpm: sh.rpm };
+    // after the serve, step into the court a little and get ready
+    this.serve = null;
+    this.swing = { kind: 'serve-follow', u: 1, tHit: this.time };
+    this.target = { x: this.s.x * 0.5, z: this.side * (COURT.halfLen + 0.5) };
+    this.reactUntil = this.time + 0.35;
+    return { ok: true, kind: 'serve', kmh: sh.kmh };
+  }
+  chooseServe(c, ctx) {
+    const sv = this.serve;
+    const lv = this.level, r = this.rand;
     const recvSide = -this.side;
     const boxSign = (sv.court === 'deuce' ? 1 : -1) * recvSide;   // x sign of the target box
     const pick = r();
@@ -252,19 +286,13 @@ export class Cpu {
     let sol = solveShot(c, T, kmh / 3.6, top, ctx.surf, 'drive', sideSpin);
     if (!sol.ok) sol = solveSafe(c, T, kmh / 3.6 * 0.85, top, ctx.surf, 0.05);
     if (!sol.ok) sol = solveSafe(c, { x: boxSign * 1.5, z: recvSide * 4.5 }, 30, 200, ctx.surf, 0.1);
-    let { x: vx, y: vy, z: vz } = sol.v;
+    const { x: vx, y: vy, z: vz } = sol.v;
     const sp = Math.hypot(vx, vy, vz);
     const th = Math.asin(vy / sp) - netErr * D2R + gauss(r) * 0.12 * D2R;
     const ph = Math.atan2(vx, vz) + gauss(r) * 0.25 * D2R;
-    ball.v.x = sp * Math.cos(th) * Math.sin(ph); ball.v.z = sp * Math.cos(th) * Math.cos(ph); ball.v.y = sp * Math.sin(th);
-    ball.w.x = sol.w.x; ball.w.y = sol.w.y; ball.w.z = sol.w.z;
-    this.lastShot = { kind: sv.second ? 'kick' : 'serve', kmh: sp * 3.6, rpm: top * 60 / (2 * Math.PI) };
-    // after the serve, step into the court a little and get ready
-    this.serve = null;
-    this.swing = { kind: 'serve-follow', u: 1, tHit: this.time };
-    this.target = { x: this.s.x * 0.5, z: this.side * (COURT.halfLen + 0.5) };
-    this.reactUntil = this.time + 0.35;
-    this._serveFollowT = this.time;
-    return { ok: true, kind: 'serve', kmh: sp * 3.6 };
+    return {
+      v: { x: sp * Math.cos(th) * Math.sin(ph), y: sp * Math.sin(th), z: sp * Math.cos(th) * Math.cos(ph) },
+      w: { ...sol.w }, kmh: sp * 3.6, rpm: top * 60 / (2 * Math.PI),
+    };
   }
 }

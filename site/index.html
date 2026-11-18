@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>tomy1031 lab</title>
-<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」、VR 裏拍ボクササイズ「OFFBEAT GROVE」、VR 日本語会話「ことばタウン」、ハンドジェスチャーでも遊べるカートレース「DREAM DRIFT」">
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」、VR 裏拍ボクササイズ「OFFBEAT GROVE」、VR 日本語会話「ことばタウン」、ハンドジェスチャーでも遊べるカートレース「DREAM DRIFT」、リアル VR テニス「RALLY COURT」">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -297,6 +297,29 @@
             <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/courses"><code>js/courses</code></a>：4 コースの 道と 景色（すべて コードで 生成）</li>
             <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/race"><code>js/race</code></a>：カートの 物理・CPU・アイテム・レースの 進行</li>
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/dream-drift/js/engine/gesture-math.js"><code>js/engine/gesture-math.js</code></a>：手の 形と かたむきを ハンドル・アクセル・アイテムに 変える しくみ</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="rally-court">
+      <a class="shot" href="rally-court/"><img src="img/rally-court.jpg" alt="RALLY COURT の試合――青いハードコートのベースラインでラケットを引いて構える自分の後ろ姿、ネットの向こうに赤いシャツの CPU、満員のスタンドとスコアボード" width="1200" height="675" loading="lazy"><span class="no">11</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>RALLY COURT リアル VR テニス</h2>
+        <p class="lead">本物と同じ寸法のコートで、CPU とテニスをする VR です。コントローラーがラケットになり、振ったとおりに当たります。ボールは空気抵抗・回転（マグヌス効果）・バウンドの摩擦まで計算して飛び、トップスピンは沈み、スライスは滑ります。部屋の中でダッシュはできないので、移動は 3 つから選べます――その場で<b>足踏み・腕振り</b>すると落下地点へまっすぐ進む、<b>自動</b>で落下地点へ（自分の最高速度まで）、<b>十字キー</b>。</p>
+        <p class="note">Quest のブラウザで開いて「VR をはじめる」。試合（1 / 3 セット、タイブレーク、ノーアド）・ラリー練習・球出し・サーブ練習。CPU は 5 段階。最高速度・加速・足踏みのテンポ・打点・ラケットの角度・アシストなど、数値はすべて最適な初期値から調整できます（VR の中でも）。ハード・クレー・芝。PC でもマウスで遊べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="rally-court/">あそぶ</a>
+          <a class="btn" href="rally-court/?demo">デモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/rally-court">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/README.md">README</a>：遊び方、操作、3 つの移動方法、初期値とその理由、物理の計算</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/physics.js"><code>js/physics.js</code></a>：ボールの飛行・バウンド・ネット・ラケットとの当たり</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/player.js"><code>js/player.js</code></a>：足踏み・腕振り／自動／十字キーの移動</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/ai.js"><code>js/ai.js</code></a>：CPU（追いかける・ショットを選ぶ・ミスする）</li>
           </ul>
         </details>
       </div>

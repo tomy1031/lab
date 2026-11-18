@@ -37,6 +37,9 @@ on:
       - 'dream-drift/js/**'
       - 'dream-drift/img/**'
       - 'dream-drift/docs/preview.jpg'
+      - 'rally-court/index.html'
+      - 'rally-court/js/**'
+      - 'rally-court/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

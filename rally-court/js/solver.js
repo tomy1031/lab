@@ -19,7 +19,7 @@ export function spinVector(dx, dz, top, side = 0) {
  * Fly a ball launched from P with speed s at elevation th (rad) along azimuth unit (ux, uz) with spin w.
  * Returns { range (along the azimuth to the first bounce), lat, bx, bz, clear (height over the net; −1 = net) , t }
  */
-export function flyOnce(P, s, th, ux, uz, w, surf, tMax = 3) {
+export function flyOnce(P, s, th, ux, uz, w, surf, tMax = 3, h = H, D = Infinity) {
   const b = _b;
   b.p.x = P.x; b.p.y = P.y; b.p.z = P.z;
   const c = Math.cos(th);
@@ -27,20 +27,23 @@ export function flyOnce(P, s, th, ux, uz, w, surf, tMax = 3) {
   b.w.x = w.x; b.w.y = w.y; b.w.z = w.z;
   b.rolling = false; b.stopped = false;
   let clear = Infinity;
-  const N = Math.ceil(tMax / H);
+  const N = Math.ceil(tMax / h);
   let prevZ = P.z;
   for (let i = 1; i <= N; i++) {
     _ev.length = 0;
     const x0 = b.p.x, y0 = b.p.y;
-    step(b, H, surf, _ev);
+    step(b, h, surf, _ev);
     for (const e of _ev) {
-      if (e.type === 'net') return { range: -1, lat: 0, bx: e.x, bz: e.z, clear: -1, t: i * H };
+      if (e.type === 'net') return { range: -1, lat: 0, bx: e.x, bz: e.z, clear: -1, t: i * h };
       if (e.type === 'bounce') {
         const dx = e.x - P.x, dz = e.z - P.z;
         if (clear === Infinity) clear = 9;   // never crossed the net (short shot on own half)
-        return { range: dx * ux + dz * uz, lat: dx * uz - dz * ux, bx: e.x, bz: e.z, clear, t: i * H };
+        return { range: dx * ux + dz * uz, lat: dx * uz - dz * ux, bx: e.x, bz: e.z, clear, t: i * h };
       }
     }
+    // already past the target in the air: it lands long (only the sign matters to the caller)
+    const along = (b.p.x - P.x) * ux + (b.p.z - P.z) * uz;
+    if (along > D + 0.3) return { range: along, lat: 0, bx: b.p.x, bz: b.p.z, clear: clear === Infinity ? 9 : clear, t: i * h, early: true };
     if (Math.sign(b.p.z) !== Math.sign(prevZ) && prevZ !== 0) {
       const f = prevZ / (prevZ - b.p.z);
       const xc = x0 + (b.p.x - x0) * f, yc = y0 + (b.p.y - y0) * f;
@@ -83,28 +86,30 @@ export function solveShot(P, T, s, top, surf, kind = 'drive', side = 0) {
 
 function solveElevation(P, D, s, ux, uz, w, surf, kind) {
   const lo = -14 * Math.PI / 180, hi = (kind === 'lob' ? 68 : 40) * Math.PI / 180;
-  const stepA = 1.5 * Math.PI / 180;
-  let prev = null;
+  const stepA = 2 * Math.PI / 180;
+  const f = (th, h) => { const r = flyOnce(P, s, th, ux, uz, w, surf, 3, h, D); return r.range < 0 ? -1e3 : r.range - D; };
+  // coarse scan (half resolution in time) for the brackets; the drive is the first, the lob the last
   const brackets = [];
+  let prev = null;
   for (let th = lo; th <= hi + 1e-9; th += stepA) {
-    const r = flyOnce(P, s, th, ux, uz, w, surf);
-    const f = r.range < 0 ? -1e3 : r.range - D;      // into the net counts as short
-    if (prev && Math.sign(prev.f) !== Math.sign(f)) brackets.push([prev.th, th, prev.f, f]);
-    prev = { th, f };
+    const v = f(th, H * 2);
+    if (prev && Math.sign(prev.v) !== Math.sign(v)) { brackets.push([prev.th, th]); if (kind !== 'lob') break; }
+    prev = { th, v };
   }
   if (!brackets.length) return null;
-  const br = kind === 'lob' ? brackets[brackets.length - 1] : brackets[0];
-  let [a, b, fa] = br;
-  let r = null;
-  for (let k = 0; k < 16; k++) {
+  // refine with the exact physics (widen a little: the coarse steps move the crossing slightly)
+  let [a, b] = kind === 'lob' ? brackets[brackets.length - 1] : brackets[0];
+  a -= stepA * 0.5; b += stepA * 0.5;
+  let fa = f(a, H), fb = f(b, H);
+  if (Math.sign(fa) === Math.sign(fb)) { a -= stepA; fa = f(a, H); if (Math.sign(fa) === Math.sign(fb)) return null; }
+  for (let k = 0; k < 13; k++) {
     const m = (a + b) / 2;
-    r = flyOnce(P, s, m, ux, uz, w, surf);
-    const f = r.range < 0 ? -1e3 : r.range - D;
-    if (Math.sign(f) === Math.sign(fa)) { a = m; fa = f; } else b = m;
+    const fm = f(m, H);
+    if (Math.sign(fm) === Math.sign(fa)) { a = m; fa = fm; } else b = m;
   }
   const th = (a + b) / 2;
-  r = flyOnce(P, s, th, ux, uz, w, surf);
-  if (r.range < 0 || r.clear < 0) return null;
+  const r = flyOnce(P, s, th, ux, uz, w, surf);
+  if (r.range < 0 || r.clear < 0 || Math.abs(r.range - D) > 0.25) return null;
   return { th, clear: r.clear, t: r.t, bx: r.bx, bz: r.bz };
 }
 
@@ -112,7 +117,7 @@ function solveElevation(P, D, s, ux, uz, w, surf, kind) {
  * Like solveShot, but if the ball cannot clear the net by `minClear` at speed s, slows down (and finally lobs).
  */
 export function solveSafe(P, T, s, top, surf, minClear = 0.15, side = 0) {
-  for (let k = 0; k < 9; k++) {
+  for (const k of [0, 1, 2, 4, 6]) {
     const sk = s * (1 - 0.07 * k);
     const r = solveShot(P, T, sk, top, surf, 'drive', side);
     if (r.ok && r.clear >= minClear) return { ...r, speed: sk };

@@ -413,7 +413,7 @@ export class Game {
     const S = this.settings, snd = this.sound;
     switch (e.type) {
       case 'place':
-        if (!this.demo) { this.player.place(e.x, e.z); this.fadeT = this.xr ? 0.45 : 0; }
+        if (!this.demo) { this.player.place(e.x, e.z); this.fadeT = this.xr ? 0.45 : 0; this.racket.valid = false; }
         else { this.rig.position.set(e.x, 0, e.z); this.player.body.x = e.x; this.player.body.z = e.z; }
         this.camInit = false;
         break;
