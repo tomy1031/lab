@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>RALLY COURT — pose sheet</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js" } }</script>
+<style>html,body{margin:0;background:#bcd}</style>
+<script type="module">
+// dev/poses.html — the CPU figure in each stroke phase, for tuning js/avatar.js (?view=front|side)
+import * as THREE from 'three';
+import { Avatar } from '../js/avatar.js';
+const r = new THREE.WebGLRenderer({ antialias: true });
+r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd0e0);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x666655, 1.4));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(3, 6, 5); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 10), new THREE.MeshStandardMaterial({ color: 0x2f5f9e })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+const poses = JSON.parse(decodeURIComponent(new URLSearchParams(location.search).get('p') || '[]')) ;
+const list = poses.length ? poses : [
+  { kind: 'ready', u: 0 }, { kind: 'fh', u: -1 }, { kind: 'fh', u: -0.4 }, { kind: 'fh', u: 0 }, { kind: 'fh', u: 0.5 }, { kind: 'fh', u: 1 },
+  { kind: 'bh', u: -1 }, { kind: 'bh', u: 0 }, { kind: 'bh', u: 1 }, { kind: 'serve', u: -1, toss: 1 }, { kind: 'serve', u: 0, toss: 1 }, { kind: 'serve', u: 1, toss: 1 },
+];
+const view = new URLSearchParams(location.search).get('view') || 'front';
+list.forEach((sw, i) => {
+  const a = new Avatar();
+  scene.add(a.root);
+  const x = (i - (list.length - 1) / 2) * 2.1;
+  a.update(0, { x, z: 0, yaw: view === 'side' ? Math.PI / 2 : 0, vx: 0, vz: 0, swing: { cH: 0.95, reach: 0.85, front: 0.4, ...sw } });
+  // contact point marker
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.034, 12, 8), new THREE.MeshBasicMaterial({ color: 0xd7ec3a }));
+  if (sw.kind === 'fh') m.position.set(x - 0.85, 0.95, 0.4); else if (sw.kind === 'bh') m.position.set(x + 0.85, 0.95, 0.4); else if (sw.kind === 'serve') m.position.set(x - 0.2, 2.72, 0.35); else m.visible = false;
+  if (view === 'side') m.visible = false;
+  scene.add(m);
+});
+const cam = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100);
+cam.position.set(0, 2.2, 15); cam.lookAt(0, 1.2, 0);
+r.render(scene, cam);
+window.done = true;
+</script>
