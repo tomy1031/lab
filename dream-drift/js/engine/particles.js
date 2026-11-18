@@ -6,11 +6,16 @@ const vert = /* glsl */`
 attribute float size;
 attribute vec4 rgba;
 varying vec4 vC;
-uniform float scale;
+uniform float scale, maxPx;
 void main() {
   vC = rgba;
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = size * scale / max(0.1, -mv.z);
+  float z = -mv.z;
+  float ps = size * scale / max(0.1, z);
+  // sparks, flames and dust stream backwards past the chase camera: fade them out before they reach the lens
+  // (up close they would cover the screen for a frame or two), and fade sprites smaller than a pixel so they don't twinkle
+  vC.a *= smoothstep(1.5, 4.5, z) * clamp(ps / 1.5, 0.0, 1.0);
+  gl_PointSize = min(ps, maxPx);
   gl_Position = projectionMatrix * mv;
 }`;
 const frag = /* glsl */`
@@ -41,7 +46,7 @@ export class Particles {
     g.setAttribute('rgba', new THREE.BufferAttribute(this.rgba, 4).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('size', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
     g.setDrawRange(0, 0);
-    this.uniforms = { scale: { value: 400 }, soft: { value: soft } };
+    this.uniforms = { scale: { value: 400 }, maxPx: { value: 90 }, soft: { value: soft } };
     this.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms, vertexShader: vert, fragmentShader: frag,
       transparent: true, depthWrite: false,
@@ -102,6 +107,9 @@ export class Particles {
     this.size[to] = this.size[from]; this.life[to] = this.life[from]; this.age[to] = this.age[from];
   }
 
-  setScale(heightPx, fovDeg) { this.uniforms.scale.value = heightPx / (2 * Math.tan((fovDeg * Math.PI) / 360)); }
+  setScale(heightPx, fovDeg) {
+    this.uniforms.scale.value = heightPx / (2 * Math.tan((fovDeg * Math.PI) / 360));
+    this.uniforms.maxPx.value = Math.max(24, heightPx * 0.09);
+  }
   clear() { this.alive = 0; this.geometry.setDrawRange(0, 0); }
 }

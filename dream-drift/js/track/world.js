@@ -38,12 +38,17 @@ export function buildWorld(course, { shadowSize = 2048 } = {}) {
   linearOutTree(scene);
 
   const focus = new THREE.Vector3();
+  const lr = new THREE.Vector3().crossVectors(sunDir, new THREE.Vector3(0, 1, 0)).normalize();
+  const lu = new THREE.Vector3().crossVectors(lr, sunDir).normalize();
+  const texel = (2 * S) / shadowSize;
   return {
     scene, track, sky, sun, hemi,
     update(dt, t, camera, target) {
       sky.position.copy(camera.position);
       sky.userData.update(dt, t);
       focus.copy(target || camera.position);
+      const a = Math.round(focus.dot(lr) / texel) * texel, b = Math.round(focus.dot(lu) / texel) * texel, c = focus.dot(sunDir);
+      focus.copy(lr).multiplyScalar(a).addScaledVector(lu, b).addScaledVector(sunDir, c);
       sun.target.position.copy(focus);
       sun.position.copy(focus).addScaledVector(sunDir, 120);
       for (const fn of updaters) fn(dt, t, camera);
