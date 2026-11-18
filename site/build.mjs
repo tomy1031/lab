@@ -14,6 +14,7 @@
 //   KOTOBA_REF    ことばタウン (kotoba-town/)                   default: HEAD if it has kotoba-town/, else origin/claude/vr-japanese-practice-app-qqna1o
 //   OFFBEAT_REF   OFFBEAT GROVE (offbeat-grove/)              default: HEAD
 //   DREAMDRIFT_REF DREAM DRIFT (dream-drift/)                  default: HEAD if it has dream-drift/, else origin/claude/happy-turing-uknqds
+//   RALLY_REF     RALLY COURT (rally-court/)                   default: HEAD if it has rally-court/, else origin/claude/ecstatic-euler-zw060e
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -37,6 +38,7 @@ const refs = {
   kotoba: process.env.KOTOBA_REF || 'HEAD',
   offbeat: process.env.OFFBEAT_REF || 'HEAD',
   dreamdrift: process.env.DREAMDRIFT_REF || 'HEAD',
+  rally: process.env.RALLY_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -47,6 +49,7 @@ if (!process.env.AETHERWALK_REF && !hasRef(refs.aetherwalk)) refs.aetherwalk = r
 const hasDir = (ref, dir) => { try { sh(`git -C "${root}" cat-file -e "${ref}:${dir}"`); return true; } catch { return false; } };
 if (!process.env.KOTOBA_REF && !hasDir(refs.kotoba, 'kotoba-town')) refs.kotoba = 'origin/claude/vr-japanese-practice-app-qqna1o';
 if (!process.env.DREAMDRIFT_REF && !hasDir(refs.dreamdrift, 'dream-drift')) refs.dreamdrift = 'origin/claude/happy-turing-uknqds';
+if (!process.env.RALLY_REF && !hasDir(refs.rally, 'rally-court')) refs.rally = 'origin/claude/ecstatic-euler-zw060e';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -282,6 +285,25 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 11 RALLY COURT — WebXR tennis. Static files: the page and ES modules (three.js comes from the CDN).
+{
+  const dest = path.join(out, 'rally-court');
+  try {
+    const src = exportDir(refs.rally, 'rally-court');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'js']) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'rally-court.jpg'));
+  } catch (e) {
+    console.warn(`rally-court not found at ${refs.rally}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RALLY COURT</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally}`);
