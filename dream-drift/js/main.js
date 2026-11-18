@@ -501,8 +501,17 @@ function showGPFinal() {
 // ---------------------------------------------------------------------------------------------
 // main loop
 const STEP = 1 / 120;
-let acc = 0, last = performance.now(), elapsed = 0;
+let last = performance.now(), elapsed = 0;
 const humanCtl = new Map();
+
+// advance the race by exactly this frame's time, in equal sub-steps of at most 1/120 s. (A fixed step with a
+// carried-over remainder made the karts move in uneven jumps against the display's refresh — 60, 120 or 144 Hz —
+// which shook the whole picture.)
+function stepRace(race, dt, ctl) {
+  const n = Math.min(12, Math.max(1, Math.ceil(dt / STEP - 1e-6)));
+  const h = dt / n;
+  for (let i = 0; i < n; i++) race.step(h, ctl);
+}
 
 function frame(now) {
   const raw = Math.max(0, (now - last) / 1000);
@@ -526,10 +535,7 @@ function tick(dt, raw = dt) {
   if (race && !state.paused) {
     humanCtl.clear();
     if (state.me) humanCtl.set(state.me, ctl);
-    acc += dt;
-    let n = 0;
-    while (acc >= STEP && n < 10) { race.step(STEP, humanCtl); acc -= STEP; n++; }
-    if (n >= 10) acc = 0;
+    stepRace(race, dt, humanCtl);
     race.frame(dt);
   }
   if (race) {
@@ -678,6 +684,94 @@ DD.debug = {
   },
   skipIntro() { state.race?.skipIntro(); },
   hud(on) { hud?.show(on); },
+  // fast-forward the cameras (title cuts, course intro, chase) and record frames where the lens is inside a
+  // scenery object (bounding spheres of every mesh / instance outside the road and the race)
+  sceneryProbe(seconds = 30, dt = 1 / 30) {
+    const r = state.race; if (!r) return null;
+    const spheres = [];
+    const m = new THREE.Matrix4(), w = new THREE.Matrix4(), c = new THREE.Vector3(), sc = new THREE.Vector3(), q = new THREE.Quaternion();
+    state.world.scene.updateMatrixWorld(true);
+    state.world.scene.traverse((o) => {
+      if (!o.isMesh || o.name === 'sky') return;
+      for (let p = o; p; p = p.parent) if (p.name === 'track' || p.name === 'race' || p.name === 'vr-rig') return;
+      const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+      const bs = g.boundingSphere;
+      const add = (mat) => {
+        w.copy(o.matrixWorld).multiply(mat); w.decompose(c, q, sc);
+        const rad = bs.radius * Math.max(sc.x, sc.y, sc.z);
+        if (rad > 60) return; // floors and sky-sized things
+        const ctr = bs.center.clone().applyMatrix4(w);
+        spheres.push([ctr.x, ctr.y, ctr.z, rad, o.name || o.parent?.name || g.type, o]);
+      };
+      if (o.isInstancedMesh) for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, m); add(m); } else add(m.identity());
+    });
+    const hits = [];
+    const ray = new THREE.Raycaster();
+    const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map((a) => new THREE.Vector3(...a));
+    const me = state.me, ctl = new Map(me ? [[me, { steer: 0, throttle: 1 }]] : []);
+    for (let t = 0; t < seconds; t += dt) {
+      r.step(dt, ctl); r.frame(dt);
+      const mode = me ? (r.phase === 'intro' ? 'intro' : me.finished ? 'finish' : 'chase') : 'attract';
+      raceCam.update(dt, r, me || r.karts[0], mode);
+      const p = camera.position;
+      const cand = new Set();
+      for (const sp of spheres) if (Math.hypot(p.x - sp[0], p.y - sp[1], p.z - sp[2]) < sp[3]) cand.add(sp[5]);
+      for (const o of cand) {
+        // inside = most rays from the lens meet the inside (a back face) of this object first
+        let inside = 0;
+        for (const dir of DIRS) {
+          ray.set(p, dir); ray.far = 80;
+          const mats = Array.isArray(o.material) ? o.material : [o.material], sides = mats.map((mm) => mm.side);
+          mats.forEach((mm) => { mm.side = THREE.DoubleSide; });
+          const hit = ray.intersectObject(o, false)[0];
+          mats.forEach((mm, i) => { mm.side = sides[i]; });
+          if (hit && hit.face) {
+            const n = hit.face.normal.clone().transformDirection(o.matrixWorld);
+            if (n.dot(dir) > 0) inside++;
+          }
+        }
+        if (inside >= 4) { hits.push([+t.toFixed(2), mode, o.name || o.parent?.name || o.geometry.type, inside]); break; }
+      }
+    }
+    return { spheres: spheres.length, frames: Math.round(seconds / dt), hits };
+  },
+  // judder: run n display frames of dt (e.g. 1/144 with a little timing noise) through the real per-frame path
+  // (physics stepping + camera) and measure how unevenly your kart moves across the screen (px, RMS of the
+  // frame-to-frame change in its screen velocity)
+  judderProbe(n = 240, dt = 1 / 144, noise = 0.0007) {
+    const r = state.race, me = state.me; if (!r || !me) return null;
+    r.skipIntro();
+    const v = new THREE.Vector3(), pts = [];
+    const H = 720, W = 1280;
+    for (let i = 0; i < n; i++) {
+      const d = dt + (Math.sin(i * 12.9898) * 43758.5453 % 1) * noise;
+      stepRace(r, Math.max(0.001, d), new Map([[me, { steer: 0, throttle: 1 }]]));
+      r.frame(d);
+      raceCam.update(d, r, me, r.phase === 'intro' ? 'intro' : 'chase');
+      camera.updateMatrixWorld(); camera.aspect = W / H; camera.updateProjectionMatrix();
+      v.copy(me.pos); v.y += 1; v.project(camera);
+      if (r.phase === 'race') pts.push([(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H]);
+    }
+    let s2 = 0, k = 0;
+    for (let i = 2; i < pts.length; i++) {
+      const ax = pts[i][0] - 2 * pts[i - 1][0] + pts[i - 2][0], ay = pts[i][1] - 2 * pts[i - 1][1] + pts[i - 2][1];
+      s2 += ax * ax + ay * ay; k++;
+    }
+    return { frames: pts.length, judderPx: +Math.sqrt(s2 / Math.max(1, k)).toFixed(3) };
+  },
+  // render n frames at a fixed time step and return each as a PNG data URL (flicker analysis in tests)
+  captureFrames(n = 60, dt = 1 / 60) {
+    renderer.r.setAnimationLoop(null);
+    const out = [];
+    try {
+      for (let i = 0; i < n; i++) {
+        elapsed += dt;
+        tick(dt, dt);
+        out.push(renderer.r.domElement.toDataURL('image/png'));
+      }
+    } finally { last = performance.now(); renderer.r.setAnimationLoop(frame); }
+    return out;
+  },
   // fast-forward frame by frame (physics + camera, no rendering) and record moments that can make the screen
   // flicker: glow motes or particles right in front of the lens, karts touching the camera, the camera outside the walls
   probe(seconds = 30, dt = 1 / 60) {

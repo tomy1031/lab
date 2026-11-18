@@ -91,9 +91,10 @@ export default {
     paintShoulder(ctx, s) {
       ctx.fillStyle = '#fff3f8'; ctx.fillRect(0, 0, s, s);
       const cols = ['#ff5fa2', '#4fc3ff', '#ffd93b', '#5ee26a', '#a07bff', '#ff8a1f'];
-      for (let i = 0; i < 260; i++) {
+      // fewer, bigger sprinkles: tiny high-contrast specks shimmer while the camera moves
+      for (let i = 0; i < 150; i++) {
         ctx.save(); ctx.translate(Math.random() * s, Math.random() * s); ctx.rotate(Math.random() * Math.PI);
-        ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(-5, -1.5, 10, 3); ctx.restore();
+        ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(-7, -2, 14, 4); ctx.restore();
       }
     },
     shoulderRoughness: 0.9,
@@ -167,8 +168,9 @@ export default {
     }
 
     // ---- candy-cane arches over the road
-    const caneTex = stripeTexture('#ffffff', '#ff3d6e', 6);
-    caneTex.repeat.set(24, 1);
+    // wide stripes: thin ones shimmer (moiré) when the camera flies under the arches
+    const caneTex = stripeTexture('#ffffff', '#ff3d6e', 3);
+    caneTex.repeat.set(9, 1);
     const caneMat = new THREE.MeshStandardMaterial({ map: caneTex, roughness: 0.3 });
     for (const f of [0.05, 0.27, 0.52, 0.74, 0.95]) {
       const p = f * N;
@@ -181,7 +183,7 @@ export default {
       // sparkle bulbs along the arch
       for (let i = 1; i < 10; i++) {
         const a = (i / 10) * Math.PI;
-        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), props.glow(i % 2 ? '#fff6b0' : '#ffb0e0', 2.4));
+        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), props.glow(i % 2 ? '#fff6b0' : '#ffb0e0', 1.9));
         bulb.position.set(Math.cos(a) * R, Math.sin(a) * R, 0.95);
         holder.add(bulb);
       }
@@ -256,7 +258,7 @@ export default {
     add(rainbow);
 
     // ---- sugar sparkles in the air
-    const sp = props.motes(380, { center: c, spread: [520, 40, 520], yBase: -6, size: 0.5, colors: ['#fff6b0', '#ffc0e6', '#c8f0ff'], speed: 0.4, blink: 1.2 }, rng);
+    const sp = props.motes(380, { center: c, spread: [520, 40, 520], yBase: -6, size: 0.5, colors: ['#fff6b0', '#ffc0e6', '#c8f0ff'], speed: 0.4, blink: 0.5, glow: 1.1 }, rng);
     add(sp);
     onUpdate((dt, t) => sp.userData.update(dt, t));
 

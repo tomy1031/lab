@@ -39,19 +39,19 @@ export class RaceCamera {
     const tr = race.track;
     let fovT = 68;
     if (mode === 'intro') {
-      const u = clamp(race.phaseT / INTRO_TIME, 0, 1);
-      const c = tr.P[0];
-      const a = -1.2 + u * 2.4 + tr.headingAt(0);
-      const orbit = _v.set(c.x + Math.sin(a) * 34, c.y + lerp(16, 7, u), c.z + Math.cos(a) * 34);
-      const lookAt = _w.set(c.x, c.y + 1, c.z);
-      tr.pointAt(mod(-8, tr.N), 0, lookAt); lookAt.y += 1;
+      // fly in low over the road toward the grid (always between the walls, so never through scenery)
+      const u = clamp(race.phaseT / INTRO_TIME, 0, 1), e = smoothstep(0, 1, u);
+      const p = lerp(70, 6, e) / tr.step;
+      tr.pointAt(p, Math.sin(u * 2.4) * tr.halfWidth * 0.6, _v); _v.y += lerp(13, 4.5, e);
+      tr.pointAt(mod(-10 / tr.step, tr.N), 0, _w); _w.y += 1;
+      this.keepInside(tr, _v);
       this.yaw = k.heading;
       const chasePos = new THREE.Vector3(), chaseLook = new THREE.Vector3();
       this.chaseTarget(k, chasePos, chaseLook);
-      const b = smoothstep(0.62, 1, u);
-      this.pos.copy(orbit).lerp(chasePos, b);
-      this.look.copy(lookAt).lerp(chaseLook, b);
-      fovT = 60;
+      const b = smoothstep(0.7, 1, u);
+      this.pos.copy(_v).lerp(chasePos, b);
+      this.look.copy(_w).lerp(chaseLook, b);
+      fovT = 62;
     } else if (mode === 'finish') {
       const a = this.t * 0.4;
       this.pos.set(k.pos.x + Math.sin(a) * 8, k.pos.y + 3.2, k.pos.z + Math.cos(a) * 8);
@@ -69,6 +69,7 @@ export class RaceCamera {
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);
       this.keepInside(tr, _v);
+      this.overKarts(race, k, _v);
       const kxz = 1 - Math.exp(-16 * dt), ky = 1 - Math.exp(-6 * dt);
       this.pos.x += (_v.x - this.pos.x) * kxz; this.pos.z += (_v.z - this.pos.z) * kxz;
       this.pos.y += (_v.y - this.pos.y) * ky;
@@ -79,8 +80,21 @@ export class RaceCamera {
     this.apply();
   }
 
+  // rise over a kart that would otherwise come right up to the lens (instead of clipping through it)
+  overKarts(race, me, v) {
+    let top = -Infinity;
+    for (const o of race.karts) {
+      if (o === me) continue;
+      const dx = o.pos.x - v.x, dz = o.pos.z - v.z;
+      if (dx * dx + dz * dz < 2.6 * 2.6) top = Math.max(top, o.pos.y + 2.9);
+    }
+    if (top > v.y) v.y = top;
+  }
+
   // pull a camera position back between the walls: everything else on a course stands outside them
-  keepInside(tr, v) {
+  keepInside(tr, v, global = false) {
+    if (global || this.hintTrack !== tr) this.hint = -1; // after a cut or a new course: search the whole track
+    this.hintTrack = tr;
     const L = tr.locate(v, this.hint ?? -1, this.loc || (this.loc = {}));
     this.hint = L.i;
     const lim = L.wall - 0.6;
@@ -115,28 +129,34 @@ export class RaceCamera {
       const k = ks[cut.kart];
       // trackside camera somewhere ahead of the kart
       const p = k.prog + 30 + Math.random() * 20;
-      const side = (Math.random() < 0.5 ? -1 : 1) * (race.track.wallD(mod(Math.round(p), race.track.N)) + 4);
+      const side = (Math.random() < 0.5 ? -1 : 1) * (race.track.wallD(mod(Math.round(p), race.track.N)) - 1.2);
       race.track.pointAt(p, side, cut.anchor);
-      cut.anchor.y += 3 + Math.random() * 5;
+      cut.anchor.y += 3 + Math.random() * 4;
       this.yaw = k.heading;
       cut.fresh = true;
+      cut.fov = 0;
     }
     const k = ks[cut.kart];
     if (cut.style === 0 || cut.style === 2) {
       this.yaw = dampAngle(this.yaw, k.heading, 4, dt);
       const dist = cut.style === 0 ? 7 : 5.2, h = cut.style === 0 ? 3 : 1.6;
       this.chaseTarget(k, _v, _w, dist, h);
+      this.keepInside(race.track, _v, true);
+      this.overKarts(race, k, _v);
       if (cut.fresh) { this.pos.copy(_v); this.look.copy(_w); }
       this.pos.lerp(_v, 1 - Math.exp(-8 * dt)); this.look.lerp(_w, 1 - Math.exp(-12 * dt));
       this.fov = cut.style === 0 ? 66 : 74;
     } else if (cut.style === 1) {
       this.pos.copy(cut.anchor);
       this.look.set(k.pos.x, k.pos.y + 1, k.pos.z);
-      this.fov = clamp(30 + this.pos.distanceTo(this.look) * 0.5, 30, 70);
+      // one zoom per shot: a zoom that changes every frame makes every texture crawl
+      if (cut.fresh || !cut.fov) cut.fov = clamp(30 + this.pos.distanceTo(this.look) * 0.35, 38, 64);
+      this.fov = cut.fov;
     } else {
       // side tracking
       const a = k.heading + Math.PI / 2 + Math.sin(this.t * 0.3) * 0.5;
       _v.set(k.pos.x + Math.sin(a) * 9, k.pos.y + 2.2, k.pos.z + Math.cos(a) * 9);
+      this.keepInside(race.track, _v, true);
       if (cut.fresh) this.pos.copy(_v);
       this.pos.lerp(_v, 1 - Math.exp(-6 * dt));
       this.look.set(k.pos.x, k.pos.y + 1, k.pos.z);

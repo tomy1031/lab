@@ -299,7 +299,7 @@ export class Race {
     for (const k of this.karts) {
       if (k.isHuman) { k.camHide = false; continue; }
       const d = Math.hypot(k.pos.x - cam.x, k.pos.y + 0.9 - cam.y, k.pos.z - cam.z);
-      k.camHide = k.camHide ? d < 2.6 : d < 2.0;
+      k.camHide = k.camHide ? d < 1.8 : d < 1.3;
       k.rig.visual.visible = (k.blinkOn ?? true) && !k.camHide;
     }
   }

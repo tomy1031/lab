@@ -2,7 +2,7 @@
 //   1. title → menus → Grand Prix race with the keyboard; the kart drives; pause / resume
 //   2. every course: a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no errors);
 //      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
-//   3. results screen
+//   3. results screen; smooth motion (no judder against 60 / 144 Hz displays)
 //   node tests/smoke.cjs [outDir]
 const { chromium } = require('playwright');
 const serve = require('./serve.cjs');
@@ -97,6 +97,20 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     }
     const errs = [...errors, ...(await ddErrors(page))];
     check(errs.length === 0, `course ${c}: no errors ${errs.join(' | ')}`);
+    await page.close();
+  }
+
+  // 3. smooth motion: your kart driving straight moves evenly across the screen at 60 and 144 Hz
+  {
+    const { page, errors } = await open(browser, `${base}?course=1&nosound&quality=low&seed=3`);
+    await page.waitForFunction(() => window.DD.debug.race, null, { timeout: 90000 });
+    await page.evaluate(() => window.DD.debug.judderProbe(200, 1 / 60, 0)); // through the countdown
+    for (const hz of [60, 144]) {
+      const r = await page.evaluate((hz) => window.DD.debug.judderProbe(Math.round(1.5 * hz), 1 / hz, 0), hz);
+      check(r.frames > 50 && r.judderPx < 0.15, `no judder at ${hz} Hz (${r.judderPx} px over ${r.frames} frames)`);
+    }
+    const errs = [...errors, ...(await ddErrors(page))];
+    check(errs.length === 0, `judder probe: no errors ${errs.join(' | ')}`);
     await page.close();
   }
 

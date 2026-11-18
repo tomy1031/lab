@@ -101,7 +101,8 @@ export function terrain(track, { size = 900, res = 160, below = 0.35, hills = 18
 }
 
 // drifting, twinkling glow motes (fireflies, plankton, star dust)
-export function motes(n, { center = new THREE.Vector3(), spread = [300, 30, 300], yBase = 0, size = 0.6, colors = ['#e8ff6e'], speed = 1, blink = 1, rise = 0 } = {}, rng) {
+// glow: brightness (above the course's bloom threshold the motes get a halo)
+export function motes(n, { center = new THREE.Vector3(), spread = [300, 30, 300], yBase = 0, size = 0.6, colors = ['#e8ff6e'], speed = 1, blink = 1, rise = 0, glow = 2.2 } = {}, rng) {
   const g = new THREE.BufferGeometry();
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), ph = new Float32Array(n);
   const cc = new THREE.Color();
@@ -117,7 +118,7 @@ export function motes(n, { center = new THREE.Vector3(), spread = [300, 30, 300]
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.setAttribute('phase', new THREE.BufferAttribute(ph, 1));
-  const uniforms = { t: { value: 0 }, size: { value: size }, scale: { value: 500 }, speed: { value: speed }, blink: { value: blink }, rise: { value: rise }, height: { value: spread[1] }, yBase: { value: yBase } };
+  const uniforms = { t: { value: 0 }, size: { value: size }, scale: { value: 500 }, speed: { value: speed }, blink: { value: blink }, rise: { value: rise }, height: { value: spread[1] }, yBase: { value: yBase }, glow: { value: glow } };
   const mat = new THREE.ShaderMaterial({
     uniforms,
     vertexShader: `attribute float phase; attribute vec3 color; varying vec3 vC; varying float vA;
@@ -134,9 +135,9 @@ export function motes(n, { center = new THREE.Vector3(), spread = [300, 30, 300]
         vA *= smoothstep(3.0, 9.0, -mv.z) * clamp(ps / 2.0, 0.0, 1.0);
         gl_PointSize = min(ps, 40.0);
         gl_Position = projectionMatrix*mv; }`,
-    fragmentShader: `varying vec3 vC; varying float vA;
+    fragmentShader: `varying vec3 vC; varying float vA; uniform float glow;
       void main(){ vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0; if (r>1.0) discard;
-        float a = pow(1.0-r, 1.6); gl_FragColor = vec4(vC*2.2*a*vA, a*vA); }`,
+        float a = pow(1.0-r, 1.6); gl_FragColor = vec4(vC*glow*a*vA, a*vA); }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   });
   const pts = new THREE.Points(g, mat);
@@ -175,7 +176,7 @@ export function textTexture(text, { w = 1024, h = 256, bg = '#2a1b5e', fg = '#ff
   return canvasTexture(w, (ctx) => {
     ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
     if (border) {
-      const n = 32;
+      const n = 14;
       for (let i = 0; i < n; i++) for (const y of [0, h - h / 10]) { ctx.fillStyle = (i + (y ? 1 : 0)) % 2 ? border[0] : border[1]; ctx.fillRect((i * w) / n, y, w / n, h / 10); }
     }
     ctx.font = font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
