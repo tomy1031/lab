@@ -523,7 +523,7 @@ function frame(now) {
 
 function tick(dt, raw = dt) {
   const vr = inVR();
-  let ctl = input.poll();
+  let ctl = input.poll(dt);
   if (hands.ready) hands.poll();
   if (vr) {
     ctl = vrInput.poll(dt, xr.session);

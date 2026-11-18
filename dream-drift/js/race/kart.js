@@ -35,6 +35,7 @@ export class Kart {
     this.idx = 0; this.prog = 0; this.raceDist = 0;
     this.lap = 0; this.finished = false; this.finishTime = 0; this.place = 0;
     this.drift = { active: false, dir: 0, charge: 0, level: 0 };
+    this.driftBlend = 0; this.driftDir = 1;
     this.boost = 0; this.spin = 0; this.shield = 0; this.comet = 0; this.invuln = 0;
     this.item = null; this.itemCount = 0; this.roulette = 0;
     this.loc = {};
@@ -140,19 +141,26 @@ export class Kart {
 
     // ---- steering
     const spdAbs = Math.abs(this.speed);
-    let yaw;
-    if (this.drift.active) {
-      yaw = this.drift.dir * this.turn * (0.8 + 0.42 * steer * this.drift.dir);
-    } else {
-      yaw = steer * this.turn * clamp(spdAbs / 6, 0, 1) * (1 - 0.26 * clamp(spdAbs / this.maxSpeed, 0, 1.2));
+    // full-lock turn rate at this speed
+    const lock = this.turn * clamp(spdAbs / 6, 0, 1) * (1 - 0.26 * clamp(spdAbs / this.maxSpeed, 0, 1.2));
+    let yaw = steer * lock;
+    // drift: eases in over 0.3 s (and out over 0.2 s) instead of snapping to a much tighter turn. Steering into the
+    // drift turns ~1.25× a normal full lock, no steering keeps a gentle curve, steering out widens it
+    if (this.drift.active) this.driftDir = this.drift.dir;
+    this.driftBlend = this.drift.active ? Math.min(1, this.driftBlend + dt / 0.3) : Math.max(0, this.driftBlend - dt / 0.2);
+    const db = this.driftBlend * this.driftBlend * (3 - 2 * this.driftBlend);
+    if (db > 0) {
+      const sd = steer * this.driftDir;
+      const k = sd >= 0 ? 0.65 + 0.6 * sd : 0.65 + 0.35 * sd;
+      yaw += (this.driftDir * lock * k - yaw) * db;
     }
     if (this.speed < 0) yaw = -yaw * 0.8;
-    if (this.air) yaw *= 0.7;
+    if (this.air && this.padJump) yaw *= 0.7; // a drift hop keeps full steering (no dip-and-kick when the drift starts)
     this.heading = wrapAngle(this.heading - yaw * dt);
 
     // ---- velocity (grip pulls the velocity toward the facing direction; low grip = slide)
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
-    let grip = this.drift.active ? 3.4 : 11;
+    let grip = 11 + (3.4 - 11) * db;
     if (this.air) grip = 1.2;
     if (this.spin > 0) grip = 1.4;
     const k = 1 - Math.exp(-grip * dt);

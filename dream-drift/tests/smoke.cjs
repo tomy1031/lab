@@ -4,7 +4,7 @@
 //      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
 //   3. results screen; smooth motion (no judder against 60 / 144 Hz displays)
 //   node tests/smoke.cjs [outDir]
-const { chromium } = require('playwright');
+const { chromium, devices } = require('playwright');
 const serve = require('./serve.cjs');
 const path = require('path');
 const fs = require('fs');
@@ -112,6 +112,28 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     const errs = [...errors, ...(await ddErrors(page))];
     check(errs.length === 0, `judder probe: no errors ${errs.join(' | ')}`);
     await page.close();
+  }
+
+  // 4. phone: touch controls appear; the steering slider steers in proportion to where it is touched
+  {
+    const ctx = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const page = await ctx.newPage();
+    const errors = []; page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+    await page.goto(`${base}?course=1&nosound&quality=low&cpu=2`, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.DD && window.DD.ready && window.DD.debug.state().screen === 'race', null, { timeout: 120000 });
+    check(await page.evaluate(() => document.getElementById('touch').classList.contains('show')), 'phone: touch controls shown');
+    const box = await page.locator('[data-steerpad]').boundingBox();
+    const cdp = await ctx.newCDPSession(page);
+    const cy = box.y + box.height / 2, cx = box.x + box.width / 2;
+    const touch = (type, x) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y: cy, id: 1 }] });
+    const steerAt = async (type, x) => { await touch(type, x); await page.waitForTimeout(2500); return page.evaluate(() => window.DD.debug.input.touch.steer); };
+    const small = await steerAt('touchStart', cx + box.width * 0.1);
+    const full = await steerAt('touchMove', cx + box.width * 0.45);
+    const left = await steerAt('touchMove', cx - box.width * 0.25);
+    const rel = await steerAt('touchEnd');
+    check(small > 0 && small < 0.3 && full === 1 && left < -0.3 && rel === 0, `phone: slider steers in proportion (near ${small.toFixed(2)}, edge ${full}, left ${left.toFixed(2)}, released ${rel})`);
+    check(errors.length === 0, `phone: no errors ${errors.join(' | ')}`);
+    await ctx.close();
   }
 
   await browser.close();
