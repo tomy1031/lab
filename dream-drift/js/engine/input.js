@@ -15,7 +15,8 @@ export class Input {
     this.padPrev = new Map();
     this.padName = '';
     this.lastSource = 'keyboard';
-    this.touch = { left: false, right: false, drift: false, item: false, brake: false, active: false };
+    this.touch = { left: false, right: false, drift: false, item: false, brake: false, active: false, steer: 0, steering: false };
+    this.steerSm = 0;
     this.hands = null; // HandTracker, when gesture mode is on
     this.handMode = false;
     this.out = { steer: 0, throttle: 0, brake: 0, drift: false, item: false, source: 'keyboard' };
@@ -42,22 +43,46 @@ export class Input {
     return null;
   }
 
-  // touch buttons: elements with data-touch="left|right|drift|item|brake"
+  // touch buttons: elements with data-touch="left|right|drift|item|brake"; [data-steerpad] is a steering slider:
+  // the further from its centre you touch (or slide), the more you steer
   bindTouch(root) {
     const set = (el, v) => { this.touch[el.dataset.touch] = v; el.classList.toggle('on', v); };
     for (const el of root.querySelectorAll('[data-touch]')) {
       el.addEventListener('pointerdown', (e) => { e.preventDefault(); el.setPointerCapture?.(e.pointerId); set(el, true); this.touch.active = true; this.lastSource = 'touch'; });
       for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.addEventListener(ev, () => set(el, false));
     }
+    const pad = root.querySelector('[data-steerpad]');
+    if (pad) {
+      this.knob = pad.querySelector('.knob');
+      const move = (e) => {
+        const r = pad.getBoundingClientRect();
+        const v = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.38), -1, 1);
+        this.touch.steer = Math.abs(v) < 0.08 ? 0 : Math.sign(v) * Math.pow((Math.abs(v) - 0.08) / 0.92, 1.3);
+      };
+      pad.addEventListener('pointerdown', (e) => { e.preventDefault(); pad.setPointerCapture?.(e.pointerId); this.touch.steering = true; this.touch.active = true; this.lastSource = 'touch'; pad.classList.add('on'); move(e); });
+      pad.addEventListener('pointermove', (e) => { if (this.touch.steering) move(e); });
+      for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) pad.addEventListener(ev, () => { this.touch.steering = false; this.touch.steer = 0; pad.classList.remove('on'); });
+    }
+  }
+
+  // on/off steering (arrow keys, d-pad, ◀▶ buttons) turns the wheel quickly but not instantly, so a tap gives a
+  // small correction and a drift doesn't lurch
+  shapeDigital(target, dt) {
+    const s = this.steerSm;
+    const rate = target === 0 || Math.sign(target) !== Math.sign(s) ? 10 : 5.5;
+    this.steerSm = s + clamp(target - s, -rate * dt, rate * dt);
+    return this.steerSm;
   }
 
   // read everything; call once per frame
-  poll() {
+  poll(dt = 1 / 60) {
     const o = this.out;
     let steer = 0, thr = 0, brk = 0, drift = false, item = false;
+    let digital = false;
     // keyboard
     if (this.any(KEY.left)) steer -= 1;
     if (this.any(KEY.right)) steer += 1;
+    if (steer !== 0) digital = true;
     if (this.any(KEY.up)) thr = 1;
     if (this.any(KEY.down)) brk = 1;
     if (this.any(KEY.drift)) drift = true;
@@ -69,16 +94,16 @@ export class Input {
       const b = (i) => (p.buttons[i] ? p.buttons[i].value || (p.buttons[i].pressed ? 1 : 0) : 0);
       const ax = Math.abs(p.axes[0] || 0) > 0.15 ? p.axes[0] : 0;
       const ay = Math.abs(p.axes[1] || 0) > 0.5 ? p.axes[1] : 0;
-      let ps = ax;
-      if (b(14) > 0.5) ps = -1;
-      if (b(15) > 0.5) ps = 1;
+      let ps = ax, pdig = false;
+      if (b(14) > 0.5) { ps = -1; pdig = true; }
+      if (b(15) > 0.5) { ps = 1; pdig = true; }
       const pt = Math.max(b(0), b(7));
       const pb = Math.max(b(1), b(6));
       const pd = b(5) > 0.5 || b(4) > 0.5;
       const pi = b(2) > 0.5 || b(3) > 0.5;
       const used = Math.abs(ps) > 0.2 || pt > 0.1 || pb > 0.1 || pd || pi;
       if (used) { this.lastSource = 'gamepad'; this.padName = p.id; }
-      if (Math.abs(ps) > Math.abs(steer)) steer = ps;
+      if (Math.abs(ps) > Math.abs(steer)) { steer = ps; digital = pdig; }
       thr = Math.max(thr, pt); brk = Math.max(brk, pb);
       drift = drift || pd; item = item || pi;
       // menu edges
@@ -94,8 +119,9 @@ export class Input {
     // touch
     const t = this.touch;
     if (t.active) {
-      if (t.left) steer = -1; if (t.right) steer = 1;
-      if (t.left && t.right) steer = 0;
+      if (t.left || t.right) { steer = (t.right ? 1 : 0) - (t.left ? 1 : 0); digital = true; }
+      if (t.steering) { steer = t.steer; digital = false; }
+      if (this.knob) this.knob.style.transform = `translateX(${(t.steering ? t.steer : 0) * 70}px)`;
       thr = Math.max(thr, t.brake ? 0 : 1);
       if (t.brake) brk = 1;
       drift = drift || t.drift; item = item || t.item;
@@ -110,6 +136,7 @@ export class Input {
         source = 'hands';
       }
     }
+    if (source !== 'hands') steer = digital || steer === 0 ? this.shapeDigital(steer, dt) : (this.steerSm = steer);
     o.steer = clamp(steer, -1, 1); o.throttle = clamp(thr, 0, 1); o.brake = clamp(brk, 0, 1);
     o.drift = drift; o.item = item; o.source = source;
     return o;
