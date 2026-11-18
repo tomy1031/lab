@@ -79,15 +79,16 @@ export class GestureInterpreter {
     this.out = { steer: 0, throttle: 0, brake: 0, drift: false, item: false, hands: 0, poses: [], angle: 0, active: false };
   }
 
-  // hands: array of landmark arrays; dt in seconds
-  update(hands, dt, aspect = 4 / 3) {
+  // hands: array of landmark arrays; dt in seconds. VR hand tracking passes its own 3D-derived
+  // { angle, poses } (the hands array is then only counted)
+  update(hands, dt, aspect = 4 / 3, pre = null) {
     const o = this.out;
     o.hands = hands.length;
-    o.poses = hands.map((h) => classify(h, aspect));
+    o.poses = pre && pre.poses ? pre.poses : hands.map((h) => classify(h, aspect));
     o.item = false;
     this.itemCooldown = Math.max(0, this.itemCooldown - dt);
     if (hands.length) { this.seenT += dt; this.lostT = 0; } else { this.lostT += dt; this.seenT = 0; }
-    const a = wheelAngle(hands, aspect);
+    const a = pre && pre.angle !== undefined ? pre.angle : wheelAngle(hands, aspect);
     o.angle = a;
     const full = 0.62 / this.opts.sensitivity;
     const target = hands.length ? steerFromAngle(a, { full, dead: hands.length === 1 ? 0.12 : 0.07 }) : this.steer * 0.9;

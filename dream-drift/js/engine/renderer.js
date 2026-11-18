@@ -7,6 +7,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const QUALITY = {
+  // vr: Quest-class headsets render two eyes at 72 Hz, so no post-processing and no shadow maps
+  vr: { pixel: 1, bloom: false, shadows: false, shadowSize: 512 },
   high: { pixel: 1.5, bloom: true, shadows: true, shadowSize: 2048 },
   mid: { pixel: 1.0, bloom: true, shadows: true, shadowSize: 1024 },
   low: { pixel: 0.75, bloom: false, shadows: false, shadowSize: 512 },
@@ -20,6 +22,7 @@ export class Renderer {
     r.toneMappingExposure = 1;
     r.shadowMap.enabled = true;
     r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.xr.enabled = true;
     const pmrem = new THREE.PMREMGenerator(r);
     this.envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
@@ -68,6 +71,7 @@ export class Renderer {
   }
 
   resize() {
+    if (this.r.xr.isPresenting) return; // the headset decides the size
     const w = innerWidth, h = innerHeight;
     this.r.setPixelRatio(Math.min(devicePixelRatio || 1, this.q.pixel));
     this.r.setSize(w, h, false);
@@ -81,7 +85,8 @@ export class Renderer {
 
   render() {
     if (!this.scene || !this.camera) return;
-    if (this.composer) this.composer.render();
+    if (this.r.xr.isPresenting) this.r.render(this.scene, this.camera);
+    else if (this.composer) this.composer.render();
     else this.r.render(this.scene, this.camera);
   }
 }

@@ -32,7 +32,7 @@ export class Race {
     this.karts = []; this.ais = new Map();
     const N = track.N;
     entrants.forEach((e, i) => {
-      const k = new Kart(e.char, { index: i, isHuman: !!e.human, cls });
+      const k = new Kart(e.char, { index: i, isHuman: !!e.human, cls, vrSeat: !!e.vrSeat });
       const back = 3.5 + i * 3.3;
       const side = (i % 2 === 0 ? -1 : 1) * track.HW[0] * 0.38;
       k.placeOnTrack(track, mod(-back / track.step, N), side);

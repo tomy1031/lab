@@ -16,12 +16,15 @@ const _f = new THREE.Vector3(), _x = new THREE.Vector3(), _n = new THREE.Vector3
 const UPV = new THREE.Vector3(0, 1, 0);
 
 export class Kart {
-  constructor(char, { index = 0, isHuman = false, cls = SPEED_CLASSES.normal } = {}) {
+  // vrSeat: the player rides in this kart in VR (1st person) — no fixed wheel, and the cockpit never
+  // spins, flips or blinks around them
+  constructor(char, { index = 0, isHuman = false, cls = SPEED_CLASSES.normal, vrSeat = false } = {}) {
     this.char = char;
     this.index = index;
     this.isHuman = isHuman;
     this.stats = statMultipliers(char);
-    this.rig = buildKart(char);
+    this.vrSeat = vrSeat;
+    this.rig = buildKart(char, { noWheel: vrSeat });
     this.maxSpeed = cls.max * this.stats.speed;
     this.accel = cls.accel * this.stats.accel;
     this.turn = 1.95 * this.stats.handling;
@@ -239,11 +242,11 @@ export class Kart {
     rig.root.quaternion.setFromRotationMatrix(_mat);
     if (dt <= 0) return;
 
-    const dTarget = this.drift.active ? -this.drift.dir * 0.42 : 0;
+    const dTarget = this.drift.active && !this.vrSeat ? -this.drift.dir * 0.42 : 0;
     this.visYaw = damp(this.visYaw, dTarget, 8, dt);
-    if (this.spin > 0) this.spinAngle += dt * 13; else this.spinAngle = damp(this.spinAngle, Math.round(this.spinAngle / (Math.PI * 2)) * Math.PI * 2, 10, dt);
+    if (this.spin > 0 && !this.vrSeat) this.spinAngle += dt * 13; else this.spinAngle = damp(this.spinAngle, Math.round(this.spinAngle / (Math.PI * 2)) * Math.PI * 2, 10, dt);
     rig.visual.rotation.y = this.visYaw + this.spinAngle;
-    if (this.trick && this.air) this.trickAngle += dt * 14; else this.trickAngle = damp(this.trickAngle, Math.round(this.trickAngle / (Math.PI * 2)) * Math.PI * 2, 12, dt);
+    if (this.trick && this.air && !this.vrSeat) this.trickAngle += dt * 14; else this.trickAngle = damp(this.trickAngle, Math.round(this.trickAngle / (Math.PI * 2)) * Math.PI * 2, 12, dt);
     rig.visual.rotation.z = this.trickAngle - this.steer * 0.04 * clamp(this.speed / 10, 0, 1);
     this.lean = damp(this.lean, this.steer * 0.28 + (this.drift.active ? this.drift.dir * 0.12 : 0), 8, dt);
     rig.driver.rotation.z = this.lean;
@@ -259,6 +262,7 @@ export class Kart {
     const bs = 1 / (1 + h * 0.25);
     rig.blob.scale.set(bs, 1, bs);
     this.blinkOn = this.invuln > 0 && this.spin <= 0 && this.shield <= 0 ? Math.floor(this.invuln * 14) % 2 === 0 : true;
+    if (this.vrSeat) this.blinkOn = true;
     rig.visual.visible = this.blinkOn && !this.camHide;
 
     // shield bubble / comet aura

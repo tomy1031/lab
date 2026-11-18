@@ -14,6 +14,9 @@ import { CHARACTERS, charById, renderPortraits } from './race/characters.js';
 import { COURSES, TITLE_MUSIC } from './courses/index.js';
 import { Hud, fmtTime } from './ui/hud.js';
 import { Nav } from './ui/nav.js';
+import { XRManager } from './vr/xr.js';
+import { VRInput } from './vr/vrinput.js';
+import { VRCockpit } from './vr/cockpit.js';
 
 const DD = window.DD;
 const params = new URLSearchParams(location.search);
@@ -22,10 +25,14 @@ const $ = (id) => document.getElementById(id);
 // ---------------------------------------------------------------------------------------------
 // settings
 const SETTINGS_KEY = 'dreamdrift.settings.v1';
-const settings = { music: 0.6, sfx: 0.85, quality: 'high', sens: 1, mode: 'gp', cls: 'normal', cpu: 7, laps: 3, char: 'luna' };
+const settings = { music: 0.6, sfx: 0.85, quality: 'high', sens: 1, mode: 'gp', cls: 'normal', cpu: 7, laps: 3, char: 'luna', vrView: 'first', vrVignette: 'on' };
 try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (e) { /* private mode */ }
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* ignore */ } };
 if (params.get('quality')) settings.quality = params.get('quality');
+if (params.get('cpu')) settings.cpu = Math.max(0, Math.min(7, Number(params.get('cpu'))));
+if (params.get('laps')) settings.laps = Number(params.get('laps'));
+if (params.get('cls')) settings.cls = params.get('cls');
+if (params.get('char')) settings.char = params.get('char');
 
 // ---------------------------------------------------------------------------------------------
 // core objects
@@ -40,8 +47,14 @@ const audio = new GameAudio();
 audio.setVolumes(settings.music, settings.sfx);
 if (params.has('nosound')) audio.setMuted(true);
 const nav = new Nav({ audio });
+const xr = new XRManager(renderer);
+const vrInput = new VRInput(renderer);
+let cockpit = null;
 let portraits = new Map();
+const portraitImgs = new Map();
 let hud = null;
+const inVR = () => xr.presenting;
+const vrWorldPos = new THREE.Vector3();
 
 const state = {
   screen: 'loading', control: 'pad', inRace: false, paused: false, freeCam: null,
@@ -134,6 +147,16 @@ function act(a) {
       startHands();
       break;
     case 'hands-ok': audio.play('confirm'); input.handMode = hands.ready; go('s-setup'); break;
+    case 'ctl-vr':
+      if (!xr.supported) { audio.play('back'); toast('この ブラウザでは VR が 使えません。Meta Quest の ブラウザで 開いてね'); break; }
+      audio.play('confirm');
+      state.control = 'vr'; input.handMode = false;
+      go('s-setup');
+      break;
+    case 'vr-view':
+      settings.vrView = settings.vrView === 'first' ? 'third' : 'first'; saveSettings();
+      if (inVR() && state.race && state.me) { cockpit.setKart(state.me, settings.vrView); cockpit.needCenter = 2; if (state.paused) vrPauseMenu(); }
+      break;
     case 'cpu-': settings.cpu = Math.max(0, settings.cpu - 1); saveSettings(); refreshSetup(); audio.play('select'); break;
     case 'cpu+': settings.cpu = Math.min(7, settings.cpu + 1); saveSettings(); refreshSetup(); audio.play('select'); break;
     case 'setup-ok': audio.play('confirm'); go('s-char'); break;
@@ -143,7 +166,7 @@ function act(a) {
       break;
     case 'resume': pause(false); break;
     case 'restart': audio.play('confirm'); pause(false, true); startRace(state.courseIdx, true); break;
-    case 'quit': audio.play('back'); pause(false, true); goTitle(); break;
+    case 'quit': audio.play('back'); pause(false, true); if (inVR()) xr.exit(); goTitle(); break;
     case 'next': audio.play('confirm'); nextGPRace(); break;
     case 'again': audio.play('confirm'); startRace(state.courseIdx); break;
     case 'courses': audio.play('confirm'); buildCourseGrid(); go('s-course'); break;
@@ -213,6 +236,7 @@ function buildCourseGrid() {
 // ---------------------------------------------------------------------------------------------
 // worlds and races
 function disposeWorld() {
+  cockpit?.detach();
   if (state.race) { state.race.dispose(); state.race = null; }
   if (state.world) { disposeTree(state.world.scene); state.world = null; }
 }
@@ -226,6 +250,8 @@ function loadCourse(idx) {
 }
 
 function goTitle() {
+  if (inVR()) xr.exit();
+  cockpit?.closeMenu();
   state.inRace = false; state.gp = null; state.paused = false;
   hud?.show(false);
   $('touch').classList.remove('show');
@@ -258,14 +284,25 @@ function entrantsFor(courseIdx) {
     const others = CHARACTERS.filter((c) => c.id !== me.id).sort(() => rng.next() - 0.5).slice(0, settings.cpu);
     grid = [...others, me];
   }
-  return grid.map((c) => ({ char: c, human: c.id === me.id }));
+  const seat = state.control === 'vr' && settings.vrView === 'first';
+  return grid.map((c) => ({ char: c, human: c.id === me.id, vrSeat: seat && c.id === me.id }));
 }
 
 function startRace(idx, restart = false) {
   state.courseIdx = idx;
   state.inRace = false;
+  // VR: the headset session has to be requested inside this click
+  if (state.control === 'vr' && xr.supported && !inVR()) {
+    xr.enter().catch((e) => {
+      toast(`VR を はじめられませんでした（${e && e.message || e}）`);
+      state.control = 'pad';
+      renderer.setQuality(settings.quality);
+    });
+  }
   showScreen('s-loading');
   hud?.show(false);
+  cockpit?.closeMenu();
+  if (state.control === 'vr' && renderer.qname !== 'vr') renderer.setQuality('vr');
   requestAnimationFrame(() => setTimeout(() => {
     const course = loadCourse(idx);
     const entrants = entrantsFor(idx);
@@ -282,7 +319,14 @@ function startRace(idx, restart = false) {
     raceCam.t = 0;
     hud.setup(race, state.me, course, state.control === 'hands' && hands.ready);
     hud.showBanner(`${state.gp ? `グランプリ ${state.gp.index + 1}/4 ・ ` : ''}COURSE ${idx + 1}`, course.name, true);
-    hud.show(true);
+    hud.show(state.control !== 'vr');
+    if (state.control === 'vr') {
+      cockpit.attach(state.world.scene);
+      cockpit.setKart(state.me, settings.vrView);
+      cockpit.vignetteOn = settings.vrVignette !== 'off';
+      cockpit.message(course.name, { sub: `${state.gp ? `グランプリ ${state.gp.index + 1}/4 ・ ` : ''}COURSE ${idx + 1}`, size: 110, dur: 3.4 });
+      if (inVR()) cockpit.needCenter = 3;
+    }
     $('touch').classList.toggle('show', state.control === 'pad' && matchMedia('(pointer: coarse)').matches);
     document.body.classList.toggle('touch-mode', $('touch').classList.contains('show'));
     audio.playMusic(course.music);
@@ -306,8 +350,21 @@ function nextGPRace() {
 function pause(on, silent = false) {
   if (!state.inRace) return;
   state.paused = on;
-  if (on) { audio.engine(false); audio.play('back'); showScreen('s-pause'); }
-  else { if (!silent) audio.play('confirm'); showScreen(null); }
+  if (on) {
+    audio.engine(false); audio.play('back'); showScreen('s-pause');
+    if (inVR()) vrPauseMenu();
+  } else {
+    if (!silent) audio.play('confirm');
+    showScreen(null);
+    cockpit?.closeMenu();
+  }
+}
+function vrPauseMenu() {
+  cockpit.openMenu({
+    title: 'ポーズ',
+    sub: '右スティック押しこみで 視点を 正面に もどせます',
+    buttons: [{ id: 'resume', label: 'つづける', primary: true }, { id: 'vr-view', label: settings.vrView === 'first' ? '後ろから 見る' : '運転席から 見る' }, { id: 'restart', label: 'やり直す' }, { id: 'quit', label: 'おわる' }],
+  }, (id) => act(id));
 }
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && state.inRace && !state.paused && state.race && state.race.phase !== 'done') pause(true);
@@ -319,6 +376,7 @@ $('h-pause').addEventListener('click', (e) => { e.stopPropagation(); if (state.i
 function onRaceEvent(type, d) {
   const me = state.me;
   const mine = d.kart === me;
+  if (inVR()) vrEvent(type, d, me, mine);
   switch (type) {
     case 'count': hud.flash(String(d.n), '', 0.95); audio.play('count'); if (d.n === 3) hud.showBanner('', '', false); break;
     case 'go': hud.flash('GO!', 'go', 1.1); audio.play('go'); if (me.rocket) { audio.play('boost'); hud.flash('ロケットスタート！', 'go small', 1.3); } break;
@@ -356,6 +414,32 @@ function onRaceEvent(type, d) {
   }
 }
 
+// the same events inside the headset: big messages and controller rumble
+function vrEvent(type, d, me, mine) {
+  const rum = (s, ms) => vrInput.rumble(s, ms, xr.session);
+  switch (type) {
+    case 'count': cockpit.message(String(d.n), { dur: 0.95 }); break;
+    case 'go': cockpit.message(me.rocket ? 'ロケットスタート！' : 'GO!', { color: '#ffd93b', size: me.rocket ? 140 : 230 }); if (me.rocket) rum(0.6, 250); break;
+    case 'lap': cockpit.message(d.final ? 'ファイナルラップ！' : `LAP ${d.lap}`, { size: d.final ? 140 : 190, dur: 1.5 }); break;
+    case 'finish': cockpit.message('GOAL!', { color: '#ffd93b', sub: `${d.place}位`, dur: 3 }); rum(0.5, 300); break;
+    case 'shothit': case 'trap':
+      if (mine && d.hurt) rum(1, 350);
+      else if (d.by === me && d.hurt) cockpit.message('ヒット！', { size: 130, dur: 0.9 });
+      break;
+    case 'bump': if (d.a === me || d.b === me) rum(0.45, 70); break;
+    case 'pad': case 'jump': if (mine) rum(0.35, 120); break;
+    case 'itemready': if (mine) rum(0.2, 40); break;
+    default:
+      if (type.startsWith('kart:') && mine) {
+        const e = type.slice(5);
+        if (e === 'wall') rum(0.7, 90);
+        else if (e.startsWith('miniturbo')) rum(0.4, 140);
+        else if (e.startsWith('driftlevel')) rum(0.15, 30);
+        else if (e === 'trick') cockpit.message('トリック！', { size: 130, dur: 0.8 });
+      }
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 // results
 function showResults() {
@@ -379,6 +463,15 @@ function showResults() {
     : '<button class="btn primary big" data-nav data-act="again">もう一度</button><button class="btn" data-nav data-act="courses">コースを えらぶ</button><button class="btn" data-nav data-act="quit">タイトルへ</button>';
   $('res-btns').innerHTML = btns;
   showScreen('s-results');
+  if (inVR()) {
+    cockpit.openMenu({
+      title: `${me.place}位 ${me.place === 1 ? '— 優勝！' : me.place <= 3 ? '— 表彰台！' : ''}`,
+      rows: order.map((k, i) => ({ text: `${i + 1}  ${k.char.name}`, right: (k.estimated ? '— —' : fmtTime(k.finishTime)) + (gp ? `　+${POINTS[i] || 0}（計 ${gp.totals.get(k.char.id)}）` : ''), me: k === me, img: portraitImgs.get(k.char.id) })),
+      buttons: gp
+        ? [gp.index < COURSES.length - 1 ? { id: 'next', label: 'つぎの レースへ', primary: true } : { id: 'gp-final', label: '総合結果へ', primary: true }, { id: 'quit', label: 'おわる' }]
+        : [{ id: 'again', label: 'もう一度', primary: true }, { id: 'quit', label: 'おわる' }],
+    }, (id) => act(id));
+  }
 }
 
 function showGPFinal() {
@@ -396,6 +489,13 @@ function showGPFinal() {
   $('gp-table').innerHTML = ids.map((id, i) => `<div class="rrow ${id === myId ? 'me' : ''}"><span class="pl outline">${i + 1}</span><img alt="" src="${portraits.get(id) || ''}"><span>${charById(id).name}</span><span class="tm">${gp.results.map((r) => r.indexOf(id) + 1 + '位').join(' ・ ')}</span><span class="pt">${gp.totals.get(id)} pt</span></div>`).join('');
   audio.play('finish', myPlace);
   showScreen('s-gp');
+  if (inVR()) {
+    cockpit.openMenu({
+      title: myPlace === 1 ? 'グランプリ 優勝！' : `グランプリ 総合 ${myPlace}位`,
+      rows: ids.map((id, i) => ({ text: `${i + 1}  ${charById(id).name}`, right: `${gp.totals.get(id)} pt`, me: id === myId, img: portraitImgs.get(id) })),
+      buttons: [{ id: 'quit', label: 'おわる', primary: true }],
+    }, (id) => act(id));
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -405,7 +505,6 @@ let acc = 0, last = performance.now(), elapsed = 0;
 const humanCtl = new Map();
 
 function frame(now) {
-  requestAnimationFrame(frame);
   const raw = Math.max(0, (now - last) / 1000);
   const dt = Math.min(0.05, raw);
   last = now;
@@ -414,8 +513,15 @@ function frame(now) {
 }
 
 function tick(dt, raw = dt) {
-  const ctl = input.poll();
+  const vr = inVR();
+  let ctl = input.poll();
   if (hands.ready) hands.poll();
+  if (vr) {
+    ctl = vrInput.poll(dt, xr.session);
+    if (vrInput.pauseEdge && state.inRace && state.race && state.race.phase !== 'done') pause(!state.paused);
+    if (vrInput.recenterEdge) cockpit.recenter();
+    if (cockpit.needCenter > 0 && --cockpit.needCenter === 0) cockpit.recenter();
+  }
   const race = state.race;
   if (race && !state.paused) {
     humanCtl.clear();
@@ -430,16 +536,21 @@ function tick(dt, raw = dt) {
     const me = state.me;
     let mode = 'attract';
     if (me) mode = race.phase === 'intro' ? 'intro' : me.finished ? 'finish' : 'chase';
-    if (state.freeCam) { camera.position.copy(state.freeCam.pos); camera.lookAt(state.freeCam.look); camera.fov = state.freeCam.fov; camera.updateProjectionMatrix(); }
-    else if (!state.paused) raceCam.update(dt, race, me || race.karts[0], mode);
-    if (!state.freeCam) race.cameraCull(camera.position);
+    let camPos = camera.position;
+    if (vr && me && cockpit.kart === me) {
+      cockpit.update(dt, race, ctl);
+      camPos = cockpit.worldPosition(vrWorldPos);
+    } else if (state.freeCam) { camera.position.copy(state.freeCam.pos); camera.lookAt(state.freeCam.look); camera.fov = state.freeCam.fov; camera.updateProjectionMatrix(); }
+    else if (!state.paused && !vr) raceCam.update(dt, race, me || race.karts[0], mode);
+    if (!state.freeCam) race.cameraCull(camPos);
     const focus = state.freeCam ? state.freeCam.look : me ? me.pos : race.karts[raceCam.cut.kart]?.pos;
-    state.world.update(dt, elapsed, camera, focus);
-    const sh = renderer.r.getDrawingBufferSize(new THREE.Vector2()).y;
-    race.parts.add.setScale(sh, camera.fov); race.parts.soft.setScale(sh, camera.fov);
+    state.world.update(dt, elapsed, vr ? { position: camPos } : camera, focus);
+    const sh = vr ? 1800 : renderer.r.getDrawingBufferSize(new THREE.Vector2()).y;
+    race.parts.add.setScale(sh, vr ? 100 : camera.fov); race.parts.soft.setScale(sh, vr ? 100 : camera.fov);
     if (me && state.inRace && !state.paused) {
       audio.engine(race.phase !== 'intro' && !me.finished, Math.max(0, me.speed) / me.maxSpeed, me.boost > 0, me.drift.active);
-      hud.update(dt, race, me, state.control === 'hands' ? hands : null, audio);
+      if (!vr) hud.update(dt, race, me, state.control === 'hands' ? hands : null, audio);
+      else if (me.roulette > 0) { cockpit.tickT = (cockpit.tickT || 0) - dt; if (cockpit.tickT <= 0) { cockpit.tickT = 0.07; audio.play('tick'); } }
       if (race.phase === 'intro' && (ctl.item || ctl.drift) && race.phaseT > 0.6) race.skipIntro();
     }
     if (race.phase === 'done' && state.inRace && state.resultsTimer > 0) {
@@ -457,7 +568,7 @@ function measure(dt) {
   state.fpsAcc += dt; state.fpsN++;
   if (state.fpsAcc >= 1) {
     state.fps = state.fpsN / state.fpsAcc; state.fpsAcc = 0; state.fpsN = 0;
-    if (state.inRace && !state.paused && !params.has('quality')) {
+    if (state.inRace && !state.paused && !params.has('quality') && !inVR()) {
       state.lowT = state.fps < 40 ? state.lowT + 1 : 0;
       if (state.lowT >= 5 && renderer.qname !== 'low') {
         const next = renderer.qname === 'high' ? 'mid' : 'low';
@@ -492,18 +603,42 @@ async function boot() {
   sm.value = settings.music; ss.value = settings.sfx; se.value = settings.sens;
   const vol = () => { settings.music = Number(sm.value); settings.sfx = Number(ss.value); audio.setVolumes(settings.music, settings.sfx); saveSettings(); };
   sm.addEventListener('input', vol); ss.addEventListener('input', vol);
-  se.addEventListener('input', () => { settings.sens = Number(se.value); hands.interp.opts.sensitivity = settings.sens; saveSettings(); });
+  se.addEventListener('input', () => { settings.sens = Number(se.value); hands.interp.opts.sensitivity = settings.sens; vrInput.sens = settings.sens; saveSettings(); });
   for (const b of document.querySelectorAll('[data-group="quality"] [data-val]')) b.classList.toggle('on', b.dataset.val === renderer.qname);
   addEventListener('pointerdown', () => audio.unlock(), { once: false });
-  requestAnimationFrame(frame);
+  // VR: the cockpit (needs the portraits for the result panels) and the session hooks
+  for (const [id, url] of portraits) { const im = new Image(); im.src = url; portraitImgs.set(id, im); }
+  cockpit = new VRCockpit({ camera, renderer, vrInput, portraits });
+  vrInput.sens = settings.sens;
+  xr.onStart = () => {
+    cockpit.takeCamera();
+    hud?.show(false);
+    $('touch').classList.remove('show');
+    if (state.race && state.me && state.control === 'vr') { cockpit.attach(state.world.scene); cockpit.setKart(state.me, settings.vrView); }
+    cockpit.needCenter = 3;
+  };
+  xr.onEnd = () => {
+    cockpit.releaseCamera();
+    cockpit.closeMenu();
+    renderer.setQuality(settings.quality);
+    if (state.screen !== 's-title' && state.screen !== 's-loading') { toast('VR を おわりました'); goTitle(); }
+  };
+  xr.onBlur = () => { if (state.inRace && !state.paused && state.race && state.race.phase !== 'done') pause(true); };
+  xr.ready.then((ok) => {
+    const card = $('ctl-vr-card');
+    card.classList.toggle('na', !ok);
+    $('vr-status').textContent = ok ? 'VR ヘッドセット：使えます' : 'この ブラウザでは 使えません（Meta Quest の ブラウザで 開いてね）';
+    $('vr-status').classList.toggle('ok', ok);
+  });
+  for (const b of document.querySelectorAll('[data-group="vrView"] [data-val], [data-group="vrVignette"] [data-val]')) {
+    const grp = b.closest('[data-group]').dataset.group;
+    b.classList.toggle('on', b.dataset.val === settings[grp]);
+  }
+  renderer.r.setAnimationLoop(frame);
 
   if (params.has('course')) {
     // test / direct link: ?course=1..4 starts a free race at once
     settings.mode = 'free';
-    if (params.get('cpu')) settings.cpu = Number(params.get('cpu'));
-    if (params.get('laps')) settings.laps = Number(params.get('laps'));
-    if (params.get('cls')) settings.cls = params.get('cls');
-    if (params.get('char')) settings.char = params.get('char');
     startRace(Math.max(0, Math.min(COURSES.length - 1, Number(params.get('course')) - 1)));
     DD.ready = true;
   } else {
@@ -590,7 +725,7 @@ DD.debug = {
   camAt(pos, look, fov = 60) { state.freeCam = { pos: new THREE.Vector3(...pos), look: new THREE.Vector3(...look), fov }; hud?.show(false); },
   startRace(idx) { startRace(idx); },
   go, act, showResults: () => showResults(),
-  hands, input, audio, renderer,
+  hands, input, audio, renderer, xr, vrInput, get cockpit() { return cockpit; },
   get race() { return state.race; },
   setControl(c) { state.control = c; },
 };

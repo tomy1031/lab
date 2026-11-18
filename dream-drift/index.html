@@ -87,6 +87,7 @@
   .keys b { font-weight: 800; color: var(--yellow); white-space: nowrap; }
   .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.14); font-size: 12px; font-weight: 800; margin-top: 8px; }
   .pill.ok { background: rgba(94, 226, 106, 0.3); }
+  .card.na { opacity: 0.55; }
 
   /* hand setup */
   .handsetup { display: grid; grid-template-columns: minmax(280px, 560px) minmax(260px, 380px); gap: 20px; width: min(980px, 100%); align-items: start; }
@@ -297,6 +298,21 @@
         </div>
         <div class="pill">カメラの 映像は 端末の 中だけで 使い、送信しません</div>
       </button>
+      <button class="card" data-nav data-act="ctl-vr" id="ctl-vr-card">
+        <div class="ico"><svg viewBox="0 0 160 100"><path d="M24 30c0-8 6-12 14-12h84c8 0 14 4 14 12v34c0 8-6 14-14 14H98l-10-12H72L62 78H38c-8 0-14-6-14-14z" fill="#fff"/><circle cx="54" cy="48" r="13" fill="#2a1b5e"/><circle cx="106" cy="48" r="13" fill="#2a1b5e"/><circle cx="58" cy="44" r="4" fill="#4fe3ff"/><circle cx="110" cy="44" r="4" fill="#4fe3ff"/><path d="M8 40h16M136 40h16" stroke="#fff" stroke-width="8" stroke-linecap="round"/></svg></div>
+        <h3>VR（Meta Quest）</h3>
+        <p>Meta Quest 2 / 3 の ブラウザで 開いて えらぶと、カートの 運転席に すわって 走れます（後ろから 見る 視点にも できます）。すわって あそんでね。</p>
+        <div class="keys">
+          <b>ハンドル</b><span>両手の グリップを にぎって ハンドルの ように 回す（左スティックでも）</span>
+          <b>アクセル</b><span>右トリガー</span>
+          <b>ブレーキ</b><span>左トリガー</span>
+          <b>ドリフト</b><span>A / X（押したまま 曲がる）</span>
+          <b>アイテム</b><span>B / Y</span>
+          <b>ハンド</b><span>コントローラを 置くと ハンドトラッキング：手で ハンドル、✌ で アイテム</span>
+          <b>ポーズ</b><span>左スティック 押しこみ（視点リセットは 右スティック）</span>
+        </div>
+        <div class="pill" id="vr-status">VR ヘッドセット：確認中…</div>
+      </button>
     </div>
     <button class="btn" data-nav data-act="back">もどる</button>
   </section>
@@ -387,6 +403,8 @@
       <label>効果音 <input type="range" min="0" max="1" step="0.05" id="set-sfx"></label>
       <label>画質 <span class="seg" data-group="quality"><button data-nav data-val="high">高</button><button data-nav data-val="mid">中</button><button data-nav data-val="low">低</button></span></label>
       <label>ハンドルの 感度 <input type="range" min="0.6" max="1.8" step="0.1" id="set-sens"></label>
+      <label>VR の 視点 <span class="seg" data-group="vrView"><button data-nav data-val="first">運転席</button><button data-nav data-val="third">後ろから</button></span></label>
+      <label>VR 酔いどめ <span class="seg" data-group="vrVignette"><button data-nav data-val="on">ON</button><button data-nav data-val="off">OFF</button></span></label>
     </div>
     <button class="btn primary" data-nav data-act="back">もどる</button>
   </section>
