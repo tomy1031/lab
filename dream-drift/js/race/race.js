@@ -293,6 +293,17 @@ export class Race {
     }
   }
 
+  // after the camera has moved: a kart the camera is passing through is hidden for that moment instead of
+  // filling the screen with its insides (hysteresis so it can't blink at the threshold)
+  cameraCull(cam) {
+    for (const k of this.karts) {
+      if (k.isHuman) { k.camHide = false; continue; }
+      const d = Math.hypot(k.pos.x - cam.x, k.pos.y + 0.9 - cam.y, k.pos.z - cam.z);
+      k.camHide = k.camHide ? d < 2.6 : d < 2.0;
+      k.rig.visual.visible = (k.blinkOn ?? true) && !k.camHide;
+    }
+  }
+
   // per render frame
   frame(dt) {
     for (const k of this.karts) {

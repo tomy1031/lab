@@ -1,6 +1,7 @@
 // tests/smoke.cjs — end-to-end checks in headless Chromium (SwiftShader):
 //   1. title → menus → Grand Prix race with the keyboard; the kart drives; pause / resume
-//   2. every course: a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no errors)
+//   2. every course: a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no errors);
+//      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
 //   3. results screen
 //   node tests/smoke.cjs [outDir]
 const { chromium } = require('playwright');
@@ -76,6 +77,11 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
   for (let c = 1; c <= 4; c++) {
     const { page, errors } = await open(browser, `${base}?course=${c}&autoplay&nosound&quality=low&seed=${c * 7}`);
     await page.waitForFunction(() => window.DD.debug.state().screen === 'race', null, { timeout: 90000 });
+    if (c === 1) {
+      // nothing may sit on the lens: no kart inside the chase camera, the camera never outside the walls
+      const pr = await page.evaluate(() => window.DD.debug.probe(60));
+      check(pr.kartNear.length === 0 && pr.outside.length === 0, `course 1: camera stays clear for 60 s (kart at lens ${pr.kartNear.length}, outside walls ${pr.outside.length})`);
+    }
     const s = await page.evaluate(() => window.DD.debug.simulate(420));
     const resp = s.karts.reduce((a, k) => a + k.respawns, 0);
     const times = s.karts.map((k) => k.time).sort((a, b) => a - b);

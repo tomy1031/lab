@@ -46,6 +46,7 @@ export class Kart {
     this.fxT = 0;
     this.events = [];
     this.shieldMesh = null; this.cometMesh = null;
+    this.camHide = false; // set by the race when the camera is inside this kart
   }
 
   // put the kart on the track at progress p (sample units) and lateral offset d, facing forward
@@ -257,7 +258,8 @@ export class Kart {
     rig.blob.position.y = -h + 0.06;
     const bs = 1 / (1 + h * 0.25);
     rig.blob.scale.set(bs, 1, bs);
-    rig.visual.visible = this.invuln > 0 && this.spin <= 0 && this.shield <= 0 ? Math.floor(this.invuln * 14) % 2 === 0 : true;
+    this.blinkOn = this.invuln > 0 && this.spin <= 0 && this.shield <= 0 ? Math.floor(this.invuln * 14) % 2 === 0 : true;
+    rig.visual.visible = this.blinkOn && !this.camHide;
 
     // shield bubble / comet aura
     if (this.shield > 0 && !this.shieldMesh) this.shieldMesh = makeShield(rig.root);
@@ -278,14 +280,16 @@ export class Kart {
     if (this.fxT < 1 / 50) return;
     const step = this.fxT; this.fxT = 0;
     const root = this.rig.root;
-    const bx = -this.vel.x * 0.3, bz = -this.vel.z * 0.3;
+    // particles inherit most of the kart's velocity so they trail just behind it instead of shooting
+    // backwards into the chase camera
+    const vx = this.vel.x, vz = this.vel.z;
     if (this.drift.active && !this.air) {
       const c = DRIFT_COLORS[this.drift.level];
       for (const wpos of this.rig.rearWheels) {
         _w.copy(wpos); _w.x *= 1.05; root.localToWorld(_w);
         const n = this.drift.level ? 3 : 1;
-        for (let i = 0; i < n; i++) parts.add.emit(_w.x, _w.y + 0.15, _w.z, bx + (Math.random() - 0.5) * 5, 2 + Math.random() * 4, bz + (Math.random() - 0.5) * 5, c,
-          this.drift.level ? 0.38 : 0.25, 0.28, { gravity: 18, drag: 2 });
+        for (let i = 0; i < n; i++) parts.add.emit(_w.x, _w.y + 0.15, _w.z, vx * 0.6 + (Math.random() - 0.5) * 5, 2 + Math.random() * 4, vz * 0.6 + (Math.random() - 0.5) * 5, c,
+          this.drift.level ? 0.38 : 0.25, 0.28, { gravity: 18, drag: 0.8 });
       }
     }
     if (this.boost > 0 || this.comet > 0) {
@@ -293,18 +297,18 @@ export class Kart {
         _w.copy(e); root.localToWorld(_w);
         for (let i = 0; i < 2; i++) {
           const c = FLAME[(Math.random() * 3) | 0];
-          parts.add.emit(_w.x, _w.y, _w.z, bx * 1.4 + (Math.random() - 0.5) * 2, 0.6 + Math.random(), bz * 1.4 + (Math.random() - 0.5) * 2, c, 0.75, 0.22, { drag: 3, grow: -0.6 });
+          parts.add.emit(_w.x, _w.y, _w.z, vx * 0.72 + (Math.random() - 0.5) * 2, 0.6 + Math.random(), vz * 0.72 + (Math.random() - 0.5) * 2, c, 0.6, 0.17, { drag: 0.6, grow: -0.6 });
         }
       }
     }
     if (this.comet > 0) {
       const c = hsl(Math.random(), 1, 0.65);
-      parts.add.emit(this.pos.x + (Math.random() - 0.5) * 2, this.pos.y + 0.5 + Math.random() * 1.5, this.pos.z + (Math.random() - 0.5) * 2, bx, 1, bz, c, 0.45, 0.6, { drag: 1 });
+      parts.add.emit(this.pos.x + (Math.random() - 0.5) * 2, this.pos.y + 0.5 + Math.random() * 1.5, this.pos.z + (Math.random() - 0.5) * 2, vx * 0.7, 1, vz * 0.7, c, 0.45, 0.6, { drag: 0.3 });
     }
     if (this.offroad && Math.abs(this.speed) > 4 && dust) {
       for (const wpos of this.rig.rearWheels) {
         _w.copy(wpos); root.localToWorld(_w);
-        parts.soft.emit(_w.x, _w.y + 0.2, _w.z, bx * 0.5 + (Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, bz * 0.5 + (Math.random() - 0.5) * 2, dust, 0.9, 0.55, { drag: 2, grow: 1.5, alpha: 0.6 });
+        parts.soft.emit(_w.x, _w.y + 0.2, _w.z, vx * 0.45 + (Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, vz * 0.45 + (Math.random() - 0.5) * 2, dust, 0.9, 0.5, { drag: 0.6, grow: 1.5, alpha: 0.6 });
       }
     }
     if (this.wallFx > 0) {

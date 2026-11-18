@@ -30,12 +30,16 @@ export class Renderer {
   }
 
   setQuality(q) {
+    const hadShadows = this.q ? this.q.shadows : null;
     this.qname = QUALITY[q] ? q : 'high';
     this.q = QUALITY[this.qname];
     this.r.shadowMap.enabled = this.q.shadows;
     this.buildComposer();
     this.resize();
-    if (this.scene) this.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) m.needsUpdate = true; } });
+    // recompiling every shader stalls the screen for a moment: only do it when shadows are switched
+    if (this.scene && hadShadows !== null && hadShadows !== this.q.shadows) {
+      this.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) m.needsUpdate = true; } });
+    }
     this.onQuality?.(this.q);
   }
 

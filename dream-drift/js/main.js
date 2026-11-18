@@ -432,6 +432,7 @@ function tick(dt, raw = dt) {
     if (me) mode = race.phase === 'intro' ? 'intro' : me.finished ? 'finish' : 'chase';
     if (state.freeCam) { camera.position.copy(state.freeCam.pos); camera.lookAt(state.freeCam.look); camera.fov = state.freeCam.fov; camera.updateProjectionMatrix(); }
     else if (!state.paused) raceCam.update(dt, race, me || race.karts[0], mode);
+    if (!state.freeCam) race.cameraCull(camera.position);
     const focus = state.freeCam ? state.freeCam.look : me ? me.pos : race.karts[raceCam.cut.kart]?.pos;
     state.world.update(dt, elapsed, camera, focus);
     const sh = renderer.r.getDrawingBufferSize(new THREE.Vector2()).y;
@@ -542,6 +543,38 @@ DD.debug = {
   },
   skipIntro() { state.race?.skipIntro(); },
   hud(on) { hud?.show(on); },
+  // fast-forward frame by frame (physics + camera, no rendering) and record moments that can make the screen
+  // flicker: glow motes or particles right in front of the lens, karts touching the camera, the camera outside the walls
+  probe(seconds = 30, dt = 1 / 60) {
+    const r = state.race, me = state.me; if (!r || !me) return null;
+    r.skipIntro();
+    const motes = [];
+    state.world.scene.traverse((o) => { if (o.isPoints && o.geometry.attributes.phase) motes.push(o); });
+    const loc = {}, ctl = new Map([[me, { steer: 0, throttle: 1 }]]);
+    const rec = { frames: 0, moteNear: [], partNear: [], kartNear: [], outside: [] };
+    const cam = camera.position;
+    const near = (arr, n, lim) => { let best = Infinity; for (let i = 0; i < n; i++) { const d = Math.hypot(arr[i * 3] - cam.x, arr[i * 3 + 1] - cam.y, arr[i * 3 + 2] - cam.z); if (d < best) best = d; } return best < lim ? best : null; };
+    let hint = -1;
+    for (let t = 0; t < seconds; t += dt) {
+      r.step(dt, ctl); r.frame(dt);
+      raceCam.update(dt, r, me, r.phase === 'intro' ? 'intro' : me.finished ? 'finish' : 'chase');
+      r.cameraCull(cam);
+      state.world.update(dt, elapsed + t, camera, me.pos);
+      rec.frames++;
+      if (r.phase !== 'race') continue;
+      const tt = +r.raceTime.toFixed(2);
+      for (const m of motes) {
+        const d = near(m.geometry.attributes.position.array, m.geometry.attributes.position.count, 4.5);
+        if (d !== null) { rec.moteNear.push([tt, +d.toFixed(2)]); break; }
+      }
+      for (const P of [r.parts.add, r.parts.soft]) { const d = near(P.pos, P.alive, 2.5); if (d !== null) { rec.partNear.push([tt, +d.toFixed(2)]); break; } }
+      for (const k of r.karts) if (k !== me && !k.camHide && Math.hypot(k.pos.x - cam.x, k.pos.y + 0.9 - cam.y, k.pos.z - cam.z) < 2.0) { rec.kartNear.push([tt, k.char.id]); break; }
+      const L = r.track.locate(cam, hint, loc); hint = L.i;
+      if (Math.abs(L.d) > L.wall) rec.outside.push([tt, +(Math.abs(L.d) - L.wall).toFixed(2)]);
+      if (r.phase === 'done') break;
+    }
+    return rec;
+  },
   // park the camera on the course: f = lap fraction 0…1, d = lateral offset, h = height, back = metres behind,
   // look = metres ahead to look at. view(null) returns to the race camera.
   view(f, { d = 0, h = 5, back = 12, look = 25, fov = 68, showHud = false } = {}) {

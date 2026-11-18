@@ -68,6 +68,7 @@ export class RaceCamera {
       this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : 5.5, dt);
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);
+      this.keepInside(tr, _v);
       const kxz = 1 - Math.exp(-16 * dt), ky = 1 - Math.exp(-6 * dt);
       this.pos.x += (_v.x - this.pos.x) * kxz; this.pos.z += (_v.z - this.pos.z) * kxz;
       this.pos.y += (_v.y - this.pos.y) * ky;
@@ -76,6 +77,18 @@ export class RaceCamera {
     }
     this.fov = damp(this.fov, fovT, 4, dt);
     this.apply();
+  }
+
+  // pull a camera position back between the walls: everything else on a course stands outside them
+  keepInside(tr, v) {
+    const L = tr.locate(v, this.hint ?? -1, this.loc || (this.loc = {}));
+    this.hint = L.i;
+    const lim = L.wall - 0.6;
+    if (Math.abs(L.d) > lim) {
+      const over = Math.abs(L.d) - lim, s = Math.sign(L.d);
+      v.x -= L.rx * s * over; v.z -= L.rz * s * over;
+    }
+    v.y = Math.max(v.y, L.y + 1.6);
   }
 
   apply() {

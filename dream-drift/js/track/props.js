@@ -128,7 +128,11 @@ export function motes(n, { center = new THREE.Vector3(), spread = [300, 30, 300]
         vec4 mv = modelViewMatrix*vec4(p,1.0);
         vA = mix(1.0, 0.5+0.5*sin(t*3.0*blink + phase*7.0), blink > 0.0 ? 1.0 : 0.0);
         vC = color;
-        gl_PointSize = size*scale/max(1.0,-mv.z)*(0.6+0.4*vA);
+        float ps = size*scale/max(1.0,-mv.z)*(0.6+0.4*vA);
+        // a mote drifting right past the camera would flash as a huge blob: fade it out near the lens,
+        // cap its size, and fade sub-pixel motes instead of letting them flicker
+        vA *= smoothstep(3.0, 9.0, -mv.z) * clamp(ps / 2.0, 0.0, 1.0);
+        gl_PointSize = min(ps, 40.0);
         gl_Position = projectionMatrix*mv; }`,
     fragmentShader: `varying vec3 vC; varying float vA;
       void main(){ vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0; if (r>1.0) discard;
