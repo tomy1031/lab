@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "serve": "node -e \"require('./tests/serve.cjs')(8080).then(()=>console.log('http://127.0.0.1:8080/'))\"",
-    "test": "node tests/gestures.mjs && node tests/smoke.cjs",
+    "test": "node tests/gestures.mjs && node tests/smoke.cjs && node tests/xr.cjs",
     "test:gestures": "node tests/gestures.mjs",
     "test:smoke": "node tests/smoke.cjs",
+    "test:xr": "node tests/xr.cjs",
     "shots": "node tests/shots.cjs"
   },
   "devDependencies": {
+    "iwer": "^2.7.0",
     "playwright": "1.63.0"
   }
 }

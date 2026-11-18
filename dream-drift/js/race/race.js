@@ -32,7 +32,7 @@ export class Race {
     this.karts = []; this.ais = new Map();
     const N = track.N;
     entrants.forEach((e, i) => {
-      const k = new Kart(e.char, { index: i, isHuman: !!e.human, cls });
+      const k = new Kart(e.char, { index: i, isHuman: !!e.human, cls, vrSeat: !!e.vrSeat });
       const back = 3.5 + i * 3.3;
       const side = (i % 2 === 0 ? -1 : 1) * track.HW[0] * 0.38;
       k.placeOnTrack(track, mod(-back / track.step, N), side);
@@ -290,6 +290,17 @@ export class Race {
     for (let i = 0; i < n; i++) {
       const c = kind === 'box' ? hsl(Math.random(), 0.9, 0.7) : kind === 'pudding' ? new THREE.Color('#ffd36b') : kind === 'homing' ? new THREE.Color(2, 2, 0.6) : new THREE.Color(0.6, 1.4, 2);
       P.emit(pos.x, pos.y, pos.z, (Math.random() - 0.5) * 10, Math.random() * 7, (Math.random() - 0.5) * 10, c, 0.5, 0.6, { gravity: 12, drag: 1 });
+    }
+  }
+
+  // after the camera has moved: a kart the camera is passing through is hidden for that moment instead of
+  // filling the screen with its insides (hysteresis so it can't blink at the threshold)
+  cameraCull(cam) {
+    for (const k of this.karts) {
+      if (k.isHuman) { k.camHide = false; continue; }
+      const d = Math.hypot(k.pos.x - cam.x, k.pos.y + 0.9 - cam.y, k.pos.z - cam.z);
+      k.camHide = k.camHide ? d < 1.8 : d < 1.3;
+      k.rig.visual.visible = (k.blinkOn ?? true) && !k.camHide;
     }
   }
 

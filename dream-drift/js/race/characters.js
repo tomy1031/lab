@@ -214,7 +214,7 @@ function wheelGeometry(c, rear) {
   ]);
 }
 
-function chassisParts(c) {
+function chassisParts(c, noWheel = false) {
   const k = c.kart, k2 = c.kart2, dark = '#2a2d3a', metal = '#b8bfcf';
   return [
     part(G.box, dark, [0, 0.42, 0.05], [0, 0, 0], [1.25, 0.16, 2.3]),
@@ -228,9 +228,11 @@ function chassisParts(c) {
     // seat
     part(G.box, dark, [0, 0.95, -0.62], [-0.22, 0, 0], [0.9, 0.75, 0.16]),
     part(G.box, dark, [0, 0.72, -0.35], [0, 0, 0], [0.8, 0.12, 0.6]),
-    // steering wheel
-    part(G.torus, '#1d1f29', [0, 1.1, 0.44], [-1.0, 0, 0], [0.24, 0.24, 0.24]),
-    part(G.cyl, '#1d1f29', [0, 0.9, 0.55], [-1.0, 0, 0], [0.04, 0.45, 0.04]),
+    // steering wheel (left out when VR draws its own, turning wheel)
+    ...(noWheel ? [] : [
+      part(G.torus, '#1d1f29', [0, 1.1, 0.44], [-1.0, 0, 0], [0.24, 0.24, 0.24]),
+      part(G.cyl, '#1d1f29', [0, 0.9, 0.55], [-1.0, 0, 0], [0.04, 0.45, 0.04]),
+    ]),
     // engine + exhausts
     part(G.box, metal, [0, 0.72, -1.02], [0, 0, 0], [0.82, 0.42, 0.42]),
     part(G.box, dark, [0, 0.98, -1.02], [0, 0, 0], [0.6, 0.12, 0.3]),
@@ -263,10 +265,10 @@ function blobTexture() {
 }
 
 // build the whole kart rig for character c
-export function buildKart(c) {
+export function buildKart(c, { noWheel = false } = {}) {
   const root = new THREE.Group(); root.name = 'kart-' + c.id;
   const visual = new THREE.Group(); root.add(visual);
-  const chassis = new THREE.Mesh(merge(chassisParts(c)), toyMaterial({ roughness: 0.28, metalness: 0.15 }));
+  const chassis = new THREE.Mesh(merge(chassisParts(c, noWheel)), toyMaterial({ roughness: 0.28, metalness: 0.15 }));
   chassis.castShadow = true;
   visual.add(chassis);
 

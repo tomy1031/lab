@@ -106,16 +106,22 @@ export class Hud {
     if (lap !== this.last.lap) { this.lapEl.textContent = lap; this.last.lap = lap; }
     const t = me.finished && !me.estimated ? me.finishTime : race.started ? race.raceTime : 0;
     this.timeEl.textContent = fmtTime(t);
-    if (me.place !== this.last.place) {
-      this.last.place = me.place;
-      this.posN.textContent = me.place;
-      this.pos.style.color = RANK_COLORS[me.place - 1] || '#fff';
+    // a place must hold for a moment before the big number changes, so a close battle doesn't make it flicker
+    if (me.place !== this.pendPlace) { this.pendPlace = me.place; this.pendT = 0; }
+    this.pendT += dt;
+    const showPlace = this.last.place === undefined || this.pendT > 0.3 || me.finished ? this.pendPlace : this.last.place;
+    if (showPlace !== this.last.place) {
+      this.last.place = showPlace;
+      this.posN.textContent = showPlace;
+      this.pos.style.color = RANK_COLORS[showPlace - 1] || '#fff';
       this.pos.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(.2,1.4,.4,1)' });
     }
     // ranking list order (only when it changes)
     const order = race.standings();
     const key = order.map((k) => k.index).join(',');
-    if (key !== this.last.order) {
+    if (key !== this.pendOrder) { this.pendOrder = key; this.orderT = 0; }
+    this.orderT = (this.orderT || 0) + dt;
+    if (key !== this.last.order && (this.orderT > 0.3 || this.last.order === undefined)) {
       this.last.order = key;
       order.forEach((k, i) => {
         const d = this.rows.get(k);
@@ -125,7 +131,7 @@ export class Hud {
       this.rank.replaceChildren(...order.map((k) => this.rows.get(k)));
     }
     this.warn.classList.toggle('on', me.wrongWay > 1.2 && !me.finished);
-    this.speedfx.classList.toggle('on', me.boost > 0 || me.comet > 0);
+    this.speedfx.classList.toggle('on', me.boost > 0.25 || me.comet > 0);
 
     // minimap
     const c = this.mctx, W = this.map.width;
