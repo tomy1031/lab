@@ -56,7 +56,7 @@ export class Hud {
     scene.add(this.call.mesh);
     this.callT = 0;
     // wrist panel (attached by the game to your free hand)
-    this.wrist = new CanvasPanel(512, 320, 0.17, 0.106, { transparent: true });
+    this.wrist = new CanvasPanel(512, 320, 0.135, 0.084, { transparent: true });
     this.wrist.mesh.renderOrder = 11;
     this.tip = '';
   }

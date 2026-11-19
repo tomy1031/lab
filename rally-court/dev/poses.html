@@ -1,37 +1,47 @@
 <!doctype html>
 <meta charset="utf-8">
 <title>RALLY COURT — pose sheet</title>
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js" } }</script>
-<style>html,body{margin:0;background:#bcd}</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }</script>
+<style>html,body{margin:0;background:#bcd;font-family:sans-serif}#l{position:fixed;left:0;right:0;bottom:4px;display:flex;justify-content:space-around;font-size:13px}</style>
+<div id="l"></div>
 <script type="module">
-// dev/poses.html — the CPU figure in each stroke phase, for tuning js/avatar.js (?view=front|side)
+// dev/poses.html — the player figure through each stroke (js/stroke.js, js/avatar.js).
+//   ?set=fh|bh|slice|serve|misc   &view=front|side|back
 import * as THREE from 'three';
 import { Avatar } from '../js/avatar.js';
+const q = new URLSearchParams(location.search);
+const SETS = {
+  fh: [['ready', { kind: 'ready', u: 0 }], ['fh prep .5', { kind: 'fh', u: -1, prep: 0.5 }], ['fh -1', { kind: 'fh', u: -1 }], ['fh -0.6', { kind: 'fh', u: -0.6 }], ['fh -0.3', { kind: 'fh', u: -0.3 }], ['fh 0', { kind: 'fh', u: 0 }], ['fh .3', { kind: 'fh', u: 0.3 }], ['fh .65', { kind: 'fh', u: 0.65 }], ['fh 1', { kind: 'fh', u: 1 }]],
+  bh: [['bh -1', { kind: 'bh', u: -1 }], ['bh -0.6', { kind: 'bh', u: -0.6 }], ['bh -0.3', { kind: 'bh', u: -0.3 }], ['bh 0', { kind: 'bh', u: 0 }], ['bh .3', { kind: 'bh', u: 0.3 }], ['bh .65', { kind: 'bh', u: 0.65 }], ['bh 1', { kind: 'bh', u: 1 }]],
+  slice: [['bh slice -1', { kind: 'bh', slice: true, u: -1 }], ['-0.4', { kind: 'bh', slice: true, u: -0.4 }], ['0', { kind: 'bh', slice: true, u: 0 }], ['1', { kind: 'bh', slice: true, u: 1 }], ['fh volley -1', { kind: 'fh', volley: true, u: -1 }], ['fh volley 0', { kind: 'fh', volley: true, u: 0 }], ['bh volley 0', { kind: 'bh', volley: true, u: 0 }]],
+  serve: [['stance', { kind: 'serve', u: -1, toss: 0 }], ['toss .5', { kind: 'serve', u: -1, toss: 0.5 }], ['trophy', { kind: 'serve', u: -1, toss: 1 }], ['drop', { kind: 'serve', u: -0.55, toss: 1 }], ['up', { kind: 'serve', u: -0.22, toss: 1 }], ['contact', { kind: 'serve', u: 0, toss: 1 }], ['.3', { kind: 'serve', u: 0.3, toss: 1 }], ['finish', { kind: 'serve', u: 1, toss: 1 }]],
+  misc: [['low fh 0', { kind: 'fh', u: 0, cH: 0.45 }], ['high fh 0', { kind: 'fh', u: 0, cH: 1.45 }], ['split .3', { kind: 'ready', u: 0, split: 0.3 }], ['split .8', { kind: 'ready', u: 0, split: 0.8 }]],
+};
+const list = SETS[q.get('set') || 'fh'];
+const view = q.get('view') || 'front';
 const r = new THREE.WebGLRenderer({ antialias: true });
+r.setPixelRatio(devicePixelRatio);
 r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+r.shadowMap.enabled = true;
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd0e0);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x666655, 1.4));
-const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(3, 6, 5); scene.add(sun);
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 10), new THREE.MeshStandardMaterial({ color: 0x2f5f9e })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
-const poses = JSON.parse(decodeURIComponent(new URLSearchParams(location.search).get('p') || '[]')) ;
-const list = poses.length ? poses : [
-  { kind: 'ready', u: 0 }, { kind: 'fh', u: -1 }, { kind: 'fh', u: -0.4 }, { kind: 'fh', u: 0 }, { kind: 'fh', u: 0.5 }, { kind: 'fh', u: 1 },
-  { kind: 'bh', u: -1 }, { kind: 'bh', u: 0 }, { kind: 'bh', u: 1 }, { kind: 'serve', u: -1, toss: 1 }, { kind: 'serve', u: 0, toss: 1 }, { kind: 'serve', u: 1, toss: 1 },
-];
-const view = new URLSearchParams(location.search).get('view') || 'front';
-list.forEach((sw, i) => {
+scene.add(new THREE.HemisphereLight(0xffffff, 0x666655, 1.2));
+const sun = new THREE.DirectionalLight(0xffffff, 2.0); sun.position.set(4, 8, 6); sun.castShadow = true; sun.shadow.camera.left = -12; sun.shadow.camera.right = 12; sun.shadow.mapSize.set(2048, 2048); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 10), new THREE.MeshStandardMaterial({ color: 0x2f5f9e })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const gap = 1.9;
+const yaw = view === 'side' ? Math.PI / 2 : view === 'back' ? Math.PI : 0;
+list.forEach(([name, sw], i) => {
   const a = new Avatar();
   scene.add(a.root);
-  const x = (i - (list.length - 1) / 2) * 2.1;
-  a.update(0, { x, z: 0, yaw: view === 'side' ? Math.PI / 2 : 0, vx: 0, vz: 0, swing: { cH: 0.95, reach: 0.85, front: 0.4, ...sw } });
-  // contact point marker
-  const m = new THREE.Mesh(new THREE.SphereGeometry(0.034, 12, 8), new THREE.MeshBasicMaterial({ color: 0xd7ec3a }));
-  if (sw.kind === 'fh') m.position.set(x - 0.85, 0.95, 0.4); else if (sw.kind === 'bh') m.position.set(x + 0.85, 0.95, 0.4); else if (sw.kind === 'serve') m.position.set(x - 0.2, 2.72, 0.35); else m.visible = false;
-  if (view === 'side') m.visible = false;
-  scene.add(m);
+  const x = (i - (list.length - 1) / 2) * gap;
+  a.update(0, { x, z: 0, yaw, vx: 0, vz: 0, swing: { cH: 0.95, reach: 0.85, front: 0.4, ...sw } });
+  const lab = document.createElement('span'); lab.textContent = name; document.getElementById('l').appendChild(lab);
 });
-const cam = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100);
-cam.position.set(0, 2.2, 15); cam.lookAt(0, 1.2, 0);
+// frame the row: the width of all figures fills the view
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 100);
+const span = list.length * gap;
+const dist = span / 2 / Math.tan((cam.fov / 2) * Math.PI / 180) / cam.aspect;
+cam.position.set(0, 1.25, dist); cam.lookAt(0, 1.2, 0);
+const lab = document.getElementById('l'); lab.style.left = '0'; lab.style.right = '0';
 r.render(scene, cam);
 window.done = true;
 </script>

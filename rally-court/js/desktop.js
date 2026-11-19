@@ -3,10 +3,13 @@
 //   left click: topspin drive · right click: slice · Space: toss (serve) then click to serve
 //   mouse: aim (where in the opposite court you want the ball to go) · the camera follows your body.
 import * as THREE from 'three';
-import { strokePose } from './avatar.js';
+import { strokePose, contactSpeedPerU } from './stroke.js';
 import { COURT } from './physics.js';
 
-const SWING = { drive: { back: 0.13, pow: 2.0 }, slice: { back: 0.17, pow: 1.6 }, serve: { back: 0.14, pow: 2.0 } };
+// the forward swing's duration (s) is set so the racket head meets the ball at a realistic speed:
+// drive 17 m/s, slice 12.5 m/s, serve 40 m/s (u accelerates as (t/back)^pow, so du/dt at the contact = pow/back)
+const swing = (pow, speed, kind, slice) => ({ pow, back: (pow * contactSpeedPerU(kind, slice)) / speed });
+const SWING = { drive: swing(2.0, 17, 'fh'), slice: swing(1.6, 12.5, 'fh', true), serve: swing(2.0, 40, 'serve') };
 
 export class DesktopSwing {
   constructor() {
@@ -16,10 +19,10 @@ export class DesktopSwing {
     this.aim = { x: 0, z: -9 };
   }
   /** start a stroke; contactIn: seconds until the planned contact (auto swing), else the stroke's own timing */
-  start(kind, wing, cH, serve = false, contactIn = null) {
+  start(kind, wing, cH, serve = false, contactIn = null, volley = false) {
     const cfg = SWING[serve ? 'serve' : kind];
     const t0 = contactIn == null ? this.time : this.time - (cfg.back - Math.max(0, Math.min(cfg.back, contactIn)));
-    this.state = { kind: serve ? 'serve' : wing, slice: kind === 'slice', t0, cfg, cH };
+    this.state = { kind: serve ? 'serve' : wing, slice: kind === 'slice', volley, t0, cfg, cH };
   }
   backswing(kind) { return SWING[kind].back; }
   /**
@@ -41,7 +44,7 @@ export class DesktopSwing {
    * body: {x, z} (world), facing −z. plan: the next ball (for the backswing and the contact height).
    * hand: +1 right-handed. Returns the racket pose (world) for this frame.
    */
-  update(dt, body, plan, hand, serving) {
+  update(dt, body, plan, hand, serving, prep = 1) {
     this.time += dt;
     let sw;
     const st = this.state;
@@ -49,16 +52,16 @@ export class DesktopSwing {
       const t = this.time - st.t0;
       const u = this.u();
       if (t > st.cfg.back + 0.45) this.state = null;
-      sw = { kind: st.kind, u, cH: st.cH, slice: st.slice, reach: 0.85, front: 0.4 };
+      sw = { kind: st.kind, u, cH: st.cH, slice: st.slice, volley: st.volley, reach: 0.85, front: 0.4 };
       if (st.kind === 'serve') sw = { kind: 'serve', u };
     } else if (serving) {
       sw = { kind: 'serve', u: -0.35 };
-    } else if (plan && !plan.volley) {
+    } else if (plan) {
       // unit turn: take the racket back as the ball comes
-      sw = { kind: plan.wing, u: -1, cH: plan.c.y, reach: 0.85, front: 0.4 };
+      sw = { kind: plan.wing, u: -1, cH: plan.c.y, reach: 0.85, front: 0.4, volley: plan.volley, prep };
     } else sw = { kind: 'ready', u: 0 };
     // mirror for the left hand: local x flips
-    const pose = strokePose(sw, 0.9);
+    const pose = strokePose(sw);
     const mirror = hand < 0;
     // local (facing +z, right −x) → world (facing −z): rotate 180° about y; a left-hander mirrors x
     const toWorld = (v) => new THREE.Vector3(mirror ? v.x : -v.x, v.y, -v.z);

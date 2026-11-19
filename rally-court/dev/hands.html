@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>RALLY COURT — hands</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }</script>
+<style>html,body{margin:0;background:#9fb3c8;font-family:sans-serif}#l{position:fixed;left:0;right:0;bottom:6px;display:flex;justify-content:space-around;font-size:14px}</style>
+<div id="l"></div>
+<script type="module">
+// dev/hands.html — the hand poses (js/arm.js) up close, the right hand holding the racket in its grip frame.
+import * as THREE from 'three';
+import { Arm, racketMount, GRIP_ANGLE } from '../js/arm.js';
+import { buildRacketMesh } from '../js/racket.js';
+const q = new URLSearchParams(location.search);
+const r = new THREE.WebGLRenderer({ antialias: true });
+r.setPixelRatio(devicePixelRatio); r.setSize(innerWidth, innerHeight); document.body.appendChild(r.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9fb3c8);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.3));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(1, 2, 3); scene.add(sun);
+const poses = q.get('only') ? [[q.get('only'), q.get('side') || 'R']] : [['grip', 'R'], ['grip', 'L'], ['ball', 'L'], ['open', 'L'], ['relaxed', 'R'], ['throat', 'L']];
+const view = q.get('view') || 'a';
+poses.forEach(([pose, side], i) => {
+  const arm = new Arm(side, { sleeve: 0x1f4e8c });
+  scene.add(arm.group);
+  const x = (i - (poses.length - 1) / 2) * 0.45;
+  // the hand held out in front like holding a controller: the forearm comes from behind (−z), the rod (−Z of the
+  // grip frame) points up and forward, the back of the right hand faces right
+  // grip frame of a hand held out thumb-up toward the camera: X = −x, Y (to the elbow) = −z, Z = −y (rod up)
+  const qh = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, -1, 0)));
+  qh.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.35));   // forearm rising toward the hand
+  if (view === 'b') qh.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), side === 'R' ? 0.9 : -0.9));
+  const hp = new THREE.Vector3(x, 1.0, 0);
+  const sh = hp.clone().add(new THREE.Vector3(side === 'R' ? 0.15 : -0.15, 0.3, -0.45));
+  arm.setPose(sh, hp, qh, new THREE.Vector3(0, -1, 0.3), pose);
+  if (pose === 'grip' && side === 'R') {
+    const rk = buildRacketMesh();
+    rk.position.copy(hp); rk.quaternion.copy(qh).multiply(racketMount('R', GRIP_ANGLE, 0));
+    scene.add(rk);
+  }
+  if (pose === 'ball') {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.0335, 20, 14), new THREE.MeshStandardMaterial({ color: 0xd7ec3a, roughness: 0.9 }));
+    arm.ballPoint(b.position); scene.add(b);
+  }
+  const lab = document.createElement('span'); lab.textContent = pose + ' ' + side; document.getElementById('l').appendChild(lab);
+});
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.05, 50);
+if (view === 'fp') { cam.position.set(0, 1.55, -0.55); cam.lookAt(0, 0.95, 0.4); }
+else if (q.get('only')) { cam.fov = 22; cam.updateProjectionMatrix(); cam.position.set(0.25, 1.15, 0.6); cam.lookAt(0, 1.02, 0); }
+else { cam.position.set(0, 1.15, 2.2); cam.lookAt(0, 1.05, 0); }
+r.render(scene, cam);
+window.done = true;
+</script>

@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { BALL_R, contact, racketACOR, STRING_MU } from './physics.js';
 
 export const RACKET = {
-  length: 0.685, butt: -0.075,      // butt cap below the hand
+  length: 0.685, butt: -0.055,      // butt cap just below the little finger
   headC: 0.45,                       // head centre above the hand
   a: 0.165, b: 0.125,                // string bed half-length / half-width
   rim: 0.022,                        // frame beyond the strings
@@ -72,9 +72,11 @@ export function buildRacketMesh(color = 0x1e2a44, accent = 0xe8b928) {
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.1, 8), frameMat);
   shaft.position.y = 0.09;
   g.add(shaft);
-  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.0155, 0.0165, 0.2, 8),
+  // the grip runs from the butt cap up to the shaft (19 cm); the hand holds it near the butt
+  const gripLen = 0.19;
+  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.0155, 0.0165, gripLen, 8),
     new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.9 }));
-  grip.position.y = -0.03 + 0.03;
+  grip.position.y = R.butt + 0.012 + gripLen / 2;
   grip.rotation.y = Math.PI / 8;
   g.add(grip);
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.017, 0.016, 8), accentMat);

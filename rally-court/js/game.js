@@ -16,6 +16,10 @@ import { assistShot } from './solver.js';
 import { COURT, inSingles, inServiceBox, speed as vlen } from './physics.js';
 import { SETTING, formatValue } from './config.js';
 import { SERVE_CONTACT, SERVE_FRONT } from './ai.js';
+import { FirstPersonArms } from './fparms.js';
+import { racketMount } from './arm.js';
+
+const THROAT = 0.26, HANDLE = 0.095;    // m along the shaft from the racket hand: the throat, the second grip
 
 const MODE_JA = { match: '試合', rally: 'ラリー練習', machine: '球出し', serve: 'サーブ練習' };
 const MOVE_JA = { step: '足踏み・腕振り', auto: '自動', dpad: '十字キー' };
@@ -40,12 +44,11 @@ export class Game {
     this.racketMesh = buildRacketMesh();
     scene.add(this.racketMesh);
     this.racket = new RacketBody();
-    // free hand
-    this.offHand = this.buildHand();
-    scene.add(this.offHand);
-    this.offHand.add(this.hud.wrist.mesh);
-    this.hud.wrist.mesh.position.set(0, 0.05, 0.11);
-    this.hud.wrist.mesh.rotation.x = -1.05;
+    // your arms in VR, and the wrist panel on the free arm
+    this.fpArms = new FirstPersonArms(scene);
+    scene.add(this.hud.wrist.mesh);
+    this.hud.wrist.mesh.visible = false;
+    this.openUntil = 0;
     // ball machine
     this.machine = this.buildMachine();
     scene.add(this.machine);
@@ -76,29 +79,12 @@ export class Game {
     this.errors = [];
     settings.onChange((k) => {
       if (k === 'surface') this.world.setSurface(settings.get('surface'));
-      if (k === 'racketTilt' || k === 'racketRoll' || k === 'hand') this.calib = null;
+      if (k === 'racketAngle' || k === 'racketRoll' || k === 'hand') this.calib = null;
     });
     this.world.setSurface(settings.get('surface'));
     this.events = [];       // for tests: everything the sim said
   }
 
-  buildHand() {
-    const g = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ color: 0xd7a07a, roughness: 0.7 });
-    const palm = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.03, 0.1), mat);
-    palm.position.set(0, -0.01, 0.01);
-    g.add(palm);
-    for (let i = 0; i < 4; i++) {
-      const f = new THREE.Mesh(new THREE.CapsuleGeometry(0.009, 0.05, 3, 6), mat);
-      f.rotation.x = Math.PI / 2 + 0.5; f.position.set(-0.03 + i * 0.02, -0.02, -0.06);
-      g.add(f);
-    }
-    const th = new THREE.Mesh(new THREE.CapsuleGeometry(0.01, 0.04, 3, 6), mat);
-    th.position.set(0.05, -0.01, -0.01); th.rotation.z = -0.9;
-    g.add(th);
-    g.visible = false;
-    return g;
-  }
   buildMachine() {
     const g = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.75), new THREE.MeshStandardMaterial({ color: 0x2b2f36, roughness: 0.5 }));
@@ -153,21 +139,23 @@ export class Game {
     if (restart || this.sim.phase === 'over') this.start();
   }
 
-  /** the racket's rotation relative to the controller's pointing ray (see config: racketTilt / racketRoll) */
+  /**
+   * the racket's rotation in the racket hand's grip frame (the controller's grip space = the hand): the shaft at
+   * `racketAngle` from the forearm line, the strings' normal through the palm, turned by `racketRoll`
+   */
   calibQuat() {
     if (this.calib) return this.calib;
-    const tilt = this.settings.get('racketTilt') * Math.PI / 180;
-    let roll = this.settings.get('racketRoll') * Math.PI / 180;
-    if (this.settings.get('hand') === 'left') roll = -roll;
-    const q1 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2 + tilt);
-    const q2 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2 + roll);
-    this.calib = q1.multiply(q2);
+    const left = this.settings.get('hand') === 'left';
+    this.calib = racketMount(left ? 'L' : 'R', this.settings.get('racketAngle'), this.settings.get('racketRoll'));
+    // the free hand taking the racket (two-handed backhand / the throat): its palm on the other face
+    this.calibOff = racketMount(left ? 'R' : 'L', this.settings.get('racketAngle'), 180);
     return this.calib;
   }
 
   frame(dt) {
     dt = Math.min(dt, 0.1);
     this.time += dt;
+    this.lastDt = dt;
     const input = this.input, S = this.settings, sim = this.sim, xr = this.xr;
     input.update();
     const handKey = S.get('hand') === 'left' ? 'left' : 'right';
@@ -203,7 +191,7 @@ export class Game {
       this.racket.enabled = rh.tracked;
       racketVisible = rh.tracked;
       if (rh.tracked) {
-        const q = rh.ray.quaternion.clone().multiply(this.calibQuat());
+        const q = rh.grip.quaternion.clone().multiply(this.calibQuat());
         this.racket.setPose(rh.grip.position, q, dt);
         this.racketMesh.position.copy(rh.grip.position); this.racketMesh.quaternion.copy(q);
       }
@@ -216,14 +204,16 @@ export class Game {
         if (input.mouse.clicked[0] || input.mouse.clicked[2] || input.keyHit('KeyJ') || input.keyHit('KeyK')) {
           const slice = input.mouse.clicked[2] || input.keyHit('KeyK');
           if (serving && sim.holder !== 'p') this.desktop.start('drive', 'fh', SERVE_CONTACT, true);
-          else if (!serving) this.desktop.start(slice ? 'slice' : 'drive', plan ? plan.wing : 'fh', plan ? plan.c.y : 0.95);
+          else if (!serving) this.desktop.start(slice ? 'slice' : 'drive', plan ? plan.wing : 'fh', plan ? plan.c.y : 0.95, false, null, !!(plan && plan.volley));
         }
         if (input.keyHit('Space') && sim.holder === 'p') this.pcToss();
         if (this.autoSwing) this.autoStroke(plan, serving);
       }
       this.aimMark.visible = !this.demo && !xr;
       const body = this.player.body;
-      const pose = this.desktop.update(paused ? 0 : dt, body, plan, hs, serving && !this.desktop.busy);
+      // the take-back starts about a second before the contact
+      const prep = plan ? Math.min(1, Math.max(0, (1.0 - (plan.tAbs - sim.time)) / 0.55)) : 0;
+      const pose = this.desktop.update(paused ? 0 : dt, body, plan, hs, serving && !this.desktop.busy, prep);
       this.racket.enabled = !this.demo;
       this.racket.setPose(pose.p, pose.q, Math.max(dt, 1e-3));
       this.racketMesh.position.copy(pose.p); this.racketMesh.quaternion.copy(pose.q);
@@ -237,29 +227,20 @@ export class Game {
         const st = this.desktop.state, u = this.desktop.u();
         sw = st.kind === 'serve' ? { kind: 'serve', u, toss: 1 } : { kind: st.kind, u, cH: st.cH, slice: st.slice };
       } else if (serving) sw = { kind: 'serve', u: -0.35, toss: sim.holder === 'p' ? 0 : 1 };
-      else if (plan && !plan.volley) sw = { kind: plan.wing, u: -1, cH: plan.c.y };
+      else if (plan) sw = { kind: plan.wing, u: -1, cH: plan.c.y, volley: plan.volley, prep };
       else sw = { kind: 'ready', u: 0 };
-      this.meAvatar.update(paused ? 0 : dt, { x: body.x, z: body.z, yaw: Math.PI, vx: body.vx, vz: body.vz, swing: sw });
+      this.meAvatar.update(paused ? 0 : dt, { x: body.x, z: body.z, yaw: Math.PI, vx: body.vx, vz: body.vz, swing: sw, look: sim.live ? sim.ball.p : null });
     }
     this.racketMesh.visible = racketVisible;
     if (!paused) this.racket.cooldown = Math.max(0, this.racket.cooldown - dt);
 
-    // ── free hand & the serve toss (VR) ──
-    this.offHand.visible = xr && oh.tracked;
-    if (xr && oh.tracked) {
-      this.offHand.position.copy(oh.grip.position); this.offHand.quaternion.copy(oh.grip.quaternion);
-      const hist = this.toss.hist;
-      hist.push({ t: this.time, p: oh.grip.position.clone() });
-      while (hist.length > 8) hist.shift();
-      if (sim.holder === 'p' && !paused && !this.demo) {
-        if (oh.pressed.trigger || oh.pressed.squeeze) this.toss.holding = true;
-        if (this.toss.holding && (oh.released.trigger || oh.released.squeeze)) { this.toss.holding = false; this.vrToss(oh); }
-      }
-    }
+    // ── your arms, the free hand & the serve toss (VR) ──
+    if (xr && !this.demo) this.updateArms(rh, oh, handKey, offKey, paused);
+    else { for (const a of Object.values(this.fpArms.arms)) a.group.visible = false; this.hud.wrist.mesh.visible = false; }
     if (sim.holder === 'p') {
       // the ball sits in your free hand (VR) or in front of you (PC)
-      if (xr && oh.tracked) {
-        const p = new THREE.Vector3(0, -0.005, -0.045).applyQuaternion(oh.grip.quaternion).add(oh.grip.position);
+      if (xr && oh.tracked && this.fpArms.arms[offKey].group.visible) {
+        const p = this.fpArms.arms[offKey].ballPoint(new THREE.Vector3());
         Object.assign(sim.ball.p, { x: p.x, y: p.y, z: p.z });
       } else {
         const b = this.player.body;
@@ -288,7 +269,16 @@ export class Game {
     if (ballShown) this.ballView.update(sim.ball, paused ? 0 : dt, S.get('trail') && sim.live);
     this.ballView.tickMarks(dt);
     const cpu = sim.cpu;
-    if (this.cpuAvatar.root.visible) this.cpuAvatar.update(paused ? 0 : dt, { x: cpu.s.x, z: cpu.s.z, yaw: 0, vx: cpu.s.vx, vz: cpu.s.vz, swing: cpu.swingState() });
+    if (this.cpuAvatar.root.visible) {
+      this.cpuAvatar.update(paused ? 0 : dt, { x: cpu.s.x, z: cpu.s.z, yaw: 0, vx: cpu.s.vx, vz: cpu.s.vz, swing: cpu.swingState(), look: sim.live ? sim.ball.p : null });
+      if (sim.holder === 'c') {
+        // the CPU holds the ball for its serve until it tosses it
+        const p = this.cpuAvatar.root.localToWorld(this.cpuAvatar.armL.ballPoint(new THREE.Vector3()));
+        Object.assign(sim.ball.p, { x: p.x, y: p.y, z: p.z });
+        this.ballView.setVisible(true);
+        this.ballView.update(sim.ball, 0, false);
+      }
+    }
     const tg = this.player.target;
     const showT = S.get('showTarget') && tg && S.get('moveMode') !== 'dpad' && !this.demo && sim.phase === 'play';
     this.ballView.showTarget(tg ? tg.x : 0, tg ? tg.z : 0, !!(showT || (S.get('showTarget') && S.get('moveMode') === 'dpad' && plan && sim.phase === 'play')), this.time, !plan || plan.reachable);
@@ -309,6 +299,57 @@ export class Game {
     // PC camera: behind you
     if (!xr) this.pcCamera(dt);
     input.endFrame();
+  }
+
+  /**
+   * VR: both arms on the controllers. The racket hand grips; the free hand holds the ball for the serve (press
+   * and release its trigger to toss — it opens), takes the handle when you bring it there (two-handed backhand)
+   * or cradles the throat (ready position), and otherwise relaxes; a fist while its trigger is held.
+   */
+  updateArms(rh, oh, handKey, offKey, paused) {
+    const sim = this.sim;
+    if (oh.tracked) {
+      const hist = this.toss.hist;
+      hist.push({ t: this.time, p: oh.grip.position.clone() });
+      while (hist.length > 8) hist.shift();
+      if (sim.holder === 'p' && !paused) {
+        if (oh.pressed.trigger || oh.pressed.squeeze) this.toss.holding = true;
+        if (this.toss.holding && (oh.released.trigger || oh.released.squeeze)) { this.toss.holding = false; this.vrToss(oh); this.openUntil = this.time + 0.7; }
+      }
+    }
+    const hands = { left: null, right: null };
+    if (rh.tracked) hands[handKey] = { pos: rh.grip.position, quat: rh.grip.quaternion, pose: 'grip' };
+    if (oh.tracked) {
+      let pos = oh.grip.position, quat = oh.grip.quaternion, pose;
+      if (sim.holder === 'p') pose = 'ball';
+      else if (this.time < this.openUntil) pose = 'open';
+      else {
+        pose = oh.trigger > 0.6 || oh.squeeze > 0.6 ? 'grip' : 'relaxed';
+        // near the racket: take the handle above the racket hand, or cradle the throat
+        if (rh.tracked && this.racketMesh.visible) {
+          this.calibQuat();
+          const shaft = new THREE.Vector3(0, 1, 0).applyQuaternion(this.racketMesh.quaternion);
+          const handle = this.racketMesh.position.clone().addScaledVector(shaft, HANDLE);
+          const throat = this.racketMesh.position.clone().addScaledVector(shaft, THROAT);
+          const qOff = this.racketMesh.quaternion.clone().multiply(this.calibOff.clone().invert());
+          if (oh.grip.position.distanceTo(handle) < 0.09) { pos = handle; quat = qOff; pose = 'grip'; }
+          else if (oh.grip.position.distanceTo(throat) < 0.1) { pos = throat; quat = qOff; pose = 'throat'; }
+        }
+      }
+      hands[offKey] = { pos, quat, pose };
+    }
+    this.fpArms.update(paused ? 0.016 : this.lastDt || 0.016, this.camera, hands);
+    // the wrist panel: on the back of the free wrist, turned to your eyes
+    const arm = this.fpArms.arms[offKey];
+    const w = this.hud.wrist.mesh;
+    w.visible = !!hands[offKey];
+    if (w.visible) {
+      const back = new THREE.Vector3(offKey === 'left' ? -1 : 1, 0, 0).applyQuaternion(arm.hand.quaternion);
+      const toElbow = arm.E.clone().sub(arm.W).normalize();
+      w.position.copy(arm.W).addScaledVector(back, 0.04).addScaledVector(toElbow, 0.085);
+      const eye = this.camera.getWorldPosition(new THREE.Vector3());
+      w.lookAt(eye);
+    }
   }
 
   pcCamera(dt) {
@@ -345,7 +386,7 @@ export class Game {
     }
     if (plan && sim.phase === 'play') {
       const tIn = plan.tAbs - sim.time;
-      if (tIn <= d.backswing('drive') && tIn > -0.05) d.start('drive', plan.wing, plan.c.y, false, tIn);
+      if (tIn <= d.backswing('drive') && tIn > -0.05) d.start('drive', plan.wing, plan.c.y, false, tIn, plan.volley);
     }
   }
 
@@ -358,7 +399,7 @@ export class Game {
   }
   vrToss(oh) {
     const S = this.settings;
-    const p = oh.grip.position.clone().add(new THREE.Vector3(0, 0.04, 0));
+    const p = new THREE.Vector3(this.sim.ball.p.x, this.sim.ball.p.y, this.sim.ball.p.z);   // from the hand that held it
     let v;
     if (S.get('tossAssist')) {
       v = { x: 0, y: Math.sqrt(2 * 9.81 * S.get('tossHeight')), z: -0.15 };
