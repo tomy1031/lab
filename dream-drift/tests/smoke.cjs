@@ -109,6 +109,17 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
       const r = await page.evaluate((hz) => window.DD.debug.judderProbe(Math.round(1.5 * hz), 1 / hz, 0), hz);
       check(r.frames > 50 && r.judderPx < 0.15, `no judder at ${hz} Hz (${r.judderPx} px over ${r.frames} frames)`);
     }
+    // after a hit and after being put back on the road your kart stays visible (no on/off blinking)
+    const blink = await page.evaluate(() => {
+      const r = window.DD.debug.race, me = r.karts.find((k) => k.isHuman);
+      let hidden = 0;
+      for (const ev of [() => me.hit('spin'), () => me.respawn(r.track)]) {
+        ev();
+        for (let i = 0; i < 150; i++) { r.step(1 / 60, new Map([[me, { steer: 0, throttle: 1 }]])); r.frame(1 / 60); if (!me.rig.visual.visible) hidden++; }
+      }
+      return hidden;
+    });
+    check(blink === 0, `your kart never blinks out after a hit or a respawn (${blink} hidden frames)`);
     const errs = [...errors, ...(await ddErrors(page))];
     check(errs.length === 0, `judder probe: no errors ${errs.join(' | ')}`);
     await page.close();
