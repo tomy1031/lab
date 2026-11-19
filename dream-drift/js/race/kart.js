@@ -160,8 +160,8 @@ export class Kart {
 
     // ---- velocity (grip pulls the velocity toward the facing direction; low grip = slide)
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
-    let grip = 11 + (3.4 - 11) * db;
-    if (this.air) grip = 1.2;
+    let grip = 11 + (7.5 - 11) * db; // the body shows the drift angle; the path slides only a little
+    if (this.air && this.padJump) grip = 1.2; // a drift hop keeps its grip (it used to land sliding sideways and run wide)
     if (this.spin > 0) grip = 1.4;
     const k = 1 - Math.exp(-grip * dt);
     this.vel.x += (fx * this.speed - this.vel.x) * k;
@@ -198,7 +198,10 @@ export class Kart {
       const vn = (this.vel.x * L.rx + this.vel.z * L.rz) * s;
       if (vn > 0) {
         this.vel.x -= L.rx * s * vn * 1.5; this.vel.z -= L.rz * s * vn * 1.5;
-        if (vn > 6) { this.speed *= 0.72; this.events.push('wall'); this.wallFx = 0.3; }
+        if (vn > 6) {
+          this.speed *= 0.72; this.events.push('wall'); this.wallFx = 0.3;
+          if (this.drift.active) { this.drift.active = false; this.drift.level = 0; this.drift.charge = 0; }
+        }
         else this.speed *= 1 - 1.2 * dt;
       }
       // nose pointing into the wall: turn it back along the road (forgiving for gesture steering)
@@ -269,9 +272,15 @@ export class Kart {
     rig.blob.position.y = -h + 0.06;
     const bs = 1 / (1 + h * 0.25);
     rig.blob.scale.set(bs, 1, bs);
-    this.blinkOn = this.invuln > 0 && this.spin <= 0 && this.shield <= 0 ? Math.floor(this.invuln * 14) % 2 === 0 : true;
-    if (this.vrSeat) this.blinkOn = true;
-    rig.visual.visible = this.blinkOn && !this.camHide;
+    // invulnerable after a hit or a respawn: a soft glow that fades out (switching the kart on and off flickers)
+    this.blinkOn = true;
+    rig.visual.visible = !this.camHide;
+    const safe = this.invuln > 0 && this.spin <= 0 && this.shield <= 0 && this.comet <= 0;
+    if (safe && !this.safeMesh) { this.safeMesh = makeComet(rig.root); this.safeMesh.material.color.set('#bfefff'); }
+    if (this.safeMesh) {
+      this.safeMesh.visible = safe && !this.vrSeat;
+      if (safe) this.safeMesh.material.opacity = Math.min(1, this.invuln / 0.6) * (0.16 + 0.06 * Math.sin(performance.now() / 160));
+    }
 
     // shield bubble / comet aura
     if (this.shield > 0 && !this.shieldMesh) this.shieldMesh = makeShield(rig.root);
@@ -299,9 +308,9 @@ export class Kart {
       const c = DRIFT_COLORS[this.drift.level];
       for (const wpos of this.rig.rearWheels) {
         _w.copy(wpos); _w.x *= 1.05; root.localToWorld(_w);
-        const n = this.drift.level ? 3 : 1;
-        for (let i = 0; i < n; i++) parts.add.emit(_w.x, _w.y + 0.15, _w.z, vx * 0.6 + (Math.random() - 0.5) * 5, 2 + Math.random() * 4, vz * 0.6 + (Math.random() - 0.5) * 5, c,
-          this.drift.level ? 0.38 : 0.25, 0.28, { gravity: 18, drag: 0.8 });
+        const n = this.drift.level ? 2 : 1;
+        for (let i = 0; i < n; i++) parts.add.emit(_w.x, _w.y + 0.1, _w.z, vx * 0.75 + (Math.random() - 0.5) * 2.5, 1 + Math.random() * 2, vz * 0.75 + (Math.random() - 0.5) * 2.5, c,
+          this.drift.level ? 0.3 : 0.2, 0.22, { gravity: 16, drag: 0.5 });
       }
     }
     if (this.boost > 0 || this.comet > 0) {
@@ -320,7 +329,7 @@ export class Kart {
     if (this.offroad && Math.abs(this.speed) > 4 && dust) {
       for (const wpos of this.rig.rearWheels) {
         _w.copy(wpos); root.localToWorld(_w);
-        parts.soft.emit(_w.x, _w.y + 0.2, _w.z, vx * 0.45 + (Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, vz * 0.45 + (Math.random() - 0.5) * 2, dust, 0.9, 0.5, { drag: 0.6, grow: 1.5, alpha: 0.6 });
+        parts.soft.emit(_w.x, _w.y + 0.2, _w.z, vx * 0.45 + (Math.random() - 0.5) * 2, 1 + Math.random() * 1.5, vz * 0.45 + (Math.random() - 0.5) * 2, dust, 0.7, 0.45, { drag: 0.6, grow: 1.0, alpha: 0.35 });
       }
     }
     if (this.wallFx > 0) {

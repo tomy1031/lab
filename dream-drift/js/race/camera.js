@@ -64,7 +64,13 @@ export class RaceCamera {
       // chase
       let target = k.heading;
       const vs = Math.hypot(k.vel.x, k.vel.z);
-      if (vs > 4 && k.speed > 0) target = k.heading + 0.35 * angleDiff(Math.atan2(k.vel.x, k.vel.z), k.heading);
+      // lean a little toward the direction of travel — but not when it points sideways or backwards (after a wall
+      // bounce it flips between ±180° from frame to frame, which shook the camera)
+      if (vs > 4 && k.speed > 0) {
+        const slip = angleDiff(Math.atan2(k.vel.x, k.vel.z), k.heading);
+        const w = 1 - smoothstep(0.5, 1.0, Math.abs(slip));
+        target = k.heading + 0.35 * slip * w;
+      }
       this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : 5.5, dt);
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);

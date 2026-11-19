@@ -760,14 +760,15 @@ DD.debug = {
     return { frames: pts.length, judderPx: +Math.sqrt(s2 / Math.max(1, k)).toFixed(3) };
   },
   // render n frames at a fixed time step and return each as a PNG data URL (flicker analysis in tests)
-  captureFrames(n = 60, dt = 1 / 60) {
+  captureFrames(n = 60, dt = 1 / 60, onFrame = null, keep = () => true) {
     renderer.r.setAnimationLoop(null);
     const out = [];
     try {
       for (let i = 0; i < n; i++) {
+        onFrame?.(i);
         elapsed += dt;
         tick(dt, dt);
-        out.push(renderer.r.domElement.toDataURL('image/png'));
+        if (keep(i)) out.push(renderer.r.domElement.toDataURL('image/png'));
       }
     } finally { last = performance.now(); renderer.r.setAnimationLoop(frame); }
     return out;

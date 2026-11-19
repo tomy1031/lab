@@ -181,8 +181,11 @@ export class Race {
         if (k.stuckT > 1) {
           const moved = k.raceDist - k.stuckRef;
           k.stuckRef = k.raceDist; k.stuckT = 0;
-          k.stuckCount = moved < 1.2 && k.spin <= 0 && (!k.isHuman || k.throttle > 0.5 || this.ais.has(k)) ? (k.stuckCount || 0) + 1 : 0;
-          if (k.stuckCount >= 3) { k.stuckCount = 0; k.respawn(tr); }
+          const driver = !k.isHuman || this.ais.has(k);
+          // CPUs: back on the road after 3 s without progress. You: only when the kart has really stopped for 4 s
+          const stuck = driver ? moved < 1.2 : moved < 0.6 && Math.abs(k.speed) < 3 && k.throttle > 0.5;
+          k.stuckCount = stuck && k.spin <= 0 ? (k.stuckCount || 0) + 1 : 0;
+          if (k.stuckCount >= (driver ? 3 : 4)) { k.stuckCount = 0; k.respawn(tr); }
         }
       }
     }
