@@ -50,6 +50,7 @@ export class Cpu {
   /** a new flight began. pred: prediction from now; step0: the current physics step; from: who sent it */
   onBall(pred, step0, from, ctx) {
     this.plan = null; this.hitStep = -1; this.shot = null;
+    if (from !== this.who) this.splitT = this.time;           // split step as the opponent hits
     if (from === this.who) {
       // recover toward the middle of the possible replies
       const b = findEvent(pred, 'bounce', -this.side);
@@ -85,26 +86,33 @@ export class Cpu {
   }
 
   /** the stroke animation state for the avatar */
+  /**
+   * The stroke animation state for the avatar (js/stroke.js): the take-back starts ~1 s before the contact
+   * (prep 0 → 1), the forward swing takes the last 0.45 s accelerating into the contact, the finish 0.5 s;
+   * a split step when the opponent hits; the serve's toss rises the arms to the trophy position.
+   */
   swingState() {
+    const split = this.splitT != null ? (this.time - this.splitT) / 0.42 : -1;
     if (this.serve) {
       const sv = this.serve;
-      if (sv.tHit == null) return { kind: 'serve', u: -1, toss: Math.min(1, Math.max(0, (sv.t - 0.25) / 0.4)) };
+      if (sv.tHit == null) return { kind: 'serve', u: -1, toss: Math.min(1, Math.max(0, (sv.t - 0.05) / 0.85)) };
       const dt = this.time - sv.tHit;
-      return { kind: 'serve', u: dt < 0 ? Math.pow(Math.max(0, 1 - Math.min(1, -dt / 0.45)), 1.6) - 1 : 1 - Math.pow(1 - Math.min(1, dt / 0.55), 2), toss: 1 };
+      if (dt < -0.5) return { kind: 'serve', u: -1, toss: Math.min(1, Math.max(0, (sv.t - 0.05) / 0.85)) };
+      return { kind: 'serve', u: dt < 0 ? Math.pow(1 + dt / 0.5, 1.7) - 1 : 1 - Math.pow(1 - Math.min(1, dt / 0.55), 2), toss: 1 };
     }
     const sw = this.swing;
-    if (!sw) return { kind: 'ready', u: 0 };
+    if (!sw) return { kind: 'ready', u: 0, split };
     const dt = this.time - sw.tHit;
     if (sw.kind === 'serve-follow') {
-      if (dt > 0.6) { this.swing = null; return { kind: 'ready', u: 0 }; }
-      return { kind: 'serve', u: Math.min(1, dt / 0.5), toss: 1 };
+      if (dt > 0.6) { this.swing = null; return { kind: 'ready', u: 0, split }; }
+      return { kind: 'serve', u: 1 - Math.pow(1 - Math.min(1, dt / 0.55), 2), toss: 1 };
     }
-    if (dt > 0.6) { this.swing = null; return { kind: 'ready', u: 0 }; }
-    let u;
-    // accelerate into the contact, decelerate through the finish
-    if (dt < 0) u = dt < -0.5 ? -1 : Math.pow(1 + dt / 0.5, 1.6) - 1;
+    if (dt > 0.6) { this.swing = null; return { kind: 'ready', u: 0, split }; }
+    let u, prep = 1;
+    if (dt < -0.45) { u = -1; prep = Math.min(1, Math.max(0, (1.0 + dt) / 0.55)); }
+    else if (dt < 0) u = Math.pow(1 + dt / 0.45, 1.7) - 1;
     else u = 1 - Math.pow(1 - Math.min(1, dt / 0.5), 2);
-    return { ...sw, u };
+    return { ...sw, u, prep, split };
   }
 
   /**
@@ -228,7 +236,7 @@ export class Cpu {
       const rel = 1.95, peak = SERVE_CONTACT + 0.3;
       const vy = Math.sqrt(2 * 9.81 * (peak - rel));
       const front = -this.side * SERVE_FRONT;
-      const sideOff = -this.side * -0.12 * this.handSign;    // a little to the hitting arm's side
+      const sideOff = this.side * 0.2 * this.handSign;          // under the contact point, on the hitting arm's side
       return { toss: { p: { x: this.s.x + sideOff, y: rel, z: this.s.z + front }, v: { x: 0, y: vy, z: 0 } } };
     }
     return null;

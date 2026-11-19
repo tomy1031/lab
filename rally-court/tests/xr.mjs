@@ -69,14 +69,38 @@ const animate = (page, secs, body) => page.evaluate(([secs, body]) => new Promis
     await page.waitForTimeout(600);
     const rk = await page.evaluate(() => {
       const g = RC.game, T = RC.THREE, h = g.input.hands.right;
-      const shaft = new T.Vector3(0, 1, 0).applyQuaternion(g.racketMesh.quaternion);
-      const fwd = new T.Vector3(0, 0, -1).applyQuaternion(h.ray.quaternion);
-      return { vis: g.racketMesh.visible, d: g.racketMesh.position.distanceTo(h.grip.position), dot: shaft.dot(fwd), tracked: h.tracked };
+      // in the grip frame: −Z toward the thumb, +Y up the forearm; the shaft at 55° from the forearm line
+      const shaft = new T.Vector3(0, 1, 0).applyQuaternion(g.racketMesh.quaternion).applyQuaternion(h.grip.quaternion.clone().invert());
+      const arms = g.fpArms.arms;
+      const R = arms.right, L = arms.left;
+      return {
+        vis: g.racketMesh.visible, d: g.racketMesh.position.distanceTo(h.grip.position), ang: Math.acos(-shaft.y) * 180 / Math.PI, toThumb: shaft.z < 0, tracked: h.tracked,
+        arms: R.group.visible && L.group.visible, handOn: R.hand.position.distanceTo(h.grip.position), pose: R.pose,
+        upper: R.S.distanceTo(R.E), fore: R.E.distanceTo(R.W), k: g.fpArms.k, wrist: g.hud.wrist.mesh.visible,
+      };
     });
     check(rk.tracked && rk.vis && rk.d < 0.001, `racket in the right hand (offset ${rk.d.toFixed(4)} m)`);
-    check(rk.dot > 0.9, `racket points along the controller ray (cos ${rk.dot.toFixed(2)})`);
+    check(Math.abs(rk.ang - 55) < 1 && rk.toThumb, `racket held like a tennis grip: ${rk.ang.toFixed(0)}° from the forearm, toward the thumb`);
+    check(rk.arms && rk.handOn < 0.001 && rk.pose === 'grip', `both arms drawn, the right hand gripping on the controller (${rk.pose})`);
+    check(Math.abs(rk.upper - 0.3 * rk.k) < 0.01 && Math.abs(rk.fore - 0.265 * rk.k) < 0.01, `arm segments keep their length (upper ${rk.upper.toFixed(2)}, forearm ${rk.fore.toFixed(2)} m, scale ${rk.k.toFixed(2)})`);
+    check(rk.wrist, 'the wrist panel is on the free arm');
+    // bring the left hand to the racket handle: it takes a two-handed grip
+    const two = await page.evaluate(async () => {
+      const g = RC.game, T = RC.THREE;
+      const shaft = new T.Vector3(0, 1, 0).applyQuaternion(g.racketMesh.quaternion);
+      const handle = g.racketMesh.position.clone().addScaledVector(shaft, 0.095);
+      const local = g.rig.worldToLocal(handle.clone());
+      const c = window.__xrd.controllers.left;
+      c.position.set(local.x + 0.02, local.y, local.z);
+      await new Promise((r) => setTimeout(r, 500));
+      const L = g.fpArms.arms.left;
+      return { pose: L.pose, d: L.hand.position.distanceTo(handle) };
+    });
+    check(two.pose === 'grip' && two.d < 0.001, `the free hand takes the handle (two-handed backhand grip, ${two.pose})`);
+    await page.evaluate(() => { const c = window.__xrd.controllers.left; c.position.set(-0.25, 1.1, -0.3); });
     // stepping: wait for a fed ball with a plan, then bob the head (3 cm at 2.5 Hz → 150 steps/min)
-    await page.waitForFunction(() => RC.game.sim.playerPlan && RC.game.sim.phase === 'play', null, { timeout: 60000 });
+    // a fresh ball with at least 1.2 s to go before it reaches you
+    await page.waitForFunction(() => { const s = RC.game.sim, p = s.playerPlan; return p && s.phase === 'play' && p.tAbs - s.time > 1.2; }, null, { timeout: 60000, polling: 20 });
     await page.evaluate(() => { const g = RC.game; window.__t0 = { ...g.sim.playerPlan.stance }; window.__d0 = Math.hypot(window.__t0.x - g.player.body.x, window.__t0.z - g.player.body.z); window.__best = window.__d0; window.__cad = 0;
       window.__iv = setInterval(() => { const t = window.__t0; window.__best = Math.min(window.__best, Math.hypot(t.x - g.player.body.x, t.z - g.player.body.z)); window.__cad = Math.max(window.__cad, g.player.steps.cadence); }, 20); });
     await animate(page, 3, 'd.position.y = 1.62 - 0.03 * Math.abs(Math.sin(Math.PI * 2.5 * t));');
@@ -130,12 +154,15 @@ const animate = (page, secs, body) => page.evaluate(([secs, body]) => new Promis
     await page.waitForFunction(() => RC.game.sim.holder === 'p', null, { timeout: 30000 });
     await page.evaluate(() => { const c = window.__xrd.controllers.left; c.position.set(-0.1, 1.2, -0.25); });
     await page.waitForTimeout(500);
+    const held = await page.evaluate(() => { const g = RC.game, L = g.fpArms.arms.left, b = g.sim.ball.p; const p = L.ballPoint(new RC.THREE.Vector3()); return { pose: L.pose, d: p.distanceTo(new RC.THREE.Vector3(b.x, b.y, b.z)), vis: g.ballView.mesh.visible }; });
+    check(held.pose === 'ball' && held.d < 0.01 && held.vis, `the ball sits in the left hand before the toss (${held.pose}, ${held.d.toFixed(3)} m)`);
     await page.evaluate(() => window.__xrd.controllers.left.updateButtonValue('trigger', 1));
     await page.waitForTimeout(400);
     await page.evaluate(() => window.__xrd.controllers.left.updateButtonValue('trigger', 0));
     await page.waitForFunction(() => RC.game.sim.live && RC.game.sim.holder === null, null, { timeout: 5000 }).catch(() => {});
-    const toss = await page.evaluate(() => ({ live: RC.game.sim.live, vy: RC.game.sim.ball.v.y, y: RC.game.sim.ball.p.y }));
+    const toss = await page.evaluate(() => ({ live: RC.game.sim.live, vy: RC.game.sim.ball.v.y, y: RC.game.sim.ball.p.y, pose: RC.game.fpArms.arms.left.pose }));
     check(toss.live, `left trigger released → ball tossed (y ${toss.y.toFixed(2)} m, vy ${toss.vy.toFixed(2)} m/s)`);
+    check(toss.pose === 'open', `the tossing hand opens (${toss.pose})`);
     const ge = await gameErrors(page);
     check(errors.length === 0 && ge.length === 0, `serve: no errors ${[...errors, ...ge].join(' | ')}`);
     await page.close();

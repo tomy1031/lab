@@ -67,8 +67,8 @@ export const SETTINGS = [
     help: 'ボールが弾む位置に印を出します（練習用。本物の試合にはありません）。' },
 
   // ── ラケット ─────────────────────────────────────────────────────────
-  { key: 'racketTilt', group: 'swing', type: 'range', label: 'ラケットの角度（上下）', def: 15, min: -40, max: 60, step: 1, unit: '°',
-    help: 'コントローラーを前に向けたとき、ラケットがどれだけ上を向くか。握りに合わせて調整。' },
+  { key: 'racketAngle', group: 'swing', type: 'range', label: 'ラケットの角度（前腕との角度）', def: 55, min: 20, max: 100, step: 1, unit: '°',
+    help: '手首をまっすぐにしたときの、前腕とラケットのなす角。90° はハンマーのように握った向き、小さいほど前腕の延長に近づく。テニスのグリップは手のひらに斜めに握るので約 55°。' },
   { key: 'racketRoll', group: 'swing', type: 'range', label: '面の向き（開き・閉じ）', def: 0, min: -30, max: 30, step: 1, unit: '°',
     help: '＋で面が上向き（開く）、−で下向き（かぶせる）。グリップの握り（イースタン・ウエスタン）の違いに。' },
   { key: 'swingPower', group: 'swing', type: 'range', label: 'スイングの強さ', def: 1.0, min: 0.6, max: 1.6, step: 0.05, unit: '×',
