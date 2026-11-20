@@ -35,7 +35,8 @@ export class Kart {
     this.idx = 0; this.prog = 0; this.raceDist = 0;
     this.lap = 0; this.finished = false; this.finishTime = 0; this.place = 0;
     this.drift = { active: false, dir: 0, charge: 0, level: 0 };
-    this.driftBlend = 0; this.driftDir = 1;
+    this.driftBlend = 0; this.driftDir = 1; this.driftSteer = 0; this.driftArm = 0; this.yawRate = 0;
+    this.bumpT = 0; this.jolt = 0; this.joltT = 9; this.joltSide = 1; this.bumpFx = 0;
     this.boost = 0; this.spin = 0; this.shield = 0; this.comet = 0; this.invuln = 0;
     this.item = null; this.itemCount = 0; this.roulette = 0;
     this.loc = {};
@@ -58,12 +59,25 @@ export class Kart {
     track.pointAt(p, d, this.pos);
     this.heading = track.headingAt(p);
     this.vel.set(0, 0, 0);
-    this.speed = 0; this.vy = 0; this.air = false;
+    this.speed = 0; this.vy = 0; this.air = false; this.yawRate = 0;
     const L = track.locate(this.pos, -1, this.loc);
     this.idx = L.i; this.prog = L.prog;
     this.raceDist = L.prog > track.N / 2 ? L.prog - track.N : L.prog;
     this.normal.set(L.ux, L.uy, L.uz);
     this.syncVisual(0, track);
+  }
+
+  // hit by another kart (n = direction the shove pushes this kart): it slides for a moment, jolts, sparks fly
+  bumped(power, nx, nz, other) {
+    const j = clamp(power / 9, 0.35, 1);
+    this.bumpT = Math.max(this.bumpT, 0.12 + 0.2 * j);
+    if (j >= this.jolt * Math.exp(-6 * this.joltT)) {
+      this.jolt = j; this.joltT = 0;
+      // which side the hit came from, seen from the driver's seat (for the roll / twist of the body)
+      this.joltSide = -Math.sign(nx * Math.cos(this.heading) - nz * Math.sin(this.heading)) || 1;
+    }
+    this.bumpFx = 0.16; this.bumpNx = -nx; this.bumpNz = -nz;
+    if (other) { this.bumpVx = (this.vel.x + other.vel.x) / 2; this.bumpVz = (this.vel.z + other.vel.z) / 2; }
   }
 
   giveBoost(t) { this.boost = Math.max(this.boost, t); this.events.push('boost'); }
@@ -116,14 +130,19 @@ export class Kart {
     }
     if (this.speed > top) this.speed = Math.max(top, this.speed - (this.offroad && this.boost <= 0 ? 24 : 8) * dt);
 
-    // ---- drift (hold the drift button while steering at speed; release for a mini-turbo)
+    // ---- drift: press the button to hop, steer during the hop (or as you land from a jump) and keep it held to
+    // drift; release for a mini-turbo. Holding the button and steering later does not start a drift out of nowhere
     if (btn && !this.lastDriftBtn && !this.air && this.spin <= 0) {
       this.vy = 4.2; this.air = true; this.events.push('hop');
       if (this.padJump) this.trick = 1;
     }
     if (btn && this.air && this.padJump && !this.lastDriftBtn) this.trick = 1;
-    if (btn && !this.drift.active && Math.abs(steer) > 0.35 && this.speed > 11 && this.spin <= 0) {
+    if (btn && !this.lastDriftBtn) this.driftArm = 0.4;
+    else if (btn && this.air) this.driftArm = Math.max(this.driftArm, 0.3);
+    else this.driftArm = Math.max(0, this.driftArm - dt);
+    if (btn && !this.drift.active && this.driftArm > 0 && Math.abs(steer) > 0.3 && this.speed > 10 && this.spin <= 0) {
       this.drift.active = true; this.drift.dir = Math.sign(steer); this.drift.charge = 0; this.drift.level = 0;
+      this.driftArm = 0; this.driftSteer = 0; // starts as a neutral drift; steering in/out takes effect smoothly
     }
     if (this.drift.active) {
       if (!btn || this.speed < 7 || this.spin > 0) {
@@ -144,18 +163,23 @@ export class Kart {
     // full-lock turn rate at this speed
     const lock = this.turn * clamp(spdAbs / 6, 0, 1) * (1 - 0.26 * clamp(spdAbs / this.maxSpeed, 0, 1.2));
     let yaw = steer * lock;
-    // drift: eases in over 0.3 s (and out over 0.2 s) instead of snapping to a much tighter turn. Steering into the
-    // drift turns ~1.25× a normal full lock, no steering keeps a gentle curve, steering out widens it
+    // drift: no steering follows an ordinary corner; steering in tightens it (for hairpins), steering out opens it
+    // into a long sweeper. The steering inside a drift is smoothed and the drift eases in over ~0.4 s, so it never snaps
     if (this.drift.active) this.driftDir = this.drift.dir;
-    this.driftBlend = this.drift.active ? Math.min(1, this.driftBlend + dt / 0.3) : Math.max(0, this.driftBlend - dt / 0.2);
+    this.driftBlend = this.drift.active ? Math.min(1, this.driftBlend + dt / 0.4) : Math.max(0, this.driftBlend - dt / 0.25);
     const db = this.driftBlend * this.driftBlend * (3 - 2 * this.driftBlend);
     if (db > 0) {
-      const sd = steer * this.driftDir;
-      const k = sd >= 0 ? 0.65 + 0.6 * sd : 0.65 + 0.35 * sd;
+      this.driftSteer += (steer * this.driftDir - this.driftSteer) * (1 - Math.exp(-dt / 0.12));
+      const sd = this.driftSteer;
+      // at race speed: wide ≈ 160 m radius, neutral ≈ 55 m (a typical corner), tight ≈ 19 m (a hairpin)
+      const k = sd >= 0 ? 0.3 + 0.55 * sd : 0.3 + 0.2 * sd;
       yaw += (this.driftDir * lock * k - yaw) * db;
     }
     if (this.speed < 0) yaw = -yaw * 0.8;
-    if (this.air && this.padJump) yaw *= 0.7; // a drift hop keeps full steering (no dip-and-kick when the drift starts)
+    if (this.air) yaw *= this.padJump ? 0.7 : 0.55; // the drift hop only nudges the nose round
+    // into, through and out of a drift (and over a hop) the turn rate itself changes smoothly — no lurch
+    if (this.drift.active || this.driftBlend > 0 || this.air) yaw = this.yawRate + (yaw - this.yawRate) * (1 - Math.exp(-dt / 0.1));
+    this.yawRate = yaw;
     this.heading = wrapAngle(this.heading - yaw * dt);
 
     // ---- velocity (grip pulls the velocity toward the facing direction; low grip = slide)
@@ -163,6 +187,7 @@ export class Kart {
     let grip = 11 + (7.5 - 11) * db; // the body shows the drift angle; the path slides only a little
     if (this.air && this.padJump) grip = 1.2; // a drift hop keeps its grip (it used to land sliding sideways and run wide)
     if (this.spin > 0) grip = 1.4;
+    if (this.bumpT > 0) { grip = Math.min(grip, 3.2); this.bumpT -= dt; } // a shove from another kart carries
     const k = 1 - Math.exp(-grip * dt);
     this.vel.x += (fx * this.speed - this.vel.x) * k;
     this.vel.z += (fz * this.speed - this.vel.z) * k;
@@ -197,9 +222,11 @@ export class Kart {
       this.pos.x -= L.rx * s * over; this.pos.z -= L.rz * s * over;
       const vn = (this.vel.x * L.rx + this.vel.z * L.rz) * s;
       if (vn > 0) {
-        this.vel.x -= L.rx * s * vn * 1.5; this.vel.z -= L.rz * s * vn * 1.5;
+        this.vel.x -= L.rx * s * vn * 1.7; this.vel.z -= L.rz * s * vn * 1.7;
         if (vn > 6) {
-          this.speed *= 0.72; this.events.push('wall'); this.wallFx = 0.3;
+          this.speed *= 0.68; this.events.push('wall'); this.wallFx = 0.3;
+          this.bumpT = Math.max(this.bumpT, 0.2);
+          if (!this.vrSeat) { this.jolt = clamp(vn / 14, 0.4, 1); this.joltT = 0; this.joltSide = -s * (Math.sign(L.rx * Math.cos(this.heading) - L.rz * Math.sin(this.heading)) || 1); }
           if (this.drift.active) { this.drift.active = false; this.drift.level = 0; this.drift.charge = 0; }
         }
         else this.speed *= 1 - 1.2 * dt;
@@ -227,7 +254,7 @@ export class Kart {
     track.pointAt(p, 0, this.pos);
     this.heading = track.headingAt(p);
     this.vel.set(0, 0, 0); this.speed = 0; this.vy = 0; this.air = false;
-    this.drift.active = false; this.spin = 0;
+    this.drift.active = false; this.spin = 0; this.driftBlend = 0; this.yawRate = 0;
     const L = track.locate(this.pos, -1, this.loc);
     let dp = L.prog - this.prog;
     if (dp < -track.N / 2) dp += track.N; else if (dp > track.N / 2) dp -= track.N;
@@ -256,9 +283,13 @@ export class Kart {
     const dTarget = this.drift.active && !this.vrSeat ? -this.drift.dir * 0.42 : 0;
     this.visYaw = damp(this.visYaw, dTarget, 8, dt);
     if (this.spin > 0 && !this.vrSeat) this.spinAngle += dt * 13; else this.spinAngle = damp(this.spinAngle, Math.round(this.spinAngle / (Math.PI * 2)) * Math.PI * 2, 10, dt);
-    rig.visual.rotation.y = this.visYaw + this.spinAngle;
+    // a knock from a kart or a wall: the body rocks and twists for a moment (a damped wobble, never a blink)
+    this.joltT += dt;
+    const jw = this.vrSeat ? 0 : this.jolt * Math.exp(-6 * this.joltT) * Math.sin(this.joltT * 26) * this.joltSide;
+    if (this.joltT < 0.05 && !this.vrSeat) this.squash = Math.max(this.squash, 0.14 * this.jolt);
+    rig.visual.rotation.y = this.visYaw + this.spinAngle + jw * 0.16;
     if (this.trick && this.air && !this.vrSeat) this.trickAngle += dt * 14; else this.trickAngle = damp(this.trickAngle, Math.round(this.trickAngle / (Math.PI * 2)) * Math.PI * 2, 12, dt);
-    rig.visual.rotation.z = this.trickAngle - this.steer * 0.04 * clamp(this.speed / 10, 0, 1);
+    rig.visual.rotation.z = this.trickAngle - this.steer * 0.04 * clamp(this.speed / 10, 0, 1) + jw * 0.2;
     this.lean = damp(this.lean, this.steer * 0.28 + (this.drift.active ? this.drift.dir * 0.12 : 0), 8, dt);
     rig.driver.rotation.z = this.lean;
     rig.driver.rotation.x = damp(rig.driver.rotation.x, this.boost > 0 ? -0.12 : 0, 6, dt);
@@ -334,7 +365,17 @@ export class Kart {
     }
     if (this.wallFx > 0) {
       this.wallFx -= step;
-      for (let i = 0; i < 4; i++) parts.add.emit(this.pos.x, this.pos.y + 0.6, this.pos.z, (Math.random() - 0.5) * 9, 2 + Math.random() * 5, (Math.random() - 0.5) * 9, FLAME[0], 0.3, 0.3, { gravity: 20 });
+      // (moving on with the kart, like every other kart particle, so the chase camera never drives through them)
+      for (let i = 0; i < 5; i++) parts.add.emit(this.pos.x, this.pos.y + 0.6, this.pos.z, vx * 0.85 + (Math.random() - 0.5) * 9, 2 + Math.random() * 5, vz * 0.85 + (Math.random() - 0.5) * 9, FLAME[(Math.random() * 2) | 0], 0.3, 0.3, { gravity: 20 });
+    }
+    if (this.bumpFx > 0) {
+      this.bumpFx -= step;
+      const cx = this.pos.x + this.bumpNx * 0.95, cz = this.pos.z + this.bumpNz * 0.95, bvx = this.bumpVx ?? vx, bvz = this.bumpVz ?? vz;
+      for (let i = 0; i < 5; i++) {
+        const sp = 3 + Math.random() * 5;
+        parts.add.emit(cx, this.pos.y + 0.55, cz, bvx * 0.85 + this.bumpNz * sp * (Math.random() < 0.5 ? 1 : -1) + (Math.random() - 0.5) * 3, 1.5 + Math.random() * 4,
+          bvz * 0.85 - this.bumpNx * sp * (Math.random() < 0.5 ? 1 : -1) + (Math.random() - 0.5) * 3, FLAME[(Math.random() * 2) | 0], 0.28, 0.28, { gravity: 20 });
+      }
     }
     if (this.spin > 0) {
       const c = hsl(0.14, 1, 0.7);

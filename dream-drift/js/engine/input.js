@@ -74,6 +74,19 @@ export class Input {
     return this.steerSm;
   }
 
+  // a short rumble on the controller in use, or a buzz on a phone (where the browser allows it)
+  rumble(strength = 0.5, ms = 80) {
+    try {
+      const st = clamp(strength, 0, 1);
+      if (this.lastSource === 'gamepad') {
+        for (const p of navigator.getGamepads ? navigator.getGamepads() : []) {
+          const act = p && p.connected && p.vibrationActuator;
+          if (act?.playEffect) act.playEffect('dual-rumble', { duration: ms, strongMagnitude: st, weakMagnitude: st * 0.6 })?.catch?.(() => {});
+        }
+      } else if (this.lastSource === 'touch' && navigator.vibrate) navigator.vibrate(Math.round(ms * (0.4 + 0.6 * st)));
+    } catch { /* not supported here */ }
+  }
+
   // read everything; call once per frame
   poll(dt = 1 / 60) {
     const o = this.out;
