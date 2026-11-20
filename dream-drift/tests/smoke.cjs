@@ -3,6 +3,7 @@
 //   2. every course: a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no errors);
 //      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
 //   3. results screen; smooth motion (no judder against 60 / 144 Hz displays)
+//   4. phone touch controls   5. drift (starts only with a hop, eases in, moderate curve) and kart-to-kart knocks
 //   node tests/smoke.cjs [outDir]
 const { chromium, devices } = require('playwright');
 const serve = require('./serve.cjs');
@@ -100,9 +101,10 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     await page.close();
   }
 
-  // 3. smooth motion: your kart driving straight moves evenly across the screen at 60 and 144 Hz
+  // 3. smooth motion: your kart driving straight moves evenly across the screen at 60 and 144 Hz (on an empty
+  //    course: a CPU knocking into you rocks the camera on purpose)
   {
-    const { page, errors } = await open(browser, `${base}?course=1&nosound&quality=low&seed=3`);
+    const { page, errors } = await open(browser, `${base}?course=1&nosound&quality=low&seed=3&cpu=0`);
     await page.waitForFunction(() => window.DD.debug.race, null, { timeout: 90000 });
     await page.evaluate(() => window.DD.debug.judderProbe(200, 1 / 60, 0)); // through the countdown
     for (const hz of [60, 144]) {
@@ -145,6 +147,63 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     check(small > 0 && small < 0.3 && full === 1 && left < -0.3 && rel === 0, `phone: slider steers in proportion (near ${small.toFixed(2)}, edge ${full}, left ${left.toFixed(2)}, released ${rel})`);
     check(errors.length === 0, `phone: no errors ${errors.join(' | ')}`);
     await ctx.close();
+  }
+
+  // 5. drift and knocks, on course 1 with one scripted CPU (DD.debug.steerProbe steps the race frame by frame)
+  {
+    const { page, errors } = await open(browser, `${base}?course=1&nosound&quality=low&seed=3&cpu=1&skipintro`);
+    await page.waitForFunction(() => window.DD.debug.race, null, { timeout: 90000 });
+    const r = await page.evaluate(() => {
+      const D = window.DD.debug, race = D.race, tr = race.track, dt = 1 / 60, rc = D.raceCam;
+      const me = race.karts.find((k) => k.isHuman), cpu = race.karts.find((k) => !k.isHuman);
+      D.steerProbe(200, dt, () => ({ steer: 0, throttle: 1 })); // countdown
+      let cpuCtl = { steer: 0, throttle: 1, brake: 0, drift: false, item: false };
+      race.ais.get(cpu).update = () => cpuCtl;
+      const put = (k, p, d, v) => {
+        k.placeOnTrack(tr, p, d); k.speed = v; k.vel.set(Math.sin(k.heading) * v, 0, Math.cos(k.heading) * v);
+        k.invuln = 0; k.boost = 0; k.spin = 0; k.drift.active = false; k.driftBlend = 0;
+      };
+      const park = () => put(cpu, 300, 6, 0);
+      const ad = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+      const out = {};
+      // a. holding the button on the straight and steering later does not start a drift out of nowhere
+      park(); put(me, 104, 0, 24); rc.hint = -1; rc.snap(me);
+      D.steerProbe(36, dt, () => ({ steer: 0, throttle: 1, drift: true }));
+      const late = D.steerProbe(36, dt, () => ({ steer: 1, throttle: 1, drift: true }));
+      out.lateDrift = late.some((x) => x[5]);
+      // b. press while steering into the first corner: a drift starts, eases in, and with the stick let go keeps
+      //    a moderate curve (not a sudden tight turn)
+      put(me, 104, 0, 24); rc.hint = -1; rc.snap(me); D.steerProbe(20, dt, () => ({ steer: 0, throttle: 1 }));
+      const rec = D.steerProbe(84, dt, (t) => ({ steer: t < 0.2 ? 0.8 : 0, throttle: 1, drift: true }));
+      out.drifting = rec[rec.length - 1][5] === 1;
+      const rate = rec.map((x, i) => (i ? Math.abs(ad(x[1] - rec[i - 1][1])) / dt : 0));
+      out.jerk = Math.max(...rate.map((v, i) => (i >= 6 ? Math.abs(v - rate[i - 6]) : 0)));
+      out.neutralRadius = rec[rec.length - 1][4] / (rate.slice(-20).reduce((a, b) => a + b, 0) / 20);
+      // c. running into the back of a slower kart costs you speed and shoves it on; the camera rocks smoothly
+      put(me, 30, 0, 26); put(cpu, 33, 0, 15); cpuCtl = { ...cpuCtl, throttle: 0.3 }; rc.hint = -1; rc.snap(me);
+      const bumps = []; const emit0 = race.emit.bind(race); race.emit = (t, d) => { if (t === 'bump') bumps.push(d.power); return emit0(t, d); };
+      let you0 = 0, cpu0 = 0, hit = -1; const cam = [];
+      for (let i = 0; i < 70; i++) {
+        if (hit < 0) { you0 = me.speed; cpu0 = cpu.speed; }
+        D.steerProbe(1, dt, () => ({ steer: 0, throttle: 1 }));
+        cam.push(rc.cam.position.toArray());
+        if (hit < 0 && bumps.length) hit = i;
+        if (hit >= 0 && i === hit + 2) { out.youLost = you0 - me.speed; out.cpuGained = cpu.speed - cpu0; }
+      }
+      race.emit = emit0;
+      out.bumped = bumps.length > 0;
+      out.camJitter = 0;
+      for (let i = Math.max(2, hit + 1); i < cam.length; i++) for (let a = 0; a < 3; a++) out.camJitter = Math.max(out.camJitter, Math.abs(cam[i][a] - 2 * cam[i - 1][a] + cam[i - 2][a]));
+      return out;
+    });
+    check(!r.lateDrift, 'drift: holding the button and steering later does not start a drift');
+    check(r.drifting && r.jerk < 0.9, `drift: pressing while steering starts a drift that eases in (turn-rate change ${r.jerk.toFixed(2)} rad/s per 0.1 s)`);
+    check(r.neutralRadius > 40 && r.neutralRadius < 80, `drift: with the stick let go it keeps a moderate curve (radius ${r.neutralRadius.toFixed(0)} m)`);
+    check(r.bumped && r.youLost > 1.5 && r.cpuGained > 1.5, `knock: a rear-end costs speed (you −${(r.youLost || 0).toFixed(1)} m/s, the kart ahead +${(r.cpuGained || 0).toFixed(1)} m/s)`);
+    check(r.camJitter < 0.12, `knock: the camera rocks smoothly (largest frame-to-frame jolt ${r.camJitter.toFixed(3)} m)`);
+    const errs = [...errors, ...(await ddErrors(page))];
+    check(errs.length === 0, `drift / knocks: no errors ${errs.join(' | ')}`);
+    await page.close();
   }
 
   await browser.close();

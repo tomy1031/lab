@@ -245,6 +245,8 @@ export class Race {
     k.lap = Math.min(this.laps, lap);
   }
 
+  // kart-to-kart contact: the karts bounce apart (always at least a firm shove), slide for a moment instead of
+  // snapping straight back onto their line, and running into someone's back costs speed (they get a little)
   collide() {
     const ks = this.karts, R = 1.9;
     for (let i = 0; i < ks.length; i++) {
@@ -260,10 +262,19 @@ export class Race {
         b.pos.x += nx * over * (wa / ws); b.pos.z += nz * over * (wa / ws);
         const vrel = (b.vel.x - a.vel.x) * nx + (b.vel.z - a.vel.z) * nz;
         if (vrel < 0) {
-          const jimp = (-1.6 * vrel) / (1 / wa + 1 / wb);
+          const m = 1 / (1 / wa + 1 / wb);
+          const jimp = Math.max(-2.3 * vrel, 5) * m; // bouncier than a real collision: both karts spring apart
           a.vel.x -= (nx * jimp) / wa; a.vel.z -= (nz * jimp) / wa;
           b.vel.x += (nx * jimp) / wb; b.vel.z += (nz * jimp) / wb;
-          if ((a.isHuman || b.isHuman) && -vrel > 3) this.emit('bump', { a, b, power: -vrel });
+          // the part of the shove along each kart's nose changes its speed (a rear-end slows the one behind)
+          a.speed -= (nx * Math.sin(a.heading) + nz * Math.cos(a.heading)) * (jimp / wa) * 0.3;
+          b.speed += (nx * Math.sin(b.heading) + nz * Math.cos(b.heading)) * (jimp / wb) * 0.3;
+          const power = -vrel;
+          if (power > 1.5) {
+            a.bumped(power, -nx, -nz, b);
+            b.bumped(power, nx, nz, a);
+          }
+          if ((a.isHuman || b.isHuman) && power > 2) this.emit('bump', { a, b, power });
         }
         if (a.comet > 0 && b.comet <= 0 && b.hit('spin')) this.emit('shothit', { kart: b, hurt: true, by: a, kind: 'comet' });
         if (b.comet > 0 && a.comet <= 0 && a.hit('spin')) this.emit('shothit', { kart: a, hurt: true, by: b, kind: 'comet' });

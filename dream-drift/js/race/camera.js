@@ -13,7 +13,7 @@ export class RaceCamera {
     this.pos = new THREE.Vector3();
     this.look = new THREE.Vector3();
     this.fov = 68;
-    this.shake = 0;
+    this.kicks = []; this.shakeX = 0; this.shakeY = 0;
     this.t = 0;
     this.cut = { kart: 0, style: 0, t: 0, anchor: new THREE.Vector3() };
     this.lookBack = false;
@@ -32,7 +32,12 @@ export class RaceCamera {
     this.apply();
   }
 
-  addShake(a) { this.shake = Math.min(1, this.shake + a); }
+  // a knock: a damped wobble that starts from zero (no jump on the first frame) and dies away in ~0.6 s
+  addShake(a) {
+    const ks = this.kicks;
+    if (ks.length >= 3) ks.shift();
+    ks.push({ a: Math.min(1.2, a), t: 0 });
+  }
 
   update(dt, race, k, mode) {
     this.t += dt;
@@ -69,32 +74,44 @@ export class RaceCamera {
       if (vs > 4 && k.speed > 0) {
         const slip = angleDiff(Math.atan2(k.vel.x, k.vel.z), k.heading);
         const w = 1 - smoothstep(0.5, 1.0, Math.abs(slip));
-        target = k.heading + 0.35 * slip * w;
+        // in a drift it follows where the kart is going more than where its nose points, and turns more softly
+        target = k.heading + (k.drift.active ? 0.7 : 0.35) * slip * w;
       }
-      this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : 5.5, dt);
+      this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : k.drift.active ? 4.5 : 5.5, dt);
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);
       this.keepInside(tr, _v);
-      this.overKarts(race, k, _v);
-      const kxz = 1 - Math.exp(-16 * dt), ky = 1 - Math.exp(-6 * dt);
+      const lifted = this.overKarts(race, k, _v);
+      const kxz = 1 - Math.exp(-16 * dt), ky = 1 - Math.exp(-(lifted && _v.y > this.pos.y ? 12 : 6) * dt);
       this.pos.x += (_v.x - this.pos.x) * kxz; this.pos.z += (_v.z - this.pos.z) * kxz;
       this.pos.y += (_v.y - this.pos.y) * ky;
       this.look.lerp(_w, 1 - Math.exp(-20 * dt));
       fovT = 68 + clamp((k.speed - 14) / 14, 0, 1) * 6 + (k.boost > 0 ? 9 : 0);
     }
     this.fov = damp(this.fov, fovT, 4, dt);
+    this.shakeX = 0; this.shakeY = 0;
+    if (this.kicks.length) {
+      for (const k of this.kicks) {
+        k.t += dt;
+        const e = k.a * 0.3 * Math.exp(-6 * k.t);
+        this.shakeX += e * Math.sin(k.t * 31); this.shakeY += e * Math.sin(k.t * 23) * 1.2;
+      }
+      this.kicks = this.kicks.filter((k) => k.t < 0.9);
+    }
     this.apply();
   }
 
-  // rise over a kart that would otherwise come right up to the lens (instead of clipping through it)
+  // rise over a kart that would otherwise come right up to the lens (instead of clipping through it). It starts
+  // rising while the kart is still a few metres off, since the camera height follows smoothly, not instantly
   overKarts(race, me, v) {
     let top = -Infinity;
     for (const o of race.karts) {
       if (o === me) continue;
       const dx = o.pos.x - v.x, dz = o.pos.z - v.z;
-      if (dx * dx + dz * dz < 2.6 * 2.6) top = Math.max(top, o.pos.y + 2.9);
+      if (dx * dx + dz * dz < 3.4 * 3.4) top = Math.max(top, o.pos.y + 3.0);
     }
-    if (top > v.y) v.y = top;
+    if (top > v.y) { v.y = top; return true; }
+    return false;
   }
 
   // pull a camera position back between the walls: everything else on a course stands outside them
@@ -114,10 +131,11 @@ export class RaceCamera {
   apply() {
     const c = this.cam;
     c.position.copy(this.pos);
-    if (this.shake > 0.001) {
-      c.position.x += (Math.random() - 0.5) * this.shake * 0.5;
-      c.position.y += (Math.random() - 0.5) * this.shake * 0.5;
-      this.shake *= 0.9;
+    // a knock rocks the camera with a smooth few-hertz wobble (random per-frame jitter read as flicker), sideways
+    // across the view and up/down
+    if (this.shakeX || this.shakeY) {
+      const sx = Math.cos(this.yaw), sz = -Math.sin(this.yaw);
+      c.position.x += sx * this.shakeX; c.position.z += sz * this.shakeX; c.position.y += this.shakeY;
     }
     c.lookAt(this.look);
     if (Math.abs(c.fov - this.fov) > 0.05) { c.fov = this.fov; c.updateProjectionMatrix(); }
@@ -126,6 +144,7 @@ export class RaceCamera {
   // title screen: cut between karts and angles like a TV broadcast
   director(dt, race) {
     const cut = this.cut;
+    this.kicks.length = 0; this.shakeX = this.shakeY = 0;
     cut.t -= dt;
     const ks = race.karts;
     if (cut.t <= 0) {
