@@ -252,6 +252,9 @@ class App {
       if (rates.includes(90) && session.updateTargetFrameRate) session.updateTargetFrameRate(90).catch(() => {});
     } catch { /* fixed frame rate */ }
     session.addEventListener('end', () => this.onXREnd());
+    // pausing in VR is the Meta button: it opens the Quest menu, the session loses focus ('visible-blurred' or
+    // 'hidden') and the game stops; when the menu closes, the pause panel is waiting in front of you.
+    // (The Meta button itself is reserved by the system and never reaches the page as a button press.)
     session.addEventListener('visibilitychange', () => { if (session.visibilityState !== 'visible') this.pause(); });
     this.needPlace = true;
     this.toMenu();
@@ -349,8 +352,7 @@ class App {
     const sess = this.session;
     if (this.state === 'play' && sess) {
       if (xr) {
-        if (this.input.takePause()) this.pause();
-        else sess.update(this.songT, dt);
+        sess.update(this.songT, dt);
       } else {
         const cam = this.deskHead || this.camera;
         // PC: simulate in 10 ms steps of song time, so punches land on time even at a low frame rate
