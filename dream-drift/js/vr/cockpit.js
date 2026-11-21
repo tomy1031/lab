@@ -1,12 +1,14 @@
 // vr/cockpit.js — everything you see in VR besides the course:
 //   the rig that seats you in your kart (1st person) or follows it (3rd person), yaw only so the horizon
-//   never tilts; a steering wheel that turns with you; the dashboard (place, lap, time, item, mini-map);
+//   never tilts; a steering wheel that sits where your controllers are and turns exactly as your hands do;
+//   the dashboard (place, lap, time, item, mini-map); a controls card before the start;
 //   big messages (3-2-1, LAP, GOAL); menu panels with laser pointers; and a comfort vignette that narrows
 //   the view while the kart turns hard.
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { VRPanel, roundRect, text } from './panel.js';
+import { WHEEL_X, WHEEL_Y } from './vrinput.js';
 import { ITEM_ICONS, ITEM_IDS, ITEMS } from '../race/items.js';
 import { clamp, damp, dampAngle, wrapAngle } from '../engine/util.js';
 import { fmtTime } from '../ui/hud.js';
@@ -14,7 +16,11 @@ import { fmtTime } from '../ui/hud.js';
 const SEAT_Y = 1.55, SEAT_Z = -0.25; // eye point in kart space (+z forward)
 const UP = new THREE.Vector3(0, 1, 0);
 const RANK_COLORS = ['#ffd93b', '#e6ecff', '#ffb070'];
-const _v = new THREE.Vector3(), _e = new THREE.Euler();
+const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Euler(), _m = new THREE.Matrix4();
+const FONT = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif';
+const WHEEL_R = 0.19; // radius of the wheel model
+// where the wheel waits (seat frame, eyes at the origin) until you first take hold of it
+const WHEEL_HOME = new THREE.Vector3(0, -0.42, -0.42), WHEEL_HOME_R = 0.2;
 
 export class VRCockpit {
   constructor({ camera, renderer, vrInput, portraits }) {
@@ -33,8 +39,18 @@ export class VRCockpit {
     vrInput.grips.forEach((g) => g.add(cmf.createControllerModel(g)));
     vrInput.hands.forEach((h) => h.add(hmf.createHandModel(h, 'spheres')));
 
-    // steering wheel (1st person; replaces the kart's own fixed wheel)
+    // steering wheel (replaces the kart's own fixed wheel). 1st person: it lives in the seat frame and goes
+    // where your two hands hold it; 3rd person: on the kart
     this.wheel = buildWheel();
+    this.wheelAt = WHEEL_HOME.clone(); this.wheelR = WHEEL_HOME_R; this.wheelHeld = false;
+    const N = new THREE.Vector3().crossVectors(WHEEL_X, WHEEL_Y);
+    this.wheelQuat = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(WHEEL_X, WHEEL_Y, N));
+
+    // how to drive, shown before the start
+    this.hint = makeHint();
+    this.hint.position.set(0, 0.95, -2.5);
+    this.hint.visible = false;
+    this.rig.add(this.hint);
 
     // dashboard
     this.dash = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.3), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, fog: false }));
@@ -100,7 +116,15 @@ export class VRCockpit {
     this.wheel.parent?.remove(this.wheel);
     this.dash.parent?.remove(this.dash);
     // a VR seat kart has no fixed wheel: the turning one stands in for it in both views
-    if (k.vrSeat) { this.wheel.position.set(0, 1.1, 0.42); k.rig.visual.add(this.wheel); }
+    const tilt = this.wheel.userData.tilt;
+    if (k.vrSeat && view === 'first') {
+      tilt.rotation.x = 0; this.wheel.quaternion.copy(this.wheelQuat);
+      this.wheel.position.copy(this.wheelAt); this.wheel.scale.setScalar(this.wheelR / WHEEL_R);
+      this.rig.add(this.wheel);
+    } else if (k.vrSeat) {
+      tilt.rotation.x = -0.5; this.wheel.quaternion.identity(); this.wheel.scale.setScalar(1);
+      this.wheel.position.set(0, 1.1, 0.42); k.rig.visual.add(this.wheel);
+    }
     if (view === 'first') {
       k.rig.driver.visible = false;
       // low on the dash, just above the wheel, tilted to face the driver's eyes (kart +z is forward)
@@ -115,6 +139,7 @@ export class VRCockpit {
       this.dash.scale.setScalar(1);
       this.rig.add(this.dash);
     }
+    this.hint.userData.draw();
     this.yaw = k.heading; this.lastHeading = k.heading;
     this.y = k.pos.y;
     this.place(0, true);
@@ -150,10 +175,8 @@ export class VRCockpit {
   update(dt, race, ctl) {
     const k = this.kart; if (!k) return;
     this.place(dt);
-    // steering wheel follows your steering
-    const spin = this.wheel.userData.spin;
-    spin.rotation.z = damp(spin.rotation.z, ctl.steer * 1.5, 16, dt);
-    this.wheel.userData.grip.visible = this.input.wheel.engaged;
+    this.updateWheel(dt, ctl);
+    this.hint.visible = !!race && (race.phase === 'intro' || race.phase === 'countdown') && !this.menuOpen;
     // comfort vignette from the turn rate
     const dh = wrapAngle(k.heading - this.lastHeading); this.lastHeading = k.heading;
     this.yawRate = damp(this.yawRate, Math.abs(dh) / Math.max(dt, 1e-3), 8, dt);
@@ -174,6 +197,28 @@ export class VRCockpit {
       if (t >= 1) this.msgPanel.visible = false;
     }
     this.updatePointers();
+  }
+
+  // the wheel: in 1st person it sits exactly in your hands while you grip it with both (centre between the
+  // controllers, rim through them, turned as far as they are), and stays where you last held it when you let go
+  updateWheel(dt, ctl) {
+    const w = this.input.wheel, spin = this.wheel.userData.spin;
+    this.wheel.userData.grip.visible = w.engaged;
+    if (this.wheel.parent !== this.rig) { spin.rotation.z = damp(spin.rotation.z, ctl.steer * 1.5, 16, dt); return; } // on the kart (3rd person)
+    const hold = w.two || (!this.wheelHeld && w.both && plausibleHands(w.left, w.right));
+    if (hold) {
+      // centre between the hands; radius: half their distance across the wheel's plane
+      _v.addVectors(w.left, w.right).multiplyScalar(0.5);
+      _w.subVectors(w.right, w.left);
+      this.wheelAt.copy(_v);
+      this.wheelR = clamp(Math.hypot(_w.dot(WHEEL_X), _w.dot(WHEEL_Y)) / 2, 0.12, 0.34);
+      if (w.two) this.wheelHeld = true;
+    }
+    this.wheel.position.copy(this.wheelAt);
+    this.wheel.scale.setScalar(this.wheelR / WHEEL_R);
+    // turned exactly as far as your hands; otherwise (stick, one hand, let go) as far as the steering says
+    const target = w.two ? -w.angle : -this.input.wheelAngleFor(ctl.steer);
+    spin.rotation.z = w.two ? target : damp(spin.rotation.z, target, 16, dt);
   }
 
   message(textStr, { color = '#ffffff', sub = '', dur = 1.2, size = 210 } = {}) {
@@ -260,6 +305,40 @@ export class VRCockpit {
   }
 }
 
+// both controllers held roughly like a wheel: in front of you, below your eyes, a wheel's width apart
+function plausibleHands(l, r) {
+  const d = l.distanceTo(r);
+  return d > 0.18 && d < 0.8 && l.z < -0.1 && r.z < -0.1 && l.y < 0.05 && r.y < 0.05 && l.x < r.x;
+}
+
+function makeHint() {
+  const W = 1200, H = 330;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8 * H / W), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+  m.renderOrder = 29;
+  // drawn when a race starts (by then the web font has loaded)
+  m.userData.draw = () => { drawHint(cv.getContext('2d'), W, H); tex.needsUpdate = true; };
+  return m;
+}
+
+function drawHint(c, W, H) {
+  c.clearRect(0, 0, W, H);
+  roundRect(c, 6, 6, W - 12, H - 12, 50); c.fillStyle = 'rgba(24, 16, 60, 0.82)'; c.fill();
+  c.lineWidth = 6; c.strokeStyle = 'rgba(255,255,255,0.5)'; c.stroke();
+  const rows = [
+    ['ハンドル', '両手の グリップ（中指）を にぎって 回す'],
+    ['アクセル', '右トリガー'], ['ブレーキ', '左トリガー'],
+    ['ドリフト', 'A / X ・ アイテム B / Y'],
+  ];
+  rows.forEach(([k, v], i) => {
+    const y = 62 + i * 70;
+    c.font = `800 46px ${FONT}`; c.textAlign = 'right'; c.textBaseline = 'middle';
+    c.fillStyle = '#ffd93b'; c.fillText(k, 300, y);
+    c.font = `700 44px ${FONT}`; c.textAlign = 'left'; c.fillStyle = '#ffffff'; c.fillText(v, 340, y);
+  });
+}
+
 function buildWheel() {
   const g = new THREE.Group();
   const tilt = new THREE.Group(); tilt.rotation.x = -0.5; g.add(tilt);
@@ -279,7 +358,7 @@ function buildWheel() {
   // glow ring while your hands hold it
   const grip = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.034, 8, 36), new THREE.MeshBasicMaterial({ color: '#4fe3ff', transparent: true, opacity: 0.35, toneMapped: false }));
   grip.visible = false; spin.add(grip);
-  g.userData.spin = spin; g.userData.grip = grip;
+  g.userData.spin = spin; g.userData.grip = grip; g.userData.tilt = tilt;
   return g;
 }
 

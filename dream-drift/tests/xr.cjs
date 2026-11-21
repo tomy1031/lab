@@ -1,6 +1,7 @@
 // tests/xr.cjs — the VR mode end to end with Meta's WebXR emulator (IWER, Quest 3 profile):
 //   menus → VR card → race starts in an XR session → right trigger accelerates → gripping both controllers
-//   and tilting them steers → left stick press pauses → the laser presses "つづける" on the VR panel →
+//   and tilting them steers (the wheel sits in your hands and turns with them) → left trigger brakes →
+//   left stick press pauses → the laser presses "つづける" on the VR panel →
 //   the race finishes → results panel in VR → hand tracking drives (hands seen = accelerate).
 //   npm install && node tests/xr.cjs [outDir]
 const { chromium } = require('playwright');
@@ -69,21 +70,54 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   const s1 = await page.evaluate(() => window.DD.debug.state().me);
   check(s1.raceDist - d0 > 1 && s1.speed > 5, `right trigger accelerates (speed ${s1.speed.toFixed(1)}, moved ${(s1.raceDist - d0).toFixed(1)})`);
 
-  // steering wheel: grip both, right hand lower → turn right
+  // steering wheel: grip both, right hand lower → turn right. The wheel you see sits in your hands: centred
+  // between the controllers, its rim through both, turned exactly as far as they are; let go and it stays put
   const steer = await page.evaluate(async () => {
     const d = window.__xrd, L = d.controllers.left, R = d.controllers.right;
+    const c = window.DD.debug.cockpit, vi = window.DD.debug.vrInput, V = c.rig.position.constructor;
+    const fit = () => {
+      const wc = c.wheel.getWorldPosition(new V());
+      const lp = vi.gripOf('left').getWorldPosition(new V()), rp = vi.gripOf('right').getWorldPosition(new V());
+      return {
+        centre: +wc.distanceTo(lp.clone().add(rp).multiplyScalar(0.5)).toFixed(3),
+        rim: +Math.max(Math.abs(lp.distanceTo(wc) - c.wheelR), Math.abs(rp.distanceTo(wc) - c.wheelR)).toFixed(3),
+        turn: +(c.wheel.userData.spin.rotation.z + vi.wheel.angle).toFixed(3), // spin = −hand angle
+      };
+    };
     L.updateButtonValue('squeeze', 1); R.updateButtonValue('squeeze', 1);
     L.position.set(-0.2, 1.1, -0.35); R.position.set(0.2, 0.9, -0.35);
     await new Promise((r) => setTimeout(r, 2500));
-    const right = window.DD.debug.vrInput.out.steer, engaged = window.DD.debug.vrInput.wheel.engaged;
-    L.position.set(-0.2, 0.9, -0.35); R.position.set(0.2, 1.1, -0.35);
+    const right = vi.out.steer, engaged = vi.wheel.engaged, fitR = fit();
+    L.position.set(-0.24, 0.85, -0.42); R.position.set(0.24, 1.05, -0.4);
     await new Promise((r) => setTimeout(r, 2500));
-    const left = window.DD.debug.vrInput.out.steer;
+    const left = vi.out.steer, fitL = fit();
     L.position.set(-0.2, 1.0, -0.35); R.position.set(0.2, 1.0, -0.35);
-    return { right, left, engaged };
+    await new Promise((r) => setTimeout(r, 1500));
+    const held = c.wheel.position.clone(); // in the seat frame (the seat itself moves with the kart)
+    L.updateButtonValue('squeeze', 0); R.updateButtonValue('squeeze', 0);
+    L.position.set(-0.3, 0.6, -0.1); R.position.set(0.3, 0.6, -0.1); // hands down in your lap
+    await new Promise((r) => setTimeout(r, 1500));
+    const stays = +c.wheel.position.distanceTo(held).toFixed(3);
+    return { right, left, engaged, fitR, fitL, stays };
   });
   check(steer.engaged && steer.right > 0.3 && steer.left < -0.3, `gripped wheel steers (right ${steer.right.toFixed(2)}, left ${steer.left.toFixed(2)})`);
+  const fits = [steer.fitR, steer.fitL];
+  check(fits.every((f) => f.centre < 0.02 && f.rim < 0.02 && Math.abs(f.turn) < 0.02),
+    `the wheel sits in your hands and turns with them (${JSON.stringify(fits)})`);
+  check(steer.stays < 0.005, `let go: the wheel stays where you held it (moved ${steer.stays} m)`);
   await page.screenshot({ path: path.join(out, 'vr-race.png'), timeout: 120000 });
+
+  // left trigger brakes (right released)
+  const brake = await page.evaluate(async () => {
+    const d = window.__xrd, s0 = window.DD.debug.state().me.speed;
+    d.controllers.right.updateButtonValue('trigger', 0); d.controllers.left.updateButtonValue('trigger', 1);
+    const t0 = window.DD.debug.state().raceTime;
+    while (window.DD.debug.state().raceTime < t0 + 0.6) await new Promise((r) => setTimeout(r, 200));
+    const out = { s0, s1: window.DD.debug.state().me.speed, brake: window.DD.debug.vrInput.out.brake, thr: window.DD.debug.vrInput.out.throttle };
+    d.controllers.left.updateButtonValue('trigger', 0);
+    return out;
+  });
+  check(brake.brake === 1 && brake.thr === 0 && brake.s1 < brake.s0 - 3, `left trigger brakes (speed ${brake.s0.toFixed(1)} → ${brake.s1.toFixed(1)})`);
 
   // pause with the left stick, resume with the laser on the panel
   await page.evaluate(() => { window.__xrd.controllers.left.updateButtonValue('thumbstick', 1); });
