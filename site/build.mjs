@@ -81,6 +81,8 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   fs.mkdirSync(vdir, { recursive: true });
   copy(path.join(src, 'js'), path.join(vdir, 'js'));
   if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
+  // the NexMax 3D model download page (nexmax/: viewer, nexmax.glb, preview.png) — not part of the game
+  if (fs.existsSync(path.join(src, 'nexmax'))) copy(path.join(src, 'nexmax'), path.join(dest, 'nexmax'));
   let html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
   const tag = '<script type="module" src="js/main.js"></script>';
   if (!html.includes(tag)) throw new Error('yokohama-roll/index.html: main.js script tag not found');
@@ -94,7 +96,8 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   const files = [];
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(path.relative(dest, p).split(path.sep).join('/')); } };
   walk(dest);
-  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html')];
+  // the model download is not needed to play: keep its 1+ MB out of the game's offline cache
+  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html' && !f.startsWith('nexmax/'))];
   if (fs.existsSync(path.join(src, 'sw.js'))) {
     const sw = fs.readFileSync(path.join(src, 'sw.js'), 'utf8').replace("'__BUILD__'", `'${build}'`).replace('__PRECACHE__', JSON.stringify(precache));
     fs.writeFileSync(path.join(dest, 'sw.js'), sw);

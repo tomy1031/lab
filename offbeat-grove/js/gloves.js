@@ -97,8 +97,6 @@ export class Input {
     this.headQuat = new THREE.Quaternion();
     this.rays = { L: { o: new THREE.Vector3(), d: new THREE.Vector3(), on: false, src: null }, R: { o: new THREE.Vector3(), d: new THREE.Vector3(), on: false, src: null } };
     this.selects = []; // pending 'select' events: side
-    this.pausePressed = false;
-    this._btn = { L: false, R: false };
     this.handMode = false;
     // laser pointers for the menus
     this.pointers = {};
@@ -163,19 +161,13 @@ export class Input {
         r.on = true;
         r.src = src;
       } else r.on = false;
-      // B / Y pause the game
-      const gp = src.gamepad;
-      if (gp && gp.buttons) {
-        const down = !!(gp.buttons[5] && gp.buttons[5].pressed);
-        if (down && !this._btn[side]) this.pausePressed = true;
-        this._btn[side] = down;
-      }
+      // no controller button pauses the game (A/B/X/Y are too easy to press while punching):
+      // pausing is the Meta button — see the session's visibilitychange in main.js
     }
     this.handMode = hands;
     for (const s of ['L', 'R']) if (!seen[s]) { this.gloves[s].lost(); this.rays[s].on = false; }
   }
 
-  takePause() { const p = this.pausePressed; this.pausePressed = false; return p; }
   takeSelects() { const s = this.selects; this.selects = []; return s; }
 
   showPointers(on, hits = {}) {
