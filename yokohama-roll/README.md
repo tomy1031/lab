@@ -170,8 +170,28 @@ URL パラメータ（デバッグ用）: `?r=20`（最初から半径 20m）、
 | `js/audio.js` | Web Audio で合成する BGM と効果音 |
 | `tools/preview.mjs` | モデル一覧を PNG に描き出す（`node tools/preview.mjs models/town_big.js out.png`） |
 | `tools/play.mjs` | ヘッドレスでゲームを起動してスクリーンショット |
+| `tools/export-nexmax.mjs` | ネクマックスを glTF（`nexmax/nexmax.glb`）に書き出す（下の「ネクマックスの 3D モデル」） |
 
 開発用ツールを使うときだけ `npm install`（three を node_modules に入れる）が必要です。
+
+## ネクマックスの 3D モデル（ダウンロード）
+
+主人公ネクマックスを、ほかのソフトでも使える 3D ファイルにしてあります：**[nexmax/](https://tomy1031.github.io/lab/yokohama-roll/nexmax/)**（プレビューとダウンロード）。
+
+- `nexmax/nexmax.glb` … glTF 2.0 バイナリ。身長 1.2 m、正面 +Z。Blender・Unity（glTFast / UnityGLTF）・Unreal・Windows の 3D ビューアーで開けます（Khronos glTF Validator でエラー・警告なし）
+- りんかく線：ゲームでは描画のしかけで太さを変えていますが、ファイルでは外側に少し広げた裏返しの殻（`*_outline`、4.5 mm）にしています。いらなければ消せます
+- 表情とこぶし：表情ごと・手の形ごとの部品があり、見せないものは大きさ 0。モーションの中で切りかわり、`face_happy` などのクリップでも切りかえられます
+- モーション：idle・walk・run・dash・wave・sit（ループ）、jump・punch・punchL・hurt（1 回）。ゲームと同じ動きを 30fps で記録したもので、ループはつなぎ目が分からないように切ってあります
+- 関節（hips・torso・head・肩・ひじ・手首・股・ひざ・足首）の下に部品がぶら下がる作りで、スキニングはありません
+
+作り直し（`js/vendor/nexmax.js` を変えたとき）：
+
+```bash
+npm install
+npm run export:nexmax      # nexmax/nexmax.glb と nexmax/preview.png を書き出す
+```
+
+`tools/export-nexmax.mjs` がヘッドレスのブラウザでゲームと同じネクマックスを作り、動きを記録して `tools/export_nexmax.js` で glTF に変換します（書き出したファイルを GLTFLoader で読み直してプレビューを描くので、読み込めることの確認にもなります）。サイトでは `nexmax/` をゲームの隣に置き、ゲームのオフライン用キャッシュには入れていません。
 
 ## キャラクターの出典
 

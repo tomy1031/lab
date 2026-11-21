@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ネクマックス 3Dモデル</title>
+<meta name="description" content="ハマころ！の主人公ネクマックスの 3D モデル（glTF 2.0 / .glb）。りんかく線・4つの表情・10 のモーション付きで、Blender・Unity・Unreal・Windows の 3D ビューアーで開けます。">
+<link rel="icon" type="image/png" sizes="192x192" href="../img/icon-192.png">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+  :root {
+    --bg: #eaf3fb; --card: #ffffff; --ink: #17213a; --muted: #5a6680; --line: #d5e2ee; --accent: #2f6db3; --chip: #eef4fa; --sel: #17213a; --sel-ink: #ffffff;
+    --font: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0f1726; --card: #172238; --ink: #e9eef7; --muted: #a3b0c6; --line: #2a3754; --accent: #8fb6ff; --chip: #1e2b45; --sel: #e9eef7; --sel-ink: #0f1726; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #0f1726; --card: #172238; --ink: #e9eef7; --muted: #a3b0c6; --line: #2a3754; --accent: #8fb6ff; --chip: #1e2b45; --sel: #e9eef7; --sel-ink: #0f1726; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.75;
+    padding: 0 max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left)); }
+  a { color: var(--accent); }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+  header { padding: 28px 0 14px; }
+  .back { font-size: 14px; display: flex; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; margin: 8px 0 4px; font-weight: 900; text-wrap: balance; }
+  .lead { margin: 0; color: var(--muted); max-width: 46em; }
+  .main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; margin-top: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+  .viewer { position: relative; overflow: hidden; min-height: 420px; }
+  #view { display: block; width: 100%; height: 100%; min-height: 420px; aspect-ratio: 1 / 1; touch-action: none; }
+  #loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-weight: 700; }
+  .hint { position: absolute; left: 12px; bottom: 10px; font-size: 12.5px; color: var(--muted); pointer-events: none; }
+  .side { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  h2 { font-size: 13px; letter-spacing: .12em; color: var(--muted); margin: 0 0 6px; font-weight: 800; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips button { font: inherit; font-size: 14px; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); cursor: pointer; }
+  .chips button[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+  .chips button:focus-visible, .dl:focus-visible, label:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .toggles { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+  .toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .dl { display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: 900; font-size: 18px; padding: 14px 16px; border-radius: 14px; background: var(--sel); color: var(--sel-ink); }
+  .dl small { font-weight: 600; font-size: 13px; opacity: .8; }
+  .dl2 { font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 6px 8px; border-top: 1px solid var(--line); }
+  th { white-space: nowrap; color: var(--muted); font-weight: 700; width: 7.5em; }
+  code { font-size: 12.5px; background: var(--chip); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+  section.card { padding: 18px 20px; margin-top: 18px; }
+  section h3 { margin: 0 0 8px; font-size: 20px; }
+  ul { margin: 6px 0; padding-left: 1.2em; }
+  li { margin: 3px 0; }
+  .note { font-size: 13.5px; color: var(--muted); }
+  @media (max-width: 820px) {
+    .main { grid-template-columns: minmax(0, 1fr); }
+    .viewer, #view { min-height: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="back"><a href="../">ハマころ！で遊ぶ</a><a href="../../">lab にもどる</a></div>
+    <h1>ネクマックス 3Dモデル</h1>
+    <p class="lead">「ハマころ！」で玉を押している主人公ネクマックスを、ほかのソフトでも使える 3D ファイル（glTF 2.0 / .glb）にしました。りんかく線、4つの表情、ゲームの動き 10 種類が入っています。Blender・Unity・Unreal・Windows の 3D ビューアーなどで開けます。</p>
+  </header>
+
+  <div class="main">
+    <div class="card viewer">
+      <canvas id="view" aria-label="ネクマックスの 3D プレビュー（ドラッグで回転、ホイールやピンチで拡大）"></canvas>
+      <div id="loading">モデルを読み込んでいます…</div>
+      <div class="hint">ドラッグで回転・ホイール／ピンチで拡大</div>
+    </div>
+    <div class="card side">
+      <a class="dl" href="nexmax.glb" download="nexmax.glb">nexmax.glb をダウンロード <small id="size">約 1.3MB</small></a>
+      <a class="dl2" href="preview.png" download="nexmax_preview.png">プレビュー画像（PNG・1024×1024）</a>
+      <div>
+        <h2>モーション</h2>
+        <div class="chips" id="clips"></div>
+      </div>
+      <div>
+        <h2>表情</h2>
+        <div class="chips" id="faces"></div>
+      </div>
+      <div class="toggles">
+        <label><input type="checkbox" id="outline" checked> りんかく線</label>
+        <label><input type="checkbox" id="spin" checked> ゆっくり回す</label>
+      </div>
+      <p class="note" id="status"></p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h3>ファイルの中身</h3>
+    <table>
+      <tr><th>形式</th><td>glTF 2.0 バイナリ（<code>.glb</code>）。テクスチャも動きも 1 ファイルに入っています。Khronos の glTF Validator でエラー・警告なし</td></tr>
+      <tr><th>大きさ・向き</th><td>身長 1.2 m（1 単位 = 1 m）。足もとが原点、正面が +Z、上が +Y</td></tr>
+      <tr><th>ポリゴン</th><td id="tris">約 3.4 万三角形（りんかく線を含む）</td></tr>
+      <tr><th>関節</th><td><code>hips</code> <code>torso</code> <code>head</code> <code>eyes</code> <code>shoulderL/R</code> <code>elbowL/R</code> <code>wristL/R</code> <code>hipL/R</code> <code>kneeL/R</code> <code>ankleL/R</code>（＋全体の <code>body</code>）。部品ごとに関節の下にぶら下がる「かたい」作りで、スキニングはありません。こぶしの先に取り付け用の <code>nmclawMuzzle</code></td></tr>
+      <tr><th>モーション</th><td id="cliplist">idle（待機）・walk・run・dash・wave・sit はループ、jump・punch・punchL・hurt は立ち姿から始まって立ち姿にもどる 1 回分。30fps</td></tr>
+      <tr><th>表情</th><td>happy・determined・worried・surprised。目と口は表情ごとの部品（<code>eyeballs_*</code>・<code>features_*</code>）で、見せない表情は大きさ 0。<code>face_*</code> のクリップで切りかえられます</td></tr>
+      <tr><th>手</th><td>開いた手とこぶし（<code>handR_open</code>・<code>handR_fist</code> など）。パンチやダッシュのクリップで自動で切りかわります</td></tr>
+      <tr><th>材質</th><td>ビニールのような PBR（sheen・clearcoat 付き）、胸のロゴはテクスチャ。りんかく線は光の影響を受けない紺色</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h3>使い方</h3>
+    <ul>
+      <li><b>Blender</b>：ファイル → インポート → glTF 2.0。動きは「アクション」として入っているので、ドープシート（アクションエディター）で選びます。りんかく線を出すには、<code>outline</code> マテリアルの設定で「裏面を非表示（Backface Culling）」がオンになっていることを確認してください（EEVEE）</li>
+      <li><b>Unity</b>：glTFast か UnityGLTF のパッケージを入れて、ファイルを Assets にドラッグ。クリップはアニメーションとして読み込まれます</li>
+      <li><b>Unreal Engine</b>：glTF Importer（標準プラグイン）で読み込み</li>
+      <li><b>Windows</b>：「3D ビューアー」でそのまま開けます。<b>ウェブ</b>なら three.js の GLTFLoader や &lt;model-viewer&gt; で表示できます</li>
+      <li>りんかく線がいらないときは、名前が <code>_outline</code> で終わる部品を消すか隠してください</li>
+      <li>表情を手で変えるときは、使いたい <code>eyeballs_*</code> と <code>features_*</code> の大きさを 1、ほかを 0 にします（<code>face_*</code> クリップと同じこと）</li>
+    </ul>
+    <p class="note">ゲームの中ではりんかく線の太さを画面に合わせて変え、影の部分を少し明るくしています。ファイルではりんかく線の太さは一定（4.5 mm）で、影はソフトの照明しだいです。ゲームに出てくる腕のクロー（NMClaw）は入っていません。</p>
+    <p class="note">モデル：ネクマックス（<a href="https://github.com/tomy1031/nexmax_chronicle">tomy1031/nexmax_chronicle</a>、ハマころ！で使っているものと同じ）。ファイルはゲームのモデルから <a href="https://github.com/tomy1031/lab/blob/HEAD/yokohama-roll/tools/export-nexmax.mjs"><code>tools/export-nexmax.mjs</code></a> で作っています。利用条件（改変・再配布・商用利用）はまだ決まっていません。</p>
+  </section>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const NAMES = { idle: '待機', walk: '歩く', run: '走る', dash: 'ダッシュ', wave: '手をふる', sit: 'すわる', jump: 'ジャンプ', punch: 'パンチ（右）', punchL: 'パンチ（左）', hurt: 'いたっ' };
+const FACES = { happy: 'にこにこ', determined: 'きりっ', worried: 'しょんぼり', surprised: 'びっくり' };
+const ONCE = new Set(['jump', 'punch', 'punchL', 'hurt']);
+
+const canvas = document.getElementById('view');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene();
+const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light';
+scene.background = new THREE.Color(dark ? '#16223a' : '#eaf3fb');
+scene.add(new THREE.HemisphereLight('#ffffff', '#b9c7d6', 1.6));
+const key = new THREE.DirectionalLight('#ffffff', 2.2);
+key.position.set(1.5, 3, 2.5);
+scene.add(key);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(0.7, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.08, depthWrite: false }));
+scene.add(floor);
+const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 50);
+camera.position.set(1.3, 1.1, 2.9);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 0.62, 0);
+controls.enableDamping = true;
+controls.minDistance = 0.8;
+controls.maxDistance = 8;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 1.2;
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas);
+
+const status = document.getElementById('status');
+let mixer, body, face, clips = {};
+try {
+  const gltf = await new GLTFLoader().loadAsync('nexmax.glb');
+  document.getElementById('loading').remove();
+  const model = gltf.scene;
+  scene.add(model);
+  mixer = new THREE.AnimationMixer(model);
+  for (const c of gltf.animations) clips[c.name] = c;
+  let tris = 0;
+  model.traverse((o) => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
+  document.getElementById('tris').textContent = `${Math.round(tris).toLocaleString()} 三角形（りんかく線を含む）`;
+  const motion = gltf.animations.filter((c) => !c.name.startsWith('face_'));
+  document.getElementById('cliplist').textContent = motion.map((c) => `${c.name}（${NAMES[c.name] || ''}・${c.duration.toFixed(1)} 秒${ONCE.has(c.name) ? '' : '・ループ'}）`).join('、') + '。30fps';
+  const mk = (box, items, onClick) => {
+    for (const [id, label] of items) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.dataset.id = id;
+      b.setAttribute('aria-pressed', 'false');
+      b.onclick = () => onClick(id);
+      box.appendChild(b);
+    }
+  };
+  mk(document.getElementById('clips'), motion.map((c) => [c.name, NAMES[c.name] || c.name]), (id) => playBody(id));
+  mk(document.getElementById('faces'), Object.entries(FACES).filter(([e]) => clips['face_' + e]), (e) => setFace(e));
+  mixer.addEventListener('finished', (e) => { if (e.action === body && ONCE.has(e.action.getClip().name)) playBody('idle'); });
+  document.getElementById('outline').onchange = (e) => model.traverse((o) => { if (o.isMesh && o.name.endsWith('_outline')) o.visible = e.target.checked; });
+  document.getElementById('spin').onchange = (e) => { controls.autoRotate = e.target.checked; };
+  playBody('idle');
+  setFace('happy');
+  const size = (await fetch('nexmax.glb', { method: 'HEAD' }).catch(() => null))?.headers.get('content-length');
+  if (size) document.getElementById('size').textContent = `${(size / 1048576).toFixed(1)}MB`;
+} catch (e) {
+  document.getElementById('loading').textContent = '読み込めませんでした：' + e.message;
+}
+
+function press(boxId, id) {
+  for (const b of document.getElementById(boxId).children) b.setAttribute('aria-pressed', String(b.dataset.id === id));
+}
+function playBody(name) {
+  const c = clips[name];
+  if (!c) return;
+  const a = mixer.clipAction(c);
+  a.reset();
+  a.setLoop(ONCE.has(name) ? THREE.LoopOnce : THREE.LoopRepeat);
+  a.clampWhenFinished = true;
+  if (body && body !== a) a.crossFadeFrom(body, 0.25, false);
+  a.play();
+  body = a;
+  press('clips', name);
+  // "hurt" brings its own face: let it show, then put the chosen face back
+  if (face) face.enabled = name !== 'hurt';
+  status.textContent = `${name}：${c.duration.toFixed(2)} 秒${ONCE.has(name) ? '（1 回）' : '（ループ）'}`;
+}
+function setFace(e) {
+  const c = clips['face_' + e];
+  if (!c) return;
+  if (face) face.stop();
+  face = mixer.clipAction(c);
+  face.setLoop(THREE.LoopOnce);
+  face.clampWhenFinished = true;
+  face.enabled = !(body && body.getClip().name === 'hurt');
+  face.play();
+  press('faces', e);
+}
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(0.05, clock.getDelta());
+  if (mixer) mixer.update(dt);
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
