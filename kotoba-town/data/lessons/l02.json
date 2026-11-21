@@ -1,0 +1,1399 @@
+{
+  "lesson": 2,
+  "titleJa": "これは なんですか",
+  "titleEn": "What is this?",
+  "summaryEn": "Talk about things around you: what they are, what kind, and whose — and give a gift politely.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "これ／それ／あれは Nです",
+      "meaningEn": "This / that (near you) / that over there is N",
+      "exampleJa": "それは チョコレートです。",
+      "exampleEn": "That is chocolate."
+    },
+    {
+      "id": "g2",
+      "pattern": "この N／その N／あの N",
+      "meaningEn": "this N / that N (near you) / that N over there",
+      "exampleJa": "この かぎは ミンさんのですか。",
+      "exampleEn": "Is this key yours, Minh?"
+    },
+    {
+      "id": "g3",
+      "pattern": "はい、そうです／いいえ、そうじゃ ありません",
+      "meaningEn": "Yes, that's right / No, it isn't (answers to noun questions; ちがいます also works)",
+      "exampleJa": "いいえ、そうじゃ ありません。えいごの ほんです。",
+      "exampleEn": "No, it isn't. It's an English book."
+    },
+    {
+      "id": "g4",
+      "pattern": "S1か、S2か",
+      "meaningEn": "Is it A, or B? — answer by picking one, without はい／いいえ",
+      "exampleJa": "これは えいごの じしょですか、にほんごの じしょですか。",
+      "exampleEn": "Is this an English dictionary or a Japanese one?"
+    },
+    {
+      "id": "g5",
+      "pattern": "N1の N2 (なんの N)",
+      "meaningEn": "N2 about N1 — what kind / what it is about",
+      "exampleJa": "それは なんの ざっしですか。",
+      "exampleEn": "What kind of magazine is that?"
+    },
+    {
+      "id": "g6",
+      "pattern": "N1の N2 (だれの N)",
+      "meaningEn": "N1's N2 — owner",
+      "exampleJa": "これは わたしの めいしです。",
+      "exampleEn": "This is my business card."
+    },
+    {
+      "id": "g7",
+      "pattern": "Nのです (noun left out)",
+      "meaningEn": "It is N's — の stands in for the thing already mentioned",
+      "exampleJa": "その かさは わたしのです。",
+      "exampleEn": "That umbrella is mine."
+    },
+    {
+      "id": "g8",
+      "pattern": "そうですか",
+      "meaningEn": "I see (falling tone) — reacting to new information",
+      "exampleJa": "そうですか。わたしは かいしゃいんです。",
+      "exampleEn": "I see. I'm a company employee."
+    },
+    {
+      "id": "g9",
+      "pattern": "これは なんですか",
+      "meaningEn": "What is this? (なん = what)",
+      "exampleJa": "あれは なんですか。",
+      "exampleEn": "What is that over there?"
+    },
+    {
+      "id": "g10",
+      "pattern": "これ、ほんの きもちです。どうぞ。／これから おせわに なります。",
+      "meaningEn": "Gift-giving and new-neighbour set phrases; どうも ありがとう ございます to thank",
+      "exampleJa": "あのう、これ、ほんの きもちです。どうぞ。",
+      "exampleEn": "Um, this is just a little something. Please take it."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "これ／それ／あれ",
+      "kana": "これ／それ／あれ",
+      "en": "this / that / that over there"
+    },
+    {
+      "ja": "この／その／あの",
+      "kana": "この／その／あの",
+      "en": "this ～ / that ～ / that ～ over there"
+    },
+    {
+      "ja": "本",
+      "kana": "ほん",
+      "en": "book"
+    },
+    {
+      "ja": "辞書",
+      "kana": "じしょ",
+      "en": "dictionary"
+    },
+    {
+      "ja": "雑誌",
+      "kana": "ざっし",
+      "en": "magazine"
+    },
+    {
+      "ja": "名刺",
+      "kana": "めいし",
+      "en": "business card"
+    },
+    {
+      "ja": "鍵",
+      "kana": "かぎ",
+      "en": "key"
+    },
+    {
+      "ja": "時計",
+      "kana": "とけい",
+      "en": "watch, clock"
+    },
+    {
+      "ja": "傘",
+      "kana": "かさ",
+      "en": "umbrella"
+    },
+    {
+      "ja": "カメラ",
+      "kana": "カメラ",
+      "en": "camera"
+    },
+    {
+      "ja": "コンピューター",
+      "kana": "コンピューター",
+      "en": "computer"
+    },
+    {
+      "ja": "机",
+      "kana": "つくえ",
+      "en": "desk"
+    },
+    {
+      "ja": "自転車",
+      "kana": "じてんしゃ",
+      "en": "bicycle"
+    },
+    {
+      "ja": "チョコレート",
+      "kana": "チョコレート",
+      "en": "chocolate"
+    },
+    {
+      "ja": "コーヒー",
+      "kana": "コーヒー",
+      "en": "coffee"
+    },
+    {
+      "ja": "英語",
+      "kana": "えいご",
+      "en": "English (language)"
+    },
+    {
+      "ja": "日本語",
+      "kana": "にほんご",
+      "en": "Japanese (language)"
+    },
+    {
+      "ja": "何",
+      "kana": "なん",
+      "en": "what"
+    },
+    {
+      "ja": "だれの",
+      "kana": "だれの",
+      "en": "whose"
+    },
+    {
+      "ja": "夫",
+      "kana": "おっと",
+      "en": "(my) husband"
+    },
+    {
+      "ja": "あのう",
+      "kana": "あのう",
+      "en": "um… (soft way to start)"
+    },
+    {
+      "ja": "ほんの 気持ちです",
+      "kana": "ほんの きもちです",
+      "en": "it's just a small token"
+    },
+    {
+      "ja": "どうも ありがとう ございます",
+      "kana": "どうも ありがとう ございます",
+      "en": "thank you very much"
+    },
+    {
+      "ja": "これから お世話に なります",
+      "kana": "これから おせわに なります",
+      "en": "I'll be in your care from now on"
+    }
+  ],
+  "tipsEn": [
+    "これ is near you, それ is near the listener, あれ is far from both — so when you hand something over, your これ becomes それ.",
+    "New neighbours greet next door with a small gift (about ¥500–1,000: sweets, coffee, towels) and say ほんの きもちです.",
+    "Answer \"A ですか、B ですか\" by simply picking one. はい / いいえ sounds odd here."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-02/grammar/",
+      "https://jpdb.io/textbook/9/minna-no-nihongo-i/2/lesson-2/vocabulary-list",
+      "https://crexgroup.com/ja/hikkoshi/greeting-manner/moving-greeting-gift-manner/",
+      "https://www.japanesepod101.com/blog/2015/06/19/common-mistakes-beginner-japanese-learners-make/"
+    ],
+    "notesEn": "Lesson 2 teaches the demonstratives これ／それ／あれ and この／その／あの N, そうです／そうじゃ ありません answers, the choice question S1か、S2か, N1の N2 for content (なんの 本) and ownership (だれの かさ), の standing in for a noun (わたしのです), the reaction そうですか, and gift-giving phrases (ほんの きもちです, これから おせわに なります). It prepares learners to identify everyday objects, sort out whose something is, and greet new neighbours with a present. Learners typically mix up これ and それ because the choice depends on who the object is near, answer A-or-B questions with はい, and drop or misplace の. The scenes are a moving-in greeting at the neighbours' door, a lost-and-found moment after class, and receiving your first business cards at the office, with props placed so that これ／それ／あれ are spatially true."
+  },
+  "variants": [
+    {
+      "id": "l02a",
+      "titleJa": "ひっこしの あいさつ",
+      "titleEn": "Meeting the neighbours",
+      "scene": "apartment",
+      "setup": {
+        "time": "evening",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "You have just moved into apartment 201. In Japan, new neighbours ring the bell next door with a small gift. You press the intercom of the Mori family…",
+      "roleEn": "You are the new neighbour in 201, holding a wrapped gift: chocolate from your country (or pick something else). Use your own name.",
+      "missionsEn": [
+        {
+          "text": "Greet your neighbour with the \"new neighbour\" phrase",
+          "grammar": [
+            "g10"
+          ]
+        },
+        {
+          "text": "Hand over the gift and say what it is",
+          "grammar": [
+            "g1",
+            "g9",
+            "g10"
+          ]
+        },
+        {
+          "text": "Ask whose bicycle that is",
+          "grammar": [
+            "g2",
+            "g6",
+            "g7"
+          ]
+        },
+        {
+          "text": "Answer an A-or-B question",
+          "grammar": [
+            "g4",
+            "g8"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "npc1",
+        "mori_shun": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "door_neighbor",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "はい。……どなたですか。",
+              "kana": "はい。……どなたですか。",
+              "en": "Yes? …Who is it?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Introduce yourself as the new neighbour, and add the set phrase for \"I'll be in your care from now on\".",
+            "grammar": [
+              "g10"
+            ],
+            "hintJa": "はじめまして。＿＿です。これから おせわに なります。",
+            "modelAnswers": [
+              "はじめまして。リンです。これから おせわに なります。どうぞ よろしく おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "with_greeting",
+                "whenEn": "Learner gave their name AND a new-neighbour greeting (これから おせわに なります and/or よろしく おねがいします).",
+                "next": "n1a",
+                "exampleJa": "はじめまして。リンです。これから おせわに なります。"
+              },
+              {
+                "id": "name_only",
+                "whenEn": "Learner gave their name (maybe with はじめまして) but no おせわに なります / よろしく phrase.",
+                "next": "n1b",
+                "exampleJa": "はじめまして。リンです。"
+              }
+            ],
+            "fallback": "n1b"
+          }
+        },
+        {
+          "id": "n1a",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "森です。こちらこそ、どうぞ よろしく。",
+              "kana": "もりです。こちらこそ、どうぞ よろしく。",
+              "en": "I'm Mori. Nice to meet you too.",
+              "gesture": "bow"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n1b",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あ、201の かたですか。森です。どうぞ よろしく。",
+              "kana": "あ、にーまるいちの かたですか。もりです。どうぞ よろしく。",
+              "en": "Oh, you're the person from 201? I'm Mori. Nice to meet you.",
+              "gesture": "bow_light",
+              "tts": "あ、にーまるいちの かたですか。もりです。どうぞ よろしく。"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n2",
+          "focus": "gift",
+          "say": [],
+          "listen": {
+            "promptEn": "Hand over the gift you are holding. Use これ and the modest \"just a little something\" phrase.",
+            "grammar": [
+              "g1",
+              "g10"
+            ],
+            "hintJa": "あのう、これ、ほんの ＿＿です。どうぞ。",
+            "modelAnswers": [
+              "あのう、これ、ほんの きもちです。どうぞ。",
+              "これは チョコレートです。ほんの きもちです。どうぞ。"
+            ],
+            "branches": [
+              {
+                "id": "plain",
+                "whenEn": "Learner offered the gift without saying what is inside.",
+                "next": "n3",
+                "exampleJa": "あのう、これ、ほんの きもちです。どうぞ。"
+              },
+              {
+                "id": "named_chocolate",
+                "whenEn": "Learner offered the gift and said it is chocolate.",
+                "next": "n4a",
+                "exampleJa": "これは チョコレートです。ほんの きもちです。どうぞ。"
+              },
+              {
+                "id": "named_other",
+                "whenEn": "Learner offered the gift and said it is something other than chocolate (coffee, tea, sweets…).",
+                "next": "n4b",
+                "exampleJa": "これは コーヒーです。どうぞ。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "えっ、どうも ありがとう ございます。",
+              "kana": "えっ、どうも ありがとう ございます。",
+              "en": "Oh! Thank you very much.",
+              "gesture": "receive"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "これは なんですか。",
+              "kana": "これは なんですか。",
+              "en": "What is this?"
+            }
+          ],
+          "listen": {
+            "promptEn": "The box is in her hands now — so for you it is それ, not これ. Tell her what it is.",
+            "grammar": [
+              "g1",
+              "g9"
+            ],
+            "hintJa": "それは ＿＿です。",
+            "modelAnswers": [
+              "それは チョコレートです。",
+              "それは コーヒーです。"
+            ],
+            "branches": [
+              {
+                "id": "chocolate",
+                "whenEn": "Learner said it is chocolate.",
+                "next": "n4a",
+                "exampleJa": "それは チョコレートです。"
+              },
+              {
+                "id": "other",
+                "whenEn": "Learner said it is anything else (coffee, tea, sweets…).",
+                "next": "n4b",
+                "exampleJa": "それは コーヒーです。"
+              }
+            ],
+            "fallback": "n4b"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "わあ、チョコレートですか。どうも ありがとう ございます。",
+              "kana": "わあ、チョコレートですか。どうも ありがとう ございます。",
+              "en": "Wow, chocolate! Thank you so much.",
+              "gesture": "receive"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "わあ、そうですか。どうも ありがとう ございます。",
+              "kana": "わあ、そうですか。どうも ありがとう ございます。",
+              "en": "Oh, is it? Thank you so much.",
+              "gesture": "receive"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "bicycle",
+          "say": [],
+          "listen": {
+            "promptEn": "You have a bicycle too, and you notice one parked far down the corridor. Ask Aya whose it is.",
+            "grammar": [
+              "g2",
+              "g6",
+              "g7"
+            ],
+            "hintJa": "あの じてんしゃは ＿＿のですか。",
+            "modelAnswers": [
+              "あの じてんしゃは だれのですか。",
+              "あの じてんしゃは もりさんのですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_whose",
+                "whenEn": "Learner asked whose bicycle it is (だれの).",
+                "next": "n5a",
+                "exampleJa": "あの じてんしゃは だれのですか。"
+              },
+              {
+                "id": "asked_if_hers",
+                "whenEn": "Learner asked whether it is Aya's / Mori-san's.",
+                "next": "n5b",
+                "exampleJa": "あの じてんしゃは もりさんのですか。"
+              }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あれですか。あれは おっとのです。",
+              "kana": "あれですか。あれは おっとのです。",
+              "en": "That one? That's my husband's.",
+              "gesture": "point",
+              "target": "bicycle"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいえ、わたしのじゃ ありません。おっとのです。",
+              "kana": "いいえ、わたしのじゃ ありません。おっとのです。",
+              "en": "No, it's not mine. It's my husband's.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "こんばんは。森 しゅんです。銀行員です。",
+              "kana": "こんばんは。もり しゅんです。ぎんこういんです。",
+              "en": "Good evening. I'm Mori Shun. I work at a bank.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "しつれいですが、学生ですか、会社員ですか。",
+              "kana": "しつれいですが、がくせいですか、かいしゃいんですか。",
+              "en": "If I may ask, are you a student, or a company employee?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Aya's husband joins you. React to what he told you (そうですか), then answer his A-or-B question — no はい or いいえ, just pick one.",
+            "grammar": [
+              "g4",
+              "g8"
+            ],
+            "hintJa": "そうですか。わたしは ＿＿です。",
+            "modelAnswers": [
+              "そうですか。わたしは かいしゃいんです。",
+              "がくせいです。"
+            ],
+            "branches": [
+              {
+                "id": "employee",
+                "whenEn": "Learner said they are a company employee (or named a job at a company).",
+                "next": "n6a",
+                "exampleJa": "そうですか。わたしは かいしゃいんです。"
+              },
+              {
+                "id": "student_or_other",
+                "whenEn": "Learner said they are a student, or anything else.",
+                "next": "n6b",
+                "exampleJa": "そうですか。わたしは がくせいです。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "わたしも 会社員です。どうぞ よろしく。",
+              "kana": "わたしも かいしゃいんです。どうぞ よろしく。",
+              "en": "I'm a company employee too. Nice to meet you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。どうぞ よろしく おねがいします。",
+              "kana": "そうですか。どうぞ よろしく おねがいします。",
+              "en": "I see. Very nice to meet you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "これから どうぞ よろしく おねがいします。",
+              "kana": "これから どうぞ よろしく おねがいします。",
+              "en": "We're happy to have you next door.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l02b",
+      "titleJa": "だれの かさですか",
+      "titleEn": "Whose umbrella is it?",
+      "scene": "classroom",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "Class is over and it is raining outside. The teacher is collecting things people have left around the room, and your classmates are packing up.",
+      "roleEn": "The dictionary and the book on your desk are yours. The key on your desk is NOT yours. The umbrella? You decide.",
+      "missionsEn": [
+        {
+          "text": "Say whether the umbrella is yours",
+          "grammar": [
+            "g6",
+            "g7"
+          ]
+        },
+        {
+          "text": "Find the owner of the key on your desk",
+          "grammar": [
+            "g2",
+            "g6",
+            "g7"
+          ]
+        },
+        {
+          "text": "Answer questions about your book and dictionary",
+          "grammar": [
+            "g3",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask what kind of magazine Ana's is",
+          "grammar": [
+            "g5",
+            "g9"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana",
+        "minh"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "umbrella",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "みなさん、この かさは だれのですか。",
+              "kana": "みなさん、この かさは だれのですか。",
+              "en": "Everyone, whose umbrella is this?",
+              "gesture": "point",
+              "target": "umbrella"
+            }
+          ],
+          "listen": {
+            "promptEn": "The teacher has found an umbrella. Is it yours? You decide: claim it, or say it isn't yours.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "それは わたしのです。／わたしのじゃ ありません。",
+            "modelAnswers": [
+              "それは わたしのです。",
+              "わたしのじゃ ありません。"
+            ],
+            "branches": [
+              {
+                "id": "mine",
+                "whenEn": "Learner said the umbrella is theirs.",
+                "next": "n1a",
+                "exampleJa": "それは わたしのです。"
+              },
+              {
+                "id": "not_mine",
+                "whenEn": "Learner said it is not theirs (or said it is someone else's).",
+                "next": "n1b",
+                "exampleJa": "わたしのじゃ ありません。"
+              }
+            ],
+            "fallback": "n1b"
+          }
+        },
+        {
+          "id": "n1a",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。はい、どうぞ。",
+              "kana": "そうですか。はい、どうぞ。",
+              "en": "I see. Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n1b",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "あ、それは わたしのです。すみません。",
+              "kana": "あ、それは わたしのです。すみません。",
+              "en": "Oh, that's mine. Sorry!",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n2",
+          "focus": "key",
+          "say": [],
+          "listen": {
+            "promptEn": "There is a key on your desk, and it isn't yours. Ask Minh or Ana whether this key is theirs.",
+            "grammar": [
+              "g2",
+              "g6",
+              "g7"
+            ],
+            "hintJa": "＿＿さん、この かぎは ＿＿さんのですか。",
+            "modelAnswers": [
+              "ミンさん、この かぎは ミンさんのですか。",
+              "アナさん、この かぎは アナさんのですか。",
+              "この かぎは だれのですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_minh_or_all",
+                "whenEn": "Learner asked Minh, or asked nobody in particular whose key it is.",
+                "next": "n2a",
+                "exampleJa": "ミンさん、この かぎは ミンさんのですか。"
+              },
+              {
+                "id": "asked_ana",
+                "whenEn": "Learner asked Ana whether the key is hers.",
+                "next": "n2b",
+                "exampleJa": "アナさん、この かぎは アナさんのですか。"
+              }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "いいえ、わたしのじゃ ありません。ミンさんのです。",
+              "kana": "いいえ、わたしのじゃ ありません。ミンさんのです。",
+              "en": "No, it's not mine. It's Minh's.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n2a"
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "あ、それは わたしのです。どうも。",
+              "kana": "あ、それは わたしのです。どうも。",
+              "en": "Oh, that's mine. Thanks.",
+              "gesture": "receive"
+            },
+            {
+              "who": "minh",
+              "ja": "それは 日本語の 本ですか。",
+              "kana": "それは にほんごの ほんですか。",
+              "en": "Is that a Japanese book?",
+              "gesture": "point",
+              "target": "book"
+            }
+          ],
+          "listen": {
+            "promptEn": "Minh points at the book on your desk. Is it a Japanese-language book? Answer with そうです or そうじゃ ありません.",
+            "grammar": [
+              "g3",
+              "g5"
+            ],
+            "hintJa": "はい、そうです。／いいえ、そうじゃ ありません。＿＿の ほんです。",
+            "modelAnswers": [
+              "はい、そうです。",
+              "いいえ、そうじゃ ありません。えいごの ほんです。"
+            ],
+            "branches": [
+              {
+                "id": "yes",
+                "whenEn": "Learner confirmed it is a Japanese book.",
+                "next": "n3a",
+                "exampleJa": "はい、そうです。にほんごの ほんです。"
+              },
+              {
+                "id": "no",
+                "whenEn": "Learner said it is not (and maybe said what kind of book it is).",
+                "next": "n3b",
+                "exampleJa": "いいえ、そうじゃ ありません。えいごの ほんです。"
+              }
+            ],
+            "fallback": "n3a"
+          }
+        },
+        {
+          "id": "n3a",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "わたしのも 日本語の 本です。",
+              "kana": "わたしのも にほんごの ほんです。",
+              "en": "Mine is a Japanese book too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3b",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "そうですか。わたしのは 日本語の 本です。",
+              "kana": "そうですか。わたしのは にほんごの ほんです。",
+              "en": "I see. Mine is a Japanese book."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "その 辞書は 英語の 辞書ですか、日本語の 辞書ですか。",
+              "kana": "その じしょは えいごの じしょですか、にほんごの じしょですか。",
+              "en": "Is that dictionary an English one, or a Japanese one?",
+              "gesture": "point",
+              "target": "dictionary"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ana asks about your dictionary with an A-or-B question. Pick one — don't say はい or いいえ.",
+            "grammar": [
+              "g4",
+              "g5"
+            ],
+            "hintJa": "これは ＿＿の じしょです。",
+            "modelAnswers": [
+              "これは えいごの じしょです。",
+              "にほんごの じしょです。"
+            ],
+            "branches": [
+              {
+                "id": "japanese",
+                "whenEn": "Learner said it is a Japanese dictionary.",
+                "next": "n4b",
+                "exampleJa": "これは にほんごの じしょです。"
+              },
+              {
+                "id": "english_or_other",
+                "whenEn": "Learner said it is an English dictionary (or another language).",
+                "next": "n4a",
+                "exampleJa": "これは えいごの じしょです。"
+              }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "そうですか。わたしのは ポルトガル語の 辞書です。",
+              "kana": "そうですか。わたしのは ポルトガルごの じしょです。",
+              "en": "I see. Mine is a Portuguese dictionary."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わあ、日本語の 辞書ですか。",
+              "kana": "わあ、にほんごの じしょですか。",
+              "en": "Wow, a Japanese dictionary!",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "magazine",
+          "say": [],
+          "listen": {
+            "promptEn": "Ana is holding a magazine. Ask her what kind of magazine that is.",
+            "grammar": [
+              "g1",
+              "g5",
+              "g9"
+            ],
+            "hintJa": "それは なんの ＿＿ですか。",
+            "modelAnswers": [
+              "それは なんの ざっしですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_what_kind",
+                "whenEn": "Learner asked what kind of magazine it is / what it is about (なんの).",
+                "next": "n5a",
+                "exampleJa": "それは なんの ざっしですか。"
+              },
+              {
+                "id": "asked_what_or_guess",
+                "whenEn": "Learner simply asked what it is, or made a yes/no guess.",
+                "next": "n5b",
+                "exampleJa": "それは なんですか。"
+              }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "これですか。カメラの 雑誌です。",
+              "kana": "これですか。カメラの ざっしです。",
+              "en": "This? It's a camera magazine.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "これは 雑誌です。カメラの 雑誌です。",
+              "kana": "これは ざっしです。カメラの ざっしです。",
+              "en": "This is a magazine. A camera magazine.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "focus": "watch",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "あら？ この 時計は だれのですか。",
+              "kana": "あら？ この とけいは だれのですか。",
+              "en": "Oh? Whose watch is this?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "One last thing: a watch on the teacher's own desk. It isn't yours… could it be hers? Say so!",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "わたしのじゃ ありません。せんせいのですか。",
+            "modelAnswers": [
+              "わたしのじゃ ありません。",
+              "それは せんせいのですか。"
+            ],
+            "branches": [
+              {
+                "id": "teachers",
+                "whenEn": "Learner suggested or asked whether the watch is the teacher's own.",
+                "next": "n6a",
+                "exampleJa": "それは せんせいのですか。"
+              },
+              {
+                "id": "not_mine",
+                "whenEn": "Learner only said it is not theirs, or named a classmate.",
+                "next": "n6b",
+                "exampleJa": "わたしのじゃ ありません。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "先生、それは 先生のです。",
+              "kana": "せんせい、それは せんせいのです。",
+              "en": "Sensei, that's yours.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n6a"
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "あ、そうです。わたしのです！ すみません。",
+              "kana": "あ、そうです。わたしのです！ すみません。",
+              "en": "Oh, that's right. It's mine! Sorry.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l02c",
+      "titleJa": "はじめての めいし",
+      "titleEn": "Your first business cards",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Second day at Midori Design. Aoki shows you to your new desk — and something is waiting on it for you.",
+      "roleEn": "You are the new employee. The desk next to you is yours; look closely at the little box on it.",
+      "missionsEn": [
+        {
+          "text": "Ask what the box on your desk is",
+          "grammar": [
+            "g1",
+            "g9"
+          ]
+        },
+        {
+          "text": "Find out whose it is",
+          "grammar": [
+            "g4",
+            "g6",
+            "g7"
+          ]
+        },
+        {
+          "text": "Ask about something else in the office",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Exchange business cards with Aoki",
+          "grammar": [
+            "g1",
+            "g6",
+            "g10"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki"
+      ],
+      "positions": {
+        "aoki": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "business_card",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。どうぞ。",
+              "kana": "おはよう ございます。どうぞ。",
+              "en": "Good morning! Here you go — this is your desk.",
+              "gesture": "point",
+              "target": "my_desk"
+            }
+          ],
+          "listen": {
+            "promptEn": "There is a small box on your new desk. Ask Aoki what this is.",
+            "grammar": [
+              "g1",
+              "g9"
+            ],
+            "hintJa": "これは ＿＿ですか。",
+            "modelAnswers": [
+              "これは なんですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_what",
+                "whenEn": "Learner asked what it is.",
+                "next": "n2a",
+                "exampleJa": "これは なんですか。"
+              },
+              {
+                "id": "guessed_cards",
+                "whenEn": "Learner guessed correctly with a yes/no question (business cards / cards).",
+                "next": "n2b",
+                "exampleJa": "これは めいしですか。"
+              },
+              {
+                "id": "guessed_wrong",
+                "whenEn": "Learner guessed something else with a yes/no question (chocolate, a notebook…).",
+                "next": "n2c",
+                "exampleJa": "これは チョコレートですか。"
+              }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "それですか。それは 名刺です。",
+              "kana": "それですか。それは めいしです。",
+              "en": "That? Those are business cards."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、そうです。名刺です。",
+              "kana": "はい、そうです。めいしです。",
+              "en": "Yes, that's right. Business cards.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいえ、そうじゃ ありません。名刺です。",
+              "kana": "いいえ、そうじゃ ありません。めいしです。",
+              "en": "No, it isn't. They're business cards.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [],
+          "listen": {
+            "promptEn": "Business cards! But whose? Ask her — are they hers, or yours?",
+            "grammar": [
+              "g4",
+              "g6",
+              "g7"
+            ],
+            "hintJa": "これは ＿＿のですか。",
+            "modelAnswers": [
+              "これは わたしのですか。",
+              "これは あおきさんのですか、わたしのですか。",
+              "これは だれの めいしですか。"
+            ],
+            "branches": [
+              {
+                "id": "asked_mine",
+                "whenEn": "Learner asked only whether the cards are their own.",
+                "next": "n3_yes",
+                "exampleJa": "これは わたしのですか。"
+              },
+              {
+                "id": "asked_whose_or_choice",
+                "whenEn": "Learner asked whose they are, whether they are Aoki's, or an A-or-B question.",
+                "next": "n3_tease",
+                "exampleJa": "これは あおきさんのですか、わたしのですか。"
+              }
+            ],
+            "fallback": "n3_yes"
+          }
+        },
+        {
+          "id": "n3_tease",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしのじゃ ありません。小川さんのじゃ ありません……。",
+              "kana": "わたしのじゃ ありません。おがわさんのじゃ ありません……。",
+              "en": "Not mine. Not Ogawa-san's…",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3b"
+        },
+        {
+          "id": "n3b",
+          "say": [],
+          "listen": {
+            "promptEn": "She is teasing you. Not hers, not the manager's… so whose? Say it!",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "＿＿のですか。",
+            "modelAnswers": [
+              "わたしのですか。",
+              "わたしの めいしですか。"
+            ],
+            "branches": [
+              {
+                "id": "mine",
+                "whenEn": "Learner said or asked that the cards are their own.",
+                "next": "n3_yes",
+                "exampleJa": "わたしのですか。"
+              },
+              {
+                "id": "someone_else",
+                "whenEn": "Learner guessed another person (e.g. Fujita).",
+                "next": "n3_tease",
+                "exampleJa": "ふじたさんのですか。"
+              }
+            ],
+            "fallback": "n3_yes"
+          }
+        },
+        {
+          "id": "n3_yes",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、そうです！ どうぞ。",
+              "kana": "はい、そうです！ どうぞ。",
+              "en": "Yes, that's right! Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "focus": "logo_wall",
+          "say": [],
+          "listen": {
+            "promptEn": "Look around. Ask about one more thing: whose computer this is on your desk, or what that big sign on the far wall is.",
+            "grammar": [
+              "g1",
+              "g2",
+              "g6",
+              "g9"
+            ],
+            "hintJa": "この コンピューターは ＿＿のですか。／あれは ＿＿ですか。",
+            "modelAnswers": [
+              "あれは なんですか。",
+              "この コンピューターは だれのですか。"
+            ],
+            "branches": [
+              {
+                "id": "far_thing",
+                "whenEn": "Learner asked about something far away (あれ / あの …), such as the sign or logo on the wall.",
+                "next": "n4a",
+                "exampleJa": "あれは なんですか。"
+              },
+              {
+                "id": "computer",
+                "whenEn": "Learner asked about the computer on the desk (whose it is, or whether it is theirs).",
+                "next": "n4b",
+                "exampleJa": "この コンピューターは だれのですか。"
+              }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あれは みどりデザインの ロゴです。わたしの デザインです！",
+              "kana": "あれは みどりデザインの ロゴです。わたしの デザインです！",
+              "en": "That's the Midori Design logo. My design!",
+              "gesture": "point",
+              "target": "logo_wall"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "その コンピューターですか。みどりデザインのです。",
+              "kana": "その コンピューターですか。みどりデザインのです。",
+              "en": "That computer? It's Midori Design's.",
+              "gesture": "point",
+              "target": "pc"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "これは わたしの 名刺です。どうぞ。",
+              "kana": "これは わたしの めいしです。どうぞ。",
+              "en": "This is my business card. Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "She gives you her card. Thank her — and hand her one of your brand-new cards the same way!",
+            "grammar": [
+              "g1",
+              "g6",
+              "g10"
+            ],
+            "hintJa": "どうも ありがとう ございます。これは ＿＿の めいしです。どうぞ。",
+            "modelAnswers": [
+              "どうも ありがとう ございます。これは わたしの めいしです。どうぞ。"
+            ],
+            "branches": [
+              {
+                "id": "gave_card",
+                "whenEn": "Learner offered their own card (with or without thanks).",
+                "next": "n6a",
+                "exampleJa": "ありがとう ございます。これは わたしの めいしです。どうぞ。"
+              },
+              {
+                "id": "thanks_only",
+                "whenEn": "Learner only thanked her and did not offer a card.",
+                "next": "n6b",
+                "exampleJa": "どうも ありがとう ございます。"
+              }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わあ、どうも ありがとう ございます！",
+              "kana": "わあ、どうも ありがとう ございます！",
+              "en": "Wow, thank you so much!",
+              "gesture": "receive"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "いいえ、いいえ。",
+              "kana": "いいえ、いいえ。",
+              "en": "Not at all.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "これから どうぞ よろしく おねがいします。",
+              "kana": "これから どうぞ よろしく おねがいします。",
+              "en": "Here's to working together from now on.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "これは わたしの つくえです。どうぞ、どうぞ。",
+        "openerKana": "これは わたしの つくえです。どうぞ、どうぞ。",
+        "openerEn": "This is my desk. Go ahead, have a look!",
+        "topicEn": "Aoki shows the things on and around her desk (a cat calendar, a plant, the phone, the clock and whiteboard far away). The learner asks これ／それ／あれは なんですか, だれのですか, なんの ～ですか; Aoki also asks about the learner's things. Lesson 1–2 grammar only.",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,1374 @@
+{
+  "lesson": 11,
+  "titleJa": "いくつ？ どのくらい？",
+  "titleEn": "How many? How long?",
+  "summaryEn": "Count things and people (ひとつ, ふたり, 5まい, 3かい), say how long something takes or lasts, how often you do it (1しゅうかんに 2かい), and soften or limit a number with ぐらい and だけ.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "ひとつ・ふたつ … とお／いくつ",
+      "meaningEn": "counting things from one to ten with the native numbers; いくつ = how many",
+      "exampleJa": "おにぎりを みっつ ください。",
+      "exampleEn": "Three rice balls, please."
+    },
+    {
+      "id": "g2",
+      "pattern": "number + counter（～人・～枚・～台・～回）／何人・何枚",
+      "meaningEn": "counters: ～にん people (ひとり, ふたり), ～まい flat things, ～だい machines, ～かい times; なん + counter asks how many",
+      "exampleJa": "かぞくは 5にんです。あねが ふたり います。",
+      "exampleEn": "There are five of us in my family. I have two older sisters."
+    },
+    {
+      "id": "g3",
+      "pattern": "N を／が quantity V",
+      "meaningEn": "the quantity goes right before the verb, with no particle after it",
+      "exampleJa": "きってを 5まい かいました。",
+      "exampleEn": "I bought five stamps."
+    },
+    {
+      "id": "g4",
+      "pattern": "periods: ～時間・～日・～週間・～か月・～年",
+      "meaningEn": "lengths of time; used before the verb without a particle",
+      "exampleJa": "くにで 1ねん にほんごを べんきょうしました。",
+      "exampleEn": "I studied Japanese for a year in my country."
+    },
+    {
+      "id": "g5",
+      "pattern": "どのくらい ～か／～ かかります",
+      "meaningEn": "how long / how much; かかります = it takes (time, money)",
+      "exampleJa": "おおさかまで どのくらい かかりますか。",
+      "exampleEn": "How long does it take to Osaka?"
+    },
+    {
+      "id": "g6",
+      "pattern": "period に ～回 V",
+      "meaningEn": "frequency: how many times per period",
+      "exampleJa": "1しゅうかんに 2かい かぞくに でんわを かけます。",
+      "exampleEn": "I call my family twice a week."
+    },
+    {
+      "id": "g7",
+      "pattern": "quantity + ぐらい／quantity・N + だけ",
+      "meaningEn": "ぐらい = about; だけ = only, no more than that",
+      "exampleJa": "まいにち 2じかんぐらい べんきょうします。きょうだいは あにが ひとりだけです。",
+      "exampleEn": "I study about two hours a day. I have only one older brother."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "一つ",
+      "kana": "ひとつ",
+      "en": "one (thing)"
+    },
+    {
+      "ja": "二つ",
+      "kana": "ふたつ",
+      "en": "two (things)"
+    },
+    {
+      "ja": "三つ",
+      "kana": "みっつ",
+      "en": "three (things)"
+    },
+    {
+      "ja": "いくつ",
+      "kana": "いくつ",
+      "en": "how many"
+    },
+    {
+      "ja": "一人",
+      "kana": "ひとり",
+      "en": "one person, alone"
+    },
+    {
+      "ja": "二人",
+      "kana": "ふたり",
+      "en": "two people"
+    },
+    {
+      "ja": "何人",
+      "kana": "なんにん",
+      "en": "how many people"
+    },
+    {
+      "ja": "～枚",
+      "kana": "～まい",
+      "en": "counter for flat things (stamps, paper)"
+    },
+    {
+      "ja": "～台",
+      "kana": "～だい",
+      "en": "counter for machines and vehicles"
+    },
+    {
+      "ja": "～回",
+      "kana": "～かい",
+      "en": "… times"
+    },
+    {
+      "ja": "～時間",
+      "kana": "～じかん",
+      "en": "… hours"
+    },
+    {
+      "ja": "～週間",
+      "kana": "～しゅうかん",
+      "en": "… weeks"
+    },
+    {
+      "ja": "～か月",
+      "kana": "～かげつ",
+      "en": "… months"
+    },
+    {
+      "ja": "～年",
+      "kana": "～ねん",
+      "en": "… years"
+    },
+    {
+      "ja": "どのくらい",
+      "kana": "どのくらい",
+      "en": "how long, how much"
+    },
+    {
+      "ja": "かかります",
+      "kana": "かかります",
+      "en": "to take (time, money)"
+    },
+    {
+      "ja": "～ぐらい",
+      "kana": "～ぐらい",
+      "en": "about …"
+    },
+    {
+      "ja": "～だけ",
+      "kana": "～だけ",
+      "en": "only …"
+    },
+    {
+      "ja": "切手",
+      "kana": "きって",
+      "en": "stamp"
+    },
+    {
+      "ja": "はがき",
+      "kana": "はがき",
+      "en": "postcard"
+    },
+    {
+      "ja": "荷物",
+      "kana": "にもつ",
+      "en": "parcel, baggage"
+    },
+    {
+      "ja": "兄弟",
+      "kana": "きょうだい",
+      "en": "brothers and sisters"
+    },
+    {
+      "ja": "両親",
+      "kana": "りょうしん",
+      "en": "parents"
+    },
+    {
+      "ja": "兄／姉",
+      "kana": "あに／あね",
+      "en": "(my) older brother / older sister"
+    },
+    {
+      "ja": "弟／妹",
+      "kana": "おとうと／いもうと",
+      "en": "(my) younger brother / younger sister"
+    }
+  ],
+  "tipsEn": [
+    "Japanese convenience stores sell stamps and postcards at the register and will send your parcels too — just ask.",
+    "No particle after the number: きってを 5まい ください, not 5まいを. The number sits right before the verb.",
+    "Talk about your own family with あに, あね, おとうと, いもうと; for someone else's family say おにいさん, おねえさん, おとうとさん, いもうとさん."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-11/grammar/",
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-11.html"
+    ],
+    "notesEn": "Lesson 11 is about quantity: the native numbers ひとつ…とお with いくつ, counter suffixes (～人, ～台, ～枚, ～回), lengths of time (～時間, ～日, ～週間, ～か月, ～年), the question words なん+counter and どのくらい, かかります, frequency with \"period に ～回\", and ぐらい (about) and だけ (only). The key structural point is that the quantity stands right before the verb with no particle of its own (りんごを 4つ かいました). Natural situations are buying several of something in a shop, sending post, talking about how big your family is and how long or how often you do things. Typical mistakes are irregular readings (ひとり, ふたり, よにん; むっつ written without the small っ; いっかい, いっかげつ), putting を or が after the number, adding に after a period (✗ 1ねんに べんきょうしました), dropping に in the frequency pattern, and using あります for family members. Khmer has no case particles and puts numbers after the noun with classifiers that are often optional, so particle placement around the number and choosing a counter at all need extra practice. The three scenes are original: a konbini errand with rice balls, stamps and a parcel, a winter dinner at the neighbours' with family talk, and a getting-to-know-you chat before class."
+  },
+  "variants": [
+    {
+      "id": "l11a",
+      "titleJa": "コンビニで いくつ？",
+      "titleEn": "How many? At the konbini",
+      "scene": "konbini",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Friends are coming to your room this afternoon. You stop at the convenience store for rice balls and something to write home with — and you have a box under your arm for a friend in Osaka.",
+      "roleEn": "You are a customer from the neighbourhood. Say how many you want of each thing, and answer Noguchi's friendly questions about yourself.",
+      "missionsEn": [
+        {
+          "text": "Buy rice balls and stamps or postcards: say how many",
+          "grammar": [
+            "g1",
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask how long (or how much) the box to Osaka takes",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Say how long you have been in Japan",
+          "grammar": [
+            "g4",
+            "g7"
+          ]
+        },
+        {
+          "text": "Say how many times a week you come to the konbini",
+          "grammar": [
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "noguchi"
+      ],
+      "positions": {
+        "noguchi": "clerk"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "onigiri",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "いらっしゃいませ。",
+              "kana": "いらっしゃいませ。",
+              "en": "Welcome.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "noguchi",
+              "ja": "今日は おにぎりが 安いですよ。1つ 100円です。",
+              "kana": "きょうは おにぎりが やすいですよ。ひとつ ひゃくえんです。",
+              "en": "Rice balls are cheap today. One is 100 yen.",
+              "gesture": "point",
+              "target": "onigiri",
+              "tts": "きょうは おにぎりが やすいですよ。ひとつ ひゃくえんです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your friends will be hungry. Buy rice balls — say how many you want.",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "おにぎりを ＿つ ください。",
+            "modelAnswers": [
+              "おにぎりを みっつ ください。",
+              "おにぎりを いつつ おねがいします。",
+              "おにぎりを ふたつ ください。"
+            ],
+            "branches": [
+              {
+                "id": "one_or_two",
+                "whenEn": "Learner asks for one or two rice balls.",
+                "next": "n2_few",
+                "exampleJa": "おにぎりを ふたつ ください。"
+              },
+              {
+                "id": "three_or_more",
+                "whenEn": "Learner asks for three or more rice balls.",
+                "next": "n2_many",
+                "exampleJa": "おにぎりを いつつ ください。"
+              }
+            ],
+            "fallback": "n2_few"
+          }
+        },
+        {
+          "id": "n2_few",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "はい、ありがとう ございます。",
+              "kana": "はい、ありがとう ございます。",
+              "en": "Sure, thank you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_many",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "たくさんですね。パーティーですか。いいですね。",
+              "kana": "たくさんですね。パーティーですか。いいですね。",
+              "en": "That's a lot. Having a party? Nice.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "ほかは いいですか。切手や はがきも ありますよ。",
+              "kana": "ほかは いいですか。きってや はがきも ありますよ。",
+              "en": "Anything else? We have stamps and postcards too.",
+              "gesture": "point",
+              "target": "register"
+            }
+          ],
+          "listen": {
+            "promptEn": "You want to write to your family. Ask for stamps (きって) or postcards (はがき) — say how many with ～まい.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "＿＿を ＿まい ください。",
+            "modelAnswers": [
+              "きってを 5まい ください。",
+              "はがきを 3まい おねがいします。",
+              "きってを 2まい ください。"
+            ],
+            "branches": [
+              {
+                "id": "stamps",
+                "whenEn": "Learner asks for stamps.",
+                "next": "n4_stamp",
+                "exampleJa": "きってを 5まい ください。"
+              },
+              {
+                "id": "postcards",
+                "whenEn": "Learner asks for postcards.",
+                "next": "n4_card",
+                "exampleJa": "はがきを 3まい ください。"
+              }
+            ],
+            "fallback": "n4_stamp"
+          }
+        },
+        {
+          "id": "n4_stamp",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "切手ですね。はい、どうぞ。",
+              "kana": "きってですね。はい、どうぞ。",
+              "en": "Stamps. Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_card",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "はがきですね。はい、どうぞ。",
+              "kana": "はがきですね。はい、どうぞ。",
+              "en": "Postcards. Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "あ、荷物も ありますね。大阪までですか。",
+              "kana": "あ、にもつも ありますね。おおさかまでですか。",
+              "en": "Oh, you have a parcel too. Is it going to Osaka?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Yes — the box goes to your friend in Osaka. Ask how long it takes, or how much it costs.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "はい。どのくらい かかりますか。／いくら かかりますか。",
+            "modelAnswers": [
+              "はい、おおさかまで おねがいします。どのくらい かかりますか。",
+              "はい。いくら かかりますか。"
+            ],
+            "branches": [
+              {
+                "id": "asks_time",
+                "whenEn": "Learner asks how long it takes (how many days, when it arrives).",
+                "next": "n6_time",
+                "exampleJa": "はい。どのくらい かかりますか。"
+              },
+              {
+                "id": "asks_price",
+                "whenEn": "Learner asks how much it costs, without asking about the time.",
+                "next": "n6_price",
+                "exampleJa": "はい。いくら かかりますか。"
+              }
+            ],
+            "fallback": "n6_time"
+          }
+        },
+        {
+          "id": "n6_time",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "1日ぐらい かかります。あしたの 午後ですね。",
+              "kana": "いちにちぐらい かかります。あしたの ごごですね。",
+              "en": "It takes about a day. So, tomorrow afternoon.",
+              "gesture": "think",
+              "tts": "いちにちぐらい かかります。あしたの ごごですね。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_price",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "大阪まで 1,200円です。1日ぐらい かかりますよ。",
+              "kana": "おおさかまで せんにひゃくえんです。いちにちぐらい かかりますよ。",
+              "en": "It's 1,200 yen to Osaka. It takes about a day.",
+              "gesture": "nod",
+              "tts": "おおさかまで せんにひゃくえんです。いちにちぐらい かかりますよ。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "日本語が 上手ですね。どのくらい 日本に いますか。",
+              "kana": "にほんごが じょうずですね。どのくらい にほんに いますか。",
+              "en": "Your Japanese is good. How long have you been in Japan?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him how long you have been in Japan. Add ぐらい (about) or だけ (only) if it fits.",
+            "grammar": [
+              "g4",
+              "g7"
+            ],
+            "hintJa": "＿＿ぐらい います。／＿＿だけです。",
+            "modelAnswers": [
+              "1ねんぐらい います。",
+              "3かげつだけです。",
+              "2しゅうかん います。"
+            ],
+            "branches": [
+              {
+                "id": "under_a_year",
+                "whenEn": "Learner says less than one year (days, weeks or months).",
+                "next": "n8_short",
+                "exampleJa": "3かげつ います。"
+              },
+              {
+                "id": "a_year_or_more",
+                "whenEn": "Learner says one year or longer.",
+                "next": "n8_long",
+                "exampleJa": "1ねんぐらい います。"
+              }
+            ],
+            "fallback": "n8_short"
+          }
+        },
+        {
+          "id": "n8_short",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "えっ、まだ 短いですね。すごいですね。",
+              "kana": "えっ、まだ みじかいですね。すごいですね。",
+              "en": "Oh, that's still not long. That's impressive.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_long",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "そうですか。じゃ、日本の コンビニは もう わかりますね。",
+              "kana": "そうですか。じゃ、にほんの コンビニは もう わかりますね。",
+              "en": "I see. Then you already know your way around a Japanese konbini.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "コンビニは 便利ですよ。1週間に 何回ぐらい 来ますか。",
+              "kana": "コンビニは べんりですよ。いっしゅうかんに なんかいぐらい きますか。",
+              "en": "Konbini are handy. About how many times a week do you come?",
+              "gesture": "nod",
+              "tts": "コンビニは べんりですよ。いっしゅうかんに なんかいぐらい きますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "How often do you come to the konbini? Use a period + に + ～かい.",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "1しゅうかんに ＿かいぐらい きます。",
+            "modelAnswers": [
+              "1しゅうかんに 3かいぐらい きます。",
+              "まいにち きます。",
+              "1しゅうかんに 1かいだけ きます。"
+            ],
+            "branches": [
+              {
+                "id": "often",
+                "whenEn": "Learner comes three or more times a week, or every day.",
+                "next": "end_often",
+                "exampleJa": "1しゅうかんに 4かいぐらい きます。"
+              },
+              {
+                "id": "rarely",
+                "whenEn": "Learner comes twice a week or less, or hardly ever.",
+                "next": "end_rare",
+                "exampleJa": "1しゅうかんに 1かいだけ きます。"
+              }
+            ],
+            "fallback": "end_rare"
+          }
+        },
+        {
+          "id": "end_often",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "ありがとう ございます！じゃ、また あした。",
+              "kana": "ありがとう ございます！じゃ、また あした。",
+              "en": "Thank you! See you tomorrow, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_rare",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "そうですか。金曜日は パンが 安いですよ。また どうぞ。",
+              "kana": "そうですか。きんようびは パンが やすいですよ。また どうぞ。",
+              "en": "I see. Bread is cheap on Fridays, you know. Come again.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l11b",
+      "titleJa": "ごかぞくは なんにんですか",
+      "titleEn": "How many in your family?",
+      "scene": "home",
+      "setup": {
+        "time": "night",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "A cold winter night. Your neighbours, the Moris, have invited you over for dinner. Before the curry is ready, the talk turns to family back home.",
+      "roleEn": "You are the Moris' neighbour from abroad. Talk about your real family, or make one up.",
+      "missionsEn": [
+        {
+          "text": "Say how many people are in your family",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Say how many brothers and sisters you have",
+          "grammar": [
+            "g2",
+            "g7"
+          ]
+        },
+        {
+          "text": "Say how often you call home",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Say how long the flight home takes",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "host",
+        "mori_shun": "host2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "こんばんは。寒いですね。どうぞ、どうぞ。",
+              "kana": "こんばんは。さむいですね。どうぞ、どうぞ。",
+              "en": "Good evening. Cold, isn't it? Come in, come in.",
+              "gesture": "beckon"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "うちは 2人だけですから、しずかです。",
+              "kana": "うちは ふたりだけですから、しずかです。",
+              "en": "There are only two of us, so it's quiet here.",
+              "gesture": "laugh",
+              "tts": "うちは ふたりだけですから、しずかです。"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "ご家族は 何人ですか。",
+              "kana": "ごかぞくは なんにんですか。",
+              "en": "How many people are there in your family?",
+              "gesture": "think",
+              "tts": "ごかぞくは なんにんですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Aya how many people are in your family. You can add who they are.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "かぞくは ＿にんです。",
+            "modelAnswers": [
+              "かぞくは 5にんです。",
+              "よにんです。りょうしんと あねが ひとり います。",
+              "かぞくは 6にんです。"
+            ],
+            "branches": [
+              {
+                "id": "big_family",
+                "whenEn": "Learner's family has five or more people.",
+                "next": "n2_big",
+                "exampleJa": "かぞくは 6にんです。"
+              },
+              {
+                "id": "small_family",
+                "whenEn": "Learner's family has four people or fewer.",
+                "next": "n2_small",
+                "exampleJa": "かぞくは よにんです。"
+              }
+            ],
+            "fallback": "n2_small"
+          }
+        },
+        {
+          "id": "n2_big",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ご家族が 多いですね。にぎやかですね。",
+              "kana": "ごかぞくが おおいですね。にぎやかですね。",
+              "en": "What a big family. It must be lively.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_small",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "そうですか。いい ご家族ですね。",
+              "kana": "そうですか。いい ごかぞくですね。",
+              "en": "I see. That sounds like a nice family.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "ご兄弟は 何人 いますか。",
+              "kana": "ごきょうだいは なんにん いますか。",
+              "en": "How many brothers and sisters do you have?",
+              "gesture": "nod",
+              "tts": "ごきょうだいは なんにん いますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Shun about your brothers and sisters: who and how many — or that you have none.",
+            "grammar": [
+              "g2",
+              "g7",
+              "g3"
+            ],
+            "hintJa": "＿＿が ＿＿ います。／きょうだいは いません。",
+            "modelAnswers": [
+              "あにが ひとりと いもうとが ふたり います。",
+              "おとうとが ひとりだけ います。",
+              "きょうだいは いません。"
+            ],
+            "branches": [
+              {
+                "id": "has_siblings",
+                "whenEn": "Learner has one or more brothers or sisters.",
+                "next": "n4_sib",
+                "exampleJa": "あねが ふたり います。"
+              },
+              {
+                "id": "no_siblings",
+                "whenEn": "Learner has no brothers or sisters.",
+                "next": "n4_none",
+                "exampleJa": "きょうだいは いません。"
+              }
+            ],
+            "fallback": "n4_sib"
+          }
+        },
+        {
+          "id": "n4_sib",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "いいですね。わたしは 兄弟が いません。1人です。",
+              "kana": "いいですね。わたしは きょうだいが いません。ひとりです。",
+              "en": "That's nice. I have no brothers or sisters. It's just me.",
+              "gesture": "nod",
+              "tts": "いいですね。わたしは きょうだいが いません。ひとりです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_none",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "わたしも 兄弟が いません。1人です。",
+              "kana": "わたしも きょうだいが いません。ひとりです。",
+              "en": "I don't have any brothers or sisters either. It's just me.",
+              "gesture": "laugh",
+              "tts": "わたしも きょうだいが いません。ひとりです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ご家族に よく 電話を かけますか。1か月に 何回ぐらいですか。",
+              "kana": "ごかぞくに よく でんわを かけますか。いっかげつに なんかいぐらいですか。",
+              "en": "Do you often call your family? About how many times a month?",
+              "gesture": "think",
+              "tts": "ごかぞくに よく でんわを かけますか。いっかげつに なんかいぐらいですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "How often do you call your family? Use a period + に + ～かい (per week, per month…).",
+            "grammar": [
+              "g6",
+              "g7"
+            ],
+            "hintJa": "＿＿に ＿かいぐらい かけます。",
+            "modelAnswers": [
+              "1しゅうかんに 1かい かけます。",
+              "1かげつに 2かいぐらい かけます。",
+              "まいにち かけます。"
+            ],
+            "branches": [
+              {
+                "id": "weekly_or_more",
+                "whenEn": "Learner calls once a week or more often (including every day).",
+                "next": "n6_often",
+                "exampleJa": "1しゅうかんに 2かい かけます。"
+              },
+              {
+                "id": "less_often",
+                "whenEn": "Learner calls less than once a week (a few times a month, once a month, rarely).",
+                "next": "n6_rare",
+                "exampleJa": "1かげつに 1かいだけ かけます。"
+              }
+            ],
+            "fallback": "n6_rare"
+          }
+        },
+        {
+          "id": "n6_often",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "よく かけますね。いいですね。",
+              "kana": "よく かけますね。いいですね。",
+              "en": "You call a lot. That's lovely.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_rare",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "わたしも 母に 1か月に 1回だけ かけます。",
+              "kana": "わたしも ははに いっかげつに いっかいだけ かけます。",
+              "en": "I only call my mother once a month, too.",
+              "gesture": "laugh",
+              "tts": "わたしも ははに いっかげつに いっかいだけ かけます。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "お国まで ひこうきで どのくらい かかりますか。",
+              "kana": "おくにまで ひこうきで どのくらい かかりますか。",
+              "en": "How long does it take to your country by plane?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Shun how long the flight home takes. ぐらい makes it \"about\".",
+            "grammar": [
+              "g5",
+              "g4",
+              "g7"
+            ],
+            "hintJa": "＿じかんぐらい かかります。",
+            "modelAnswers": [
+              "6じかんぐらい かかります。",
+              "ひこうきで 10じかん かかります。",
+              "8じかんぐらいです。"
+            ],
+            "branches": [
+              {
+                "id": "short_flight",
+                "whenEn": "Learner says it takes less than about seven hours.",
+                "next": "n8_near",
+                "exampleJa": "6じかんぐらい かかります。"
+              },
+              {
+                "id": "long_flight",
+                "whenEn": "Learner says it takes seven hours or more (or a day or more).",
+                "next": "n8_far",
+                "exampleJa": "10じかんぐらい かかります。"
+              }
+            ],
+            "fallback": "n8_near"
+          }
+        },
+        {
+          "id": "n8_near",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。あまり かかりませんね。",
+              "kana": "そうですか。あまり かかりませんね。",
+              "en": "I see. That's not very long.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_far",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "えっ、そうですか。たいへんですね。",
+              "kana": "えっ、そうですか。たいへんですね。",
+              "en": "Oh, really? That's tough.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "さあ、晩ごはんですよ。",
+              "kana": "さあ、ばんごはんですよ。",
+              "en": "Now, dinner's ready.",
+              "gesture": "beckon"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "今晩は カレーです。たくさん ありますから、どうぞ。",
+              "kana": "こんばんは カレーです。たくさん ありますから、どうぞ。",
+              "en": "It's curry tonight. There's plenty, so help yourself.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "ご家族は 今 どこに いますか。",
+        "openerKana": "ごかぞくは いま どこに いますか。",
+        "openerEn": "Where is your family now?",
+        "topicEn": "Chat about the learner's family: how many people, brothers and sisters, how often they meet or call, how long it takes to go home. Stay within lesson 11 grammar (counters, periods, ～に ～回, だけ, ぐらい); no て-form, no past adjectives.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l11c",
+      "titleJa": "どのくらい べんきょうしましたか",
+      "titleEn": "How long have you studied?",
+      "scene": "classroom",
+      "setup": {
+        "time": "morning",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy morning in the first week of the new term. Before class starts, Hayakawa-sensei gets to know you — and your classmate Ana has noticed the chocolates on your desk.",
+      "roleEn": "You are a new student in the class. Answer with real numbers about your own studies.",
+      "missionsEn": [
+        {
+          "text": "Say how long you have studied Japanese",
+          "grammar": [
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Say how many students were in your class back home",
+          "grammar": [
+            "g2",
+            "g7"
+          ]
+        },
+        {
+          "text": "Say how many hours a day and how many times a week you study",
+          "grammar": [
+            "g4",
+            "g6"
+          ]
+        },
+        {
+          "text": "Offer Ana some chocolates: say how many",
+          "grammar": [
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "hayakawa",
+        "ana"
+      ],
+      "positions": {
+        "hayakawa": "teacher",
+        "ana": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "おはよう ございます。雨ですね。",
+              "kana": "おはよう ございます。あめですね。",
+              "en": "Good morning. It's raining, isn't it?",
+              "gesture": "nod"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "どのくらい 日本語を 勉強しましたか。",
+              "kana": "どのくらい にほんごを べんきょうしましたか。",
+              "en": "How long have you studied Japanese?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her how long you have studied Japanese (～ねん, ～かげつ…). No particle after the period!",
+            "grammar": [
+              "g5",
+              "g4"
+            ],
+            "hintJa": "＿＿ べんきょうしました。",
+            "modelAnswers": [
+              "1ねん べんきょうしました。",
+              "くにで 6かげつ べんきょうしました。",
+              "1ねんはんぐらい べんきょうしました。"
+            ],
+            "branches": [
+              {
+                "id": "a_year_or_more",
+                "whenEn": "Learner has studied for one year or longer.",
+                "next": "n2_long",
+                "exampleJa": "1ねん べんきょうしました。"
+              },
+              {
+                "id": "under_a_year",
+                "whenEn": "Learner has studied for less than a year (months or weeks).",
+                "next": "n2_short",
+                "exampleJa": "6かげつ べんきょうしました。"
+              }
+            ],
+            "fallback": "n2_long"
+          }
+        },
+        {
+          "id": "n2_long",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。とても 上手ですよ。",
+              "kana": "そうですか。とても じょうずですよ。",
+              "en": "I see. You are very good.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_short",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "えっ、それだけですか。すごいですね。",
+              "kana": "えっ、それだけですか。すごいですね。",
+              "en": "What, only that long? That's amazing.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "国の クラスに 学生が 何人 いましたか。",
+              "kana": "くにの クラスに がくせいが なんにん いましたか。",
+              "en": "How many students were there in your class back home?",
+              "gesture": "think",
+              "tts": "くにの クラスに がくせいが なんにん いましたか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "How many students were in your Japanese class back home? ぐらい = about, だけ = only.",
+            "grammar": [
+              "g2",
+              "g3",
+              "g7"
+            ],
+            "hintJa": "がくせいが ＿にんぐらい いました。",
+            "modelAnswers": [
+              "がくせいが 30にんぐらい いました。",
+              "10にんだけ いました。",
+              "40にん いました。"
+            ],
+            "branches": [
+              {
+                "id": "big_class",
+                "whenEn": "Learner says about twenty students or more.",
+                "next": "n4_big",
+                "exampleJa": "30にんぐらい いました。"
+              },
+              {
+                "id": "small_class",
+                "whenEn": "Learner says fewer than twenty students.",
+                "next": "n4_small",
+                "exampleJa": "10にんだけ いました。"
+              }
+            ],
+            "fallback": "n4_big"
+          }
+        },
+        {
+          "id": "n4_big",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "たくさん いましたね。この クラスは 8人だけですよ。",
+              "kana": "たくさん いましたね。この クラスは はちにんだけですよ。",
+              "en": "That's a lot. This class has only eight people.",
+              "gesture": "surprised",
+              "tts": "たくさん いましたね。この クラスは はちにんだけですよ。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_small",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。この クラスも 8人だけですよ。",
+              "kana": "そうですか。この クラスも はちにんだけですよ。",
+              "en": "I see. This class has only eight people, too.",
+              "gesture": "nod",
+              "tts": "そうですか。この クラスも はちにんだけですよ。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしは 毎晩 3時間 勉強します。毎日 何時間ぐらい 勉強しますか。",
+              "kana": "わたしは まいばん さんじかん べんきょうします。まいにち なんじかんぐらい べんきょうしますか。",
+              "en": "I study three hours every night. About how many hours a day do you study?",
+              "gesture": "wave",
+              "tts": "わたしは まいばん さんじかん べんきょうします。まいにち なんじかんぐらい べんきょうしますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell Ana about how many hours (or minutes) a day you study.",
+            "grammar": [
+              "g4",
+              "g7"
+            ],
+            "hintJa": "まいにち ＿じかんぐらい べんきょうします。",
+            "modelAnswers": [
+              "まいにち 2じかんぐらい べんきょうします。",
+              "1じかんだけ べんきょうします。",
+              "30ぷんぐらい べんきょうします。"
+            ],
+            "branches": [
+              {
+                "id": "two_hours_or_more",
+                "whenEn": "Learner studies two hours or more a day.",
+                "next": "n6_much",
+                "exampleJa": "まいにち 2じかんぐらい べんきょうします。"
+              },
+              {
+                "id": "under_two_hours",
+                "whenEn": "Learner studies less than two hours a day (or not every day).",
+                "next": "n6_little",
+                "exampleJa": "1じかんだけ べんきょうします。"
+              }
+            ],
+            "fallback": "n6_little"
+          }
+        },
+        {
+          "id": "n6_much",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "すごい！たくさん 勉強しますね。",
+              "kana": "すごい！たくさん べんきょうしますね。",
+              "en": "Wow! You study a lot.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_little",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "そうですか。毎日 忙しいですからね。",
+              "kana": "そうですか。まいにち いそがしいですからね。",
+              "en": "I see. Well, you are busy every day.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "漢字は むずかしいですね。1週間に 何回 漢字を 勉強しますか。",
+              "kana": "かんじは むずかしいですね。いっしゅうかんに なんかい かんじを べんきょうしますか。",
+              "en": "Kanji is hard, isn't it? How many times a week do you study kanji?",
+              "gesture": "think",
+              "tts": "かんじは むずかしいですね。いっしゅうかんに なんかい かんじを べんきょうしますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "How many times a week do you study kanji? Period + に + ～かい.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "1しゅうかんに ＿かい べんきょうします。",
+            "modelAnswers": [
+              "1しゅうかんに 3かい べんきょうします。",
+              "まいにち べんきょうします。",
+              "1しゅうかんに 1かいだけです。"
+            ],
+            "branches": [
+              {
+                "id": "often",
+                "whenEn": "Learner studies kanji three or more times a week, or every day.",
+                "next": "n8_often",
+                "exampleJa": "1しゅうかんに 4かい べんきょうします。"
+              },
+              {
+                "id": "rarely",
+                "whenEn": "Learner studies kanji twice a week or less, or not at all.",
+                "next": "n8_rare",
+                "exampleJa": "1しゅうかんに 1かいだけです。"
+              }
+            ],
+            "fallback": "n8_rare"
+          }
+        },
+        {
+          "id": "n8_often",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "いいですね。毎日 少し 書きましょう。",
+              "kana": "いいですね。まいにち すこし かきましょう。",
+              "en": "Good. Let's write a little every day.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_rare",
+          "say": [
+            {
+              "who": "hayakawa",
+              "ja": "そうですか。じゃ、毎日 10分だけ 書きましょう。",
+              "kana": "そうですか。じゃ、まいにち じゅっぷんだけ かきましょう。",
+              "en": "I see. Then let's write for just ten minutes every day.",
+              "gesture": "nod",
+              "tts": "そうですか。じゃ、まいにち じゅっぷんだけ かきましょう。"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "focus": "chocolate",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "あ、チョコレートですね。わたしは チョコレートが とても 好きです……。",
+              "kana": "あ、チョコレートですね。わたしは チョコレートが とても すきです……。",
+              "en": "Oh, chocolates. I really like chocolate…",
+              "gesture": "point",
+              "target": "chocolate"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ana is looking at the chocolates on your desk. Offer her some — say how many (ひとつ, ふたつ…).",
+            "grammar": [
+              "g1",
+              "g3"
+            ],
+            "hintJa": "＿つ どうぞ。／＿つ あげます。",
+            "modelAnswers": [
+              "ひとつ どうぞ。",
+              "ふたつ あげます。",
+              "チョコレートを みっつ あげます。"
+            ],
+            "branches": [
+              {
+                "id": "one",
+                "whenEn": "Learner offers exactly one chocolate.",
+                "next": "end_one",
+                "exampleJa": "ひとつ どうぞ。"
+              },
+              {
+                "id": "two_or_more",
+                "whenEn": "Learner offers two or more chocolates (or all of them).",
+                "next": "end_many",
+                "exampleJa": "みっつ あげます。"
+              }
+            ],
+            "fallback": "end_one"
+          }
+        },
+        {
+          "id": "end_one",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "ありがとう！……1つだけですか。",
+              "kana": "ありがとう！……ひとつだけですか。",
+              "en": "Thank you! …Only one?",
+              "gesture": "laugh",
+              "tts": "ありがとう！……ひとつだけですか。"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "さあ、時間ですよ。始めましょう。",
+              "kana": "さあ、じかんですよ。はじめましょう。",
+              "en": "Now, it's time. Let's begin.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_many",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わあ、たくさん！ありがとう ございます。",
+              "kana": "わあ、たくさん！ありがとう ございます。",
+              "en": "Wow, so many! Thank you very much.",
+              "gesture": "receive"
+            },
+            {
+              "who": "hayakawa",
+              "ja": "アナさん、時間ですよ。始めましょう。",
+              "kana": "アナさん、じかんですよ。はじめましょう。",
+              "en": "Ana, it's time. Let's begin.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

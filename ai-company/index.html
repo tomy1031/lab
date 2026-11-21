@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>バーチャルオフィス プレビュー</title>
+    <style>html,body{background:#dff1ff;height:100%;margin:0;font-family:Noto Sans JP,system-ui,sans-serif}#world{position:fixed;inset:0}.bar{z-index:10;flex-wrap:wrap;gap:6px;display:flex;position:fixed;top:12px;left:12px}.bar button{color:#2b3550;cursor:pointer;background:#fff;border:0;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;box-shadow:0 2px 8px #283c6e2e}.bar button:hover{background:#fff6d6}#log{color:#2b3550;z-index:10;background:#ffffffbf;border-radius:12px;width:300px;max-height:40vh;padding:8px 10px;font-size:11px;position:fixed;bottom:12px;right:12px;overflow:hidden}#log div{border-bottom:1px dashed #0000000f;padding:1px 0}</style>
+    <script type="module" crossorigin src="./assets/world-DeuzAlBH.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/sprites-BlqYiyz3.js">
+    <link rel="modulepreload" crossorigin href="./assets/OfficeWorld-C3zxkldX.js">
+    <link rel="stylesheet" crossorigin href="./assets/OfficeWorld-y9rDCUJf.css">
+  </head>
+  <body>
+    <div id="world"></div>
+    <div class="bar">
+      <button data-f="all">全体</button>
+      <button data-f="jp">日本</button>
+      <button data-f="osaka">大阪</button>
+      <button data-f="tokyo">東京</button>
+      <button data-f="phnompenh">プノンペン</button>
+      <button id="hire">採用する</button>
+      <button id="pause">デモ停止</button>
+    </div>
+    <div id="log"></div>
+  </body>
+</html>

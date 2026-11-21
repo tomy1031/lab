@@ -1,0 +1,1195 @@
+{
+  "course": "it",
+  "storyJa": "喫茶さかもとの 予約アプリ",
+  "storyEn": "A booking app for Café Sakamoto",
+  "levelEn": "Business Japanese for junior engineers (around JLPT N4–N3): polite です・ます, set phrases of 報連相.",
+  "unit": 4,
+  "episodeJa": "第4話",
+  "episodeEn": "Episode 4",
+  "titleJa": "先輩に 相談する",
+  "titleEn": "Consult a senior engineer",
+  "summaryEn": "Ask for help the professional way: situation → what you tried → what you want to ask.",
+  "previouslyEn": "You joined the development team of みどりデザイン two weeks ago. The team is building さかもと予約, a smartphone booking app for 喫茶さかもと: 4 tables of up to 4 people, bookings 10:00–17:00, up to 2 weeks ahead, cancel in the app until the day before, release on 12月1日. You reported at the stand-up, heard the owner's wishes at the café with 村上さん, and confirmed the requirements with the team. Now you are building the booking form — and saving gives an error.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "今 少し よろしいでしょうか。〜の 件で ご相談が あります",
+      "meaningEn": "Open a consultation: check the other person's time, then name the topic",
+      "exampleJa": "藤田さん、今 少し よろしいでしょうか。予約フォームの 件で ご相談が あります。",
+      "exampleEn": "Fujita-san, do you have a moment? I'd like to consult you about the booking form."
+    },
+    {
+      "id": "g2",
+      "pattern": "状況：〜で、〜すると、〜が 出ます",
+      "meaningEn": "Situation: where, what you do, what happens",
+      "exampleJa": "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。",
+      "exampleEn": "On the booking form, when I choose a date and save, an error appears."
+    },
+    {
+      "id": "g3",
+      "pattern": "試したこと：〜て みましたが、〜でした",
+      "meaningEn": "What you tried and the result",
+      "exampleJa": "ほかの 日付でも 試して みましたが、同じ エラーでした。",
+      "exampleEn": "I tried other dates too, but it was the same error."
+    },
+    {
+      "id": "g4",
+      "pattern": "聞きたいこと：〜は どこを 調べれば いいでしょうか",
+      "meaningEn": "One clear question: where should I look / is my guess right?",
+      "exampleJa": "原因は どこを 調べれば いいでしょうか。",
+      "exampleEn": "Where should I look for the cause?"
+    },
+    {
+      "id": "g5",
+      "pattern": "〜分ほど お時間 いただけますか。先に 〜を 送ります",
+      "meaningEn": "Ask a busy person for a time slot, and send the details first",
+      "exampleJa": "あとで 15分ほど お時間 いただけますか。先に 状況を チャットで 送ります。",
+      "exampleEn": "Could I have about 15 minutes later? I'll send the situation by chat first."
+    },
+    {
+      "id": "g6",
+      "pattern": "〜と いう ことですね。やって みます。結果を ご報告します",
+      "meaningEn": "Repeat the advice back (復唱), then promise to report the result",
+      "exampleJa": "保存の 前に、日付の 形式を そろえる、と いう ことですね。結果を ご報告します。",
+      "exampleEn": "So I should align the date format before saving. I'll report the result."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "相談",
+      "kana": "そうだん",
+      "en": "consultation, asking for advice"
+    },
+    {
+      "ja": "先輩",
+      "kana": "せんぱい",
+      "en": "senior colleague"
+    },
+    {
+      "ja": "件",
+      "kana": "けん",
+      "en": "matter, topic"
+    },
+    {
+      "ja": "状況",
+      "kana": "じょうきょう",
+      "en": "situation"
+    },
+    {
+      "ja": "試します",
+      "kana": "ためします",
+      "en": "to try"
+    },
+    {
+      "ja": "保存",
+      "kana": "ほぞん",
+      "en": "save"
+    },
+    {
+      "ja": "日付",
+      "kana": "ひづけ",
+      "en": "date"
+    },
+    {
+      "ja": "形式",
+      "kana": "けいしき",
+      "en": "format"
+    },
+    {
+      "ja": "原因",
+      "kana": "げんいん",
+      "en": "cause"
+    },
+    {
+      "ja": "調べます",
+      "kana": "しらべます",
+      "en": "to look into, check"
+    },
+    {
+      "ja": "画面",
+      "kana": "がめん",
+      "en": "screen"
+    },
+    {
+      "ja": "予約フォーム",
+      "kana": "よやくフォーム",
+      "en": "booking form"
+    },
+    {
+      "ja": "ライブラリ",
+      "kana": "ライブラリ",
+      "en": "library (code)"
+    },
+    {
+      "ja": "ドキュメント",
+      "kana": "ドキュメント",
+      "en": "documentation"
+    },
+    {
+      "ja": "そろえます",
+      "kana": "そろえます",
+      "en": "to make the same, align"
+    },
+    {
+      "ja": "お時間",
+      "kana": "おじかん",
+      "en": "(your) time"
+    },
+    {
+      "ja": "都合",
+      "kana": "つごう",
+      "en": "convenience, availability"
+    },
+    {
+      "ja": "作業中",
+      "kana": "さぎょうちゅう",
+      "en": "in the middle of work"
+    },
+    {
+      "ja": "結果",
+      "kana": "けっか",
+      "en": "result"
+    },
+    {
+      "ja": "手がかり",
+      "kana": "てがかり",
+      "en": "clue"
+    }
+  ],
+  "tipsEn": [
+    "Consult in this order: 状況 (situation) → 試したこと (what you tried) → 聞きたいこと (your question). Your senior can answer in one go.",
+    "Before you start, check their time: 「今 少し よろしいでしょうか」. Saying how long you need (15分ほど) makes it easy to say yes.",
+    "If your senior is busy, don't give up and don't wait silently: ask for a time and send the error and what you tried by chat first.",
+    "After getting advice, repeat it back (〜と いう ことですね) and report the result later. That closes the loop."
+  ],
+  "research": {
+    "sources": [
+      "https://zenn.dev/harryduck/articles/ae8e1d02e7aaa2",
+      "https://zenn.dev/komenikusweet/articles/cecea647fc2db9",
+      "https://news.mynavi.jp/article/20230419-2590587/"
+    ],
+    "notesEn": "Japanese engineering blogs describe a question template for asking seniors: what is happening (with the exact error text), the environment, what you tried and its result, and your own guess; sharing what you already searched avoids getting the same suggestion back. Another engineer's write-up gives the spoken order: check the other person's availability, current state, the problem, what you tried, and by when you need an answer. A business-manners article recommends opening with 「今、少々 お時間 いただいても よろしいでしょうか」, naming the topic and the time needed (5分程度 / 30分程度) so the senior can decide now or later, and proposing another slot if now is bad. The two variants turn this into: a = a free senior and the full 状況→試したこと→聞きたいこと flow; b = a busy senior, asking for 15 minutes and sending details by chat first."
+  },
+  "variants": [
+    {
+      "id": "b04a",
+      "titleJa": "先輩に 相談する",
+      "titleEn": "Ask a senior for advice",
+      "scene": "office",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "You are building the booking form of さかもと予約. Problem: after you choose a date and press 保存 (save), an error appears: 「日付の 形式が 正しく ありません」. You already tried two things: you read the calendar library's documentation, and you tried other dates — same error. You want to ask 藤田さん where to look. He has just finished a review and looks free.",
+      "roleEn": "You are the new engineer. Consult your senior in this order: situation → what you tried → what you want to ask.",
+      "missionsEn": [
+        {
+          "text": "Ask if he has a moment and say what it is about",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Explain the situation: which screen, what you do, what happens",
+          "grammar": [
+            "g2"
+          ]
+        },
+        {
+          "text": "Say what you already tried, then ask your question",
+          "grammar": [
+            "g3",
+            "g4"
+          ]
+        },
+        {
+          "text": "Repeat his advice back and promise to report the result",
+          "grammar": [
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita"
+      ],
+      "positions": {
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ふう、やっと レビューが 終わりました。",
+              "kana": "ふう、やっと レビューが おわりました。",
+              "en": "Phew, the review is finally done."
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita-san looks free. Ask if he has a moment, and say it's about the booking form.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "藤田さん、今 少し よろしいでしょうか。＿＿の 件で ご相談が あります。",
+            "modelAnswers": [
+              "藤田さん、今 少し よろしいでしょうか。予約フォームの 件で ご相談が あります。"
+            ],
+            "branches": [
+              {
+                "id": "with_topic",
+                "whenEn": "Learner asked whether he has time AND said what the consultation is about (the booking form / an error).",
+                "next": "n2a",
+                "exampleJa": "今 少し よろしいでしょうか。予約フォームの 件で ご相談が あります。"
+              },
+              {
+                "id": "time_only",
+                "whenEn": "Learner only asked whether he has a moment, without saying the topic.",
+                "next": "n2b",
+                "exampleJa": "藤田さん、今 少し よろしいでしょうか。"
+              },
+              {
+                "id": "abrupt",
+                "whenEn": "Learner started describing the problem straight away without asking if he has time.",
+                "next": "n2c",
+                "exampleJa": "予約フォームで エラーが 出ます。"
+              }
+            ],
+            "fallback": "n2b"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですよ。予約フォームですね。どう しました？",
+              "kana": "いいですよ。よやくフォームですね。どう しました？",
+              "en": "Sure. The booking form, right? What happened?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Explain the situation: on the booking form, after choosing a date, saving gives an error.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿で、日付を 選んで 保存すると、エラーが 出ます。",
+            "modelAnswers": [
+              "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。",
+              "予約フォームで 日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+            ],
+            "branches": [
+              {
+                "id": "clear",
+                "whenEn": "Learner said where (booking form) and what action causes the error (choosing a date and saving).",
+                "next": "n4",
+                "exampleJa": "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。"
+              },
+              {
+                "id": "with_message",
+                "whenEn": "Learner explained the situation AND quoted the error message about the date format.",
+                "next": "n4m",
+                "exampleJa": "日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only said there is an error or it doesn't work, without the screen or the action.",
+                "next": "n3v",
+                "exampleJa": "エラーが 出て、動きません。"
+              }
+            ],
+            "fallback": "n3v"
+          },
+          "focus": "pc"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいですよ。何の 件ですか。",
+              "kana": "いいですよ。なんの けんですか。",
+              "en": "Sure. What is it about?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Explain the situation: on the booking form, after choosing a date, saving gives an error.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿で、日付を 選んで 保存すると、エラーが 出ます。",
+            "modelAnswers": [
+              "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。",
+              "予約フォームで 日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+            ],
+            "branches": [
+              {
+                "id": "clear",
+                "whenEn": "Learner said where (booking form) and what action causes the error (choosing a date and saving).",
+                "next": "n4",
+                "exampleJa": "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。"
+              },
+              {
+                "id": "with_message",
+                "whenEn": "Learner explained the situation AND quoted the error message about the date format.",
+                "next": "n4m",
+                "exampleJa": "日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only said there is an error or it doesn't work, without the screen or the action.",
+                "next": "n3v",
+                "exampleJa": "エラーが 出て、動きません。"
+              }
+            ],
+            "fallback": "n3v"
+          },
+          "focus": "pc"
+        },
+        {
+          "id": "n2c",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おっと、エラーですか。いいですよ、くわしく 聞かせて ください。",
+              "kana": "おっと、エラーですか。いいですよ、くわしく きかせて ください。",
+              "en": "Oh, an error? OK, tell me the details.",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Explain the situation: on the booking form, after choosing a date, saving gives an error.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿で、日付を 選んで 保存すると、エラーが 出ます。",
+            "modelAnswers": [
+              "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。",
+              "予約フォームで 日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+            ],
+            "branches": [
+              {
+                "id": "clear",
+                "whenEn": "Learner said where (booking form) and what action causes the error (choosing a date and saving).",
+                "next": "n4",
+                "exampleJa": "予約フォームで、日付を 選んで 保存すると、エラーが 出ます。"
+              },
+              {
+                "id": "with_message",
+                "whenEn": "Learner explained the situation AND quoted the error message about the date format.",
+                "next": "n4m",
+                "exampleJa": "日付を 選んで 保存すると、「日付の 形式が 正しく ありません」と 出ます。"
+              },
+              {
+                "id": "vague",
+                "whenEn": "Learner only said there is an error or it doesn't work, without the screen or the action.",
+                "next": "n3v",
+                "exampleJa": "エラーが 出て、動きません。"
+              }
+            ],
+            "fallback": "n3v"
+          },
+          "focus": "pc"
+        },
+        {
+          "id": "n3v",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "どの 画面で、何を すると 出ますか。",
+              "kana": "どの がめんで、なにを すると でますか。",
+              "en": "On which screen, and when you do what?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Be specific: which screen, and what you do before the error appears.",
+            "grammar": [
+              "g2"
+            ],
+            "hintJa": "＿＿で、＿＿を 選んで 保存すると、出ます。",
+            "modelAnswers": [
+              "予約フォームで、日付を 選んで 保存すると、出ます。"
+            ],
+            "branches": [
+              {
+                "id": "specific",
+                "whenEn": "Learner named the booking form and the action (choose a date, save).",
+                "next": "n4",
+                "exampleJa": "予約フォームで、日付を 選んで 保存すると、出ます。"
+              },
+              {
+                "id": "specific_message",
+                "whenEn": "Learner named the screen and action and also quoted the error message.",
+                "next": "n4m",
+                "exampleJa": "予約フォームです。保存すると 「日付の 形式が 正しく ありません」と 出ます。"
+              }
+            ],
+            "fallback": "n4"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "なるほど、保存の ときですね。自分では 何を 試しましたか。",
+              "kana": "なるほど、ほぞんの ときですね。じぶんでは なにを ためしましたか。",
+              "en": "I see, when saving. What have you tried yourself?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you tried (read the library docs; tried other dates — same error). You can add your question too.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿を 読みました。＿＿でも 試しましたが、同じ エラーでした。",
+            "modelAnswers": [
+              "ライブラリの ドキュメントを 読みました。ほかの 日付でも 試しましたが、同じ エラーでした。",
+              "ほかの 日付でも 試しましたが、同じでした。どこを 調べれば いいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "tried_and_ask",
+                "whenEn": "Learner said what they tried AND asked a concrete question (where to look / what the cause could be).",
+                "next": "n7",
+                "exampleJa": "ほかの 日付でも 試しましたが、同じでした。どこを 調べれば いいでしょうか。"
+              },
+              {
+                "id": "tried_only",
+                "whenEn": "Learner said what they tried but did not ask a question yet.",
+                "next": "n6",
+                "exampleJa": "ドキュメントを 読みました。ほかの 日付でも 同じ エラーでした。"
+              },
+              {
+                "id": "nothing",
+                "whenEn": "Learner said they have not tried anything or does not know what to try.",
+                "next": "n6n",
+                "exampleJa": "まだ 何も 試して いません。"
+              }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n4m",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "「日付の 形式」ですか。いい 手がかりですね。何を 試しましたか。",
+              "kana": "「ひづけの けいしき」ですか。いい てがかりですね。なにを ためしましたか。",
+              "en": "\"Date format\"? That's a good clue. What have you tried?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you tried (read the library docs; tried other dates — same error). You can add your question too.",
+            "grammar": [
+              "g3",
+              "g4"
+            ],
+            "hintJa": "＿＿を 読みました。＿＿でも 試しましたが、同じ エラーでした。",
+            "modelAnswers": [
+              "ライブラリの ドキュメントを 読みました。ほかの 日付でも 試しましたが、同じ エラーでした。",
+              "ほかの 日付でも 試しましたが、同じでした。どこを 調べれば いいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "tried_and_ask",
+                "whenEn": "Learner said what they tried AND asked a concrete question (where to look / what the cause could be).",
+                "next": "n7",
+                "exampleJa": "ほかの 日付でも 試しましたが、同じでした。どこを 調べれば いいでしょうか。"
+              },
+              {
+                "id": "tried_only",
+                "whenEn": "Learner said what they tried but did not ask a question yet.",
+                "next": "n6",
+                "exampleJa": "ドキュメントを 読みました。ほかの 日付でも 同じ エラーでした。"
+              },
+              {
+                "id": "nothing",
+                "whenEn": "Learner said they have not tried anything or does not know what to try.",
+                "next": "n6n",
+                "exampleJa": "まだ 何も 試して いません。"
+              }
+            ],
+            "fallback": "n6"
+          }
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そこまで 調べたんですね。それで、聞きたい ことは 何ですか。",
+              "kana": "そこまで しらべたんですね。それで、ききたい ことは なんですか。",
+              "en": "You've looked into it that far. So, what do you want to ask?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask one clear question: where should you look?",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿は どこを 調べれば いいでしょうか。",
+            "modelAnswers": [
+              "原因は どこを 調べれば いいでしょうか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_where",
+                "whenEn": "Learner asked where to look or what the cause might be.",
+                "next": "n7",
+                "exampleJa": "原因は どこを 調べれば いいでしょうか。"
+              },
+              {
+                "id": "ask_fix",
+                "whenEn": "Learner asked him to fix it or do it for them.",
+                "next": "n6f",
+                "exampleJa": "直して いただけませんか。"
+              }
+            ],
+            "fallback": "n7"
+          }
+        },
+        {
+          "id": "n6n",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "大丈夫ですよ。次は、試した ことを 一つ 持って きて くださいね。",
+              "kana": "だいじょうぶですよ。つぎは、ためした ことを ひとつ もって きて くださいね。",
+              "en": "That's all right. Next time, bring one thing you tried."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6f",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いっしょに 見ましょう。自分で 直すと、力に なりますから。",
+              "kana": "いっしょに みましょう。じぶんで なおすと、ちからに なりますから。",
+              "en": "Let's look together. Fixing it yourself makes you stronger.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "たぶん、カレンダーの ライブラリが 返す 日付の 形式が ちがいます。",
+              "kana": "たぶん、カレンダーの ライブラリが かえす ひづけの けいしきが ちがいます。",
+              "en": "Probably the calendar library returns the date in a different format.",
+              "gesture": "point",
+              "target": "pc"
+            },
+            {
+              "who": "fujita",
+              "ja": "保存の 前に、日付の 形式を そろえて みて ください。",
+              "kana": "ほぞんの まえに、ひづけの けいしきを そろえて みて ください。",
+              "en": "Try making the date format the same before saving."
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat his advice back to confirm, thank him, and say you'll report the result.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "＿＿の 前に、＿＿を そろえる、と いう ことですね。やって みます。",
+            "modelAnswers": [
+              "保存の 前に、日付の 形式を そろえる、と いう ことですね。やって みます。結果を ご報告します。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_back",
+                "whenEn": "Learner repeated the advice back (align the date format before saving) to confirm it.",
+                "next": "n8a",
+                "exampleJa": "保存の 前に、日付の 形式を そろえる、と いう ことですね。やって みます。"
+              },
+              {
+                "id": "thanks_only",
+                "whenEn": "Learner only thanked him or said they will try, without repeating the advice.",
+                "next": "n8b",
+                "exampleJa": "ありがとう ございます。やって みます。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そう、その 理解で 合って います。",
+              "kana": "そう、その りかいで あって います。",
+              "en": "Yes, you've understood it correctly.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "はい。直ったら、結果を 教えて くださいね。",
+              "kana": "はい。なおったら、けっかを おしえて くださいね。",
+              "en": "OK. When it's fixed, let me know the result."
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "また 困ったら、早めに 聞いて ください。",
+              "kana": "また こまったら、はやめに きいて ください。",
+              "en": "If you get stuck again, ask early.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "b04b",
+      "titleJa": "いそがしい 先輩に 相談する",
+      "titleEn": "When your senior is busy",
+      "scene": "office",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Same problem: on the booking form, after you choose a date and press 保存, you get the error 「日付の 形式が 正しく ありません」. You read the library documentation and tried other dates — same error. You think you need about 15 minutes of 藤田さん's time. But he is in the middle of release work for another project.",
+      "roleEn": "You are the new engineer. Don't give up and don't push: ask for a time, and send the details first.",
+      "missionsEn": [
+        {
+          "text": "Ask if he has a moment for a consultation",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask for about 15 minutes at a time that suits him",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Offer to send the situation and what you tried by chat first",
+          "grammar": [
+            "g5",
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask your question, then repeat his advice back",
+          "grammar": [
+            "g4",
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita"
+      ],
+      "positions": {
+        "fujita": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ええと、次は 本番の 設定を 確認して……。",
+              "kana": "ええと、つぎは ほんばんの せっていを かくにんして……。",
+              "en": "Let's see, next I check the production settings…",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "He is typing fast. Still, ask politely if he has a moment for a consultation.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "お仕事中 すみません。今 少し よろしいでしょうか。",
+            "modelAnswers": [
+              "藤田さん、お仕事中 すみません。今 少し よろしいでしょうか。ご相談が あります。"
+            ],
+            "branches": [
+              {
+                "id": "asks",
+                "whenEn": "Learner politely asked whether he has a moment (with or without the topic).",
+                "next": "n2",
+                "exampleJa": "お仕事中 すみません。今 少し よろしいでしょうか。"
+              },
+              {
+                "id": "abrupt",
+                "whenEn": "Learner started describing the problem straight away without asking.",
+                "next": "n2x",
+                "exampleJa": "予約フォームで エラーが 出ます。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "すみません、今 リリース作業中で、手が はなせないんです。",
+              "kana": "すみません、いま リリースさぎょうちゅうで、てが はなせないんです。",
+              "en": "Sorry, I'm in the middle of release work and can't stop.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Don't give up. Ask for about 15 minutes later, at a time that suits him.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "では、あとで ＿＿分ほど お時間 いただけますか。",
+            "modelAnswers": [
+              "では、あとで 15分ほど お時間 いただけますか。ご都合の いい 時間を 教えて ください。"
+            ],
+            "branches": [
+              {
+                "id": "asks_time",
+                "whenEn": "Learner asked for some time later (about 15 minutes) or asked when he is free.",
+                "next": "n4",
+                "exampleJa": "あとで 15分ほど お時間 いただけますか。"
+              },
+              {
+                "id": "pushes_now",
+                "whenEn": "Learner insisted on asking now or said it is urgent.",
+                "next": "n4u",
+                "exampleJa": "急いで います。今 聞いても いいですか。"
+              },
+              {
+                "id": "gives_up",
+                "whenEn": "Learner gave up: said never mind, or that they will manage alone.",
+                "next": "n4g",
+                "exampleJa": "わかりました。一人で やって みます。"
+              }
+            ],
+            "fallback": "n4g"
+          }
+        },
+        {
+          "id": "n2x",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ごめんなさい、今は 聞けないんです。リリース作業中で。",
+              "kana": "ごめんなさい、いまは きけないんです。リリースさぎょうちゅうで。",
+              "en": "Sorry, I can't listen now. I'm doing release work.",
+              "gesture": "shake_head"
+            }
+          ],
+          "listen": {
+            "promptEn": "Don't give up. Ask for about 15 minutes later, at a time that suits him.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "では、あとで ＿＿分ほど お時間 いただけますか。",
+            "modelAnswers": [
+              "では、あとで 15分ほど お時間 いただけますか。ご都合の いい 時間を 教えて ください。"
+            ],
+            "branches": [
+              {
+                "id": "asks_time",
+                "whenEn": "Learner asked for some time later (about 15 minutes) or asked when he is free.",
+                "next": "n4",
+                "exampleJa": "あとで 15分ほど お時間 いただけますか。"
+              },
+              {
+                "id": "pushes_now",
+                "whenEn": "Learner insisted on asking now or said it is urgent.",
+                "next": "n4u",
+                "exampleJa": "急いで います。今 聞いても いいですか。"
+              },
+              {
+                "id": "gives_up",
+                "whenEn": "Learner gave up: said never mind, or that they will manage alone.",
+                "next": "n4g",
+                "exampleJa": "わかりました。一人で やって みます。"
+              }
+            ],
+            "fallback": "n4g"
+          }
+        },
+        {
+          "id": "n4",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "15分ですね。3時からなら 大丈夫です。",
+              "kana": "じゅうごふんですね。さんじからなら だいじょうぶです。",
+              "en": "Fifteen minutes. From three o'clock is fine.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept three o'clock, and offer to send the situation and what you tried by chat first.",
+            "grammar": [
+              "g5",
+              "g3"
+            ],
+            "hintJa": "3時に お願いします。先に、＿＿と ＿＿を チャットで 送ります。",
+            "modelAnswers": [
+              "では、3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+            ],
+            "branches": [
+              {
+                "id": "send_first",
+                "whenEn": "Learner accepted the time AND offered to send the details (situation / what they tried / the error) beforehand.",
+                "next": "n6a",
+                "exampleJa": "3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+              },
+              {
+                "id": "accept_only",
+                "whenEn": "Learner only accepted the time or thanked him.",
+                "next": "n6b",
+                "exampleJa": "ありがとう ございます。3時に お願いします。"
+              }
+            ],
+            "fallback": "n6b"
+          },
+          "focus": "clock"
+        },
+        {
+          "id": "n4u",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "急ぎですか。今日中で よければ、3時に 見ますよ。",
+              "kana": "いそぎですか。きょうじゅうで よければ、さんじに みますよ。",
+              "en": "Is it urgent? If today is OK, I'll look at three."
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept three o'clock, and offer to send the situation and what you tried by chat first.",
+            "grammar": [
+              "g5",
+              "g3"
+            ],
+            "hintJa": "3時に お願いします。先に、＿＿と ＿＿を チャットで 送ります。",
+            "modelAnswers": [
+              "では、3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+            ],
+            "branches": [
+              {
+                "id": "send_first",
+                "whenEn": "Learner accepted the time AND offered to send the details (situation / what they tried / the error) beforehand.",
+                "next": "n6a",
+                "exampleJa": "3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+              },
+              {
+                "id": "accept_only",
+                "whenEn": "Learner only accepted the time or thanked him.",
+                "next": "n6b",
+                "exampleJa": "ありがとう ございます。3時に お願いします。"
+              }
+            ],
+            "fallback": "n6b"
+          },
+          "focus": "clock"
+        },
+        {
+          "id": "n4g",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いえいえ、一人で 悩まないで ください。3時なら 時間が あります。",
+              "kana": "いえいえ、ひとりで なやまないで ください。さんじなら じかんが あります。",
+              "en": "No, no, don't struggle alone. I have time at three.",
+              "gesture": "shake_head"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept three o'clock, and offer to send the situation and what you tried by chat first.",
+            "grammar": [
+              "g5",
+              "g3"
+            ],
+            "hintJa": "3時に お願いします。先に、＿＿と ＿＿を チャットで 送ります。",
+            "modelAnswers": [
+              "では、3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+            ],
+            "branches": [
+              {
+                "id": "send_first",
+                "whenEn": "Learner accepted the time AND offered to send the details (situation / what they tried / the error) beforehand.",
+                "next": "n6a",
+                "exampleJa": "3時に お願いします。先に、状況と 試した ことを チャットで 送ります。"
+              },
+              {
+                "id": "accept_only",
+                "whenEn": "Learner only accepted the time or thanked him.",
+                "next": "n6b",
+                "exampleJa": "ありがとう ございます。3時に お願いします。"
+              }
+            ],
+            "fallback": "n6b"
+          },
+          "focus": "clock"
+        },
+        {
+          "id": "n6a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "助かります。先に 読んで おきますね。",
+              "kana": "たすかります。さきに よんで おきますね。",
+              "en": "That helps. I'll read it beforehand.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "はい。先に、状況と 試した ことを チャットで 送って もらえますか。",
+              "kana": "はい。さきに、じょうきょうと ためした ことを チャットで おくって もらえますか。",
+              "en": "OK. Could you send the situation and what you tried by chat first?"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "お待たせしました、3時ですね。チャット、読みましたよ。",
+              "kana": "おまたせしました、さんじですね。チャット、よみましたよ。",
+              "en": "Sorry for the wait — it's three. I read your chat.",
+              "gesture": "wave"
+            },
+            {
+              "who": "fujita",
+              "ja": "ほかの 日付でも、同じ エラーでしたか。",
+              "kana": "ほかの ひづけでも、おなじ エラーでしたか。",
+              "en": "Was it the same error with other dates too?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Answer: yes, other dates gave the same error. Add what else you tried (read the documentation).",
+            "grammar": [
+              "g3"
+            ],
+            "hintJa": "はい、ほかの 日付でも ＿＿でした。＿＿も 読みました。",
+            "modelAnswers": [
+              "はい、ほかの 日付でも 同じ エラーでした。ライブラリの ドキュメントも 読みました。"
+            ],
+            "branches": [
+              {
+                "id": "with_tried",
+                "whenEn": "Learner confirmed the same error AND mentioned something else they tried (e.g. read the documentation).",
+                "next": "n8a",
+                "exampleJa": "はい、同じ エラーでした。ライブラリの ドキュメントも 読みました。"
+              },
+              {
+                "id": "short",
+                "whenEn": "Learner only confirmed (yes, the same error).",
+                "next": "n8b",
+                "exampleJa": "はい、同じ エラーでした。"
+              }
+            ],
+            "fallback": "n8b"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "よく 調べましたね。それで、一番 聞きたい ことは 何ですか。",
+              "kana": "よく しらべましたね。それで、いちばん ききたい ことは なんですか。",
+              "en": "You checked well. So what do you most want to ask?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask one clear question: where should you look? (Or tell him your own guess and ask if it's right.)",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "原因は どこを ＿＿ば いいでしょうか。",
+            "modelAnswers": [
+              "原因は どこを 調べれば いいでしょうか。",
+              "日付の 形式が ちがうと 思うのですが、合って いますか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_where",
+                "whenEn": "Learner asked where to look or what the cause could be.",
+                "next": "n10a",
+                "exampleJa": "原因は どこを 調べれば いいでしょうか。"
+              },
+              {
+                "id": "own_guess",
+                "whenEn": "Learner gave their own guess (e.g. the date format is different) and asked whether it is right.",
+                "next": "n10b",
+                "exampleJa": "日付の 形式が ちがうと 思うのですが、合って いますか。"
+              }
+            ],
+            "fallback": "n10a"
+          }
+        },
+        {
+          "id": "n8b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうですか。それで、一番 聞きたい ことは 何ですか。",
+              "kana": "そうですか。それで、いちばん ききたい ことは なんですか。",
+              "en": "I see. So what do you most want to ask?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask one clear question: where should you look? (Or tell him your own guess and ask if it's right.)",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "原因は どこを ＿＿ば いいでしょうか。",
+            "modelAnswers": [
+              "原因は どこを 調べれば いいでしょうか。",
+              "日付の 形式が ちがうと 思うのですが、合って いますか。"
+            ],
+            "branches": [
+              {
+                "id": "ask_where",
+                "whenEn": "Learner asked where to look or what the cause could be.",
+                "next": "n10a",
+                "exampleJa": "原因は どこを 調べれば いいでしょうか。"
+              },
+              {
+                "id": "own_guess",
+                "whenEn": "Learner gave their own guess (e.g. the date format is different) and asked whether it is right.",
+                "next": "n10b",
+                "exampleJa": "日付の 形式が ちがうと 思うのですが、合って いますか。"
+              }
+            ],
+            "fallback": "n10a"
+          }
+        },
+        {
+          "id": "n10a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "たぶん、ライブラリが 返す 日付の 形式が ちがうんです。",
+              "kana": "たぶん、ライブラリが かえす ひづけの けいしきが ちがうんです。",
+              "en": "Probably the date format the library returns is different.",
+              "gesture": "think"
+            }
+          ],
+          "next": "n11"
+        },
+        {
+          "id": "n10b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いい 考えですね。ぼくも そう 思います。",
+              "kana": "いい かんがえですね。ぼくも そう おもいます。",
+              "en": "Good thinking. I think so too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n11"
+        },
+        {
+          "id": "n11",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "保存の 前に、日付の 形式を そろえて みて ください。",
+              "kana": "ほぞんの まえに、ひづけの けいしきを そろえて みて ください。",
+              "en": "Try making the date format the same before saving.",
+              "gesture": "point",
+              "target": "pc"
+            }
+          ],
+          "listen": {
+            "promptEn": "Repeat his advice back to confirm, thank him, and say you'll report the result.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "＿＿の 前に、＿＿を そろえる、と いう ことですね。結果を ご報告します。",
+            "modelAnswers": [
+              "保存の 前に、日付の 形式を そろえる、と いう ことですね。やって みます。結果を ご報告します。"
+            ],
+            "branches": [
+              {
+                "id": "repeat_back",
+                "whenEn": "Learner repeated the advice back to confirm it (with or without thanks).",
+                "next": "n12a",
+                "exampleJa": "保存の 前に、日付の 形式を そろえる、と いう ことですね。やって みます。"
+              },
+              {
+                "id": "thanks_only",
+                "whenEn": "Learner only thanked him or said they will try.",
+                "next": "n12b",
+                "exampleJa": "お忙しい ところ、ありがとう ございました。"
+              }
+            ],
+            "fallback": "n12b"
+          }
+        },
+        {
+          "id": "n12a",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そのとおりです。先に 送って くれたので、すぐ わかりました。",
+              "kana": "そのとおりです。さきに おくって くれたので、すぐ わかりました。",
+              "en": "Exactly. Because you sent it first, I understood right away.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "n12b",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いえいえ。直ったら、チャットで 結果を 教えて ください。",
+              "kana": "いえいえ。なおったら、チャットで けっかを おしえて ください。",
+              "en": "Not at all. When it's fixed, tell me the result by chat.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
