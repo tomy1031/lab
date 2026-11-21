@@ -394,10 +394,15 @@ function onRaceEvent(type, d) {
     case 'itemready': if (mine) audio.play('itemready'); break;
     case 'use': if (mine) audio.play(d.item === 'triple' || d.item === 'boost' ? 'boost' : 'use_' + d.item); break;
     case 'shothit': case 'trap':
-      if (mine && d.hurt) { audio.play('hit'); raceCam.addShake(0.8); }
+      if (mine && d.hurt) { audio.play('hit'); raceCam.addShake(0.9); input.rumble(1, 260); }
       else if (d.by === me && d.hurt) { hud.flash('ヒット！', 'small', 0.9); audio.play('trick'); }
       break;
-    case 'bump': if (d.a === me || d.b === me) { audio.play('bump'); raceCam.addShake(Math.min(0.6, d.power * 0.05)); } break;
+    case 'bump':
+      if (d.a === me || d.b === me) {
+        const j = Math.min(1, d.power / 9);
+        audio.play('bump', j); raceCam.addShake(0.3 + 0.6 * j); input.rumble(0.45 + 0.55 * j, 90 + 80 * j);
+      }
+      break;
     case 'pad': if (mine) audio.play('pad'); break;
     case 'jump': if (mine) audio.play('jump'); break;
     default:
@@ -406,7 +411,7 @@ function onRaceEvent(type, d) {
         if (e === 'hop') audio.play('hop');
         else if (e.startsWith('miniturbo')) audio.play('miniturbo', Number(e.slice(-1)));
         else if (e.startsWith('driftlevel')) audio.play('driftlevel', Number(e.slice(-1)));
-        else if (e === 'wall') { audio.play('wall'); raceCam.addShake(0.4); }
+        else if (e === 'wall') { audio.play('wall'); raceCam.addShake(0.6); input.rumble(0.8, 140); }
         else if (e === 'shieldpop') audio.play('shieldpop');
         else if (e === 'trick') { audio.play('trick'); hud.flash('トリック！', 'small', 0.8); }
         else if (e === 'respawn') audio.play('respawn');
@@ -426,13 +431,13 @@ function vrEvent(type, d, me, mine) {
       if (mine && d.hurt) rum(1, 350);
       else if (d.by === me && d.hurt) cockpit.message('ヒット！', { size: 130, dur: 0.9 });
       break;
-    case 'bump': if (d.a === me || d.b === me) rum(0.45, 70); break;
+    case 'bump': if (d.a === me || d.b === me) rum(0.5 + 0.5 * Math.min(1, d.power / 9), 110); break;
     case 'pad': case 'jump': if (mine) rum(0.35, 120); break;
     case 'itemready': if (mine) rum(0.2, 40); break;
     default:
       if (type.startsWith('kart:') && mine) {
         const e = type.slice(5);
-        if (e === 'wall') rum(0.7, 90);
+        if (e === 'wall') rum(0.8, 130);
         else if (e.startsWith('miniturbo')) rum(0.4, 140);
         else if (e.startsWith('driftlevel')) rum(0.15, 30);
         else if (e === 'trick') cockpit.message('トリック！', { size: 130, dur: 0.8 });
@@ -759,6 +764,23 @@ DD.debug = {
     }
     return { frames: pts.length, judderPx: +Math.sqrt(s2 / Math.max(1, k)).toFixed(3) };
   },
+  // drive your kart with ctlFn(t) for n frames of dt (physics + chase camera, no rendering) and record
+  // [t, kart heading, camera yaw, slip angle, speed, drifting, lateral offset d, half width]
+  steerProbe(n, dt, ctlFn) {
+    const r = state.race, me = state.me; if (!r || !me) return null;
+    const ctl = { steer: 0, throttle: 1, brake: 0, drift: false, item: false }, map = new Map([[me, ctl]]);
+    const fwd = new THREE.Vector3(), out = [];
+    for (let i = 0; i < n; i++) {
+      Object.assign(ctl, ctlFn(i * dt));
+      stepRace(r, dt, map); r.frame(dt);
+      raceCam.update(dt, r, me, r.phase === 'intro' ? 'intro' : 'chase');
+      camera.getWorldDirection(fwd);
+      const vh = Math.atan2(me.vel.x, me.vel.z);
+      let slip = vh - me.heading; while (slip > Math.PI) slip -= 2 * Math.PI; while (slip < -Math.PI) slip += 2 * Math.PI;
+      out.push([+(i * dt).toFixed(3), me.heading, Math.atan2(fwd.x, fwd.z), slip, me.speed, me.drift.active ? 1 : 0, me.loc.d, me.loc.hw]);
+    }
+    return out;
+  },
   // render n frames at a fixed time step and return each as a PNG data URL (flicker analysis in tests)
   captureFrames(n = 60, dt = 1 / 60, onFrame = null, keep = () => true) {
     renderer.r.setAnimationLoop(null);
@@ -822,6 +844,7 @@ DD.debug = {
   go, act, showResults: () => showResults(),
   hands, input, audio, renderer, xr, vrInput, get cockpit() { return cockpit; },
   get race() { return state.race; },
+  get raceCam() { return raceCam; },
   setControl(c) { state.control = c; },
 };
 

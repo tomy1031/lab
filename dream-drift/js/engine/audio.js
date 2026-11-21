@@ -99,7 +99,11 @@ export class GameAudio {
       case 'driftlevel': this.tone([0, 1047, 1319, 1760][arg] || 1047, 0.12, { type: 'triangle', vol: 0.12 }); break;
       case 'hop': this.tone(300, 0.12, { type: 'sine', vol: 0.12, slide: 2 }); break;
       case 'wall': this.noiseHit(0.18, { vol: 0.35, type: 'lowpass', freq: 600 }); this.tone(90, 0.15, { type: 'sine', vol: 0.3, slide: 0.6 }); break;
-      case 'bump': this.noiseHit(0.12, { vol: 0.25, type: 'lowpass', freq: 900 }); this.tone(140, 0.1, { type: 'sine', vol: 0.2, slide: 0.7 }); break;
+      case 'bump': // arg 0…1: how hard
+        this.noiseHit(0.14 + 0.1 * arg, { vol: 0.28 + 0.17 * arg, type: 'lowpass', freq: 900 + 500 * arg });
+        this.tone(130, 0.14, { type: 'sine', vol: 0.24 + 0.14 * arg, slide: 0.55 });
+        if (arg > 0.5) this.noiseHit(0.08, { vol: 0.12 * arg, type: 'highpass', freq: 3500 }); // a metallic scrape for big knocks
+        break;
       case 'hit': this.noiseHit(0.4, { vol: 0.4, type: 'lowpass', freq: 1500 }); this.tone(880, 0.9, { type: 'square', vol: 0.1, slide: 0.25, filter: 2500 }); break;
       case 'shieldpop': seq([2093, 1568, 2637], 0.05, { type: 'sine', vol: 0.18 }); break;
       case 'use_bubble': this.tone(300, 0.2, { type: 'sine', vol: 0.3, slide: 3 }); break;
