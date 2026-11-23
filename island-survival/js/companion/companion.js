@@ -20,6 +20,8 @@ import { itemDef } from '../data/items.js';
 import { getApiKey } from '../core/save.js';
 import { rollSheet, derived, stageOf, STAGES, acceptChance, jobMultiplier, bestJobs, selfAwareness } from '../sim/companion-sheet.js';
 import { PROFESSIONS } from '../data/professions.js';
+import { assess, stateText, detectTriggers, TRIGGERS, JOB_LABEL } from './plans.js';
+import * as CT from '../data/consult.js';
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 export const AVAILABLE = { nagi: true, touko: true, gen: false };
@@ -54,6 +56,11 @@ export class Companion {
     this.lastKindT = -999;       // last time the player gave food / a gift / treatment (§23.7 recentKindness)
     this.lastShareT = -999;
     this.idleSince = 0;
+    this.pendingPlan = null;     // a proposal waiting for the player's answer (§24.8)
+    this.agreedPlan = null;      // { job, t } the player said お願い / 一緒に
+    this.together = null;        // { job, until } doing it together: your hand-work tol ×1.1
+    this.trigT = {};             // trigger id → game minute last fired (30-minute cool-down)
+    this.lastProposalT = -999;
     this.mood = 'normal';
     this.order = 'follow';       // follow | wait | job | base
     this.job = null;             // { id, until (game min), acc }
@@ -82,6 +89,7 @@ export class Companion {
     bus.on('log', (e) => this.memoryEvent(e.text));
     bus.on('sleep:start', () => this.compressMemory('bedtime'));
     bus.on('game:end', () => { this.talk?.stop(); });
+    bus.on('choice:pick', (e) => { if (this.pendingPlan) this.answer(e.id); });
   }
 
   /** §23.5: the sheet's derived values drive the body, the bag, the legs and the chatter */
@@ -151,6 +159,7 @@ export class Companion {
     this.speak(text);
   }
   speak(text) {
+    this.lastSpoken = text;
     this.game.bus.emit('subtitle', { who: this.name, text, final: true });
     this.game.bus.emit('companion:say', { text, who: this.name, __shown: true });
     this.voice.mumble(text, this.p.pitch || 1);
@@ -161,7 +170,7 @@ export class Companion {
 
   // ---------------------------------------------------------------- the companion menu (js/ui/s-companion.js)
   topics() {
-    const t = [{ id: 'chat', label: '雑談する', icon: '💬' }, { id: 'advice', label: 'サバイバルの 知恵を 聞く', icon: '💡' }, { id: 'weather', label: '天気は どうなりそう？', icon: '☁️' }];
+    const t = [{ id: 'consult', label: '相談する（どう しよう？）', icon: '🤔' }, { id: 'chat', label: '雑談する', icon: '💬' }, { id: 'advice', label: 'サバイバルの 知恵を 聞く', icon: '💡' }, { id: 'weather', label: '天気は どうなりそう？', icon: '☁️' }];
     const next = [20, 40, 60, 80].findIndex((lv, i) => this.affinity >= lv && !this.memory.data[`story${i}`]);
     if (next >= 0) t.push({ id: `story${next}`, label: '身の上話を 聞く', icon: '📖' });
     const prof = this.sheet.profession;
@@ -169,7 +178,14 @@ export class Companion {
     if (prof === 'fisher' || (this.id === 'nagi' && this.trust >= 50)) t.push({ id: 'fishtip', label: '魚の ことを 聞く', icon: '🐟' });
     return t;
   }
-  talk(topic) {
+  /** a talk-tab topic (the Live session lives in this.talk, so this is not called talk) */
+  discuss(topic) {
+    this.lastSpoken = '';
+    if (topic === 'consult') return this.consult();
+    this.talkTopic(topic);
+    return this.lastSpoken || '';
+  }
+  talkTopic(topic) {
     const g = this.game;
     if (!this.dayFlags.talkCount) this.dayFlags.talkCount = 0;
     if (this.dayFlags.talkCount++ < 8) this.adjust(0, 0.5);
@@ -193,6 +209,131 @@ export class Companion {
     const r = this.doJob(id, { asked: true });
     if (r === 'ok') this.say('accept', true);
     return r;
+  }
+
+  // ---------------------------------------------------------------- 相談して 頼む (§24.8)
+  /** a staged line from data/consult.js: string | { text, stage } */
+  pickText(list, vars = {}) {
+    if (!list?.length) return '';
+    const ok = list.filter((l) => typeof l === 'string' || l.stage == null || [].concat(l.stage).includes(this.stage));
+    const pool = ok.length ? ok : list;
+    const l = pool[Math.min(pool.length - 1, Math.floor(this.game.rng.next() * pool.length))];
+    const raw = typeof l === 'string' ? l : l.text;
+    return raw.replace(/\{you\}/g, callYouFor(this.p, this.affinity, this.game.setup.playerName)).replace(/\{job\}/g, vars.job || '').replace(/\{item\}/g, vars.item || 'それ');
+  }
+
+  /** look at the situation and propose 1–2 plans. Returns { text, choices, situation } (the talk tab shows the buttons). */
+  consult({ sit = null, proactive = false } = {}) {
+    const all = assess(this, 7);
+    const top = (sit && all.find((x) => x.id === sit)) || all[0];
+    const plans = top.plans.filter((p) => p.job && JOBS[p.job]).slice(0, 2);
+    const text = this.pickText(CT.CONSULT?.[this.id]?.[top.id], { job: JOB_LABEL[plans[0]?.job] }) ||
+      (plans.length ? `${plans[0].label}、やろうか？` : '今は 落ち着いてる。図鑑でも うめに 行く？');
+    this.speak(text);
+    this.pendingPlan = { sit: top.id, plans, t: this.game.clock.total };
+    const choices = plans.length
+      ? [{ id: 'ok', label: `お願い（${plans[0].label}）`, key: 'Y' }, { id: 'together', label: '一緒に やろう', key: 'U' }, { id: 'no', label: 'いや、いい', key: 'N' }]
+      : [{ id: 'no', label: 'そうだね', key: 'N' }];
+    if (proactive) this.game.bus.emit('choice:show', { who: this.id, text, choices });
+    return { text, choices, situation: top.id };
+  }
+
+  /** the player's answer to a proposal: ok (the companion starts the job) / together / no */
+  answer(id) {
+    const pp = this.pendingPlan;
+    this.pendingPlan = null;
+    this.game.bus.emit('choice:hide');
+    if (!pp || id === 'timeout') return '';
+    this.lastSpoken = '';
+    const plan = pp.plans[0], now = this.game.clock.total, A = CT.CONSULT_ANSWER?.[this.id] || {};
+    let note = '';
+    if (id === 'ok' && plan) {
+      this.agreedPlan = { job: plan.job, t: now };
+      if (plan.lend) { // 水くみ: hand over an empty container first
+        const inv = this.game.sys.player.inv, box = inv.get(plan.lend);
+        if (box) { const part = inv.take(box.uid, 1)[0]; this.inv.addStack(part); this.game.sys.player.validate?.(); this.game.bus.emit('toast', { text: `${itemDef(part.id)?.name}を ${this.name}に 預けた`, kind: 'info' }); }
+      }
+      const r = this.doJob(plan.job, { self: true }); // its own idea: always does it (§24.8 引き受け)
+      if (r === 'ok') this.speak(this.pickText(A.ok, { job: JOB_LABEL[plan.job] }) || 'まかせて！');
+      note = r === 'ok' ? `プレイヤーは「お願い」と 答えた。あなたは ${plan.label}を 始めた。` : `プレイヤーは「お願い」と 答えたが、${r}`;
+    } else if (id === 'together') {
+      this.follow();
+      this.together = { job: plan?.job || null, until: now + 120 };
+      this.agreedPlan = plan ? { job: plan.job, t: now } : null;
+      this.adjust(0, 0.5);
+      this.speak(this.pickText(A.together, { job: JOB_LABEL[plan?.job] }) || 'うん、一緒に やろ！');
+      note = `プレイヤーは「一緒に やろう」と 答えた。あなたは プレイヤーに ついて いき、${plan?.label || '作業'}を 手伝う。`;
+    } else {
+      this.speak(this.pickText(A.no) || 'わかった。');
+      note = 'プレイヤーは「いや、いい」と 答えた。';
+    }
+    if (this.talk?.state === 'live') this.talk.event(`[返事] ${note}`, true, true);
+    return this.lastSpoken;
+  }
+  togetherActive() { return !!this.together && this.game.clock.total < this.together.until && this.near(8); }
+
+  /** game → companion triggers (§24.8 きっかけ): 30 min cool-down each. Live: a [きっかけ] note; keyless: a proposal with buttons. */
+  checkTriggers() {
+    const g = this.game, now = g.clock.total;
+    for (const id of detectTriggers(this)) {
+      if (now - (this.trigT[id] ?? -999) < 30) continue;
+      this.trigT[id] = now;
+      this.onTrigger(id);
+    }
+  }
+  onTrigger(id) {
+    const T = TRIGGERS[id], g = this.game, now = g.clock.total;
+    if (!T) return;
+    if (this.talk?.state === 'live') { this.talk.event(`[きっかけ:${id}] ${T.text}。${stateText(this)}`, true); return; }
+    if (!T.sit || !this.near(15) || this.order !== 'follow' || this.job || this.body?.mode === 'sleep' || this.pendingPlan) return;
+    if (this.stage <= 1 || now - this.lastProposalT < 60) return;   // stage 1 does only what it is asked (§23.7)
+    this.lastProposalT = now;
+    // stage 4+: says it and goes (言ってから 自分で 動く), unless the job is risky; otherwise asks first
+    if (this.stage >= 4 && this.trust >= 40) {
+      const plan = assess(this, 7).find((x) => x.id === T.sit)?.plans.find((p) => p.job && JOBS[p.job]);
+      const f = plan && this.requestFactors(plan.job);
+      if (plan && !f.danger && !f.dislike && !JOBS[plan.job].sea && this.doJob(plan.job, { self: true }) === 'ok') {
+        this.speak(CT.JOB_TALK?.[this.id]?.[plan.job] || `${plan.label}、行ってくる。`);
+        return;
+      }
+    }
+    this.consult({ sit: T.sit, proactive: true });
+  }
+
+  /** Live tool ask_job: the game decides acceptance (§23.7), never the model */
+  askJobTool(job, by = 'player') {
+    if (job === 'stop') { this.follow(); return 'stopped the job; following the player'; }
+    if (!JOBS[job]) return `unknown job (use one of ${Object.keys(JOBS).join(', ')})`;
+    const now = this.game.clock.total;
+    if (by === 'self') {
+      const agreed = this.agreedPlan?.job === job && now - this.agreedPlan.t < 30;
+      const f = this.requestFactors(job);
+      if (!agreed && (this.stage < 4 || f.danger || f.dislike || JOBS[job].sea)) return 'not allowed on your own: call propose_plan and wait for the player\'s answer ([返事])';
+      const r = this.doJob(job, { self: true });
+      return r === 'ok' ? `started ${JOB_LABEL[job]}` : `could not start: ${r}`;
+    }
+    const r = this.doJob(job, { asked: true });
+    if (r === 'ok') return `accepted: you started ${JOB_LABEL[job]}`;
+    return `refused (${this.refuseReason(job, r)}). Tell the player why, in your own words`;
+  }
+  refuseReason(job, r = '') {
+    const f = this.requestFactors(job);
+    if (/container/.test(r)) return '入れ物が ない';
+    if (/too soon/.test(r)) return 'さっき 断った ばかり';
+    if (f.danger) return '危ない（嵐か、まだ そこまで 信用して いない）';
+    if (f.sick) return '体調が 悪い';
+    if (f.morale < 30) return '気力が ない';
+    if (f.dislike) return this.game.clock.hour >= 19 || this.game.clock.hour < 5 ? '夜は こわい' : '苦手な 仕事';
+    return f.trust < 30 ? 'まだ 打ち解けて いない' : '今は 気が 進まない';
+  }
+  /** Live tool propose_plan: show the plan with answer buttons */
+  proposePlanTool(plans = []) {
+    const ok = (plans || []).filter((p) => JOBS[p.job]).slice(0, 2).map((p) => ({ job: p.job, who: p.who || 'companion', label: JOB_LABEL[p.job], reason: p.reason || '' }));
+    if (!ok.length) return 'no valid job in the plan';
+    this.pendingPlan = { sit: 'live', plans: ok, t: this.game.clock.total };
+    const text = ok.map((p) => `${p.label}${p.reason ? `（${p.reason}）` : ''}`).join(' ／ ');
+    this.game.bus.emit('choice:show', { who: this.id, text, choices: [{ id: 'ok', label: `お願い（${ok[0].label}）`, key: 'Y' }, { id: 'together', label: '一緒に やろう', key: 'U' }, { id: 'no', label: 'いや、いい', key: 'N' }] });
+    return 'shown to the player with buttons. Wait for the [返事] message; the game starts the job if they agree';
   }
 
   /** §23.7: what makes a request hard for this person right now */
@@ -220,7 +361,7 @@ export class Companion {
       const foodUnits = this.inv.stacks.filter((x) => itemDef(x.id)?.food).reduce((a, x) => a + x.n, 0);
       const no = st === 1 ? P.food >= 15 : st === 2 ? foodUnits <= 1 && this.vitals.s.food < 50 : false;
       if (no) {
-        this.speak(this.id === 'gen' ? '…それは わしの 分だ。自分で 取ってこい。' : this.id === 'touko' ? 'すみません、それは わたしの 分なので…。' : 'えっ… それ、あたしの ごはん なんだけど。');
+        this.speak(this.id === 'gen' ? '…それは おれの 分だ。自分で 取ってこい。' : this.id === 'touko' ? 'すみません、それは わたしの 分なので…。' : 'えっ… それ、あたしの ごはん なんだけど。');
         this.adjust(-0.5, -0.5);
         return false;
       }
@@ -349,7 +490,7 @@ export class Companion {
       apiKey: key, persona: systemPrompt(this.p, { playerName: this.game.setup.playerName, trust: this.trust, affinity: this.affinity, mood: this.mood, profession: this.sheet.profession, selfAwareness: selfAwareness(this.sheet, this.p).join('\n') }),
       voiceName: this.p.voice, memory: this.memory, voice: this.voice, mic: this.mic,
       places: Object.values(this.game.world.layout).map((p) => p.name).filter(Boolean),
-      resources: ['wood', 'food', 'water', 'fish', 'vines', 'stones', 'leaves'],
+      jobs: Object.keys(JOBS),
       when: () => ({ day: this.game.clock.day, hour: Math.floor(this.game.clock.hour) }),
       onStatus: (st, info) => { this.game.bus.emit('toast', { text: { connecting: `${this.name}と つないでいます…`, live: `🎤 ${this.name}と 話せます（T で 終わる）`, error: `会話に つなげなかった（${info}）`, mic: 'マイクが 使えない', reconnecting: '再接続中…' }[st] || '', kind: st === 'error' ? 'bad' : 'info' }); },
       onSubtitle: (who, text, final) => this.game.bus.emit('subtitle', { who: who === 'companion' ? this.name : 'あなた', text, final }),
@@ -357,10 +498,11 @@ export class Companion {
       actions: {
         follow: () => this.follow(), wait: () => this.wait(),
         goTo: (place) => { const p = Object.values(this.game.world.layout).find((x) => x.name === place); if (!p) return 'unknown place'; this.order = 'goto'; this.body.goTo(p.x, p.z); return 'walking'; },
-        gather: (res) => this.doJob({ wood: 'gather_wood', food: 'gather_food', water: 'fetch_water', fish: 'fish' }[res] || 'gather_wood'),
+        askJob: (job, by) => this.askJobTool(job, by),
+        proposePlan: (plans) => this.proposePlanTool(plans),
         give: (item, n) => this.give(item, n),
         express: (emotion, gesture) => { this.avatar?.setMood(emotion && emotion !== 'neutral' ? { [emotion]: 1 } : {}); if (gesture && gesture !== 'none') { if (gesture === 'sit') this.body.sit(); else this.body.gesture(gesture, 2.5); } return 'ok'; },
-        status: () => this.statusText(),
+        status: () => `${this.statusText()} ${stateText(this)}`,
       },
     });
     const ok = await this.talk.start();
@@ -450,8 +592,9 @@ export class Companion {
     if (this.body.mode === 'sleep' && (s.rest >= 95 || (hour >= 6 && hour < 20))) this.body.follow();
     // low trust: wander off sometimes
     if (this.trust < 5 && !this.dayFlags.low_trust) this.say('low_trust', true);
-    // 5 food sharing and initiative by affinity stage (§23.7)
+    // 5 food sharing, triggers / proposals and initiative by affinity stage (§23.7, §24.8)
     this.shareFood();
+    this.checkTriggers();
     this.initiative();
     // 7 leisure chatter: talks more as you get closer (stage chatPerHour × the hunter's quiet ×0.7)
     const now = g.clock.total, dh = Math.max(0, now - (this.lastBrainT ?? now)) / 60;
@@ -492,7 +635,7 @@ export class Companion {
     const g = this.game, now = g.clock.total;
     if (this.order !== 'follow' || this.job || this.body.mode === 'sleep') { this.idleSince = now; return; }
     const st = this.stage, T = this.trust;
-    const wait = st >= 5 ? 0 : st === 4 && T >= 40 ? 0 : st === 3 && T >= 50 ? 10 : st === 2 && T >= 60 ? 30 : Infinity;
+    const wait = st >= 5 ? 0 : st === 4 && T >= 40 ? 0 : Infinity; // stage 2–3 propose first (checkTriggers → consult)
     if (now - this.idleSince < wait || now - (this.lastInitT ?? -999) < 120) return;
     const P = g.sys.player.body.s, hour = g.clock.hour;
     const fire = g.sys.fires?.nearest(g.player.pos, 15);
@@ -503,7 +646,7 @@ export class Companion {
     if (!job) return;
     this.lastInitT = now;
     if (this.doJob(job, { self: true }) === 'ok') {
-      this.speak(job === 'tend_fire' ? (this.id === 'gen' ? '火は わしが 見とく。' : this.id === 'touko' ? '火は わたしが 見ておきますね。' : '火、見とくね！') :
+      this.speak(job === 'tend_fire' ? (this.id === 'gen' ? '火は おれが 見とく。' : this.id === 'touko' ? '火は わたしが 見ておきますね。' : '火、見とくね！') :
         job === 'gather_food' ? (this.id === 'gen' ? '食い物、探してくる。' : this.id === 'touko' ? '食べられる 物、探してきます。' : 'ごはん 探してくる！ 待ってて！') :
         (this.id === 'gen' ? '薪が 足りん。取ってくる。' : this.id === 'touko' ? '薪を 集めて きますね。' : '薪、取ってくるね！'));
     }
@@ -530,6 +673,7 @@ export class Companion {
   }
 
   finishJob() {
+    const jobId = this.job?.id;
     const items = this.inv.stacks.filter((s) => !itemDef(s.id)?.tool);
     this.job = null; this.order = 'follow';
     this.body.follow();
@@ -539,6 +683,10 @@ export class Companion {
       for (const s of items) { const part = this.inv.removeStack(s.uid); if (part) g.sys.player.inv.addStack(part); }
       this.say('job_done', true);
       this.adjust(0.5, 0.5);
+      if (this.talk?.state === 'live') {
+        const got = items.map((s) => `${itemDef(s.id)?.name}×${s.n}`).join('、') || '何も 取れなかった';
+        this.talk.event(`[結果] ${JOB_LABEL[jobId] || '仕事'}が 終わって 戻った：${got}`, true);
+      }
     };
     deliver();
   }

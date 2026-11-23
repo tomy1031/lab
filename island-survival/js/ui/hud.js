@@ -29,6 +29,8 @@ export class Hud {
     const bus = game.bus;
     bus?.on('toast', (t) => this.toast(t));
     bus?.on('subtitle', (s) => this.subtitle(s));
+    bus?.on('choice:show', (c) => this.showChoice(c));
+    bus?.on('choice:hide', () => this.hideChoice());
     bus?.on('companion:say', (s) => { if (s && !s.__shown) this.subtitle({ who: s.who, text: s.text, final: true }); });
     if (game.input?.touch || matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');
   }
@@ -255,6 +257,21 @@ export class Hud {
     clearTimeout(rec.timer);
     rec.timer = setTimeout(() => { rec.e.classList.add('out'); setTimeout(() => { rec.e.remove(); if (this.subs.get(who) === rec) this.subs.delete(who); }, 500); }, s.final ? 3000 + s.text.length * 90 : 7000);
   }
+
+  // ------------------------------------------------------------------ a companion's proposal: answer with a button or Y / U / N (§24.8)
+  showChoice(c) {
+    const box = this.ensure('hud-choice');
+    box.textContent = '';
+    box.className = 'on';
+    const pick = (id) => this.game.bus.emit('choice:pick', { id });
+    box.append(
+      h('div', { class: 'choice-text' }, h('b', { class: 'sub-who' }, SPEAKER[c.who] || c.who || ''), c.text || ''),
+      h('div', { class: 'choice-btns' }, (c.choices || []).map((o) => h('button', { class: `btn small ${o.id === 'ok' ? 'primary' : ''}`, onclick: () => pick(o.id) }, o.key ? h('kbd', null, o.key) : null, ` ${o.label}`))));
+    this.choiceOpen = true;
+    clearTimeout(this.choiceTimer);
+    this.choiceTimer = setTimeout(() => { if (this.choiceOpen) pick('timeout'); }, 30000);
+  }
+  hideChoice() { const box = document.getElementById('hud-choice'); if (box) { box.className = ''; box.textContent = ''; } this.choiceOpen = false; clearTimeout(this.choiceTimer); }
 
   // ------------------------------------------------------------------ touch controls
   buildTouch() {

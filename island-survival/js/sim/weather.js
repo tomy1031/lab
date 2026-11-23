@@ -69,7 +69,9 @@ export class Weather {
     if (block !== this.block) {
       const first = this.block < 0;
       this.block = block;
-      const nt = this.decide(block, clock.day);
+      // the next block is decided one block ahead so people can read the sky (§24.8 rain_soon); a typhoon scheduled later still wins
+      const forcedNow = this.forced.find((f) => f.block === block);
+      const nt = forcedNow ? forcedNow.type : this.queued?.block === block ? this.queued.type : this.decide(block, clock.day);
       if (['drizzle', 'rain', 'storm', 'typhoon'].includes(this.type) && !['drizzle', 'rain', 'storm', 'typhoon'].includes(nt)) this.lastRainEndH = totalH;
       this.prev = first ? nt : this.currentDominant();
       this.type = nt;
@@ -78,6 +80,8 @@ export class Weather {
       const [a, b] = this.W(nt).wind;
       this.windTarget = this.rng.float(a, b);
       this.onChange?.(nt);
+      const nb = block + 1;
+      this.queued = { block: nb, type: this.decide(nb, Math.floor((nb * 6) / 24) + 1) };
     }
     // fog overlay in the morning
     if (this.fogUntil && totalH < this.fogUntil && clock.hour >= 6 && this.type !== 'fog') { this.prev = this.currentDominant(); this.type = 'fog'; this.blend = 0; }
@@ -90,6 +94,17 @@ export class Weather {
   }
 
   currentDominant() { return this.blend > 0.5 ? this.type : this.prev; }
+
+  /** what the sky says about the next 6 h block: { type, inH } (null right after a load) */
+  upcoming(clock) {
+    if (!this.queued) return null;
+    const forced = this.forced.find((f) => f.block === this.queued.block);
+    return { type: forced ? forced.type : this.queued.type, inH: this.queued.block * 6 - clock.total / 60 };
+  }
+  rainSoon(clock, withinH = 3) {
+    const u = this.upcoming(clock);
+    return !!u && u.inH <= withinH && ['drizzle', 'rain', 'storm', 'typhoon'].includes(u.type) && !['drizzle', 'rain', 'storm', 'typhoon'].includes(this.type);
+  }
 
   /** schedule a typhoon: 3 storm blocks starting at a block index */
   scheduleTyphoon(startBlock) { for (let i = 0; i < 3; i++) this.forced.push({ block: startBlock + i, type: 'typhoon' }); }

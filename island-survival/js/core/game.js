@@ -143,6 +143,8 @@ export class Game {
     inp.on('use', () => { const s = this.sys.player?.heldStack(); if (s && !this.screens?.current) { const d = this.sys.player.heldDef(); if (d?.food || s.stew) this.screens?.show('inventory', { focus: s.uid, eat: true }); else this.actions.use(s.uid); } });
     inp.on('menu', () => { if (this.sys.interact?.activity) { this.sys.interact.cancelActivity(); return; } if (this.placement?.active) { this.placement.cancel(); return; } if (this.screens?.current) return; open('pause'); });
     inp.on('talk', () => this.sys.companion?.talkKey?.());
+    // answering a companion's proposal (§24.8): Y お願い / U 一緒に / N いや
+    for (const [k, id] of [['choiceOk', 'ok'], ['choiceTogether', 'together'], ['choiceNo', 'no']]) inp.on(k, () => { if (this.hud?.choiceOpen) this.bus.emit('choice:pick', { id }); });
     inp.on('companion', () => this.sys.companion?.call?.());
     inp.on('gesture', () => { if (!this.screens?.current) this.screens?.show('gesture'); });
   }

@@ -486,3 +486,23 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 }
 @media (prefers-reduced-motion: reduce) { .csheet.rolling .cs-val, .csheet.rolling .cs-head::after { animation: none; } .cs-bar i { transition: none; } }
 .cs-wrap .csheet { border: 0; box-shadow: none; background: none; padding: 0; } .cs-wrap > h3 { margin: 0 0 6px; }
+
+/* settings: handwork / butcherView option descriptions, setup "こまかい 設定" */
+.opt-desc { margin: 6px 0 10px; line-height: 1.5; }
+.fine-set { border: 2px dashed rgba(42, 41, 35, .3); border-radius: 12px; padding: 8px 12px; background: rgba(255, 252, 240, .5); }
+.fine-sum { cursor: pointer; margin-bottom: 0; list-style: none; min-height: 36px; }
+.fine-sum::-webkit-details-marker { display: none; }
+.fine-sum::after { content: "▸"; margin-left: auto; color: var(--teal-d); transition: transform .15s; }
+.fine-set[open] > .fine-sum::after { transform: rotate(90deg); }
+.fine-set[open] > .fine-sum { margin-bottom: 8px; }
+.fine-h { font-size: .9rem; margin: 10px 0 6px; color: var(--ink); }
+.fine-body .seg { margin-bottom: 2px; }
+
+/* companion proposal (§24.8) */
+#hud-choice { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(236px + var(--safe-b)); width: min(560px, 92vw); display: none; flex-direction: column; gap: 8px; padding: 10px 14px; background: rgba(8, 24, 28, .86); border: 1px solid var(--glass-line); border-radius: 14px; color: var(--on-glass); pointer-events: auto; z-index: 6; }
+#hud-choice.on { display: flex; }
+#hud-choice .choice-text { font-size: 1rem; line-height: 1.45; }
+#hud-choice .choice-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+#hud-choice kbd { font: inherit; font-size: .78rem; padding: 0 5px; border-radius: 5px; background: rgba(255, 255, 255, .18); }
+@media (max-width: 640px) { #hud-choice { bottom: calc(200px + var(--safe-b)); } }
+.consult-answers { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; } .consult-answers:empty { display: none; }

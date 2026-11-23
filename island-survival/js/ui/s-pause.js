@@ -33,6 +33,8 @@ export default function pause(ctx) {
   return { el, back() { screens.hide(); return true; } };
 }
 
+export const HANDWORK = [['manual', '手で やる', '研ぐ・打つ・結ぶ を 自分の 手で。上手なら 品質が 上がる'], ['assist', '半自動', '最初の ひと区切りだけ 自分で。あとは 同じ 調子で 続ける'], ['auto', 'おまかせ', '短い アニメで 自動。品質は ふつう']];
+export const BUTCHER_VIEW = [['normal', 'ふつう', '紙の 図で 手順を 行う。色は ひかえめ'], ['mild', 'ひかえめ', '影絵と 点線で 手順を 行う。赤い 色や 生々しい 言葉は 出ない'], ['skip', '省略', '手順を とばして 結果だけ 受け取る']];
 const VOL = [['master', '全体'], ['sfx', '効果音'], ['amb', '環境音'], ['voice', '声'], ['ui', '操作音']];
 
 export function settings(ctx) {
@@ -52,6 +54,22 @@ export function settings(ctx) {
   const qSeg = h('div', { class: 'seg' }, [['low', '低'], ['mid', '中'], ['high', '高']].map(([v, l]) => h('button', { type: 'button', class: `seg-b${qual === v ? ' on' : ''}`,
     onclick: (e) => { save({ quality: v }); try { game.renderer?.setQuality?.(v); } catch { /* ignore */ } qSeg.querySelectorAll('.seg-b').forEach((b) => b.classList.remove('on')); e.currentTarget.classList.add('on'); } }, h('span', { class: 'seg-l' }, l))));
 
+  const isTouch = () => !!game.input?.touch || (game.setup?.control === 'touch');
+  const hwNow = s.handwork || (isTouch() ? 'assist' : 'manual');
+  const bvNow = s.butcherView || 'mild';
+  const pick = (opts, cur, key, descEl) => {
+    const wrap = h('div', { class: 'seg', role: 'group' });
+    const show = (v) => { descEl.textContent = (opts.find((o) => o[0] === v) || [])[2] || ''; };
+    for (const [v, l] of opts) {
+      wrap.append(h('button', { type: 'button', class: `seg-b${cur === v ? ' on' : ''}`, 'aria-pressed': cur === v ? 'true' : 'false',
+        onclick: () => { save({ [key]: v }); wrap.querySelectorAll('.seg-b').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); }); const me = wrap.children[opts.findIndex((o) => o[0] === v)]; me.classList.add('on'); me.setAttribute('aria-pressed', 'true'); show(v); } }, h('span', { class: 'seg-l' }, l)));
+    }
+    show(cur);
+    return wrap;
+  };
+  const hwDesc = h('p', { class: 'muted small opt-desc' });
+  const bvDesc = h('p', { class: 'muted small opt-desc' });
+
   const el = h('div', { class: 'sheet narrow settings-sheet', tabindex: '-1' },
     head('設定', screens),
     h('div', { class: 'sheet-body col gap' },
@@ -65,6 +83,11 @@ export function settings(ctx) {
         h('div', { class: 'row gap center-y' }, h('span', { class: 'muted small' }, '画質'), qSeg),
         toggle('画面の ゆれを 減らす', s.reduceShake, (v) => save({ reduceShake: v })),
         toggle('字幕を 出す', s.subtitles !== false, (v) => save({ subtitles: v }))),
+      h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '手の 作業'),
+        pick(HANDWORK, hwNow, 'handwork', hwDesc), hwDesc,
+        toggle('作業の ヒントを 出す', s.hints !== false, (v) => save({ hints: v }))),
+      h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '解体の 表現'),
+        pick(BUTCHER_VIEW, bvNow, 'butcherView', bvDesc), bvDesc),
       h('button', { class: 'btn ghost small', onclick: () => screens.show('gesture', { from: 'settings' }) }, '✋ ジェスチャーの 練習')));
   return { el };
 }

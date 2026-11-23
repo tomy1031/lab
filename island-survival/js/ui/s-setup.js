@@ -1,8 +1,9 @@
 // ui/s-setup.js — game setup (DESIGN §2, §21.1): take-along items, companion, days, difficulty … + live severity / score multiplier.
 import { h, clear } from './dom.js';
 import { getStarters, calcSetup, stars, prefs, head, toast } from './common.js';
-import { loadSettings, getApiKey, setApiKey } from '../core/save.js';
+import { loadSettings, saveSettings, getApiKey, setApiKey } from '../core/save.js';
 import { rollSheet, sheetSummary, stageOf, STAGES } from '../sim/companion-sheet.js';
+import { HANDWORK, BUTCHER_VIEW } from './s-pause.js';
 import { PROFESSIONS, PROFESSION_IDS, CHAR_INFO } from '../data/professions.js';
 
 // ------------------------------------------------------------------ character sheet panel (DESIGN §23.6) — shared with the companion menu
@@ -56,7 +57,7 @@ export default function setup(ctx, data = {}) {
   const saved = prefs.get().setup || {};
   const st = remembered || {
     count: 1, starters: ['knife'], ammo: 12, companion: 'none', days: 7, dayMinutes: 24, difficulty: 'normal', season: 'dry',
-    seedMode: 'auto', seedText: '', control: coarse ? 'touch' : 'mouse', subtitles: true, micMode: 'auto', saveKey: false, apiKey: '', ...saved,
+    seedMode: 'auto', seedText: '', handwork: null, butcherView: 'mild', hints: true, control: coarse ? 'touch' : 'mouse', subtitles: true, micMode: 'auto', saveKey: false, apiKey: '', ...saved,
   };
   if (!st.apiKey) { try { st.apiKey = getApiKey(); if (st.apiKey) st.saveKey = true; } catch { /* ignore */ } }
   remembered = st;
@@ -65,7 +66,8 @@ export default function setup(ctx, data = {}) {
   const refresh = () => { upd.forEach((f) => f()); try { const { apiKey, ...rest } = st; prefs.set({ setup: rest }); } catch { /* ignore */ } };
 
   const maxPick = () => (st.count === 'all' ? starters.length : st.count);
-  function seg(key, opts, { onChange, cls = '' } = {}) {
+  const hwVal = () => st.handwork || (st.control === 'touch' ? 'assist' : 'manual');
+  function seg(key, opts, { onChange, cls = '', get = null } = {}) {
     const wrap = h('div', { class: `seg ${cls}`, role: 'group' });
     const btns = opts.map(([v, label, sub, disabled]) => {
       const b = h('button', { type: 'button', class: 'seg-b', disabled: disabled || null, onclick: () => { if (disabled) return; st[key] = v; onChange?.(v); refresh(); } },
@@ -73,7 +75,7 @@ export default function setup(ctx, data = {}) {
       wrap.appendChild(b);
       return [v, b];
     });
-    upd.push(() => btns.forEach(([v, b]) => b.classList.toggle('on', st[key] === v)));
+    upd.push(() => btns.forEach(([v, b]) => { const on = (get ? get() : st[key]) === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }));
     return wrap;
   }
   const field = (label, ...kids) => h('section', { class: 'field' }, h('h3', { class: 'field-h' }, label), ...kids);
@@ -192,6 +194,16 @@ export default function setup(ctx, data = {}) {
 
   const subChk = h('input', { type: 'checkbox', id: 'sub-on', checked: st.subtitles ? true : null, onchange: (e) => { st.subtitles = e.target.checked; } });
 
+  const optDesc = (opts, getv) => { const p = h('p', { class: 'muted small opt-desc' }); upd.push(() => { p.textContent = (opts.find((o) => o[0] === getv()) || [])[2] || ''; }); return p; };
+  const fine = h('details', { class: 'field fine-set' },
+    h('summary', { class: 'field-h fine-sum' }, 'こまかい 設定'),
+    h('div', { class: 'fine-body' },
+      h('h4', { class: 'fine-h' }, '手の 作業'),
+      seg('handwork', HANDWORK.map(([v, l]) => [v, l]), { get: hwVal }), optDesc(HANDWORK, hwVal),
+      h('h4', { class: 'fine-h' }, '解体の 表現'),
+      seg('butcherView', BUTCHER_VIEW.map(([v, l]) => [v, l])), optDesc(BUTCHER_VIEW, () => st.butcherView),
+      h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: st.hints !== false ? true : null, onchange: (e) => { st.hints = e.target.checked; } }), h('span', null, '作業の ヒントを 出す'))));
+
   const left = h('div', { class: 'setup-main' },
     field('持っていく数', seg('count', COUNTS, { cls: 'wrap5' })),
     field('持ち物', h('div', { class: 'item-grid' }, cards.map(([, c]) => c)), hint),
@@ -214,7 +226,8 @@ export default function setup(ctx, data = {}) {
       keyRes,
       h('p', { class: 'muted small' }, 'キーは このブラウザの中だけに 保存され、Google の API 以外へは 送りません。なくても 遊べます（定型の 会話になります）。')),
     field('声・字幕', h('label', { class: 'chk' }, subChk, h('span', null, '字幕を 出す')),
-      h('div', { class: 'row gap center-y' }, h('span', { class: 'muted small' }, 'マイク'), seg('micMode', [['auto', '自動'], ['ptt', '押して 話す']]))));
+      h('div', { class: 'row gap center-y' }, h('span', { class: 'muted small' }, 'マイク'), seg('micMode', [['auto', '自動'], ['ptt', '押して 話す']]))),
+    fine);
 
   // ---- summary (always visible)
   const sumStars = h('div', { class: 'sum-stars' });
@@ -253,6 +266,9 @@ export default function setup(ctx, data = {}) {
       subtitles: !!st.subtitles, micMode: st.micMode, quality: s.quality || game.renderer?.quality, playerName: 'あなた',
     };
     if (st.companion !== 'none' && sm.cur && sm.cur.char === st.companion) out.companionSheet = JSON.parse(JSON.stringify(sm.cur));
+    out.handwork = hwVal(); out.butcherView = st.butcherView || 'mild'; out.hints = st.hints !== false;
+    try { saveSettings({ ...s, handwork: out.handwork, butcherView: out.butcherView, hints: out.hints }); } catch { /* ignore */ }
+    game.settings = { ...(game.settings || {}), handwork: out.handwork, butcherView: out.butcherView, hints: out.hints };
     if (st.apiKey) out.apiKey = st.apiKey;
     try { setApiKey(st.saveKey ? st.apiKey : ''); } catch { /* ignore */ }
     screens.show('loading', { text: '島に 向かっています…', progress: null });
