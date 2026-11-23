@@ -102,7 +102,7 @@ export function createLocomotion(ctx, P, steps) {
       }
     } catch { /* stub world */ }
     let target = F.curve * F.state * F.vigor * F.slope * F.road * F.tailwind * F.stride * F.water * F.arms * F.back;
-    if (!P.enabled || P.gliding) target = 0;
+    if (!P.enabled || P.gliding || P.climbing || P.mantling) target = 0;
     L.target = target;
     const tau = target > P.speed ? STEP.tauAccel : STEP.tauStop;
     P.speed += (target - P.speed) * ema(tau, dt);

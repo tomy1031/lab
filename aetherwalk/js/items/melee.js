@@ -189,7 +189,11 @@ export function createMelee(ctx, I) {
       st.swingHit = true;
       if (hit.part === 'armor' && !res.blocked) { haptic(hand, 'armor'); setTimeout(() => haptic(hand, 'armor'), 60); }
       else haptic(hand, strong ? 'strong' : 'weak');
-      I.fx('spark', h.point, { count: strong ? 16 : 8, color: inst.state.lit ? 0xffb347 : hit.part === 'armor' ? 0xfff1d6 : 0xffd76a, dir: _hitDir, speed: 3 });
+      if (I.radiance?.RADIANT.has(inst.id)) {
+        // the enchanted blade: a crisp flash at the impact (gold on a strong hit), the trail turns gold
+        I.radiance.hit(inst, h.point, strong);
+        if (strong) st.goldSwing = true;
+      } else I.fx('spark', h.point, { count: strong ? 16 : 8, color: inst.state.lit ? 0xffb347 : hit.part === 'armor' ? 0xfff1d6 : 0xffd76a, dir: _hitDir, speed: 3 });
       if (strong) I.fx('ring', h.point, { color: 0xfffbe8, size: 0.6 });
     } else {
       // a touch: no damage, just "tok"
@@ -219,8 +223,17 @@ export function createMelee(ctx, I) {
     const prevT = T.t[(T.head - 1 + HIST) % HIST];
     const win = Math.max(0.12, Math.min(0.3, now - prevT));
     const strong = st.speed >= (inst?.def?.melee?.strongSpeed ?? 4.5);
-    const bright = (tier >= 1 ? 0.7 : 0.55) * T.k;
-    const cr = 1, cg = strong ? 0.91 : 0.98, cb = strong ? 0.66 : 0.91;      // #fffbe8, half toward #ffd76a when strong
+    if (inst) T.radiant = !!I.radiance?.RADIANT.has(inst.id);
+    let bright = (tier >= 1 ? 0.7 : 0.55) * T.k;
+    let cr = 1, cg = strong ? 0.91 : 0.98, cb = strong ? 0.66 : 0.91;        // #fffbe8, half toward #ffd76a when strong
+    // the enchanted blade: a radiant white-cyan band with a cyan root; gold after a strong hit or with tailwind II
+    let rr = 0, rg = 0, rb = 0;
+    if (T.radiant) {
+      bright = (tier >= 1 ? 1.15 : 1.0) * T.k;
+      const gold = st.goldSwing || tier >= 2;
+      if (gold) { cr = 1; cg = 0.86; cb = 0.5; rr = 0.35; rg = 0.24; rb = 0.08; }
+      else { cr = 0.82; cg = 1; cb = 1; rr = 0.1; rg = 0.32; rb = 0.42; }
+    }
     const m = ctx.rig.matrixWorld;
     let j = 0;                                     // newest-first walk through the samples
     for (let i = 0; i <= SEG; i++) {
@@ -247,7 +260,7 @@ export function createMelee(ctx, I) {
       T.pos[o + 3] = _tt.x; T.pos[o + 4] = _tt.y; T.pos[o + 5] = _tt.z;
       const age = i / SEG;                          // 0 oldest → 1 newest
       const a = bright * age * age;
-      T.col[o] = 0; T.col[o + 1] = 0; T.col[o + 2] = 0;               // root: ×0
+      T.col[o] = rr * a; T.col[o + 1] = rg * a; T.col[o + 2] = rb * a;   // root: ×0 (radiant: a cyan glow)
       T.col[o + 3] = cr * a; T.col[o + 4] = cg * a; T.col[o + 5] = cb * a;   // tip: ×0.55
       j++;
     }
@@ -295,7 +308,7 @@ export function createMelee(ctx, I) {
         const m = inst.def.melee;
         // swing start / end
         if (st.armed && st.speed > 3) {
-          st.armed = false; st.swingStart = now; st.swingHit = false;
+          st.armed = false; st.swingStart = now; st.swingHit = false; st.goldSwing = false;
           ctx.events.emit('swing', { hand, itemId: inst.id, speed: st.speed, type: m.type });
           haptic(hand, 'whiff');
         } else if (!st.armed && st.speed < 2) st.armed = true;

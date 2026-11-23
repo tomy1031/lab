@@ -868,12 +868,13 @@ ctx.events = { on(name, fn) → off関数, once(name, fn), off(name, fn), emit(n
 | `region:enter` | A | `{ region, from }` |
 | `time:phase` | FABLE | `{ phase:'dawn'|'day'|'dusk'|'night', time }` |
 | `item:grab` | A | `{ uid, itemId, hand, from:'world'|'holster'|'bag', slot }` |
+| `item:hover` | A | `{ hand, itemId, source:'world'|'holster', uid, slot }`：手がつかめる範囲に入った物（世界の物は 0.25 m で入り 0.32 m まで保つ。ホルスターは中身のある枠・矢筒・手首の鈴）。離れたら `itemId: null`（`source`/`uid`/`slot` は離れた物のもの）。入りは 0.12 s、離れは 0.22 s 続いてから出す（つかんだ瞬間は待たずに離れを出す）。対象が替わるときは離れ→入りの 2 回。PC では右手が E キーで取るもの（足もと 1.5 m、なければ照準の先 2.5 m）を出す |
 | `item:release` | A | `{ uid, itemId, hand, to:'world'|'holster'|'bag', slot, speed }` |
 | `item:throw` | A | `{ uid, itemId, hand, speed }` |
 | `item:pickup` | A または B | `{ itemId, count }`（持ちものに入った） |
 | `item:consume` | A | `{ itemId, hand, how:'eat'|'drink' }`（効果は B が `defs.food` を見て適用） |
 | `item:use` | A | `{ itemId, action, hand }`（`'ring'` 鈴、`'fuse'` 点火、`'pour'`、`'fill'`、`'fan'`） |
-| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` |
+| `item:ignite` / `item:extinguish` | A | `{ uid, itemId }` / `{ uid, itemId, why:'burnout'|'water'|'wind'|'stowed'|'return' }`（ホルスターの中で水に沈んだときは `uid: null`） |
 | `item:cook` | A | `{ from, to }` |
 | `item:return` | A | `{ itemId }`（持ちものに戻った） |
 | `swing` | A | `{ hand, itemId, speed, type }`（先端 3 m/s を超えた瞬間に 1 回） |
@@ -1113,7 +1114,7 @@ export async function createItems(ctx) → Items
 
 Items = {
   defs,                                    // ITEM_DEFS
-  spawn(itemId, { pos, vel, state, owned, count } = {}) → ItemInstance,   // 世界に置く
+  spawn(itemId, { pos, vel, state, owned, count, quat } = {}) → ItemInstance,   // 世界に置く（quat を渡すと置かれたまま：§10.18）
   despawn(instance),
   held: { left: ItemInstance | null, right: ItemInstance | null },
   equip(itemId, hand = 'right') → ItemInstance,       // 手に持たせる（持ちものの数は変えない）
@@ -1340,16 +1341,21 @@ window.AW = {
 - **`item:consume`**：水筒は 1 口ごとに出す（`{ itemId:'flask', how:'drink', gulpsLeft }`、効果は `defs.flask.food` が 1 口ぶん）。食べものは食べ終えたとき 1 回（`bites` 口、0.4 s ごと）。
 - **`item:use` の action**：`'ring' 'fuse' 'pour' 'fill' 'fan' 'bite' 'nock'`。
 - **松明の燃える時間**：`instance.state.burnLimit`（秒）を書けば 180 s の代わりに使う（灯しの祠の 45 s 用。`ctx.items.held.right.state.burnLimit = 45`）。
+- **ホルスターの松明**：灯った松明をホルスターに差すと消えずに燃え続け、燃える時間はそのあいだ止まる（枠の上に小さな残り火が光る）。抜けばそのまま燃えている。袋にしまうと消える（`why:'stowed'`）。差したまま枠が水に沈むと消える。残り 30 s で炎が小さくなり揺らぐ。
 - **かけら・種・珠**：世界に置かれたもの（`items.spawn('shard', …)`）は 1 m 以内を通るか手で触れると `inventory.add` で集まる（`item:pickup` は inventory が出す）。数のある束（`count > 1`）はつかむと全部袋に入る。
 - **戻ってくる装備**：落とした・投げた自分の装備は 8 s 後か 25 m 離れると消え、`inventory.markIn(id)` と `item:return` を出す。
 - **追加のイベント**：`player:turn { yaw }`（スナップ／スムーズターン）、`player:recenter {}`。`hit` には `targetId, targetKind, applied, killed, blocked` が付く。
 - **`input.virtual` の追加**：`setLook(yawDeg, pitchDeg)` の yaw は**ワールドの向き**（0＝北）。ほかに `addLook, getLook, setHandOffset, setGuard, setHandPose('rest'|'guard'|'bow'|'drink'|'eat'|'pour'|'draw'), hold(btn, down), setStick, setReach, isSwinging`。`swing` の種類は `slashH slashV thrust throw fan shake`。
 - **`ctx.items` の追加**（player が使う）：`createInHand, grabWorld, nearestGrabbable, rayGrabbable, pull, cancelPull, drop, stow, isHeld, tipSpeed(hand), bowInfo(hand), budget()`。
 - **`AW.debug` の追加**：`events(name)`（直近のイベントの写し）、`clearEvents, spawnDummy(dx, dz), dummyState, spawnItem(id, dx, dz, dy), items(), heldItem(hand), addZone(kind, …), handTo, press, hold, look, budget(), stats()`。
-- **PC の手の置き場（ART_REVIEW A-P1-1/2）**：XR でないときだけ。何も持たない手は頭の空間で `[±0.24, −0.47, −0.46]`（画面の外）、持っている手は `[±0.22, −0.49, −0.55]`（親指を上にした握りは袖口が握りの 0.11 m 上に来るので、レビューの −0.36 より下げて手袋が下端から 6% 以内に収まるようにした）、盾は `[−0.34, −0.46, −0.50]` で面を外へ 35°。`setHandPose('raise')` は松明を前に掲げる。
+- **PC の手の置き場（ART_REVIEW A-P1-1/2）**：XR でないときだけ。何も持たない手は頭の空間で `[±0.24, −0.47, −0.46]`（画面の外）、持っている手は `[±0.22, −0.52, −0.55]`、刃を 11° 上げ手首を 45° 返す（手袋は画面の外、刃の平らな面と光の筋が下 1/3 に見える。レビューの −0.36 では袖口が入るため下げた）、盾は `[−0.34, −0.46, −0.50]` で面を外へ 35°。`setHandPose('raise')` は松明を前に掲げる。
 - **鍛え直し**：近接の `base` と突きに `ctx.game.inventory.temper[itemId]`（0〜3）を足す。game がスタブなら 0。
 - **滑空の追い風**：player は `spendStamina` を呼ばない（§10.19）。`vitals.stamina ≤ 0` のときだけ降下を 3 m/s にする。
 - **小さな光の共有描画**（OPUS-A 内部）：水色の宝石（手袋の袖口・盾・剣の鍔）は 1 つの `InstancedMesh`（`art.basic #7fe9ff`）、拾えるものと夜の宝石のにじみは 1 つの加算 `art.basic` のカメラ向き四角（`glow-sprites`）、矢と石の足もとの影も 1 つ（`item-shadows`）。数が増えてもドローコールは増えない。`AW.debug.budget()` は場面を数えて OPUS-A の実際のドローコール・三角形を返し、`AW.debug.coverage(pattern, w, minLum)` は名前の合う物だけを描いて画面の占有率を返す（受け入れ確認用）。
+- **置かれた物（台座の剣）**：`items.spawn(id, { pos, quat, owned })` で `quat` を渡すと「置かれた」物になり、地面へ落としたり寝かせたりせず、その位置と向きのまま眠る（台座の上に立てた剣など）。手に取ると普通の物に戻る。つかむと `item:grab { from:'world' }` が出て、装備（`stack: 1`）は inventory が持ちものに加える。PC の E で腕の届かない物（1.5 m 以内）は手もとへ引き寄せる。
+- **剣の輝き**（`js/items/radiance.js`）：剣（`sword`）は手にあるときも世界にあるときも、自分のメッシュ（鋼と金の 2 グループ）に加算の光のメッシュ 1 枚を重ねる（樋の光の筋と菱形の刻印・刃を包む淡い光・漂う光の粒・鍔の宝石の輝き・当たりの瞬間の十字の閃光。光の帯と粒はカメラを向く）。振ると明るく、強打で金、`vitals.tier ≥ 2`（追い風 II）で金がかる。昼は控えめ、夜に強い。持つと +1 ドローコール。剣だけは世界でも共有の InstancedMesh を使わない。
+- **タイトルの「つづきから／はじめから」**：記録（`aetherwalk.save.v1`）があるときだけ、ランディングの VR／PC ボタンの上に 2 つの選択を出す（つづきからが既定。一行の要約＝いまの目標・歩数・遊んだ分・記録した日時は記録そのものから読む）。はじめからを選ぶと一度だけ「記録を消して、はじめから始めますか？」と聞き（フォーカスは いいえ、Esc でも いいえ）、はい で `game.reset()` を呼んで `game:new { ok }` を出す。記録がない・`?fresh`・自動デモでは選択を出さない。
+- **`ctx.app`**（main.js）：`ctx.app.toTitle()` は記録を書き、XR 中なら抜け、手首のメニューを閉じ、世界を止めて（`pause { reason:'title' }`）選択を出し直したランディングへ戻す（Promise）。VR／PC ボタンで再開すると止めた世界は動きだす。`ctx.app.mode` は `'landing'|'desktop'|'xr'`。
 - **CSS**：`tools/build.mjs` は `css/` を配らないので、ランディングと PC 表示の CSS は `index.html` に直接書いた。PC 表示で OPUS-A が使う要素は `#aw-hint`（クリックで開始）`#aw-reticle` `#aw-back`。`#aw-overlay` の中身は OPUS-B。
 
 ### 10.19 OPUS-B の補足（実装から決めたこと。既存の API は変えていない）
@@ -1368,6 +1374,68 @@ window.AW = {
 - **UI**：`?vrhud` で PC 表示でも VR の HUD（浮く板・腕輪・トースト・立体の手首メニュー）を描く（確認用）。手首メニューは Y ボタン、または XR 中に上げた左手首を 0.6 s 見つめると開く。開いている間 `body.awui-menu-open`（PC では `#aw-hint` を隠す）。X ボタンの道しるべは items/waybell.js が扱う（UI は扱わない）。
 - **音**：`audio.play(name, { pos, gain })` の名前は `step swing hit block deflect telegraph attack hurt dodge death respawn enemyDeath explosion bowDraw bowRelease bolt fireLit crackle eat drink heal waybell fan holsterIn holsterOut shard item lift towerBell bellSmall miss click tick beat` と `'sting:<region|vista|bell|shrine|seed|chest|dawn|quest|combatStart|combatEnd|ending|item>'`。
 - **自動プレイ**：開始時に stage 2 まで進め（チュートリアルを飛ばす）、盾を持たせ、`items.equip` で剣と盾を持つ。近い敵と戦い（予告には しゃがむ／横へ／3 回に 1 回は盾）、鐘塔では昇降台を足踏みで昇って鐘を打ち、頂上から滑空で降りる。
+
+### 10.20 v2 の契約・OPUS-A 分（DESIGN_V2 §5.3。実装済みのものから順に書く）
+
+- **ジャンプ**（A1）：`player.jump()` → boolean（いま跳んだ。空中・着地直後の押しは 0.1 秒覚えて着地と同時に跳ぶので false）。A ボタン（右）／PC は Space。初速 4.3 m/s（`vitals.tier === 2` で ×1.1）、頂点 0.95 m・滞空 0.88 s。踏み切りの横速度を保ち、空中は頭の向きへ ≤ 1.5 m/s² で曲がるだけ（止まって跳ぶと真上）。縁から落ちて 0.12 s 以内は跳べる。連続は着地後 0.25 s から。跳べないとき：`vitals.speedMul < 0.01`（昇降台・凪の領域）、`player.climbing`、`player.noJump = true`（会話のはい／いいえの間など、だれでも立ててよい）。落差 2 m 以上の着地で土ぼこりと両手の振動（ダメージなし）。`edgeGuard` は地面にいる間だけ（跳べば越えられる）。跳んだあとは高さを問わず風衣が開く（`abilities.glide` のとき）。
+- **状態**：`player.airborne`（地面にも壁にもいない）、`player.jumping`（ジャンプの空中）、`player.climbing`、`player.climb`（A3）。`player.body.hitTest` は跳んでいる間も今の頭と胸で判定する（跳んでも `line` はよけられない）。
+- **イベント**：`player:jump { vy }`、`player:land { fall }`（v1 のまま）。
+- **設定**：`jumpView`（`'full'`／`'soft'`＝目に見える上昇を半分。移動と当たりは同じ）、`gestureJump`、`climbAssist`、`parryWindow`（`'normal'` 0.12 s／`'wide'` 0.2 s。`seated` でも wide）、`dash`、`talkGesture`（`'wave+gaze'`／`'button'`）。
+- **ジャンプ中のビネット**：上昇・下降（|vy| > 1 m/s）の間は 0.6 以上、`vignette: 1` でも強の輪。
+- **盾の判定**（A2）：`items.blockTest(shape, fromPos)` → `{ blocked, parry, perfect, guardBreak, pushAgo, itemId, hand, point }`（使い回しの物。保持するならコピー）。
+  - `parry`：当たる前 0.25 s 以内に盾の面を 1.5 m/s 以上で攻撃の元へ押し出した（v1）。
+  - `perfect`：その押し出しが当たる前 `parryWindow` 以内（0.12／0.2 s）。items が盾の前に金の輪と十字の光と火花を出し、`ctx.slowmo(0.3, 0.3)` を呼び、盾の手を 1.0／60 ms → 0.6／40 ms で鳴らす。敵の崩れ・`parry:perfect`・`enemy:break` は game（B1）。
+  - `guardBreak`：`shape.heavy`（game が付ける）の攻撃を押し出さずに受けた。`blocked: true` のまま返す（ダメージ半分・`guard:break` は game）。その盾は 0.8 s 何も受けず（`items.shieldBroken(hand)`）、外へはじかれてくすむ。手は 0.7／200 ms。
+  - `pushAgo`：押し出しから当たりまでの秒（パリィのときだけ、ほかは −1）。
+- **`ctx.slowmo(scale, seconds)`**（`core/loop.js`）：実時間で `seconds` のあいだ、game・world（粒子）・items の飛び道具に渡す `dt` に `scale` を掛ける。player・input・ui・audio・手に持った物は実時間。重ねて呼ぶと小さい方の倍率・遅い方の終わり。一時停止中は無効（false）。いまの倍率は `ctx.clock.slow`（1 = ふつう）。呼ぶたび `slowmo { scale, seconds }` を出す。
+- **登る**（A3、`js/player/climb.js`）：面は `world.climb`（W2）。テスト用に `AW.debug.addClimb({ x, z, yaw, width, y0, y1 })` の仮の面も同じ形で足せる。
+  - 空の手が面の 0.25 m 以内でグリップ（grab.js の順番：矢筒 → ホルスター → 手首の鈴 → **登り面** → 世界の物 → 引き寄せ）→ その手を握った場所に固定し、`climb:grab { hand, surfaceId, point }`、振動 0.5／30 ms、握った点に水色の光。物を持っている手では掴まない（もう片手で使える）。空中でも掴める（跳びつき）。
+  - 固定中はリグを「先に動く手（あとから握った手）の動きの逆」に 1 対 1 で動かす。頭は面から 0.25 m 手前に保つ。登っている間は足踏みの移動・重力・ジャンプを止める（スナップターンは使える）。`player.climbing = true`、`player.climb = { surfaceId, hands: { left, right } }`（握っている手が true）、`player:climb { on, surfaceId }`。
+  - 両手を離すと落ちる（足もと 0.6 m 以内に地面か休み棚があれば立つ。落下ダメージなし）。頭が上端 −0.3 m より上で手を離すか、上端 +0.2 m まで引き上げると 0.25 s で `topExit` へ（`player.mantling`、ビネット強）→ `climb:top { surfaceId }`。
+  - 追い風（`vitals`）：握っている間 −3/s、0.25 m 引き上げるごとに +2。0 のときは握りが 1.5 s でずり落ち（0.8 m/s）→ `climb:slip {}` で離れる。休み棚の足踏みでの回復は v1 の歩数のまま（game）。
+  - `climbAssist`（または `seated`）：握っている間 0.8 m/s で昇る。壁で A（Space）→ 頭の向き（壁の外向きに限る）へ 3.5 m/s・上へ 3 m/s で跳び離れる。PC：壁の前で E（両手で掴む・もう一度 E で離す）、W で登る、S で下りる。
+  - ビネット：壁の上で 1 m/s 以上動く間と乗り越えの間。
+- **身ぶり**（A4、`js/player/gestures.js`）：`gesture { kind:'wave'|'nod'|'shake', hand }`。手を振る＝肩より上の手が左右に 3 回折り返す（7 cm 以上、1.2 s 以内、`hand` 付き）。うなずく＝頭のピッチが 3 回折り返す（6° 以上、1.0 s 以内、ヨーはほぼ動かない）。首を振る＝ヨーが 3 回折り返す（7° 以上、1.0 s 以内、ピッチはほぼ動かない）。走り・滑空・登り・武器を速く振っている間は出さない。うなずき・首振りは足踏みしていない（`gait === 'idle'`）ときだけ。同じ身ぶりは 1.2 s に 1 回。話しかけ方・はい／いいえへの結びつけは game（B2）。
+- **`AW.debug`**：`jump()`、`parry('perfect'|'normal'|'late')`（次に盾が受ける攻撃に合わせて押し出しを合成。向き・構えの判定は省く）、`addClimb(o)` → id、`climb(id, ratio)`（両手で掴まった状態で高さの割合 0..1 に置く）、`pull(dy = 0.4)`（先の手を dy 引き下げ、もう片手を上で握り直す合成）、`letGo()`、`climbs()`、`state()` に `airborne climbing slow`。
+
+### 10.21 v2 の契約・OPUS-B 分（DESIGN_V2 §5.3。実装済みのものから）
+
+- **返しの流れ**（B1）：`enemies.data.js` の攻撃に `heavy: true`（殻の `slam`・砂潜りの `charge`・番人の `beam` `quake`）と `chain`/`chainGap`（殻の `sweep2`：横なぎ → 0.5 s → `slam`）。game は攻撃の形に `shape.heavy` を付けて `items.blockTest` を呼び、戻り値の `perfect`／`guardBreak` で決める（§10.20）。
+  - ジャスト受け → `parry:perfect { enemyId, attack, pos, hand }`、敵は状態 `'break'`（崩れ）2.5 s（砂潜り 3.5 s・番人 3 s）で `enemy:break { id, type, duration }`、終わると `duration: 0` でもう一度出す。追い風 +15（`block` の +10 に +5）。光弾は `×2` の速さで戻り、当たった敵を崩す。
+  - 返し斬り：`'break'` の敵への最初の一撃（`hit.speed ≥ 3` か speed なし、火以外）はダメージ ×2.5（`vitals.damageMul` と合わせて上限 ×3）。`counter { id, type, damage, killed }`。倒れなければ大きく押し戻してのけぞり（崩れは終わる）。ヒットストップ 85 ms。
+  - ガード崩れ：`guard:break { enemyId, attack, hand }`、被ダメは攻撃の半分（`vitals.damage(…, { guardBreak: true })`）。
+  - 見切り：`dodge:just { enemyId, attack }`。`high` はしゃがみ始め（頭が立った高さの 0.93 を切った時刻）が当たりの 0.2 s 以内、`line`/`sphere` は 0.2 s 前の立ち位置が当たりの中だったとき。敵は 1.2 s よろけ、追い風 +12（`player:dodge` の +8 に +4）。
+  - 予告の最後 0.25 s に `enemy:cue { id, type, attack, pos, mercy }`（金の光 1 つ＝`art.glow` を使い回す。崩れの的が優先）。`mercy: true`（稽古・盾を拾ったあと最初の殻の 2 回）のとき ui が盾の前に「いま！」。
+  - 状態 `'break'` は `enemies.inCombat()` に入る。`enemies.lastBlock`（`{ result, perfect, pushAge, heavy }`、最後に受けた一撃）、`enemies.breakEnemy(e, s)`、`enemies.slowNow`。
+- **盾の稽古**（`game/drill.js`）：`game.drill = { active, progress: { phase, good, need }, dummy, ready(), start(near?), stop() }`。`drill:start / drill:ready / drill:progress { good, need } / drill:end { done }`、言葉は `ui:float { text, en, pos, ms }`（ui/labels がその位置に出す）。完了で `quest.flags.drill` を数える。
+- **人**（B2、`game/npcs.js`・`npcs.data.js`・`ui/talk.js`）：`game.npcs = { list, byId, talk(id), near(x, z, r), answer(yes), skip(), pressTalk(), talking, nearId }`。人は `world.folk.spawn` で作り（位置は `world.spawnPoints.npcs`）、`pos` と `yaw`（度）を毎フレーム書く。MVP は `gando` `towa` `mio` `sora` `zaji`。
+  - せりふ：`npcs.data.js` の `talks: [{ id, when(s), lines | lines(s), action | ask/yes/no }]`、`s = { n, stage, met, drill, has(id), said(talkId) }`。1 行 24 字まで。上から最初に合うもの。
+  - 出現：トワは剣のあと（`stage ≥ 2` か剣を持つ）。鐘 1〜3 つでは次の鐘塔の扉の前 7.5 m、4 つで `pier`。双子は 8 m より遠いと追いかけっこ。ザジは 14 m 以内でつた壁の登り方を見せる。
+  - 会話：6 m で `lookAt`、3 m で `npc:near { id, name, en }`（id null で離れた）。始め方：指してトリガー（手の −Z から 12° 以内、7 m）・1.6 m で 0.8 s 見つめる（`talkGesture` が `'button'` 以外）・`gesture { kind:'wave' }`（A4）・PC の E（`pressTalk`）。`npc:talk { id, name, en, line, i, of, pitch, pos, ask? }` を 1 行ずつ（2.8 s、トリガー／空の手のグリップ／E で送る）、問いは `npc:ask { id, text }` → `gesture nod/shake`、A／B、PC の Y／N（問いの間は `player.noJump`）。`npc:end { id, finished, answer }`。4 m 離れる・`enemies.inCombat()` で終わる。
+  - 行い：`action: 'smith'` は鍛え直しか稽古ができるときだけ `npc:menu { page: 'smith' }` → ui が手首メニューの隠しページ「ガンド爺の鍛え直し」（鍛え直し 2 行＋盾の稽古の開始）を開く。休むページから鍛え直しは外した。`'drill'` は `game.drill.start()`。
+  - 保存：`quest.flags.npc[id] = { met, last, said: { talkId: 1 } }`。
+  - 声：audio が `npc:talk` で合成の「ぽぽぽ」（`pitch` が人ごとの高さ、音の数は行の長さ）。
+  - `game.debug.npcs()` → `[{ id, x, z, visible, pose }]`、`game.debug.talk(id)`。
+- **宝箱の高さ**：`spawnPoints.chests[i].y` があれば、2D で 1.5 m 以内かつ高さの差 2 m 未満で開く（アーチの上の箱は下から開かない）。
+- **手首メニュー「記録」**：「タイトルへ戻る」（保存してから `ctx.app.toTitle()`。無ければ出さない）。
+- **しゃがみの深さ**：`high` の当たりの線は立った高さ ×（0.78、`duckDepth: 'shallow'` は 0.86）＋0.02。`player.ducking` なら必ずよけ。
+- **`game.debug`**：`parry(kind, attackId?)`（次の一撃に合成の盾：`'perfect'|'normal'|'late'|'guard'`。attackId で最寄りの敵の次の技を決める）、`slow()`、`drill(on)`。
+
+### 10.22 v2 の契約・世界分（DESIGN_V2 §5.1・§5.2・§5.3。W1・W2、実装済み）
+
+- **人形**（W1、`js/world/folk.js`）：`world.folk = { spawn, remove, list, looks, poses }`。
+  - `spawn({ id, kind: 'adult'|'child'|'elder'|'wataduno', look, x, z, yaw, y? })` → Folk。`yaw` は**度**（0 = 北、時計回り）。`y` を省くと `groundAt`。
+  - `look`：省くと `id` の名前（`towa` `gando` `mio` `sora` `ruka` `zaji` `yukime` `toto` `en`）のひな形、文字列ならひな形の名前（ほかに `pilgrim` `pilgrim2` `pilgrim3` `keeper` `wataduno` `caravan`）、オブジェクトならひな形に重ねる。§5.3 の `{ coat, hood, skin, hat, prop }` も受ける：`hood` に色 → 頭巾、`hat` は `'hair'|'hood'|'brim'|'beard'|'fur'`、`prop` は `'staff'|'hammer'|'rod'|'basket'|'lantern'|'none'`。色は 16 進。
+  - `Folk = { id, kind, look, pos, yaw, visible, headPos, handPos, pose, seat?, setPose(name, t = 0.25), lookAt(vec3 | null), setTalk(0..1) }`。`pos`・`yaw` は持ち主が毎フレーム書く（`pos.y` も持ち主が合わせる）。`headPos`／`handPos` は描かれている間だけ毎フレーム更新（読むだけ）。`seat`（m、既定 0.42）は `sit`／`sleep` の腰の高さ（0.25 未満で地面に座りひざを立てる）。
+  - ポーズ：`idle walk run sit talk wave nod cheer cower climb work sleep dance`（`world.folk.poses`）。歩き・走りの足の運びは `pos` の動いた速さに合わせる（すべらない）。綿角は `idle`／`work`（草を食む）`walk` `run` `sit`／`sleep`。`look: 'caravan'` で荷鞍つき。
+  - 描くのは、カメラから 45 m 以内の近い人 8 人と綿角 4 頭だけ（背中側 5 m より遠い人は描かない）。体の形（体格・かぶりもの・持ちもの・重ね着・すそ）ごとに 1 つのメッシュで、同じ形の人は 1 回で描く。部位の行列と色は float テクスチャ（48×8）から頂点シェーダーが読む。ドローコール＝見えている形の数＋丸い影 1＋綿角 1（野営地の 4 人で 4、8 人がみな違う形でも 10）。三角形は 1 人約 900〜1,150、綿角 1 頭 800（8 人で約 8.3k）。灯った風見の灯の近くでは火の色で照らされる。
+- **人の立ち位置**：`world.spawnPoints.npcs = { gando, mio, sora, towa, zaji: { id, x, z, yaw, region, near } }`（`layout.js` の `NPC_SPOTS`）。野営地の稽古の木人 `dummy_camp`（prop kind `dummy`）は焚き火の西 5.6 m (−35.6, 470.4)、ガンド爺の立ち位置のとなり。
+- **登り面**（W2、`js/world/climb.js`）：`world.climb = { list, byId, grabAt(handPos, out), near(x, z, r, out = []) }`。
+  - 面：`{ id, kind: 'vine'|'pegs', x, z, yaw, width, y0, y1, pegs: [{ u, v }], ledges: [{ v, depth }], topExit: { x, y, z }, region, n: { x, z }, r: { x, z } }`。`yaw` と `n` は面の**外向き**。`(x, y0, z)` は面の下の辺のまん中。面の座標 `u` は `r` の向き（壁に向かって立った人の右手）、`v` は `y0` からの高さ。手は面の 0.12 m 手前（`n` の向きに +0.12）にあるとして判定する。
+  - `grabAt`：つたは面のどこでも（面の奥 0.15 m 〜手前 0.37 m）、楔はいちばん近い楔が 0.25 m 以内。true のとき `out.id`、`out.point`（面の上の掴む点、Vector3）、`out.normal`（外向き）、`out.u`、`out.v`。楔は 0.58 m おきの 2 列の互い違いで、最後の段は上の縁（`v = 高さ − 0.12`）で乗り越えに使う。
+  - 休み棚と上（`topExit`）は `addPlatform` ずみ（`surfaceAt` は `'rock'`）。面は `raycastSolid` で `'structure'`（矢が刺さる）、壁の前に歩いてめりこまない。アーチの背は外の斜面から頂（約 62 m）まで歩ける足場。
+  - MVP の 2 か所：`climb_mesa` つた壁 14.5 m（茜の台地の西の崖、峡谷の灯から見える。西の坂を回る道 約 310 m → 約 170 m の近道。ふもとに崩れ石の坂を盛った）、`climb_arch` 楔 35 本・約 21 m（風穴のアーチの北の脚に寄りそう岩の柱。上でアーチの背へ。背に宝箱 `chest_honey_arch`、`spawnPoints.chests[].y` あり）。ザジの立ち位置はつた壁のふもと。
+  - 見た目は 1 か所 1 ドローコール、80 m より遠い面は描かない。掴めるものは水色に光る（つたの節の花、楔の頭の輪、下の 3 つの握りのにじみ）。
 
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 

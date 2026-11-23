@@ -5,9 +5,9 @@
     "z": 532,
     "yaw": 0,
     "t": 7,
-    "fps": 2,
-    "drawCalls": 73,
-    "triangles": 142783
+    "fps": 10,
+    "drawCalls": 76,
+    "triangles": 140093
   },
   {
     "name": "vista_v_tower",
@@ -15,9 +15,9 @@
     "z": 328,
     "yaw": 300,
     "t": 17.5,
-    "fps": 2,
+    "fps": 4,
     "drawCalls": 52,
-    "triangles": 127835
+    "triangles": 127385
   },
   {
     "name": "vista_v_elder",
@@ -25,9 +25,9 @@
     "z": 108,
     "yaw": 232,
     "t": 10,
-    "fps": 4,
-    "drawCalls": 54,
-    "triangles": 103822
+    "fps": 2,
+    "drawCalls": 53,
+    "triangles": 102834
   },
   {
     "name": "vista_v_arch",
@@ -35,9 +35,9 @@
     "z": 120,
     "yaw": 285,
     "t": 18.25,
-    "fps": 1,
+    "fps": 2,
     "drawCalls": 68,
-    "triangles": 128081
+    "triangles": 128725
   },
   {
     "name": "vista_v_aurora",
@@ -45,9 +45,9 @@
     "z": -330,
     "yaw": 320,
     "t": 23,
-    "fps": 4,
+    "fps": 2,
     "drawCalls": 50,
-    "triangles": 97937
+    "triangles": 98137
   },
   {
     "name": "vista_v_cape",
@@ -55,9 +55,9 @@
     "z": 496,
     "yaw": 90,
     "t": 5.75,
-    "fps": 1,
+    "fps": 3,
     "drawCalls": 42,
-    "triangles": 77182
+    "triangles": 77082
   },
   {
     "name": "vista_v_pier",
@@ -65,8 +65,8 @@
     "z": 118.6,
     "yaw": 0,
     "t": 21,
-    "fps": 2,
+    "fps": 4,
     "drawCalls": 51,
-    "triangles": 113207
+    "triangles": 112535
   }
 ]

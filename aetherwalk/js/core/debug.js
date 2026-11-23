@@ -6,8 +6,8 @@ import { createDummy } from './stubs.js';
 const SRGB = Uint8Array.from({ length: 256 }, (_, v) => { const l = v / 255; return Math.round(255 * (l <= 0.0031308 ? 12.92 * l : 1.055 * l ** (1 / 2.4) - 0.055)); });
 
 // names of everything OPUS-A draws (hands, items, their effects, comfort aids)
-const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
-const LOGGED = ['step', 'gait', 'hit', 'swing', 'item:grab', 'item:release', 'item:throw', 'item:consume', 'item:use',
+const MINE = /^(glove-|item-|items-|glow-sprites|item-shadows|item-streaks|gems$|swing-trail|sword-aura|vignette|center-ring|holster-|grab-aim-|bowstring|flame-cone|torch-glow|torch-core|bomb-spark|gale$|gem$)/;
+const LOGGED = ['step', 'gait', 'hit', 'swing', 'item:grab', 'item:hover', 'item:release', 'item:throw', 'item:consume', 'item:use',
   'item:ignite', 'item:extinguish', 'item:cook', 'item:return', 'item:pickup', 'projectile:fire', 'explosion', 'gust',
   'player:duck', 'player:glide', 'player:land', 'player:teleport', 'region:enter', 'pause', 'perf:level', 'xr:start', 'xr:end'];
 
@@ -45,6 +45,21 @@ export function installDebug(ctx, loop) {
 
   Object.assign(d, {
     teleport(x, z, yawDeg = 0) { pl().teleport(+x, +z, +yawDeg || 0); return d.state(); },
+    /** DESIGN_V2 §5.3: jump now (true) or false (in the air it fires on landing within 0.1 s) */
+    jump() { return !!pl()?.jump?.(); },
+    /** DESIGN_V2 §5.3 climbing: a temporary surface { x, z, yaw (outward, °), width, y0, y1 } → id (world.climb is used too) */
+    addClimb(o) { return pl()?.climbing_?.addTemp(o) ?? null; },
+    /** hang on a climbing surface at a height ratio 0..1, both hands gripped */
+    climb(id, ratio = 0) { return !!pl()?.climbing_?.debugClimb(id, +ratio || 0); },
+    /** one pull of dy m (the leading hand pulled down, the other regrips above) */
+    pull(dy = 0.4) { return !!pl()?.climbing_?.debugPull(+dy || 0.4); },
+    /** re-anchor the gripping hands where they are (after moving virtual hands onto the wall) */
+    regrip() { return !!pl()?.climbing_?.regrip(); },
+    /** let go of the wall with both hands */
+    letGo() { const c = pl()?.climbing_; if (!c) return false; let r = false; for (const h of ['left', 'right']) r = c.release(h) || r; return r; },
+    climbs() { return (pl()?.climbing_?.surfaces() || []).map((s) => ({ id: s.id, kind: s.kind, x: s.x, z: s.z, y0: s.y0, y1: s.y1, topExit: s.topExit })); },
+    /** DESIGN_V2 §5.3: the next attack the shield meets is met by a push: 'perfect' | 'normal' | 'late' */
+    parry(kind = 'perfect') { return !!ctx.items?.debugParry?.(kind); },
     setTime(hours) { ctx.world?.setTimeOfDay?.(+hours); },
     hud(visible = true) {
       try { ctx.ui?.setHudVisible?.(!!visible); } catch (e) { AW.errors.push('ui.setHudVisible: ' + e.message); }
@@ -68,6 +83,7 @@ export function installDebug(ctx, loop) {
         fps: loop.stats.fps, drawCalls: loop.stats.drawCalls, triangles: loop.stats.triangles,
         maxHp: v.maxHp ?? 0, maxStamina: v.maxStamina ?? 0,
         gait: p.gait || 'idle', grounded: !!p.grounded, gliding: !!p.gliding, ducking: !!p.ducking,
+        airborne: !!p.airborne, climbing: !!p.climbing, slow: (ctx.clock.slow ?? 1) < 1,
         held: { left: held.left ? held.left.id : null, right: held.right ? held.right.id : null },
         enemies,
         stage: ctx.game?.quest?.stage ?? 0,

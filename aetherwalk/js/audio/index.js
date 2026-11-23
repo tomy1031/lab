@@ -159,6 +159,28 @@ export async function createAudio(ctx) {
   });
   on('item:ignite', () => play('fireLit'));
   on('fire:lit', (p) => play('fireLit', { pos: p.pos }));
+  on('fire:catching', (p) => play('catching', { pos: p.pos }));
+  on('item:extinguish', (p) => { if (p.itemId === 'torch') play('fizzle'); });
+  // the counter flow (DESIGN_V2 §4.2): the ambience dips for the perfect parry's slow moment
+  const hums = new Map();
+  const stopHum = (id) => { const f = hums.get(id); if (f) { f(); hums.delete(id); } };
+  on('parry:perfect', () => {
+    play('parryPerfect');
+    try { const g = buses.amb.gain, t = ac.currentTime; g.cancelScheduledValues(t); g.setTargetAtTime(0.15, t, 0.03); g.setTargetAtTime(vol('volSfx', 1) * 0.75, t + 0.3, 0.15); } catch (e) { /* ignore */ }
+  });
+  on('enemy:break', (p) => {
+    stopHum(p.id);
+    if (!(p.duration > 0) || muted || !live()) return;
+    try { hums.set(p.id, sfx.breakHum({ dur: p.duration })); } catch (e) { /* ignore */ }
+  });
+  on('counter', (p) => { stopHum(p.id); play('counter'); });
+  on('enemy:death', (p) => stopHum(p.id));
+  on('guard:break', () => play('guardBreak'));
+  on('enemy:cue', (p) => play('cue', { pos: p.pos }));
+  on('dodge:just', () => play('justDodge'));
+  on('npc:talk', (p) => { if (p.line) play('voice', { pitch: p.pitch || 1, n: Math.max(2, Math.min(7, Math.round(p.line.length / 4))), pos: p.pos }); });
+  // a Nagi recoiling at a fire's edge: a short hiss and a crackle where it turned back
+  on('enemy:recoil', (p) => { play('fizzle', { pos: p.pos }); play('crackle', { pos: p.pos }); });
   on('tower:lift', (p) => { if (ctx.game && ctx.game.towers && ctx.game.towers.onLift) play('lift', { ratio: p.ratio || 0 }); });
   on('tower:awake', () => { play('towerBell'); setTimeout(() => play('sting:bell'), 900); });
   on('bell:ring', (p) => { if (!p.strong) play('bellSmall', { pos: p.pos }); else if (String(p.id).startsWith('seed')) play('bellSmall', { pos: p.pos }); else play('towerBell'); });

@@ -1,6 +1,8 @@
 // js/world/spawns.js — FABLE
 // layout.js の配置を実際の地形に合わせて確定する（急斜面・水・木を避けて少しずらす）→ world.landmarks / vistas / spawnPoints と、しかけの定義。
-import { LANDMARKS, LM, VISTAS, TOWERS, SHRINES, TORCH_TARGET, WAYLIGHTS, CHESTS, BLOCKERS, SEEDS, ENEMIES, GATHER, LAKE_LEVEL } from './layout.js';
+import { LANDMARKS, LM, VISTAS, TOWERS, SHRINES, TORCH_TARGET, WAYLIGHTS, CHESTS, BLOCKERS, SEEDS, ENEMIES, GATHER, LAKE_LEVEL, NPC_SPOTS, DUMMY_CAMP } from './layout.js';
+import { buildClimbSurfaces, archTopY } from './climb.js';
+import { toWorld } from './landmarks/common.js';
 
 export function buildSpawnPoints(env) {
   const { hf, col } = env;
@@ -42,7 +44,8 @@ export function buildSpawnPoints(env) {
   };
   const yawTo = (x, z, tx, tz) => ((Math.atan2(tx - x, -(tz - z)) * 180 / Math.PI) + 360) % 360;
 
-  const spawnPoints = { player: { x: LM.start.x, z: LM.start.z, yaw: 0 }, waylights: [], towers: [], shrines: [], chests: [], seeds: [], enemies: [], gather: [] };
+  const spawnPoints = { player: { x: LM.start.x, z: LM.start.z, yaw: 0 }, waylights: [], towers: [], shrines: [], chests: [], seeds: [], enemies: [], gather: [], npcs: {} };
+  for (const id in NPC_SPOTS) spawnPoints.npcs[id] = Object.assign({ id }, NPC_SPOTS[id]);
 
   // 風見の灯
   for (const id of WAYLIGHTS) {
@@ -85,6 +88,13 @@ export function buildSpawnPoints(env) {
   for (const b of BLOCKERS) blockerOf[b.id] = b;
   const usedBlockers = new Set();
   for (const c of CHESTS) {
+    if (c.onArch) {
+      // アーチの背の上（登って行く宝箱）。y を持つ
+      const def = landmarks.great_arch, p = toWorld(def, c.onArch.lx, 0, c.onArch.lz), y = def.y + archTopY(c.onArch.lx);
+      spawnPoints.chests.push({ id: c.id, x: p.x, z: p.z, y, yaw: c.onArch.yaw, loot: c.loot, hiddenBy: null });
+      addProp(c.id, 'chest', p.x, p.z, c.onArch.yaw, { loot: c.loot }, 0.8, y);
+      continue;
+    }
     if (c.pedestal) {
       const l = landmarks.camp_meadow;
       const y = hf.heightAt(c.x, c.z);
@@ -153,14 +163,19 @@ export function buildSpawnPoints(env) {
     else if (g.kind === 'bush') addProp(id, 'bush', p.x, p.z, (g.x * 11 + g.z) % 360, { fruit: g.count, itemId: g.itemId }, 0.6, y);
   }
   // そのほか：木人、台座の剣は上で追加ずみ、光の橋、飾りの燭台
+  // brazier_camp_path：野営地の手前 13 m、南の道の東脇。消えた松明をゴールの近くで付け直せるように（火の手ほどきの救済）
   const st = landmarks.start;
   addProp('dummy_start', 'dummy', st.x + 4.4, st.z - 3.2, 250, {}, 0.45, st.y + 0.3);
+  // 野営地の稽古の木人（DESIGN_V2 §4.6。ガンド爺が横に立つ）
+  addProp('dummy_camp', 'dummy', DUMMY_CAMP.x, DUMMY_CAMP.z, DUMMY_CAMP.yaw, {}, 0.45);
   addProp('lightbridge', 'lightbridge', landmarks.pier.x, landmarks.pier.z, 0, {}, 2, LAKE_LEVEL + 1.15);
-  const deco = [['brazier_bridge', 141, 240], ['brazier_hollow', -552, -112], ['brazier_arch', 396, 100], ['brazier_nest', 548, -138], ['brazier_ice', 126, -318], ['brazier_isle_w', -7, 2], ['brazier_isle_e', 7, 2], ['brazier_start', -4.6, 533.5]];
+  const deco = [['brazier_bridge', 141, 240], ['brazier_hollow', -552, -112], ['brazier_arch', 396, 100], ['brazier_nest', 548, -138], ['brazier_ice', 126, -318], ['brazier_isle_w', -7, 2], ['brazier_isle_e', 7, 2], ['brazier_start', -4.6, 533.5], ['brazier_camp_path', -22.4, 480.5]];
   for (const [id, x, z] of deco) {
     if (id === 'brazier_start') { addProp(id, 'brazier', x, z, 0, {}, 0.5, st.y + 0.3); continue; }
     const p = snap(x, z, { clear: 0.7 });
     addProp(id, 'brazier', p.x, p.z, 0, {}, 0.5);
   }
-  return { landmarks, landmarkList, vistas, spawnPoints, props };
+  // 登り面（DESIGN_V2 §5.2）。world.climb.list と同じもの
+  const climbs = buildClimbSurfaces(hf, landmarks);
+  return { landmarks, landmarkList, vistas, spawnPoints, props, climbs };
 }

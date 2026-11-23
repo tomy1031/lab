@@ -2,7 +2,7 @@
 // ユラ島の高さ場（801×801、2 m 格子）と、そこから引ける O(1) の問い合わせ。three.js に依存しない。
 import {
   GRID_N as N, CELL, HALF, LAKE_LEVEL, LAKE_C, LAKE_SHORE_R, LAKE_REGION_R, ICE_LEVEL,
-  LANDMARKS, LM, RIVER, PATHS, HILLS, PEAKS, MESA_BIAS, COAST_R, COVES,
+  LANDMARKS, LM, RIVER, PATHS, HILLS, PEAKS, MESA_BIAS, COAST_R, COVES, CLIMBS,
 } from './layout.js';
 import { makeNoise, smoothstep, clamp } from './noise.js';
 
@@ -336,6 +336,29 @@ export function buildHeightfield(seed = 7) {
   }
   const pathDist = new Uint8Array(N * N);
   for (let k = 0; k < N * N; k++) pathDist[k] = Math.min(255, pathD[k] * 16);
+
+  // ── 登り面の壁を彫る（DESIGN_V2 §2.5）：壁の前に崩れ石の坂（30°）、壁の内側は急に上げて、くぼみを作らない ──
+  for (const w of CLIMBS) {
+    if (!w.carve) continue;
+    const yr = w.yaw * Math.PI / 180, nx = Math.sin(yr), nz = -Math.cos(yr), rx = -Math.cos(yr), rz = -Math.sin(yr);
+    // 上：壁の奥 10〜16 m の段丘の高さ（崖の斜面を拾わない）
+    let top = -1e9;
+    for (let dd = 10; dd <= 16; dd += 2) top = Math.max(top, heightAt(w.x - nx * dd, w.z - nz * dd));
+    const foot = top - w.height;
+    w.y0 = foot; w.y1 = top;
+    const R = w.width / 2 + 16;
+    const i0 = Math.max(0, Math.floor((w.x - R + HALF) / CELL)), i1 = Math.min(N - 1, Math.ceil((w.x + R + HALF) / CELL));
+    const j0 = Math.max(0, Math.floor((w.z - R + HALF) / CELL)), j1 = Math.min(N - 1, Math.ceil((w.z + R + HALF) / CELL));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const px = -HALF + i * CELL - w.x, pz = -HALF + j * CELL - w.z, k = j * N + i;
+      const d = px * nx + pz * nz, u = Math.abs(px * rx + pz * rz);
+      const wu = smoothstep(w.width / 2 + 7, w.width / 2 + 1.5, u);
+      if (wu <= 0) continue;
+      // 前：崩れ石の坂。面のすぐ奥（2.2 m）はふもとの高さ（地面が面の前にはみ出さない）、その奥は段丘の高さ
+      const target = d > 0 ? foot - d * 0.58 : d > -2.2 ? foot : top;
+      if (d > -9 && H[k] < target) H[k] += (target - H[k]) * wu;
+    }
+  }
 
   // ── 問い合わせ ──
   function pathDistAt(x, z) {

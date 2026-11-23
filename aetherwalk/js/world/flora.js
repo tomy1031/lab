@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { AW_PARS, AwMaterial, sharedUniforms, FOG_LIGHT_UNIFORMS } from './art.js';
 import { part, merge, G, lin, tubeGeo } from './geo.js';
-import { LANDMARKS, LM, LAKE_C, GATHER } from './layout.js';
+import { LANDMARKS, LM, LAKE_C, GATHER, CLIMBS } from './layout.js';
 import { makeRng, smoothstep } from './noise.js';
 
 const VERT = /* glsl */`
@@ -572,7 +572,8 @@ export function createFlora(env) {
   };
   const taken = [];
   const farFrom = (x, z, r) => { for (let i = 0; i < taken.length; i += 3) { const dx = taken[i] - x, dz = taken[i + 1] - z, rr = r + taken[i + 2]; if (dx * dx + dz * dz < rr * rr) return false; } return true; };
-  const keepClear = [[LM.start.x, LM.start.z, 26], [0, 440, 0], [-420, 220, 5], [LM.elder_tree.x, LM.elder_tree.z, 44], [LM.great_arch.x, LM.great_arch.z, 24]];
+  const keepClear = [[LM.start.x, LM.start.z, 26], [0, 440, 0], [-420, 220, 5], [LM.elder_tree.x, LM.elder_tree.z, 44], [LM.great_arch.x, LM.great_arch.z, 24],
+    ...CLIMBS.filter((c) => c.x !== undefined).map((c) => [c.x, c.z, c.width / 2 + 9])];
   const clearOf = (x, z) => { for (const k of keepClear) if (Math.hypot(x - k[0], z - k[1]) < k[2]) return false; return true; };
   // 出発点からの眺めの軸（塔・湖・天の錨・峰）は木を置かない
   const inSightline = (x, z) => z > 150 && z < 540 && Math.abs(x - (z - 150) / 390 * 0) < 26 + (540 - z) * 0.09;

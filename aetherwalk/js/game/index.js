@@ -14,7 +14,11 @@ import { createProps } from './props.js';
 import { createShrines } from './shrines.js';
 import { createSeeds } from './seeds.js';
 import { createBot } from './bot.js';
-import { ITEM_INFO } from './itemInfo.js';
+import { createSafeZones } from './safezones.js';
+import { createEncounters } from './encounters.js';
+import { createDrill } from './drill.js';
+import { createNpcs } from './npcs.js';
+import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
 
@@ -38,7 +42,20 @@ export async function createGame(ctx) {
   G.shrines = createShrines(ctx, G);
   G.seeds = createSeeds(ctx, G);
   G.bot = createBot(ctx, G);
+  G.safe = createSafeZones(ctx, G);           // fire safe zones (the Nagi keep away)
+  G.encounters = createEncounters(ctx, G);    // the first fight + the encounter director
+  G.drill = createDrill(ctx, G);              // Gando's shield drill (DESIGN_V2 §4.6)
+  G.npcs = createNpcs(ctx, G);                // the people of the island (DESIGN_V2 §1)
   G.itemInfo = (id) => G.inventory.def(id) || ITEM_INFO[id] || null;
+  /** [jp, en] one-line usage hint, or null */
+  G.itemHint = (id) => ITEM_HINTS[id] || null;
+  /** how many times the hand label has taught this item (saved in quest.flags.hints) */
+  G.hintSeen = (id, bump = false) => {
+    const f = G.quest.flags;
+    const h = f.hints || (f.hints = {});
+    if (bump) h[id] = (h[id] || 0) + 1;
+    return h[id] || 0;
+  };
 
   const _p = new THREE.Vector3();
   let saveT = AUTOSAVE, saveSoon = -1, deathT = 0;
@@ -245,7 +262,11 @@ export async function createGame(ctx) {
     ['props', (dt) => G.props.update(dt)],
     ['shrines', (dt) => G.shrines.update(dt)],
     ['seeds', (dt) => G.seeds.update(dt)],
+    ['safe', (dt) => G.safe.update(dt)],
+    ['encounters', (dt) => G.encounters.update(dt)],
     ['enemies', (dt) => G.enemies.update(dt)],
+    ['drill', (dt) => G.drill.update(dt)],
+    ['npcs', (dt) => G.npcs.update(dt)],
     ['boss', (dt) => G.boss.update(dt)],
     ['pickups', (dt) => G.pickups.update(dt)],
     ['bot', (dt) => G.bot.update(dt)],
@@ -287,6 +308,23 @@ export async function createGame(ctx) {
     startShrine: (id) => G.shrines.start(id),
     give: (id, n = 1) => G.inventory.add(id, n),
     today: () => ({ key: todayKey(), ...G.stats.today() }),
+    /** DESIGN_V2 §5.3: the next enemy blow meets a shield push ('perfect' | 'normal' | 'late' | 'guard');
+     *  attackId (optional) makes the nearest enemy choose that attack next */
+    parry: (kind = 'perfect', attackId = null) => {
+      if (attackId) {
+        const p = ctx.player && ctx.player.pos;
+        let best = null, bd = 1e9;
+        for (const e of G.enemies.list) { if (e.state === 'dead' || e.ctrl || !p) continue; const d = Math.hypot(e.pos.x - p.x, e.pos.z - p.z); if (d < bd) { bd = d; best = e; } }
+        const a = best && best.def.attacks.find((x) => x.id === attackId);
+        if (a) best.nextAtk = a;
+      }
+      return G.enemies.armParry(kind);
+    },
+    slow: () => G.enemies.slowNow,
+    drill: (on = true) => (on ? G.drill.start() : (G.drill.stop(false), false)),
+    /** DESIGN_V2 §5.3: the people now — [{ id, x, z, visible, pose }] */
+    npcs: () => G.npcs.list.map((n) => ({ id: n.id, x: +n.x.toFixed(2), z: +n.z.toFixed(2), visible: n.visible, pose: n.folk.pose })),
+    talk: (id) => G.npcs.talk(id),
   };
   Object.defineProperty(G, 'checkpointId', { get: () => G.checkpoint });
   return G;

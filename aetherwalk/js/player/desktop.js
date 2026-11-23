@@ -100,6 +100,8 @@ export function createDesktop(ctx, P, holsters) {
     }
     V.hold('grip' + S(hand), true);
     await wait(0.15);
+    // out of arm's reach (a sword standing on its pedestal, something on a ledge): call it to the hand
+    if (near && !near.dead && !near.heldBy && !items.held[hand] && !items.pulling?.[hand]) items.pull(near, hand);
     reach(hand, null);
     V.setReach(0.78);
     if (!keys.has('KeyC')) V.setDuck(false);
@@ -219,7 +221,8 @@ export function createDesktop(ctx, P, holsters) {
         V.setLean(e.code === 'KeyZ' ? -1 : 1);
         clearTimeout(leanTimer); leanTimer = setTimeout(() => V.setLean(0), 600); break;
       case 'KeyG': V.spreadArms(!V.state.spread); break;
-      case 'KeyE': grabNearest('right'); break;
+      case 'Space': V.press('a', 120); break;                      // jump (A)
+      case 'KeyE': if (!P.climbing_?.pcGrab()) grabNearest('right'); break;   // a wall in front: grip it (E again lets go)
       case 'KeyQ': throwHeld('right'); break;
       case 'KeyF': useHeld(); break;
       case 'KeyH': { const on = !document.body.classList.contains('aw-nohud'); window.AW?.debug?.hud?.(!on); break; }
