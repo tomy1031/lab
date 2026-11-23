@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>tomy1031 lab</title>
-<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」、VR 裏拍ボクササイズ「OFFBEAT GROVE」">
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」、VR 裏拍ボクササイズ「OFFBEAT GROVE」、VR 日本語会話「ことばタウン」、ハンドジェスチャーや VR でも遊べるカートレース「DREAM DRIFT」、リアル VR テニス「RALLY COURT」">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -76,9 +76,10 @@
         <div class="tags"><span>3D ゲーム</span><span>three.js</span><span>PC・スマホ・VR</span></div>
         <h2>ハマころ！</h2>
         <p class="lead">ネクマックスが玉を押して、みなとみらいから中華街までを転がし、ぶつかったものを巻き込んで大きくなります。横浜を丸めたら関東、日本、最後は地球ごと。</p>
-        <p class="note">モード：ストーリー／タイムアタック（5分）／おつかい／ステージをえらぶ。最初は直径 30cm です。</p>
+        <p class="note">モード：ストーリー／タイムアタック（5分）／おつかい／ステージをえらぶ。最初は直径 30cm です。主人公ネクマックスの 3D モデル（.glb・りんかく線・表情・モーション付き）もダウンロードできます。</p>
         <div class="actions">
           <a class="btn primary" href="yokohama-roll/">あそぶ</a>
+          <a class="btn" href="yokohama-roll/nexmax/">ネクマックスの3Dモデル</a>
           <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll">ソースコード</a>
         </div>
         <details>
@@ -88,6 +89,7 @@
             <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/models"><code>js/models</code></a>：横浜・関東・世界のローポリモデル（すべてコードで生成）</li>
             <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/engine"><code>js/engine</code></a>：ステージ生成、描画、当たり判定、3D カード</li>
             <li><a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/yokohama-roll/js/pusher.js"><code>js/pusher.js</code></a>：玉を押すネクマックス</li>
+            <li><a href="yokohama-roll/nexmax/">ネクマックスの 3D モデル</a>：glTF 2.0（.glb）のダウンロードとプレビュー。<a href="https://github.com/tomy1031/lab/blob/HEAD/yokohama-roll/tools/export-nexmax.mjs"><code>tools/export-nexmax.mjs</code></a> でゲームのモデルから作成</li>
             <li><a href="https://github.com/tomy1031/lab/pull/2">プルリクエスト #2</a>：作業の経緯</li>
           </ul>
         </details>
@@ -275,6 +277,74 @@
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/world.js"><code>js/world.js</code></a>：草原・森・湖・空気遠近法の4重の山並み</li>
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/sw.js"><code>sw.js</code></a>：オフライン用のサービスワーカー</li>
             <li><a href="https://github.com/tomy1031/lab/pull/7">プルリクエスト #7</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="dream-drift">
+      <a class="shot" href="dream-drift/"><img src="img/dream-drift.jpg" alt="DREAM DRIFT のレース画面――夕焼けの 雲の海に うかぶ ウエハースの 道を 8台の カートが 走り、キャンディの アーチと 気球が 見える" width="1280" height="720" loading="lazy"><span class="no">10</span></a>
+      <div class="notes">
+        <div class="tags"><span>ゲーム</span><span>PC・スマホ・タブレット・Meta Quest</span><span>three.js・WebXR</span><span>MediaPipe</span></div>
+        <h2>DREAM DRIFT ドリーム・ドリフト</h2>
+        <p class="lead">8台で 走る カートレースです。キャラクターを えらび、コンピュータ 7台（0〜7台で 変えられる）と 競います。コースは 2 つの カップに 8 つ。ドリームカップは 幻想的な 4 コース――夕焼けの 雲の海に うかぶ「わたぐも キャンディ・スカイウェイ」、夜の「ほたる灯りの森」、海の底の「さんご礁の海底神殿」、8の字に 交差する「星海ギャラクシーハイウェイ」。カンボジアカップは、炎と ネオンの 夜の「アンコール・ネオン遺跡」、夕焼けの「プノンペン・リバーサイド」（王宮・日本橋・ワット・プノン）、霧の「ボコー山」、列車が 踏切を 横切る「バッタンバン」。カップの 4 コースを 続けて 走る グランプリと、フリーレースが あります。</p>
+        <p class="note">ゲームパッド（Xbox・PlayStation・Switch Pro など）、キーボード、スマホの タッチ、カメラの ハンドジェスチャー、そして VR（Meta Quest 2 / 3 の ブラウザで「VR」を えらぶと 運転席に すわり、両手の グリップで ハンドルを にぎって 走る。ハンドトラッキングも 可）で あそべます。ハンドジェスチャーは、見えない ハンドルを 両手で にぎって かたむけると 曲がり、ピースサインで アイテム、人さし指と 親指の つまみで メニューを 決定。カメラの 映像は 端末の 中だけで 使います。ドリフトの ミニターボ、ロケットスタート、ジャンプ台の トリック、7 種類の アイテム。音楽と 効果音は すべて その場で 合成。</p>
+        <div class="actions">
+          <a class="btn primary" href="dream-drift/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/dream-drift/README.md">README</a>：遊び方、操作（コントローラ・キーボード・タッチ・ハンドジェスチャー）、アイテム、コース、しくみ</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/courses"><code>js/courses</code></a>：4 コースの 道と 景色（すべて コードで 生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/race"><code>js/race</code></a>：カートの 物理・CPU・アイテム・レースの 進行</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/dream-drift/js/engine/gesture-math.js"><code>js/engine/gesture-math.js</code></a>：手の 形と かたむきを ハンドル・アクセル・アイテムに 変える しくみ</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="rally-court">
+      <a class="shot" href="rally-court/"><img src="img/rally-court.jpg" alt="RALLY COURT の試合――青いハードコートのベースラインでラケットを引いて構える自分の後ろ姿、ネットの向こうに赤いシャツの CPU、満員のスタンドとスコアボード" width="1200" height="675" loading="lazy"><span class="no">11</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>RALLY COURT リアル VR テニス</h2>
+        <p class="lead">本物と同じ寸法のコートで、CPU とテニスをする VR です。コントローラーがラケットになり、振ったとおりに当たります。ボールは空気抵抗・回転（マグヌス効果）・バウンドの摩擦まで計算して飛び、トップスピンは沈み、スライスは滑ります。部屋の中でダッシュはできないので、移動は 3 つから選べます――その場で<b>足踏み・腕振り</b>すると落下地点へまっすぐ進む、<b>自動</b>で落下地点へ（自分の最高速度まで）、<b>十字キー</b>。</p>
+        <p class="note">Quest のブラウザで開いて「VR をはじめる」。試合（1 / 3 セット、タイブレーク、ノーアド）・ラリー練習・球出し・サーブ練習。CPU は 5 段階。最高速度・加速・足踏みのテンポ・打点・ラケットの角度・アシストなど、数値はすべて最適な初期値から調整できます（VR の中でも）。ハード・クレー・芝。PC でもマウスで遊べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="rally-court/">あそぶ</a>
+          <a class="btn" href="rally-court/?demo">デモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/rally-court">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/README.md">README</a>：遊び方、操作、3 つの移動方法、初期値とその理由、物理の計算</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/physics.js"><code>js/physics.js</code></a>：ボールの飛行・バウンド・ネット・ラケットとの当たり</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/player.js"><code>js/player.js</code></a>：足踏み・腕振り／自動／十字キーの移動</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/ai.js"><code>js/ai.js</code></a>：CPU（追いかける・ショットを選ぶ・ミスする）</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="island-survival">
+      <a class="shot" href="island-survival/"><img src="img/island-survival.jpg" alt="ひとつだけ島の 浜辺――一人称の 視点で 見わたす 熱帯の 砂浜と ヤシの木、海と 空。右には 仲間のキャラクターと、持ち物のホットバーと 体のパラメータの HUD" width="1200" height="675" loading="lazy"><span class="no">12</span></a>
+      <div class="notes">
+        <div class="tags"><span>サバイバル</span><span>一人称</span><span>three.js・MediaPipe・Gemini Live</span></div>
+        <h2>ひとつだけ島 — ONE THING ISLAND</h2>
+        <p class="lead">無人島に 持っていける 道具は ひとつだけ（0〜3 個・全部 も 選べる）。一人称の 視点で 島を 歩き、食べ物と 水を 探して、火をおこし、約束の 日まで 生きのびるサバイバルです。島は すべて コードで 生成し、Web カメラの ハンドジェスチャーでも あそべます。仲間との 声の 会話は Gemini Live です。</p>
+        <p class="note">PC はマウスとキーボード、スマホはタッチ、Web カメラがあれば ハンドジェスチャー。持ち物・日数・難易度・季節・島のシードを せっていで 決めて はじめます。</p>
+        <div class="actions">
+          <a class="btn primary" href="island-survival/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/island-survival">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/README.md">README</a>：遊び方、操作、ハンドジェスチャー、しくみ、開発</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/docs/DESIGN.md">docs/DESIGN.md</a>（企画書）：体・天候・病気・火・狩り・錬成・建築の 仕様</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/sim/body.js"><code>js/sim/body.js</code></a>：体のパラメータと 病気</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/world/fauna.js"><code>js/world/fauna.js</code></a>：動物の 感覚と 狩り</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/companion/talk.js"><code>js/companion/talk.js</code></a>：Gemini Live の 会話</li>
           </ul>
         </details>
       </div>

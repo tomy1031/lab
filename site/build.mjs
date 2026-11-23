@@ -13,6 +13,9 @@
 //   AETHERWALK_REF AETHERWALK (aetherwalk/)                    default: origin/claude/determined-newton-ki8tfm (then FILMS_REF)
 //   KOTOBA_REF    ことばタウン (kotoba-town/)                   default: HEAD if it has kotoba-town/, else origin/claude/vr-japanese-practice-app-qqna1o
 //   OFFBEAT_REF   OFFBEAT GROVE (offbeat-grove/)              default: HEAD
+//   DREAMDRIFT_REF DREAM DRIFT (dream-drift/)                  default: HEAD if it has dream-drift/, else origin/claude/happy-turing-uknqds
+//   RALLY_REF     RALLY COURT (rally-court/)                   default: HEAD if it has rally-court/, else origin/claude/ecstatic-euler-zw060e
+//   ISLAND_REF    ひとつだけ島 (island-survival/)               default: HEAD if it has island-survival/, else origin/claude/deserted-island-survival-game-7tg6jw
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -35,6 +38,9 @@ const refs = {
   aetherwalk: process.env.AETHERWALK_REF || 'origin/claude/determined-newton-ki8tfm',
   kotoba: process.env.KOTOBA_REF || 'HEAD',
   offbeat: process.env.OFFBEAT_REF || 'HEAD',
+  dreamdrift: process.env.DREAMDRIFT_REF || 'HEAD',
+  rally: process.env.RALLY_REF || 'HEAD',
+  island: process.env.ISLAND_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -44,6 +50,9 @@ if (!process.env.STARWEAVER_REF && !hasRef(refs.starweaver)) refs.starweaver = r
 if (!process.env.AETHERWALK_REF && !hasRef(refs.aetherwalk)) refs.aetherwalk = refs.films;
 const hasDir = (ref, dir) => { try { sh(`git -C "${root}" cat-file -e "${ref}:${dir}"`); return true; } catch { return false; } };
 if (!process.env.KOTOBA_REF && !hasDir(refs.kotoba, 'kotoba-town')) refs.kotoba = 'origin/claude/vr-japanese-practice-app-qqna1o';
+if (!process.env.DREAMDRIFT_REF && !hasDir(refs.dreamdrift, 'dream-drift')) refs.dreamdrift = 'origin/claude/happy-turing-uknqds';
+if (!process.env.RALLY_REF && !hasDir(refs.rally, 'rally-court')) refs.rally = 'origin/claude/ecstatic-euler-zw060e';
+if (!process.env.ISLAND_REF && !hasDir(refs.island, 'island-survival')) refs.island = 'origin/claude/deserted-island-survival-game-7tg6jw';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -75,6 +84,8 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   fs.mkdirSync(vdir, { recursive: true });
   copy(path.join(src, 'js'), path.join(vdir, 'js'));
   if (fs.existsSync(path.join(src, 'img'))) copy(path.join(src, 'img'), path.join(dest, 'img'));
+  // the NexMax 3D model download page (nexmax/: viewer, nexmax.glb, preview.png) — not part of the game
+  if (fs.existsSync(path.join(src, 'nexmax'))) copy(path.join(src, 'nexmax'), path.join(dest, 'nexmax'));
   let html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
   const tag = '<script type="module" src="js/main.js"></script>';
   if (!html.includes(tag)) throw new Error('yokohama-roll/index.html: main.js script tag not found');
@@ -88,7 +99,8 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   const files = [];
   const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(path.relative(dest, p).split(path.sep).join('/')); } };
   walk(dest);
-  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html')];
+  // the model download is not needed to play: keep its 1+ MB out of the game's offline cache
+  const precache = ['./', ...files.filter((f) => f !== 'version.json' && f !== 'index.html' && !f.startsWith('nexmax/'))];
   if (fs.existsSync(path.join(src, 'sw.js'))) {
     const sw = fs.readFileSync(path.join(src, 'sw.js'), 'utf8').replace("'__BUILD__'", `'${build}'`).replace('__PRECACHE__', JSON.stringify(precache));
     fs.writeFileSync(path.join(dest, 'sw.js'), sw);
@@ -259,6 +271,65 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 10 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Static files: the page, ES modules
+// and images (three.js and MediaPipe come from the CDN).
+{
+  const dest = path.join(out, 'dream-drift');
+  try {
+    const src = exportDir(refs.dreamdrift, 'dream-drift');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'js', 'img']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'dream-drift.jpg'));
+  } catch (e) {
+    console.warn(`dream-drift not found at ${refs.dreamdrift}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>DREAM DRIFT</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 11 RALLY COURT — WebXR tennis. Static files: the page and ES modules (three.js comes from the CDN).
+{
+  const dest = path.join(out, 'rally-court');
+  try {
+    const src = exportDir(refs.rally, 'rally-court');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'js']) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'rally-court.jpg'));
+  } catch (e) {
+    console.warn(`rally-court not found at ${refs.rally}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RALLY COURT</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 12 ひとつだけ島 — first-person island survival (three.js, MediaPipe, Gemini Live). Static files: the page,
+// ES modules and assets; the tests, build tools and dev pages stay out of the published folder.
+{
+  const dest = path.join(out, 'island-survival');
+  try {
+    const src = exportDir(refs.island, 'island-survival');
+    const skip = new Set(['tests', 'tools', 'dev']);
+    fs.cpSync(src, dest, { recursive: true, filter: (p) => !skip.has(path.relative(src, p).split(path.sep)[0]) });
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'island-survival.jpg'));
+  } catch (e) {
+    console.warn(`island-survival not found at ${refs.island}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ひとつだけ島</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island}`);

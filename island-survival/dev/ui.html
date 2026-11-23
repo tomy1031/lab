@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>UI dev</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  body { background: linear-gradient(180deg, #7fc4e8 0%, #bfe6f0 45%, #f1dfae 46%, #d9c28a 100%); }
+  body.night { background: linear-gradient(180deg, #05080f, #0d1a2b 60%, #162014); }
+  #devbar { position: fixed; left: 50%; top: 4px; transform: translateX(-50%); z-index: 99; display: flex; gap: 4px; font-size: 11px; opacity: .85; flex-wrap: wrap; justify-content: center; max-width: 60vw; }
+  #devbar button { font-size: 11px; padding: 1px 6px; min-height: 0; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hud">
+  <div id="hud-stats"></div><div id="hud-clock"></div><div id="hud-status"></div><div id="hud-hotbar"></div><div id="hud-prompt"></div><div id="hud-action"></div>
+  <div id="hud-toasts"></div><div id="hud-subtitle"></div><div id="crosshair"></div><canvas id="cam-preview" width="240" height="180" class="hidden"></canvas><div id="hud-companion"></div>
+  <div id="touch-ui"><div id="stick"><div id="stick-knob"></div></div><div id="touch-buttons"></div></div>
+</div>
+<div id="screens"></div><div id="hand-cursor" class="hidden"></div><div id="fade"></div>
+<div id="devbar"></div>
+<script type="module">
+import { createMockGame } from './mock-game.js';
+import { Screens } from '../js/ui/screens.js';
+import { Hud } from '../js/ui/hud.js';
+const q = new URLSearchParams(location.search);
+const game = createMockGame({ hands: q.has('hands'), risk: q.get('risk'), sleepBad: q.has('sleepbad') });
+window.game = game;
+if (q.has('touch')) { document.body.classList.add('touch'); game.input.touch = true; }
+if (q.has('night')) document.body.classList.add('night');
+const screens = new Screens(game); game.screens = screens;
+const hud = new Hud(game); game.hud = hud;
+if (q.has('activity')) game.activity = { label: '火を おこす', progress: 0.62, bar2: 0.35, hint: '両手を こすり合わせて！', phase: 'きりもみ' };
+const name = q.get('screen');
+if (name) {
+  const data = q.get('data') ? JSON.parse(q.get('data')) : {};
+  if (name === 'result') Object.assign(data, { type: q.get('type') || 'died', headline: q.get('type') === 'rescued' ? '生きて 帰れた' : '力 尽きた', sub: '3 日目 14 時、東の 浜で 力 尽きた', days: 3, seed: 20240417,
+    review: ['直前 24 時間：水分が 15 を 下回って から 6 時間 水を 飲まなかった。', '生の 貝を 5 個 → 発症率 63%。火を 通せば 7%。', '小川は 浜から 80m。煮沸した 水で 回復できた。'],
+    score: { total: 1280, rank: 'B「たくましい 漂流者」', parts: [{ label: '生存日数 3 × 100', value: 300 }, { label: '発見', value: 245 }, { label: '建築', value: 120 }, { label: '難易度 ×1.0', value: '×1.0' }, { label: '持ち物 ×1.0', value: '×1.0' }] },
+    achievements: [{ name: 'はじめての 火', desc: '初めて 火を おこす' }, { name: '初釣果' }], records: [{ label: '釣った 魚', value: '4（最大 32cm）' }, { label: '歩いた 距離', value: '3.2 km' }], canRetry: false });
+  screens.show(name, data);
+} else { game.hudOnly = true; }
+// dev bar: jump to screens, toggle things
+const bar = document.getElementById('devbar'); if (q.has('nobar')) bar.remove();
+for (const n of q.has('nobar') ? [] : ['title','setup','loading','pause','settings','inventory','craft','build','guide','map','journal','companion','sleep','gesture','eat']) {
+  const b = document.createElement('button'); b.textContent = n; b.onclick = () => screens.show(n, n === 'eat' ? { uid: 2 } : n === 'loading' ? { text: '島を つくっています…', progress: 0.4 } : n === 'settings' ? { from: 'title' } : {}); bar.appendChild(b);
+}
+let last = performance.now(), toastT = 0;
+function loop(t) {
+  const dt = Math.min(0.1, (t - last) / 1000); last = t;
+  if (!game.paused) { game.clock.total += dt * 1.0; game.player.yaw += dt * (q.has('spin') ? 0.4 : 0); }
+  hud.update(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+setTimeout(() => { game.bus.emit('toast', { text: '石の ナイフを 手に入れた', kind: 'good' }); game.bus.emit('toast', { text: '鮮度が 落ちた：小魚', kind: 'warn' }); }, 300);
+if (q.has('sub')) setTimeout(() => game.bus.emit('subtitle', { who: 'nagi', text: 'あっちの 木の 下に 実が 落ちてるよ。', final: true }), 400);
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NexMax export</title>
+<style>html, body { margin: 0; background: #eaf3fb; }</style>
+<script type="importmap">
+{ "imports": { "three": "../node_modules/three/build/three.module.js" } }
+</script>
+</head>
+<body>
+<script type="module">
+// Driven by tools/export-nexmax.mjs: exports the GLB, loads it back, renders the preview (and an optional
+// contact sheet of every clip, for checking), and hands everything back as base64.
+import { exportNexmax, renderPreview, CLIPS } from './export_nexmax.js';
+const b64 = (buf) => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
+const qs = new URLSearchParams(location.search);
+try {
+  const r = await exportNexmax();
+  const preview = await renderPreview(r.glb.slice(0), { size: 1024 });
+  const sheet = [];
+  if (qs.has('sheet')) {
+    for (const [name] of CLIPS) for (const f of [0.15, 0.4, 0.65]) {
+      const c = r.info.find((x) => x.name === name);
+      const shot = await renderPreview(r.glb.slice(0), { size: 256, clip: name, at: c.seconds * f });
+      sheet.push({ name, f, png: shot.png });
+    }
+  }
+  window.__export = { glb: b64(r.glb), info: r.info, triangles: r.triangles, joints: r.joints, preview: preview.png, stats: preview.stats, sheet };
+} catch (e) {
+  window.__export = { error: String(e && e.stack || e) };
+}
+</script>
+</body>
+</html>

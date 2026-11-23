@@ -11,6 +11,7 @@ import { SCENES } from './content/cast.js';
 import { loadCourses, loadVoiceIndex, loadFreeTalk, charactersOf } from './content/index.js';
 import { resolveCharacter } from './content/lines.js';
 import { SpeechBubble, TurnCard, Board, Toast, LazyFollow } from './ui/views.js';
+import { Navi, NAVI_LINES } from './ui/navi.js';
 import { Runner } from './talk/runner.js';
 import { FreeTalk, topicsFor } from './talk/free.js';
 import { FREE_LEVELS } from './talk/judge.js';
@@ -54,6 +55,9 @@ async function boot() {
   const bubble = new SpeechBubble(app);
   const toast = new Toast(app);
   const board = new Board(app, sound);
+  // ネクマックス, the guide: by the board in the town square, small and floating beside the learner in scenes
+  const navi = new Navi(app, store.settings);
+  let naviWelcomed = false;
   let runner = null;
   const turn = new TurnCard(app, {
     hint: () => runner?.hint(), again: () => runner?.again(), skip: () => runner?.skip(),
@@ -74,7 +78,7 @@ async function boot() {
 
   const state = { lesson: null, variant: null, where: 'title', course: courses[0]?.id || 'minna', mode: 'practice', page: {}, free: null };
   const tabs = [...courses.map(({ id, titleJa, titleEn }) => ({ id, titleJa, titleEn })), ...(freeData ? [{ id: 'free', titleJa: 'フリートーク', titleEn: 'Free talk' }] : [])];
-  KT.state = state; KT.app = app; KT.stage = stage; KT.store = store; KT.board = board; KT.turn = turn;
+  KT.state = state; KT.app = app; KT.stage = stage; KT.store = store; KT.board = board; KT.turn = turn; KT.navi = navi;
 
   // ------------------------------------------------------------------ places
   async function goTown() {
@@ -87,14 +91,23 @@ async function boot() {
     const a = stage.built.boardAnchor;
     board.panel.mesh.position.copy(a);
     board.panel.mesh.rotation.set(0, 0, 0);
+    navi.stand(new THREE.Vector3(a.x + 1.1, 0.6, a.z + 0.2), 0.78);
     showLessons();
     await stage.fade(0, 400);
+    if (!naviWelcomed) { naviWelcomed = true; navi.say(NAVI_LINES.welcome[0], { ms: 4200, pose: 'wave', force: true }); setTimeout(() => { if (state.where === 'town') navi.say(NAVI_LINES.welcome[1], { ms: 5000, force: true }); }, 4400); }
+    else navi.say(NAVI_LINES.town, { ms: 5000, pose: 'wave', force: true });
   }
 
   const starsOf = (id, mode) => store.starsOf(id, mode);
 
   function showLessons() {
-    if (state.course === 'free' && freeData) { showFree(); return; }
+    if (state.course === 'free' && freeData) {
+      if (state.where === 'town' && state.naviTab !== 'free') navi.say(NAVI_LINES.free, { ms: 5000, force: true });
+      state.naviTab = 'free';
+      showFree();
+      return;
+    }
+    state.naviTab = state.course;
     board.courses({
       courses, tabs, active: state.course, starsOf,
       onTab: (id) => { state.course = id; showLessons(); },
@@ -190,12 +203,15 @@ async function boot() {
     stage.ensureSpeakers();
     if (mic.state !== 'on') await mic.start();
     const place = { id: sel.place, ...placeName(sel.place) };
+    navi.follow();
+    navi.quiet(3000);
     runner = new FreeTalk({
       partner, info, place, setupEn: `${setup.time}, ${setup.season}${setup.weather === 'rain' ? ', raining' : ''}`,
       // at work they stay polite with customers, even friends of the learner's age
       topic, topics, level: sel.level, style: staff ? 'polite' : sel.style,
       twists: (freeData.twists || []).filter((t) => !t.places?.length || t.places.includes(sel.place)),
       stage, bubble, turn, toast, sound, mic, settings: store.settings, apiKey: store.apiKey, log,
+      events: (ev) => navi.event(ev),
       onDone: (res) => (res.failed ? goTown() : showFreeReport(sel, partner, place, res)),
     });
     KT.runner = runner;
@@ -208,6 +224,8 @@ async function boot() {
     sound.fanfare(report.stars);
     boardMode = 'follow';
     boardFollow.update(0, true);
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
+    setTimeout(() => navi.event({ type: 'report', free: true, stars: report.stars }), 600);
     board.freeReport({
       report, turns, partner, place, topics,
       onAgain: () => openFree(sel),
@@ -235,6 +253,8 @@ async function boot() {
     amb.start(v.scene, { weather: v.setup?.weather, time: v.setup?.time });
     boardMode = 'follow';
     boardFollow.update(0, true);
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
+    setTimeout(() => { if (state.where === 'brief') navi.say(NAVI_LINES.brief, { ms: 5500, pose: 'wave', force: true }); }, 900);
     const live = !!store.apiKey;
     board.briefing({
       lesson: L, variant: v, cast: cast.map((c) => c.char), live,
@@ -252,9 +272,11 @@ async function boot() {
     await sound.unlock();
     stage.ensureSpeakers();
     if (mic.state !== 'on') await mic.start();
+    navi.follow();
+    navi.quiet(2500);
     runner = new Runner({
       lesson: L, variant: v, stage, bubble, turn, toast, sound, mic, settings: store.settings, apiKey: store.apiKey, log,
-      mode: state.mode,
+      mode: state.mode, events: (ev) => navi.event(ev),
       onDone: (res) => showReport(L, v, res, state.mode),
     });
     KT.runner = runner;
@@ -267,6 +289,8 @@ async function boot() {
     if (!again) { store.record(v.id, report.stars, mode); sound.fanfare(report.stars); }
     boardMode = 'follow';
     boardFollow.update(0, true);
+    navi.follow({ side: 0.74, ahead: 0.95, below: 0.5, shift: 0 });
+    if (!again) setTimeout(() => navi.event({ type: 'report', stars: report.stars }), 600);
     // ITビジネス編 follows one story: offer the next episode (same pattern letter when it exists)
     const course = courses.find((c) => c.id === L.course);
     const next = L.course === 'it' ? course?.units.find((u) => u.no === L.no + 1) : null;
@@ -351,6 +375,7 @@ async function boot() {
     $('#set-rate').value = String(store.settings.rate);
     $('#set-slow').checked = store.settings.slowSpeaker;
     $('#set-music').checked = store.settings.music;
+    $('#set-navi').checked = store.settings.navi !== false;
     $('#set-model').innerHTML = ['', ...LIVE_MODELS].map((m) => `<option value="${m}">${m || 'auto (newest first)'}</option>`).join('');
     $('#set-model').value = store.settings.model;
     dlg.showModal();
@@ -362,7 +387,7 @@ async function boot() {
     Object.assign(store.settings, {
       name: $('#set-name').value.trim(), display: $('#set-display').value, romaji: $('#set-romaji').checked,
       english: $('#set-english').checked, rate: Number($('#set-rate').value) || 1, slowSpeaker: $('#set-slow').checked,
-      music: $('#set-music').checked, model: $('#set-model').value,
+      music: $('#set-music').checked, model: $('#set-model').value, navi: $('#set-navi').checked,
     });
     store.saveSettings();
     keyState();
@@ -384,6 +409,7 @@ async function boot() {
   // backdrop: the town square behind the title screen
   await stage.load('hub', { time: timeOfDay(), season: season(), weather: 'clear' }, []);
   board.panel.mesh.position.copy(stage.built.boardAnchor);
+  navi.stand(new THREE.Vector3(stage.built.boardAnchor.x + 1.1, 0.6, stage.built.boardAnchor.z + 0.2), 0.78);
   showLessons();
   app.yaw = 0.35; app.pitch = 0.05; app._applyLook();
   document.body.classList.add('ready');

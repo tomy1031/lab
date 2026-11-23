@@ -1,6 +1,7 @@
 // tools/xr.mjs — drives the real WebXR code path in Meta's emulator (IWER, Meta Quest 3 profile):
 // enter VR → the menu panel → aim the right controller's laser at START and pull the trigger → punch
-// targets with the emulated controllers → B pauses → laser + trigger on 再開 → switch to hand tracking
+// targets with the emulated controllers → A/B/X/Y do not pause, the Meta button (Quest menu) does →
+// laser + trigger on 再開 → switch to hand tracking
 // (gloves follow the hands) → the results panel → メニューへ → leave VR.
 //   npm i && node tools/xr.mjs [outDir]
 import fs from 'node:fs';
@@ -118,13 +119,21 @@ await shot(page, 'xr-play.png');
 const mid = await page.evaluate(() => { const s = window.__app.session; return { t: window.__app.songT, hits: s.hits, judged: s.judged.length, grades: s.judged.slice(-6).map((n) => n.grade) }; });
 check(mid.hits >= 6, `controllers punch targets: ${mid.hits} hits of ${mid.judged} judged (${mid.grades.join(' ')})`);
 
-// pause with B, check the clock stops, resume with the laser
-await page.evaluate(() => window.__press('R', 'b-button'));
+// A, B, X and Y never pause (easy to press by accident while punching)
+for (const [side, id] of [['R', 'a-button'], ['R', 'b-button'], ['L', 'x-button'], ['L', 'y-button']]) {
+  await page.evaluate(([s, b]) => window.__press(s, b), [side, id]);
+}
+await page.waitForTimeout(400);
+check((await page.evaluate(() => window.__app.state)) === 'play', 'A / B / X / Y during play: the game keeps going');
+// the Meta button opens the Quest menu: the session loses focus and the game pauses; the clock stops
+await page.evaluate(() => window.__xrd.updateVisibilityState('visible-blurred'));
 await until(() => window.__app.state === 'paused', null, 5000);
 const t1 = await page.evaluate(() => window.__app.songT);
 await page.waitForTimeout(1200);
 const t2 = await page.evaluate(() => window.__app.songT);
-check(Math.abs(t2 - t1) < 0.01 && (await page.evaluate(() => window.__app.pausePanel.visible)), 'B button pauses: the song stops and the pause panel opens');
+await page.evaluate(() => window.__xrd.updateVisibilityState('visible'));
+await page.evaluate(async () => { for (let i = 0; i < 4; i++) await window.__frame(); });
+check(Math.abs(t2 - t1) < 0.01 && (await page.evaluate(() => window.__app.state === 'paused' && window.__app.pausePanel.visible)), 'Meta button (Quest menu opens): the song stops; menu closed → the pause panel is waiting');
 await page.evaluate(() => { window.__bot = false; });
 const hov2 = await page.evaluate(() => window.__aim('R', window.__app.pausePanel, 'resume'));
 await page.evaluate(() => window.__pull('R'));
