@@ -109,7 +109,6 @@ export class Screens {
     const from = c.data?.from || DEFAULT_BACK[c.name];
     if (from && from !== c.name && (REG[from])) {
       const fd = { ...(c.data?.fromData || {}) };
-      if (c.name === 'settings' && !c.data?.from && !this.game.sys) { this.show('title'); return; }
       this.show(from, fd);
     } else this.hide();
   }
@@ -140,7 +139,7 @@ export class Screens {
     const el = this.handEl, hands = this.game.hands;
     if (!el) return;
     const c = hands?.cursor;
-    if (!this.cur || !hands?.ready || !c?.visible) { el.classList.add('hidden'); this.setHover(null); return; }
+    if (!this.cur || !hands?.ready || !c?.visible) { el.classList.add('hidden'); this.setHover(null); this._wasClicked = !!c?.clicked; return; }
     const x = c.x * innerWidth, y = c.y * innerHeight;
     el.classList.remove('hidden');
     el.style.transform = `translate(${x}px, ${y}px)`;
@@ -155,7 +154,8 @@ export class Screens {
       target.value = String(Math.round((mn + (mx - mn) * v) / st) * st);
       target.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    if (c.clicked && target && target.type !== 'range') {
+    const edge = !!c.clicked && !this._wasClicked; this._wasClicked = !!c.clicked;
+    if (edge && target && target.type !== 'range') {
       el.classList.add('click'); setTimeout(() => el.classList.remove('click'), 220);
       target.click?.();
     }

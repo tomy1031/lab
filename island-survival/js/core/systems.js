@@ -42,6 +42,8 @@ export async function installSystems(game, setup) {
   game.add('fishing', new FishingMemory());
   game.add('fauna', new Fauna(game));
   game.add('combat', new Combat(game));
+  const lm = await optional('../world/landmarks.js');
+  if (lm?.Landmarks) game.add('landmarks', new lm.Landmarks(game));
   game.placement = new Placement(game);
   game.viewmodel = new ViewModel(game.renderer.camera);
   game.rain = new RainFX(w.scene, game.renderer.q.flora === 'low' ? 1500 : 3500);
@@ -85,8 +87,7 @@ export async function installSystems(game, setup) {
   game.bus.on('log', (e) => addJournal(game, e.text, e.kind));
 
   // ---------------- starting kit
-  giveStartingKit(game, setup);
-  dayOneGuarantees(game, setup);
+  if (!setup.restoring) { giveStartingKit(game, setup); dayOneGuarantees(game, setup); }
   firstGoals(game, setup);
 
   // ---------------- game-level helpers

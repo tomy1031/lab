@@ -96,7 +96,7 @@ export function normStarter(e) {
     id: d.id, name: d.name || fb.name || d.id, icon: d.icon || fb.icon || '📦',
     star: typeof star === 'object' ? (star['12'] ?? Object.values(star)[0] ?? 2) : star,
     score: typeof sc === 'object' ? (sc['12'] ?? Object.values(sc)[0] ?? 1) : sc,
-    p: st.p || d.p || fb.p || 'P0', desc: st.effect || st.desc || d.desc || fb.desc || '', ammo: d.id === 'rifle',
+    variants: d.ammoVariants, p: st.p || d.p || fb.p || 'P0', desc: st.effect || st.desc || d.desc || fb.desc || '', ammo: d.id === 'rifle',
   };
 }
 export function getStarters(game) {
@@ -124,7 +124,7 @@ export function calcSetup(setup, starters) {
   if (chosen.some((s) => s.ammo || s.id === 'rifle')) { const a = AMMO_MULT[setup.ammo] ?? 1; if (a !== 1) add('弾の数', a); }
   add('難易度', DIFF_MULT[setup.difficulty] ?? 1);
   if (setup.companion && setup.companion !== 'none') add('仲間あり', 0.9);
-  const avg = chosen.length ? chosen.reduce((a, s) => a + (s.star || 2), 0) / chosen.length : 3;
+  const avg = chosen.length ? chosen.reduce((a, s) => a + (s.variants?.[setup.ammo]?.star ?? s.star ?? 2), 0) / chosen.length : 3;
   let sev = avg + (COUNT_SEV[setup.count] ?? 0) + (DIFF_SEV[setup.difficulty] ?? 0) - (setup.companion && setup.companion !== 'none' ? 0.5 : 0);
   if (setup.count === 'all') sev = Math.min(sev, avg - 2 + (DIFF_SEV[setup.difficulty] ?? 0));
   return { stars: Math.max(1, Math.min(5, Math.round(sev))), mult, parts };

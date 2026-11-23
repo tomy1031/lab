@@ -94,6 +94,24 @@ export class Game {
     this.bus.emit('game:start', setup);
   }
 
+  hasSave() { return !!this.savedData(); }
+  savedData() { try { return JSON.parse(localStorage.getItem('isle.save') || 'null'); } catch { return null; } }
+
+  /** つづきから: rebuild the game from the autosave (§17.3) */
+  async continueGame() {
+    const data = this.savedData();
+    if (!data?.setup) return false;
+    await this.newGame({ ...data.setup, restoring: true });
+    this.clock.total = data.clock?.total ?? this.clock.total;
+    if (data.player) this.player.place(data.player.x, data.player.z, data.player.yaw || 0);
+    for (const [name, d] of Object.entries(data.sys || {})) { try { this.sys[name]?.deserialize?.(d); } catch (e) { console.warn('load', name, e); } }
+    this.sys.player?.validate?.();
+    this.stats = { ...(this.stats || {}), ...(data.stats || {}) };
+    if (data.goals) this.goals = data.goals;
+    this.bus.emit('toast', { text: `${this.clock.label()} から つづける`, kind: 'info' });
+    return true;
+  }
+
   /** which companions can be chosen (ゲン has no model yet) */
   companionAvailable(id) { return id !== 'gen'; }
 

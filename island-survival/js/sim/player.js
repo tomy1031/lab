@@ -116,7 +116,8 @@ export class PlayerState {
     this.zone = t.zoneAt(x, z);
     const y = t.heightAt(x, z);
     // shelter: structures (building system), trees, caves / rock overhangs
-    const sh = g.sys.building?.shelterAt?.(x, z) || { rain: 0, wind: 0, insul: 0, name: '屋外' };
+    const sh = g.sys.landmarks?.shelterAt?.(x, z) || g.sys.building?.shelterAt?.(x, z) || { rain: 0, wind: 0, insul: 0, name: '屋外' };
+    if (!sh.name) sh.name = '屋外';
     this.shelter = sh;
     // the nearest fire
     let best = null, bd = Infinity;
