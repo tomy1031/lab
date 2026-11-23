@@ -41,10 +41,11 @@ const POSES = {
     leftUpperArm: [S(p) * 0.8, 0, -ARM_DOWN + 0.2], rightUpperArm: [-S(p) * 0.8, 0, ARM_DOWN - 0.2],
     leftLowerArm: [0, -1.2, -0.2], rightLowerArm: [0, 1.2, 0.2],
   }),
-  sit: (t) => ({
-    hipY: -0.42, spine: [0.12 + S(t * 1.5) * 0.01, 0, 0], head: [0.08, S(t * 0.25) * 0.15, 0],
-    leftUpperLeg: [-1.45, 0.08, 0.05], rightUpperLeg: [-1.45, -0.08, -0.05], leftLowerLeg: [1.5, 0, 0], rightLowerLeg: [1.5, 0, 0],
-    leftUpperArm: [-0.35, 0, -ARM_DOWN + 0.1], rightUpperArm: [-0.35, 0, ARM_DOWN - 0.1], leftLowerArm: [0, -0.7, 0], rightLowerArm: [0, 0.7, 0],
+  sit: (t) => ({ // sitting on the ground, knees up, forearms on the knees
+    hipY: -0.66, spine: [0.22 + S(t * 1.5) * 0.01, 0, 0], chest: [0.06, 0, 0], head: [-0.05, S(t * 0.25) * 0.15, 0],
+    leftUpperLeg: [-1.95, 0.12, 0.08], rightUpperLeg: [-1.95, -0.12, -0.08], leftLowerLeg: [2.25, 0, 0], rightLowerLeg: [2.25, 0, 0],
+    leftFoot: [-0.3, 0, 0], rightFoot: [-0.3, 0, 0],
+    leftUpperArm: [-0.85, 0, -ARM_DOWN + 0.2], rightUpperArm: [-0.85, 0, ARM_DOWN - 0.2], leftLowerArm: [0, -0.55, 0], rightLowerArm: [0, 0.55, 0],
   }),
   sleep: (t) => ({
     rootPitch: -Math.PI / 2, lift: 0.13,

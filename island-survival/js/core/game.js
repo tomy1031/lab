@@ -87,8 +87,6 @@ export class Game {
     this.bindKeys();
     this.screens?.hide?.();
     document.getElementById('hud')?.classList.remove('hidden');
-    const s = this.world.terrain.shorePoint(Math.atan2(this.world.layout.start.z, this.world.layout.start.x), 1.5);
-    this.player.place(s.x, s.z, Math.atan2(s.x, s.z));
     this.running = true;
     this.paused = false;
     this.bus.emit('game:start', setup);
