@@ -111,6 +111,8 @@ export const WORK_FLOW = {
   boil: () => [S('tend', 1, 'pot', { label: '沸いて から 少し 待って おろす', mode: 'boil', content: 'water' })],
   bandage: () => [S('twist', 5, 'arm', { label: '包帯を 巻く', tighten: true, band: true })],
   tan: () => [S('rub', 16, 'whetstone', { label: '脂を かき取る', blade: 'stone' })],
+  // §26 火の 組み方: tinder at the bottom, kindling leaning in (teepee), fuel on the outside — order and placement
+  firelay: () => [S('place', 3, 'firelay', { label: '下から 火口 → 焚きつけ → 薪', tokens: ['fiber', 'stick', 'stick'], ordered: true, labels: ['火口', '焚きつけ', '薪'] })],
   // §10 fire by friction / sparks, done on the work table: make the ember, move it to the tinder, blow it into a flame
   friction: (bow = false) => [S('rub', bow ? 8 : 12, 'drill', { label: bow ? '弓を 引いて 棒を 回す（一定に）' : '棒を 両手で もむ（速く、一定に）', band: [0.12, 0.42] }), S('place', 1, 'drill', { label: '火種を 火口へ うつす', tokens: ['charcoal'] }), S('tend', 1, 'blow', { label: '息を 吹きかける', mode: 'blow' })],
   spark: () => [S('strike', 3, 'flint', { label: '火花を 火口に 落とす', material: 'chert' }), S('tend', 1, 'blow', { label: '息を 吹きかける', mode: 'blow' })],

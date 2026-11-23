@@ -130,6 +130,10 @@ export class Interact {
     const ops = [];
     if (!rec.fire.lit) {
       const ms = this.fireMethods(rec);
+      if (g.handwork && rec.layP == null) {
+        const hasTinder = inv.stacks.some((s) => (itemDef(s.id)?.tinder ?? 0) >= 0.5), twigs = inv.count('twig'), fuelWood = inv.stacks.some((s) => /branch|driftwood|firewood/.test(s.id));
+        ops.push({ id: 'lay', label: '薪を 組む（火口 → 焚きつけ → 薪：着火しやすく なる）', ok: hasTinder && twigs >= 2 && fuelWood, reason: '火口・小枝 2・枝が 要る' });
+      }
       for (const m of ms.slice(0, 3)) ops.push({ id: `light:${m.id}`, label: `火を おこす（${FIRE_METHODS[m.id].name}・成功率 ${Math.round(m.p * 100)}%）`, method: m });
       if (!ms.length) ops.push({ id: 'nomethod', label: '火を おこす 道具が ない', ok: false, reason: '弓ぎりセット・きりもみ・火打ち石を 作ろう' });
     } else {
@@ -154,7 +158,7 @@ export class Interact {
     const tinder = bestTinder(inv);
     const hereShelter = g.sys.building?.shelterAt?.(rec.fire.group.position.x, rec.fire.group.position.z) || { rain: 0, wind: 0 };
     const damp = dampness({ rain: W.rain, humidity: W.humidity, roof: hereShelter.rain >= 0.7, hour: g.clock.hour, tinderWet: tinder.stack?.wet > 60 });
-    const base = { tinderMul: tinder.mul, damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 };
+    const base = { tinderMul: tinder.mul * (rec.layP != null ? 0.8 + 0.4 * rec.layP : 0.9), damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 }; // §26 the lay
     const out = [];
     const has = (id) => inv.stacks.find((s) => s.id === id);
     const steelish = inv.stacks.find((s) => /knife|axe|metal_scrap|nail|can/.test(s.id) || itemDef(s.id)?.tags?.includes('steel'));
@@ -331,6 +335,7 @@ export class Interact {
   // ---------------------------------------------------------------- fire
   fireAction(t, opt) {
     const g = this.game, P = g.sys.player, rec = t.fire, fires = g.sys.fires;
+    if (opt.id === 'lay') return this.layFire(rec);
     if (opt.id.startsWith('light:')) return this.lightFire(rec, opt.method);
     if (opt.id === 'fuel') { const s = opt.stack; const part = P.inv.take(s.uid, 1)[0]; const h = fires.addFuel(rec, part); if (h < 0) { P.inv.addStack(part); g.bus.emit('toast', { text: '丸太は 大きな 火でないと 燃えない。先に 枝を くべよう', kind: 'warn' }); } else g.sys.sfx?.play('drop'); return; }
     if (opt.id === 'skewer') { this.skewerCook(); return; }
@@ -340,6 +345,23 @@ export class Interact {
     if (opt.id.startsWith('pot:')) { const p = rec.pots.splice(+opt.id.split(':')[1], 1)[0]; if (p) P.inv.addStack(p.stack); return; }
     if (opt.id === 'torch') { const held = P.heldStack(); held.lit = 15; P.torchLit = true; g.bus.emit('toast', { text: 'たいまつに 火が ついた（15 分）', kind: 'good' }); return; }
     if (opt.id === 'sit') { P.resting = !P.resting; g.bus.emit('toast', { text: P.resting ? '火の そばで 休んでいる（動くと やめる）' : '立ち上がった', kind: 'info' }); return; }
+  }
+
+  /** §26 火の 組み方: lay tinder, kindling and fuel in order — a good lay lights more easily (×0.8–1.2) */
+  async layFire(rec) {
+    const g = this.game, P = g.sys.player, inv = P.inv;
+    const { WORK_FLOW } = await import('../data/handwork.js');
+    const K = g.sys.knowledge?.level?.('howto_fire_lay') ?? 0;
+    const r = await g.handwork.run(WORK_FLOW.firelay(), { title: '薪を 組む', key: 'firelay', tolMul: [0.9, 1, 1.1, 1.2][K], scene: { showOrder: K >= 2 || !!inv.find('guide') } });
+    if (r.cancelled) return;
+    inv.take('twig', 2); const br = inv.stacks.find((s) => /branch|driftwood|firewood/.test(s.id)); const fuel = br ? inv.take(br.uid, 1)[0] : null;
+    if (fuel) g.sys.fires.addFuel(rec, fuel);
+    P.validate();
+    rec.layP = r.failures.includes('order') ? Math.min(r.p, 0.3) : r.p;
+    g.passTime(3);
+    const lv = Math.max(K, 1) + (K < 2 && (P.stats.fireLays = (P.stats.fireLays || 0) + 1) >= 3 ? 1 : 0);
+    if (lv > K) g.sys.knowledge?.learn?.('howto_fire_lay', Math.min(lv, 2), 'やって 覚えた');
+    g.bus.emit('toast', { text: r.failures.includes('order') ? '組む 順が ちがった。空気が 通らず 火が つきにくい' : `薪を 組んだ（${r.feel.label}：火が つきやすく なった）`, kind: r.failures.includes('order') ? 'warn' : 'good' });
   }
 
   /** §24.7 串焼き: hold it over the fire, turn it twice, take it off when it looks right (your eye decides the doneness) */

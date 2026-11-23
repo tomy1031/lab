@@ -23,6 +23,13 @@ export const GUIDE_CATS = {
 
 export const GUIDE = {
   // ── 手順の 項目（§25.4 解体の 手順：K0〜K3。やって 覚える・図鑑・仲間に 教わる） ──────────
+  howto_fire_lay: {
+    cat: 'stone', name: '火の 組み方', provisional: '薪の 組み方', verdict: 'other', howto: true,
+    features: '下に 火口（枯れ草・ヤシの 繊維）、その まわりに 小枝を 三角に 立てかけ（ティピー）、外側に 太い 薪。空気の 通り道を 残す。',
+    uses: 'よく 組むと 火が つきやすい（×0.8〜1.2）。順を まちがえると 空気が 通らない。',
+    lookalike: null, where: 'たき火・炉', when: '火を おこす 前に',
+    icon: '🔥', color: '#e8743b',
+  },
   howto_trap_snare: {
     cat: 'animal', name: 'くくり罠の 仕掛け方', provisional: '罠の 仕掛け方（くくり罠）', verdict: 'food', howto: true,
     features: '獣道（踏まれた 草の 筋・ふん・足跡）の 上に。杭を 打ち、しなる 木を 曲げて、輪を 獲物の 頭の 高さに。引き金は そっと かける。',

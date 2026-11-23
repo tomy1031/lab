@@ -556,7 +556,8 @@ class Place extends Kind {
     const sc = step.scene;
     if (sc === 'drill') { this.tokens.forEach((t) => { t.x = t.hx = 400; t.y = t.hy = 345; }); }
     if (step.tokenAt) this.tokens.forEach((t, i) => { const p = step.tokenAt[Math.min(i, step.tokenAt.length - 1)]; t.x = t.hx = p[0]; t.y = t.hy = p[1]; });
-    this.slots = kinds.map((k, i) => (step.slotAt ? { x: step.slotAt[0], y: step.slotAt[1] - i * 8, w: step.slotAt[2] || 120, h: step.slotAt[3] || 70 } : sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
+    if (sc === 'firelay') this.slots = kinds.map((k, i) => ({ x: 470, y: 360 - i * 62, w: 170 - i * 20, h: 52 }));
+    else this.slots = kinds.map((k, i) => (step.slotAt ? { x: step.slotAt[0], y: step.slotAt[1] - i * 8, w: step.slotAt[2] || 120, h: step.slotAt[3] || 70 } : sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
     this.held = null; this.drops = 0;
     if (sc === 'filter') hw.sc.layers = [];
   }
@@ -606,6 +607,11 @@ class Place extends Kind {
   draw(ctx) {
     this.slots.forEach((s, i) => { if (i >= this.count || this.step.scene !== 'filter') if (i >= this.count) drawProp(ctx, 'slot', { x: s.x, y: s.y, w: s.w, h: s.h, active: i === this.count }); });
     for (const tk of this.tokens) if (!tk.placed || this.step.scene !== 'filter') drawProp(ctx, 'token', { x: tk.x, y: tk.y, kind: tk.kind, held: tk === this.held });
+    if (this.step.labels && this.hw.sc.showOrder) {
+      ctx.save(); ctx.font = '600 13px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#1f7f86'; ctx.textAlign = 'left';
+      this.slots.forEach((s, i) => { if (i >= this.count) ctx.fillText(this.step.labels[i], s.x + s.w / 2 + 8, s.y + 5); });
+      ctx.restore();
+    }
     if (this.step.ordered && this.count < this.slots.length) {
       ctx.save(); ctx.font = '600 14px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#5d5849'; ctx.textAlign = 'left';
       ctx.fillText('↑ 下から 順に', this.slots[0].x + 70, this.slots[0].y + 6); ctx.restore();
@@ -911,6 +917,9 @@ export class Handwork {
         break;
       case 'stake':
         drawProp(ctx, 'stake', { x: 400, y: 330, scale: 1.3, t, depth: sc.depth });
+        break;
+      case 'firelay': // the stone ring; the lay goes in bottom-up (tinder, kindling teepee, fuel)
+        drawProp(ctx, 'fire', { x: 470, y: 380, scale: 1.1, t, power: 0 });
         break;
       case 'carcass': // §25: the paper diagram (normal / mild), never 3D gore
         if (sc.carcass) drawCarcass(ctx, sc.carcass.species, sc.carcass.view, sc.carcass, { x: 40, y: 30, w: 720, h: 450 });
