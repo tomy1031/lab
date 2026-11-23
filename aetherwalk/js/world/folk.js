@@ -1,7 +1,8 @@
 // js/world/folk.js — 世界担当（FABLE の代行）
 // 島の人びと（コードで作るオリジナルの人形）と荷運びの獣「綿角」。DESIGN_V2 §5.1・§5.3。
-// 部位の種類ごとに 1 つの InstancedMesh を全員で共有する：胴・頭（顔つき）・かぶりもの・持ちもの・手足（腕と脚は同じ形）
-// ＋丸い影＋綿角 ＝ 何人いても 7 ドローコール。色は instanceColor（主）と iCol2（差し色）、形の違いは頂点シェーダーで選ぶ。
+// 体の形（体格・かぶりもの・持ちもの・重ね着の組み合わせ）ごとに 1 つのジオメトリを作り、同じ形の人を 1 回の描画でまとめる。
+// 部位（胴・頭・上腕・前腕・もも・すね・持ちもの）の行列と 10 色は、毎フレーム小さな float テクスチャ（48×8）に書き、頂点シェーダーが読む。
+// → ドローコールは「見えている形の数（野営地で 3）」＋丸い影 1 ＋綿角 1。三角形は実際に使う部品だけ（1 人 ≈ 900）。
 // 動きは手続き式：ポーズ＝時刻の関数で関節角を返し、2 つのポーズをなめらかにまぜる。描くのは半径 45 m の近い 8 人と 4 頭だけ。
 import * as THREE from 'three';
 import { AW_PARS, AwMaterial, sharedUniforms, FOG_LIGHT_UNIFORMS } from './art.js';
@@ -18,8 +19,8 @@ const OVER = { none: -1, cape: 0, apron: 1, scarf: 2, sash: 3 };
 export const FOLK_LOOKS = {
   towa: { coat: 0x5fc3d8, trim: 0xf4ecd8, skin: 0xf2c9a6, hair: 0x3b2a22, hatKind: 'hair', hat: 0x3b2a22, prop: 'staff', propOpt: 1, over: 'scarf', legs: 0x3f4d6b, boots: 0x6b4a2e, hem: 0.55, flare: 1.15, scale: 0.9 },
   gando: { coat: 0xb9aa8a, trim: 0x7a5232, skin: 0xe6b08c, hair: 0xf2f0ea, hatKind: 'beard', hat: 0xf2f0ea, prop: 'hammer', over: 'apron', legs: 0x5a4a3a, boots: 0x4a3426, hem: 0.45, flare: 1.0 },
-  mio: { ears: 1, coat: 0xffc8d6, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xff8fb3, prop: 'none', over: 'none', legs: 0xf4ecd8, boots: 0x8a5a3e, hem: 0.7, flare: 1.35 },
-  sora: { ears: 1, coat: 0xffe49a, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xffcf45, prop: 'none', over: 'none', legs: 0x6f8fb8, boots: 0x8a5a3e, hem: 0.55, flare: 1.2 },
+  mio: { ears: 1, coat: 0xffc8d6, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xff8fb3, prop: 'none', over: 'none', legs: 0xf4ecd8, boots: 0x8a5a3e, hem: 0.62, flare: 1.28 },
+  sora: { ears: 1, coat: 0xffe49a, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xffcf45, prop: 'none', over: 'none', legs: 0x6f8fb8, boots: 0x8a5a3e, hem: 0.62, flare: 1.28 },
   ruka: { coat: 0xc9a86a, trim: 0x8a3f35, skin: 0xd9a07c, hair: 0x2a1d18, hatKind: 'brim', hat: 0x7a5a3a, prop: 'basket', over: 'sash', legs: 0x5e4a36, boots: 0x4a3426, hem: 1.5, flare: 1.15, brim: 2.1, crown: 0.75 },
   zaji: { coat: 0x7a4a32, trim: 0xf4ecd8, skin: 0xc98a62, hair: 0x1f1714, hatKind: 'hair', hat: 0x1f1714, prop: 'none', over: 'sash', legs: 0x4f4636, boots: 0x3a2a20, hem: 0.35, flare: 1.0, sleeves: 'skin', armTrim: 0xf4ecd8 },
   yukime: { coat: 0x4f6fa8, trim: 0xf4f8ff, skin: 0xf2d6c2, hair: 0x2a2a3a, hatKind: 'fur', hat: 0xf4f8ff, prop: 'staff', propOpt: 2, over: 'cape', legs: 0x3a4a6a, boots: 0xe8e8f0, hem: 1.55, flare: 1.2 },
@@ -83,18 +84,18 @@ const V3 = THREE.Vector3;
 // 胴：腰（原点）から首まで。すそ（y < 0）は外套のすそで、長さと広がりはシェーダーで変える。前は −Z
 function torsoGeo() {
   const P = [];
-  const body = lathe([[0.001, 0.64], [0.06, 0.63], [0.07, 0.58], [0.16, 0.53], [0.2, 0.42], [0.185, 0.3], [0.155, 0.18], [0.165, 0.06], [0.185, -0.05], [0.215, -0.22], [0.25, -0.45]], 12);
+  const body = lathe([[0.001, 0.64], [0.07, 0.58], [0.16, 0.53], [0.2, 0.42], [0.185, 0.3], [0.155, 0.18], [0.165, 0.06], [0.185, -0.05], [0.215, -0.22], [0.25, -0.45]], 10);
   // 前後に平たく、背中は少し丸く
   P.push(bake(body, { m: [0, 0, 0, 0, 0, 0, 1, 1, 0.78], tag: 0, ao: (x, y) => (y < -0.05 ? 0.92 : y > 0.55 ? 0.95 : 1) }));
   // 帯（革）と金の留め具
-  P.push(bake(new THREE.CylinderGeometry(0.168, 0.172, 0.06, 12, 1, true), { m: [0, 0.1, 0, 0, 0, 0, 1, 1, 0.8], mat: 2, color: 0x5a3c26 }));
+  P.push(bake(new THREE.CylinderGeometry(0.168, 0.172, 0.06, 10, 1, true), { m: [0, 0.1, 0, 0, 0, 0, 1, 1, 0.8], mat: 2, color: 0x5a3c26 }));
   P.push(bake(new THREE.BoxGeometry(0.05, 0.045, 0.02), { m: [0, 0.1, -0.138], mat: 2, color: 0xffd76a }));
   // 重ね着（差し色）：0 肩の外套 1 前掛け 2 えり巻き 3 たすき
-  P.push(bake(lathe([[0.075, 0.6], [0.16, 0.56], [0.235, 0.42], [0.27, 0.24]], 12), { m: [0, 0, 0.012, 0, 0, 0, 1.04, 1, 0.86], mat: 1, v: 0 }));
+  P.push(bake(lathe([[0.075, 0.6], [0.16, 0.56], [0.235, 0.42], [0.27, 0.24]], 10), { m: [0, 0, 0.012, 0, 0, 0, 1.04, 1, 0.86], mat: 1, v: 0 }));
   P.push(bake(new THREE.PlaneGeometry(0.3, 0.72, 1, 3), { m: [0, 0.03, -0.17, -0.06, 0, 0, 1, 1, 1], mat: 1, v: 1, ao: (x, y) => 0.92 + 0.08 * (y + 0.36) }));
   P.push(bake(new THREE.BoxGeometry(0.045, 0.3, 0.02), { m: [0.11, 0.45, -0.115, 0, 0, 0.05], mat: 1, v: 1 }));
   P.push(bake(new THREE.BoxGeometry(0.045, 0.3, 0.02), { m: [-0.11, 0.45, -0.115, 0, 0, -0.05], mat: 1, v: 1 }));
-  P.push(bake(new THREE.TorusGeometry(0.095, 0.04, 5, 12), { m: [0, 0.57, 0, Math.PI / 2, 0, 0, 1, 1, 0.9], mat: 1, v: 2 }));
+  P.push(bake(new THREE.TorusGeometry(0.095, 0.04, 4, 10), { m: [0, 0.57, 0, Math.PI / 2, 0, 0, 1, 1, 0.9], mat: 1, v: 2 }));
   P.push(bake(new THREE.BoxGeometry(0.07, 0.34, 0.03), { m: [0.06, 0.38, -0.13, 0.12, 0, 0.15], mat: 1, v: 2 }));
   P.push(bake(new THREE.BoxGeometry(0.06, 0.62, 0.02), { m: [0.01, 0.3, -0.142, 0, 0, -0.62], mat: 1, v: 3 }));
   P.push(bake(new THREE.BoxGeometry(0.06, 0.62, 0.02), { m: [0.01, 0.3, 0.126, 0, 0, 0.62], mat: 1, v: 3 }));
@@ -103,8 +104,8 @@ function torsoGeo() {
 // 頭：半径 1（行列で頭の大きさにする）。顔は目の点 2 つ（白い光つき）、ほほの色、小さな鼻、まゆ（髪の色）。口は描かない
 function headGeo() {
   const P = [];
-  P.push(bake(new THREE.SphereGeometry(1, 12, 9), { m: [0, 0, 0, 0, 0, 0, 0.96, 1.04, 0.98], ao: (x, y, z) => (y < -0.6 ? 0.82 : 1) }));
-  const onFace = (x, y, sx, sy, mat, color, d = 1.0, seg = 8) => {
+  P.push(bake(new THREE.SphereGeometry(1, 10, 7), { m: [0, 0, 0, 0, 0, 0, 0.96, 1.04, 0.98], ao: (x, y, z) => (y < -0.6 ? 0.82 : 1) }));
+  const onFace = (x, y, sx, sy, mat, color, d = 1.0, seg = 6) => {
     const z = -Math.sqrt(Math.max(0, 1 - x * x - y * y)) * 0.99 - 0.005 * d;
     const nrm = new V3(x, y, z).normalize();
     const q = new THREE.Quaternion().setFromUnitVectors(new V3(0, 0, -1), nrm);
@@ -114,19 +115,19 @@ function headGeo() {
   };
   for (const s of [-1, 1]) {
     P.push(onFace(0.33 * s, 0.04, 0.135, 0.19, 2, 0x231815, 1.02));        // 目
-    P.push(onFace(0.33 * s + 0.045, 0.1, 0.045, 0.045, 2, 0xfff6ea, 1.045, 5));  // 目の光
+    P.push(onFace(0.33 * s + 0.045, 0.1, 0.045, 0.045, 2, 0xfff6ea, 1.045, 4));  // 目の光
     P.push(onFace(0.5 * s, -0.2, 0.15, 0.1, 2, 0xf09a96, 1.015));            // ほほ
     P.push(bake(new THREE.BoxGeometry(0.22, 0.045, 0.06), { m: [0.33 * s, 0.3, -0.92, 0, 0, -0.12 * s], mat: 1 }));   // まゆ
   }
-  P.push(bake(new THREE.SphereGeometry(0.13, 6, 4), { m: [0, -0.1, -0.98, 0, 0, 0, 1, 0.9, 0.9], ao: () => 0.97 }));   // 鼻
-  for (const s of [-1, 1]) P.push(bake(new THREE.SphereGeometry(0.17, 6, 4), { m: [0.97 * s, -0.05, 0.02, 0, 0, 0, 0.5, 1, 0.8] }));   // 耳
+  P.push(bake(new THREE.SphereGeometry(0.13, 4, 3), { m: [0, -0.1, -0.98, 0, 0, 0, 1, 0.9, 0.9], ao: () => 0.97 }));   // 鼻
+  for (const s of [-1, 1]) P.push(bake(new THREE.SphereGeometry(0.17, 4, 3), { m: [0.97 * s, -0.05, 0.02, 0, 0, 0, 0.5, 1, 0.8] }));   // 耳
   return join(P);
 }
 // かぶりもの（頭と同じ行列、頭の半径 = 1）：0 髪 1 頭巾 2 つばのある帽子 3 白いひげ（はげ頭のまわりの髪つき）4 毛皮の襟と編み髪
 function hatGeo() {
   const P = [];
   const shell = (r, cutFront, cutLow, back) => {
-    const g = new THREE.SphereGeometry(r, 12, 8).toNonIndexed();
+    const g = new THREE.SphereGeometry(r, 10, 7).toNonIndexed();
     const p = g.getAttribute('position');
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -142,30 +143,30 @@ function hatGeo() {
   P.push(bake(new THREE.ConeGeometry(0.16, 0.42, 5), { m: [0.25, 0.98, -0.2, -0.5, 0, -0.5], mat: 1, v: 0 }));
   // 頭巾：大きくやわらかい頭巾。うしろへ垂れる先と、先の房（差し色）
   P.push(bake(shell(1.28, 0.55, -1.0, 0.8), { mat: 0, v: 1, ao: (x, y, z) => (z < -0.6 && y < 0.6 ? 0.7 : 0.88 + 0.12 * Math.max(0, y)) }));
-  P.push(bake(new THREE.ConeGeometry(0.55, 1.15, 8), { m: [0, 0.2, 1.3, -1.95, 0, 0], mat: 0, v: 1, tag: 1 }));
-  P.push(bake(new THREE.SphereGeometry(0.26, 7, 5), { m: [0, -0.32, 1.78], mat: 1, v: 1, tag: 1 }));
+  P.push(bake(new THREE.ConeGeometry(0.55, 1.15, 6, 1, true), { m: [0, 0.2, 1.3, -1.95, 0, 0], mat: 0, v: 1, tag: 1 }));
+  P.push(bake(new THREE.SphereGeometry(0.26, 5, 4), { m: [0, -0.32, 1.78], mat: 1, v: 1, tag: 1 }));
   // 子どもの頭巾の耳（しるし 4、iA.z = 1 のときだけ）
-  for (const sx of [-1, 1]) P.push(bake(new THREE.SphereGeometry(0.34, 7, 5), { m: [0.68 * sx, 1.02, 0.05, 0, 0, -0.5 * sx, 0.75, 1, 0.5], mat: 0, v: 1, tag: 4 }));
-  P.push(bake(new THREE.TorusGeometry(1.08, 0.14, 5, 16, Math.PI * 1.15), { m: [0, 0.02, -0.32, -0.3, 0, Math.PI * 0.925 / 2 + Math.PI / 2, 1, 1, 0.78], mat: 1, v: 1 }));
+  for (const sx of [-1, 1]) P.push(bake(new THREE.SphereGeometry(0.34, 6, 4), { m: [0.68 * sx, 1.02, 0.05, 0, 0, -0.5 * sx, 0.75, 1, 0.5], mat: 0, v: 1, tag: 4 }));
+  P.push(bake(new THREE.TorusGeometry(1.08, 0.14, 3, 10, Math.PI * 1.15), { m: [0, 0.02, -0.32, -0.3, 0, Math.PI * 0.925 / 2 + Math.PI / 2, 1, 1, 0.78], mat: 1, v: 1 }));
   // つばのある帽子：山（主）、帯（差し色）、つば（主）。つばの半径と山の高さはシェーダー
-  P.push(bake(lathe([[0.001, 1.55], [0.55, 1.5], [0.82, 1.3], [0.92, 0.75], [1.0, 0.55]], 12), { mat: 0, v: 2, tag: 2, ao: (x, y) => (y < 0.8 ? 0.85 : 1) }));
-  P.push(bake(new THREE.CylinderGeometry(0.95, 0.99, 0.2, 12, 1, true), { m: [0, 0.7, 0], mat: 1, v: 2, tag: 2 }));
-  P.push(bake(lathe([[0.98, 0.58], [1.5, 0.5], [2.0, 0.38], [2.0, 0.34], [1.5, 0.45], [0.98, 0.52]], 14), { mat: 0, v: 2, tag: 3 }));
+  P.push(bake(lathe([[0.001, 1.55], [0.55, 1.5], [0.82, 1.3], [0.92, 0.75], [1.0, 0.55]], 10), { mat: 0, v: 2, tag: 2, ao: (x, y) => (y < 0.8 ? 0.85 : 1) }));
+  P.push(bake(new THREE.CylinderGeometry(0.95, 0.99, 0.2, 10, 1, true), { m: [0, 0.7, 0], mat: 1, v: 2, tag: 2 }));
+  P.push(bake(lathe([[0.98, 0.58], [2.0, 0.38], [2.0, 0.33], [0.98, 0.52]], 12), { mat: 0, v: 2, tag: 3 }));
   // ひげ：あごから胸へ。口ひげ、耳のまわりの髪
   P.push(bake(new THREE.ConeGeometry(0.62, 1.25, 8), { m: [0, -0.85, -0.55, Math.PI + 0.35, 0, 0, 1, 1, 0.75], mat: 1, v: 3, ao: (x, y) => 0.85 + 0.15 * Math.max(0, Math.min(1, y + 1)) }));
-  P.push(bake(new THREE.CapsuleGeometry(0.12, 0.5, 2, 6), { m: [0, -0.33, -0.9, 0, 0, Math.PI / 2, 1, 1, 0.8], mat: 1, v: 3 }));
-  P.push(bake(new THREE.TorusGeometry(0.98, 0.2, 5, 14, Math.PI * 1.25), { m: [0, -0.05, 0.05, Math.PI / 2, 0, Math.PI * 1.375 + Math.PI / 2, 1, 1, 1], mat: 1, v: 3 }));
+  P.push(bake(new THREE.CylinderGeometry(0.11, 0.11, 0.62, 5), { m: [0, -0.33, -0.92, 0, 0, Math.PI / 2, 1, 1, 0.8], mat: 1, v: 3 }));
+  P.push(bake(new THREE.TorusGeometry(0.98, 0.2, 3, 10, Math.PI * 1.25), { m: [0, -0.05, 0.05, Math.PI / 2, 0, Math.PI * 1.375 + Math.PI / 2, 1, 1, 1], mat: 1, v: 3 }));
   // 毛皮の襟（主）と長い編み髪（差し色）
-  P.push(bake(new THREE.TorusGeometry(0.95, 0.38, 6, 12), { m: [0, -1.15, 0.05, Math.PI / 2, 0, 0, 1.1, 1, 0.9], mat: 0, v: 4, ao: (x, y) => 0.9 + 0.1 * Math.max(0, y + 1.2) }));
+  P.push(bake(new THREE.TorusGeometry(0.95, 0.38, 4, 10), { m: [0, -1.15, 0.05, Math.PI / 2, 0, 0, 1.1, 1, 0.9], mat: 0, v: 4, ao: (x, y) => 0.9 + 0.1 * Math.max(0, y + 1.2) }));
   P.push(bake(shell(1.06, 0.5, -0.4, 0.3), { mat: 1, v: 4 }));
-  for (let i = 0; i < 6; i++) P.push(bake(new THREE.SphereGeometry(0.2 - i * 0.015, 6, 4), { m: [0.05 * Math.sin(i), -0.35 - i * 0.36, 1.02 + i * 0.03, 0, 0, 0, 1, 1.25, 1], mat: 1, v: 4 }));
+  for (let i = 0; i < 6; i++) P.push(bake(new THREE.OctahedronGeometry(0.2 - i * 0.015), { m: [0.05 * Math.sin(i), -0.35 - i * 0.36, 1.02 + i * 0.03, 0, 0, 0, 1, 1.25, 1], mat: 1, v: 4 }));
   return join(P);
 }
 // 持ちもの（手の中：原点 = にぎり、−Y = 前腕の先）：0 杖（先に風車 1／鈴 2）1 小さな金槌 2 釣りざお 3 背負い籠（背中） 4 手提げの灯籠
 function propGeo() {
   const P = [];
   P.push(bake(new THREE.CylinderGeometry(0.017, 0.02, 1.95, 6), { m: [0, 0.12, 0], mat: 2, color: 0x8a6a45, v: 0 }));
-  P.push(bake(new THREE.SphereGeometry(0.03, 6, 4), { m: [0, 1.1, 0], mat: 2, color: 0xffd76a, v: 0 }));
+  P.push(bake(new THREE.OctahedronGeometry(0.032), { m: [0, 1.1, 0], mat: 2, color: 0xffd76a, v: 0 }));
   // 風車（しるし 1：回る）
   const cols = [0x7fe9ff, 0xfffbe8, 0xffd76a, 0x7fe9ff, 0xfffbe8, 0xffd76a];
   for (let i = 0; i < 6; i++) {
@@ -176,7 +177,7 @@ function propGeo() {
     P.push(bake(tri, { m: [0, 1.13, -0.04], mat: 2, color: cols[i], v: 0, tag: 1 }));
   }
   // 鈴（しるし 2）
-  P.push(bake(lathe([[0.001, 0.0], [0.045, 0.005], [0.04, 0.05], [0.025, 0.09], [0.001, 0.1]], 8), { m: [0.05, 0.92, 0], mat: 2, color: 0xffd76a, v: 0, tag: 2 }));
+  P.push(bake(lathe([[0.001, 0.0], [0.045, 0.005], [0.04, 0.05], [0.025, 0.09], [0.001, 0.1]], 6), { m: [0.05, 0.92, 0], mat: 2, color: 0xffd76a, v: 0, tag: 2 }));
   P.push(bake(new THREE.CylinderGeometry(0.004, 0.004, 0.16, 3), { m: [0.03, 1.0, 0, 0, 0, 0.6], mat: 2, color: 0x7fe9ff, v: 0, tag: 2 }));
   // 金槌
   P.push(bake(new THREE.CylinderGeometry(0.014, 0.016, 0.32, 5), { m: [0, -0.04, -0.06, Math.PI / 2, 0, 0], mat: 2, color: 0x7a5a3a, v: 1 }));
@@ -198,38 +199,38 @@ function propGeo() {
 }
 // 腕と脚（同じ形、長さ 1・半径 1 を行列とシェーダーで細くする）：上の節（主）、下の節（曲がる、主）、先（手＝差し色の肌 / 足＝長ぐつ）
 function limbGeo() {
-  // 太さ 0.1（長さ 1 に対して）で作り、人ごとの太さはシェーダーで横方向だけ変える
+  // 太さ 0.1（長さ 1 に対して）で作る。人ごとの太さは形を作るときに横方向だけ変える。上の節は aF.y = 0、下の節は 1
+  // 5 角の筒と小さな球（なめらかな陰影で丸く見える）。しるし 6 は付け根の球（脚では外套に隠れるので省く）
   const T = 0.1, P = [];
-  P.push(bake(new THREE.CylinderGeometry(T, T * 0.86, 0.5, 8, 1, true), { m: [0, -0.25, 0], bend: 0 }));
-  P.push(bake(new THREE.SphereGeometry(T * 0.98, 8, 5), { m: [0, -0.01, 0, 0, 0, 0, 1, 0.8, 1], bend: 0 }));
-  P.push(bake(new THREE.SphereGeometry(T * 0.87, 8, 5), { m: [0, -0.5, 0], bend: 1 }));
-  P.push(bake(new THREE.CylinderGeometry(T * 0.86, T * 0.72, 0.42, 8, 1, true), { m: [0, -0.71, 0], bend: 1 }));
-  P.push(bake(new THREE.CylinderGeometry(T * 0.8, T * 0.8, 0.07, 8, 1, true), { m: [0, -0.905, 0], mat: 1, bend: 1 }));     // 袖口・長ぐつの口
-  P.push(bake(new THREE.SphereGeometry(T * 0.86, 8, 6), { m: [0, -0.985, 0, 0, 0, 0, 0.92, 1.1, 1], mat: 1, bend: 1, tag: 5 }));
+  P.push(bake(new THREE.CylinderGeometry(T, T * 0.86, 0.5, 5, 1, true), { m: [0, -0.25, 0], bend: 0 }));
+  P.push(bake(new THREE.SphereGeometry(T * 0.98, 5, 3), { m: [0, -0.01, 0, 0, 0, 0, 1, 0.8, 1], bend: 0, tag: 6 }));
+  P.push(bake(new THREE.SphereGeometry(T * 0.87, 5, 3), { m: [0, -0.5, 0], bend: 1 }));
+  P.push(bake(new THREE.CylinderGeometry(T * 0.86, T * 0.74, 0.46, 5, 1, true), { m: [0, -0.73, 0], bend: 1 }));
+  P.push(bake(new THREE.SphereGeometry(T * 0.86, 5, 4), { m: [0, -0.975, 0, 0, 0, 0, 0.92, 1.1, 1], mat: 1, bend: 1, tag: 5 }));
   return join(P);
 }
 // 綿角：綿のかたまりの胴、短い脚 4 本（しるし 10〜13 がふる）、首から先（しるし 6 がうなずく）、小さな巻き角、荷鞍（差し色、しるし 7）
 function beastGeo() {
   const P = [];
   const wool = 0xffffff;
-  P.push(bake(new THREE.SphereGeometry(0.5, 10, 7), { m: [0, 0.82, 0.05, 0, 0, 0, 0.92, 0.82, 1.35], color: wool, ao: (x, y) => (y < 0.6 ? 0.82 : 1) }));
+  P.push(bake(new THREE.SphereGeometry(0.5, 8, 6), { m: [0, 0.82, 0.05, 0, 0, 0, 0.92, 0.82, 1.35], color: wool, ao: (x, y) => (y < 0.6 ? 0.82 : 1) }));
   const puffs = [[0.32, 0.98, -0.3, 0.3], [-0.3, 0.98, -0.25, 0.3], [0.28, 1.04, 0.32, 0.3], [-0.3, 1.0, 0.36, 0.31], [0, 1.15, 0.05, 0.34], [0, 0.9, 0.62, 0.3], [0.36, 0.78, 0.05, 0.27], [-0.36, 0.78, 0.05, 0.27]];
-  for (const [x, y, z, r] of puffs) P.push(bake(new THREE.SphereGeometry(r, 7, 5), { m: [x, y, z], color: wool, ao: (px, py) => (py < 0.75 ? 0.85 : 1) }));
+  for (const [x, y, z, r] of puffs) P.push(bake(new THREE.SphereGeometry(r, 6, 4), { m: [x, y, z], color: wool, ao: (px, py) => (py < 0.75 ? 0.85 : 1) }));
   // 脚
   [[0.22, -0.4], [-0.22, -0.4], [0.22, 0.45], [-0.22, 0.45]].forEach(([x, z], i) => {
-    P.push(bake(new THREE.CylinderGeometry(0.07, 0.06, 0.62, 6), { m: [x, 0.33, z], mat: 2, color: 0x6b5038, tag: 10 + i }));
-    P.push(bake(new THREE.CylinderGeometry(0.075, 0.08, 0.06, 6), { m: [x, 0.03, z], mat: 2, color: 0x3a2a20, tag: 10 + i }));
+    P.push(bake(new THREE.CylinderGeometry(0.07, 0.06, 0.62, 5, 1, true), { m: [x, 0.33, z], mat: 2, color: 0x6b5038, tag: 10 + i }));
+    P.push(bake(new THREE.CylinderGeometry(0.075, 0.08, 0.06, 5), { m: [x, 0.03, z], mat: 2, color: 0x3a2a20, tag: 10 + i }));
   });
   // 首と頭（原点の前にある首の付け根でうなずく）
-  P.push(bake(new THREE.SphereGeometry(0.26, 8, 6), { m: [0, 1.06, -0.62, 0, 0, 0, 0.9, 1, 1.05], color: wool, tag: 6 }));
-  P.push(bake(new THREE.SphereGeometry(0.2, 8, 6), { m: [0, 1.04, -0.84, 0.25, 0, 0, 0.82, 0.86, 1.25], mat: 1, color: 0xffffff, tag: 6 }));
-  P.push(bake(new THREE.SphereGeometry(0.11, 6, 4), { m: [0, 0.96, -1.04, 0, 0, 0, 1.1, 0.8, 0.8], mat: 2, color: 0x8a6a52, tag: 6 }));
+  P.push(bake(new THREE.SphereGeometry(0.26, 7, 5), { m: [0, 1.06, -0.62, 0, 0, 0, 0.9, 1, 1.05], color: wool, tag: 6 }));
+  P.push(bake(new THREE.SphereGeometry(0.2, 7, 5), { m: [0, 1.04, -0.84, 0.25, 0, 0, 0.82, 0.86, 1.25], mat: 1, color: 0xffffff, tag: 6 }));
+  P.push(bake(new THREE.SphereGeometry(0.11, 5, 3), { m: [0, 0.96, -1.04, 0, 0, 0, 1.1, 0.8, 0.8], mat: 2, color: 0x8a6a52, tag: 6 }));
   for (const s of [-1, 1]) {
-    P.push(bake(new THREE.SphereGeometry(0.035, 5, 4), { m: [0.13 * s, 1.1, -0.95], mat: 2, color: 0x1f1714, tag: 6 }));
-    P.push(bake(new THREE.TorusGeometry(0.07, 0.025, 4, 8, Math.PI * 1.3), { m: [0.14 * s, 1.24, -0.74, 0, Math.PI / 2, 0.4 * s], mat: 2, color: 0xc8a25a, tag: 6 }));
-    P.push(bake(new THREE.SphereGeometry(0.08, 5, 4), { m: [0.24 * s, 1.14, -0.68, 0, 0, 0.6 * s, 1.4, 0.5, 0.8], mat: 1, color: 0xffffff, tag: 6 }));
+    P.push(bake(new THREE.OctahedronGeometry(0.035), { m: [0.13 * s, 1.1, -0.95], mat: 2, color: 0x1f1714, tag: 6 }));
+    P.push(bake(new THREE.TorusGeometry(0.07, 0.025, 3, 6, Math.PI * 1.3), { m: [0.14 * s, 1.24, -0.74, 0, Math.PI / 2, 0.4 * s], mat: 2, color: 0xc8a25a, tag: 6 }));
+    P.push(bake(new THREE.SphereGeometry(0.08, 4, 3), { m: [0.24 * s, 1.14, -0.68, 0, 0, 0.6 * s, 1.4, 0.5, 0.8], mat: 1, color: 0xffffff, tag: 6 }));
   }
-  P.push(bake(new THREE.SphereGeometry(0.12, 6, 4), { m: [0, 0.95, 0.78], color: wool }));
+  P.push(bake(new THREE.SphereGeometry(0.12, 4, 3), { m: [0, 0.95, 0.78], color: wool }));
   // 荷鞍（隊商だけ）：鞍、両脇の荷、赤い布
   P.push(bake(new THREE.BoxGeometry(0.7, 0.12, 0.5), { m: [0, 1.28, 0.05], mat: 2, color: 0x8a3f35, tag: 7 }));
   for (const s of [-1, 1]) P.push(bake(new THREE.BoxGeometry(0.22, 0.34, 0.42), { m: [0.46 * s, 1.0, 0.05], mat: 2, color: 0xb08a52, tag: 7, ao: (x, y) => (y < 0.9 ? 0.8 : 1) }));
@@ -300,6 +301,92 @@ void main() {
   vec3 c = awShade(n, vCol, vd, uRim, 1.0, uTrans, 0.08, 18.0);
   gl_FragColor = vec4(mix(c, vFog.rgb, vFog.a), 1.0);
   #include <colorspace_fragment>
+}`;
+
+// ── 体の形（テンプレート） ──
+const BONE = { torso: 0, head: 1, uaL: 2, faL: 3, uaR: 4, faR: 5, thL: 6, shL: 7, thR: 8, shR: 9, prop: 10 };
+const NBONE = 11, ROW = 48, CS0 = NBONE * 3;          // 1 人 1 行：骨 11 本 × 3 テクセル、そのあと色 10 個
+const SLOT = { coat: 0, trim: 1, skin: 2, hair: 3, hat: 4, hat2: 5, arm: 6, hand: 7, legs: 8, boots: 9, fixed: 10 };
+let SRC = null;
+const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+function templateKey(kind, L) {
+  return [kind, L.hatKind, L.ears ? 1 : 0, L.brim ?? 2, L.crown ?? 0.6, L.prop, L.propOpt ?? 0, L.over, L.hem ?? 1, L.flare ?? 1.1].join('|');
+}
+function buildTemplate(kind, L) {
+  if (!SRC) SRC = { torso: torsoGeo(), head: headGeo(), hat: hatGeo(), prop: propGeo(), limb: limbGeo() };
+  const B = BODY[kind] || BODY.adult;
+  const pos = [], nor = [], col = [], bone = [], cs = [], tag = [];
+  const hv = HATS[L.hatKind] ?? -1, pv = PROPS[L.prop] ?? -1, ov = OVER[L.over] ?? -1, po = L.propOpt ?? 0;
+  const brim = L.brim ?? 2, crown = L.crown ?? 0.6, hem = L.hem ?? 1, flare = L.flare ?? 1.1;
+  function add(g, slots, keepV, boneOf, xf) {
+    const P = g.getAttribute('position').array, N = g.getAttribute('normal').array, C = g.getAttribute('color').array, F = g.getAttribute('aF').array;
+    const n = P.length / 3;
+    for (let t = 0; t < n; t += 3) {
+      if (!keepV(F[t * 4 + 2], F[t * 4 + 3])) continue;
+      for (let q = t; q < t + 3; q++) {
+        const o = [P[q * 3], P[q * 3 + 1], P[q * 3 + 2]], f = [F[q * 4], F[q * 4 + 1], F[q * 4 + 2], F[q * 4 + 3]];
+        if (xf) xf(o, f);
+        pos.push(o[0], o[1], o[2]); nor.push(N[q * 3], N[q * 3 + 1], N[q * 3 + 2]); col.push(C[q * 3], C[q * 3 + 1], C[q * 3 + 2]);
+        cs.push(slots[Math.round(f[0])]); bone.push(boneOf(f)); tag.push(f[3] > 0.5 && f[3] < 1.5 && slots === PROP_SLOTS ? 1 : 0);
+      }
+    }
+  }
+  const PROP_SLOTS = [SLOT.fixed, SLOT.fixed, SLOT.fixed];
+  // 胴（重ね着を選び、すその長さと広がりを焼きこむ）
+  add(SRC.torso, [SLOT.coat, SLOT.trim, SLOT.fixed], (v) => v < -0.5 || v === ov, () => BONE.torso, (o) => {
+    if (o[1] < 0) { o[1] *= hem; const k = 1 + (flare - 1) * Math.min(1, Math.max(0, -o[1] / 0.45)); o[0] *= k; o[2] *= k; }
+  });
+  // 頭とかぶりもの（同じ骨）
+  add(SRC.head, [SLOT.skin, SLOT.hair, SLOT.fixed], () => true, () => BONE.head);
+  if (hv >= 0) add(SRC.hat, [SLOT.hat, SLOT.hat2, SLOT.fixed], (v, tg) => v === hv && (tg < 3.5 || tg > 4.5 || L.ears), () => BONE.head, (o, f) => {
+    if (f[3] > 2.5 && f[3] < 3.5) { const k = 1 + (brim * 0.5 - 1) * sm(1, 2, Math.hypot(o[0], o[2])); o[0] *= k; o[2] *= k; }
+    if (f[3] > 1.5 && f[3] < 2.5 && o[1] > 0.75) o[1] = 0.75 + (o[1] - 0.75) * crown;
+  });
+  // 持ちもの（風車は 1、鈴は 2 のときだけ）
+  if (pv >= 0) add(SRC.prop, PROP_SLOTS, (v, tg) => v === pv && !(tg > 0.5 && tg < 1.5 && po !== 1) && !(tg > 1.5 && tg < 2.5 && po !== 2), () => BONE.prop);
+  // 腕と脚（太さ、足は前へのばした長ぐつ）
+  const limb = (up, lo, slots, th, foot) => add(SRC.limb, slots, (v, tg) => !(foot && tg > 5.5 && tg < 6.5 && hem > 0.3), (f) => (f[1] > 0.5 ? lo : up), (o, f) => {
+    o[0] *= th / 0.1; o[2] *= th / 0.1;
+    if (foot && f[3] > 4.5) { o[2] = o[2] * 2.1 - 0.07; o[1] = Math.max(o[1], -1.03); }
+  });
+  limb(BONE.uaL, BONE.faL, [SLOT.arm, SLOT.hand, SLOT.fixed], B.armT, false);
+  limb(BONE.uaR, BONE.faR, [SLOT.arm, SLOT.hand, SLOT.fixed], B.armT, false);
+  limb(BONE.thL, BONE.shL, [SLOT.legs, SLOT.boots, SLOT.fixed], B.legT, true);
+  limb(BONE.thR, BONE.shR, [SLOT.legs, SLOT.boots, SLOT.fixed], B.legT, true);
+  const g = new THREE.InstancedBufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute('aBone', new THREE.BufferAttribute(new Float32Array(bone), 1));
+  g.setAttribute('aCs', new THREE.BufferAttribute(new Float32Array(cs), 1));
+  g.setAttribute('aTag', new THREE.BufferAttribute(new Float32Array(tag), 1));
+  g.setAttribute('aRow', new THREE.InstancedBufferAttribute(new Float32Array(MAXP), 1).setUsage(THREE.DynamicDrawUsage));
+  g.instanceCount = 0;
+  return g;
+}
+const FIG_VERT = /* glsl */`
+${AW_PARS}
+uniform sampler2D uBones;
+uniform vec4 uFire;
+attribute float aBone, aCs, aTag, aRow;
+varying vec3 vCol; varying vec3 vN; varying vec3 vWp; varying vec4 vFog;
+vec4 bt(int x, int y) { return texelFetch(uBones, ivec2(x, y), 0); }
+void main() {
+  int row = int(aRow + 0.5), b = int(aBone + 0.5) * 3;
+  vec3 p = position;
+  // 杖の風車は回る
+  if (aTag > 0.5) { float a = uTime * 3.0; vec2 q = p.xy - vec2(0.0, 1.13); p.xy = vec2(q.x * cos(a) - q.y * sin(a), q.x * sin(a) + q.y * cos(a)) + vec2(0.0, 1.13); }
+  vec4 p4 = vec4(p, 1.0);
+  vec4 r0 = bt(b, row), r1 = bt(b + 1, row), r2 = bt(b + 2, row);
+  vec3 wp = vec3(dot(r0, p4), dot(r1, p4), dot(r2, p4));
+  vN = normalize(vec3(dot(r0.xyz, normal), dot(r1.xyz, normal), dot(r2.xyz, normal)));
+  vec3 base = aCs > 9.5 ? vec3(1.0) : bt(${CS0} + int(aCs + 0.5), row).rgb;
+  vCol = base * color;
+  vec3 fl = uFire.xyz - wp; float fd = length(fl);
+  vCol += vCol * vec3(1.0, 0.55, 0.22) * (uFire.w * max(dot(vN, fl / max(fd, 0.01)), 0.0) * 0.6 + uFire.w * 0.12) / (1.0 + fd * fd * 0.09);
+  vWp = wp;
+  vFog = awFog(wp);
+  gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
 }`;
 
 // ── ポーズ：関節角（rad）を返す。t = 時刻、g = 歩きの位相、r = その人の乱数 ──
@@ -386,13 +473,41 @@ export function createFolk(env) {
     group.add(m);
     return m;
   };
-  const M = {
-    torso: mk(torsoGeo(), mkMat(0, 0, 0.15, THREE.DoubleSide), MAXP, 'folk-torso'),
-    head: mk(headGeo(), mkMat(1), MAXP, 'folk-head'),
-    hat: mk(hatGeo(), mkMat(2, 0, 0.1, THREE.DoubleSide), MAXP, 'folk-hat'),
-    prop: mk(propGeo(), mkMat(3, 0, 0, THREE.DoubleSide), MAXP, 'folk-prop'),
-    limb: mk(limbGeo(), mkMat(4, -0.5), MAXP * 4, 'folk-limb'),
-    beast: mk(beastGeo(), mkMat(5, 0, 0.25), MAXB, 'folk-beast'),
+  const M = { beast: mk(beastGeo(), mkMat(5, 0, 0.25), MAXB, 'folk-beast') };
+  // 人：形ごとのメッシュ（spawn のときに作る）。骨と色は 1 枚の float テクスチャ
+  const boneData = new Float32Array(ROW * MAXP * 4);
+  const boneTex = new THREE.DataTexture(boneData, ROW, MAXP, THREE.RGBAFormat, THREE.FloatType);
+  boneTex.minFilter = boneTex.magFilter = THREE.NearestFilter; boneTex.generateMipmaps = false; boneTex.needsUpdate = true;
+  const figMat = new AwMaterial({
+    uniforms: sharedUniforms(FOG_LIGHT_UNIFORMS, { uBones: { value: boneTex }, uFire: { value: FIRE }, uRim: { value: 0.42 }, uTrans: { value: 0.12 } }),
+    vertexShader: FIG_VERT, fragmentShader: FRAG, vertexColors: true, side: THREE.DoubleSide,
+  });
+  const templates = new Map();     // key → { mesh, geo, n }
+  function templateOf(kind, L) {
+    const key = templateKey(kind, L);
+    let t = templates.get(key);
+    if (!t) {
+      const geo = buildTemplate(kind, L);
+      const mesh = new THREE.Mesh(geo, figMat);
+      mesh.frustumCulled = false; mesh.matrixAutoUpdate = false; mesh.visible = false; mesh.name = 'folk-' + kind + '-' + L.hatKind + '-' + L.prop;
+      group.add(mesh);
+      t = { key, mesh, geo, n: 0 };
+      templates.set(key, t);
+    }
+    return t;
+  }
+  const putM = (row, b, m) => {
+    const E = m.elements, o = (row * ROW + b * 3) * 4, D = boneData;
+    D[o] = E[0]; D[o + 1] = E[4]; D[o + 2] = E[8]; D[o + 3] = E[12];
+    D[o + 4] = E[1]; D[o + 5] = E[5]; D[o + 6] = E[9]; D[o + 7] = E[13];
+    D[o + 8] = E[2]; D[o + 9] = E[6]; D[o + 10] = E[10]; D[o + 11] = E[14];
+  };
+  const lookColors = (L) => {
+    const hexes = [L.coat, L.trim, L.skin, L.hair, L.hat, L.hatKind === 'hood' || L.hatKind === 'brim' ? (L.trim ?? 0xf4ecd8) : L.hair,
+      L.sleeves === 'skin' ? L.skin : L.coat, L.sleeves === 'skin' ? (L.armTrim ?? L.skin) : L.skin, L.legs, L.boots];
+    const out = new Float32Array(40);
+    hexes.forEach((h, i) => { const c = new THREE.Color(h ?? 0xffffff); out[i * 4] = c.r; out[i * 4 + 1] = c.g; out[i * 4 + 2] = c.b; out[i * 4 + 3] = 1; });
+    return out;
   };
   // 丸い影（全員で 1 枚のインスタンス）
   const shGeo = new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
@@ -440,16 +555,21 @@ export function createFolk(env) {
     const S2 = { body, beast, from: 'idle', to: 'idle', k: 1, k0: 1, dur: 0.25, look: null, lookOn: false, talk: 0, talkS: 0, gait: rng.next() * 6.28, r: rng.next() * 10,
       hy: 0, hp: 0, lastX: x, lastZ: z, speed: 0, appear: 0, ja: J0(), jb: J0(), j: J0(), frame: 0 };
     f._s = S2; nextId++;
+    if (!beast) { S2.tpl = templateOf(kind, L); S2.cols = lookColors(L); }
     list.push(f);
     return f;
   }
   function remove(f) { const i = list.indexOf(f); if (i >= 0) list.splice(i, 1); }
 
   // ── 毎フレーム ──
-  const mA = new THREE.Matrix4(), mB = new THREE.Matrix4(), mT = new THREE.Matrix4(), mR = new THREE.Matrix4(), mS = new THREE.Matrix4(), mH = new THREE.Matrix4(), hand = new THREE.Matrix4();
+  const mA = new THREE.Matrix4(), mB = new THREE.Matrix4(), mT = new THREE.Matrix4(), mR = new THREE.Matrix4(), mS = new THREE.Matrix4(), mH = new THREE.Matrix4(), hand = new THREE.Matrix4(),
+    mU = new THREE.Matrix4(), mJ = new THREE.Matrix4(), mJ2 = new THREE.Matrix4();
+  // 下の節：単位の長さの空間で、ひじ・ひざ（y = −0.5）のまわりに曲げる
+  const lowerOf = (upper, bend, out) => out.copy(upper).multiply(mJ.makeTranslation(0, -0.5, 0)).multiply(rot(mJ2, bend, 0, 0)).multiply(mJ.makeTranslation(0, 0.5, 0));
   const q = new THREE.Quaternion(), e = new THREE.Euler(0, 0, 0, 'YXZ'), v = new THREE.Vector3(), v2 = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1), sc = new THREE.Vector3();
   const rot = (m, x, y, z, order = 'YZX') => { e.set(x, y, z, order); return m.makeRotationFromEuler(e); };
   const drawP = [], drawB = [];
+  const byDist = (a, b) => a._d - b._d;
   let tNow = 0;
   const setIA = (mesh, i, a, b, c, d) => { const A = mesh.geometry.attributes.iA.array; A[i * 4] = a; A[i * 4 + 1] = b; A[i * 4 + 2] = c; A[i * 4 + 3] = d; };
   const setC2 = (mesh, i, hex) => { col2.set(hex); const A = mesh.geometry.attributes.iCol2.array; A[i * 3] = col2.r; A[i * 3 + 1] = col2.g; A[i * 3 + 2] = col2.b; };
@@ -491,11 +611,10 @@ export function createFolk(env) {
     return j;
   }
 
-  function writePerson(f, j, ip) {
+  function writePerson(f, j, row) {
     const B = f._s.body, L = f.look;
-    const s = (L.scale || 1) * (0.4 + 0.6 * f._s.appear) * (f.kind === 'adult' ? 1 : 1);
+    const s = (L.scale || 1) * (0.4 + 0.6 * f._s.appear);
     const hipH = B.hip * s, yr = -f.yaw * Math.PI / 180;
-    // 根もと：腰（座る・しゃがむと下がる）
     // 座る：腰かけの高さ f.seat（既定 0.42 m＝丸太・桟橋の縁）。0.25 m より低ければ地面に座り、ひざを立てる
     const seatH = f.seat ?? 0.42;
     if (j.hipY <= -1 && seatH < 0.25) { setA(j.lL, 1.15, 0.3, -2.2); setA(j.lR, 1.05, 0.22, -2.1); }
@@ -503,48 +622,48 @@ export function createFolk(env) {
     mA.makeTranslation(f.pos.x, f.pos.y + seat + j.bob * s, f.pos.z);
     // 前かがみ（lean・sp）は正の値で前へ、頭の hp は正の値で下を向く（X 軸の回転は正で後ろへ倒れるので符号を返す）
     mA.multiply(rot(mR, -(B.hunch * 0.2 + j.lean), yr + j.twist, j.roll));
-    // 脚
+    // 脚（もも・すね）
     for (let side = 0; side < 2; side++) {
-      const lg = side ? j.lR : j.lL, sg = side ? 1 : -1;
-      mB.copy(mA).multiply(mT.makeTranslation(sg * B.hp * s, 0, 0)).multiply(rot(mR, lg[0] + (B.hunch * 0.2 + j.lean), 0, sg * lg[1])).multiply(mS.makeScale(B.leg * s, B.leg * s, B.leg * s));
-      const li = ip * 4 + side;
-      M.limb.setMatrixAt(li, mB); col.set(L.legs); M.limb.setColorAt(li, col); setC2(M.limb, li, L.boots); setIA(M.limb, li, lg[2], 0, B.legT, 1);
+      const lg = side ? j.lR : j.lL, sg = side ? 1 : -1, Lg = B.leg * s;
+      mU.copy(mA).multiply(mT.makeTranslation(sg * B.hp * s, 0, 0)).multiply(rot(mR, lg[0] + (B.hunch * 0.2 + j.lean), 0, sg * lg[1])).multiply(mS.makeScale(Lg, Lg, Lg));
+      putM(row, side ? BONE.thR : BONE.thL, mU);
+      putM(row, side ? BONE.shR : BONE.shL, lowerOf(mU, lg[2], mH));
     }
     // 胴（背の丸みは胸から先を前へ）
     mB.copy(mA).multiply(rot(mR, -(j.sp + B.hunch * 0.55), j.sy, j.sr));
     mH.copy(mB).multiply(mS.makeScale(B.torso[0] * s, B.torso[1] * s, B.torso[2] * s));
-    M.torso.setMatrixAt(ip, mH); col.set(L.coat); M.torso.setColorAt(ip, col); setC2(M.torso, ip, L.trim);
-    setIA(M.torso, ip, 0, OVER[L.over] ?? -1, L.hem ?? 1, L.flare ?? 1.1);
+    putM(row, BONE.torso, mH);
     const tH = 0.58 * B.torso[1] * s, shY = 0.47 * B.torso[1] * s, shX = B.sh * s;
-    // 頭とかぶりもの
-    const hr = B.head * s * (f.kind === 'child' ? 1 : 1);
+    // 頭（かぶりものも同じ骨）
+    const hr = B.head * s;
     mH.copy(mB).multiply(mT.makeTranslation(0, tH, 0)).multiply(rot(mR, -(j.hp - B.hunch * 0.55), j.hy, j.hr)).multiply(mT.makeTranslation(0, hr * 0.92, -hr * 0.08)).multiply(mS.makeScale(hr, hr, hr));
-    M.head.setMatrixAt(ip, mH); col.set(L.skin); M.head.setColorAt(ip, col); setC2(M.head, ip, L.hair); setIA(M.head, ip, 0, -2, 0, 0);
-    M.hat.setMatrixAt(ip, mH); col.set(L.hat); M.hat.setColorAt(ip, col); setC2(M.hat, ip, L.hatKind === 'hood' ? (L.trim ?? 0xf4ecd8) : (L.hatKind === 'brim' ? L.trim : L.hair));
-    setIA(M.hat, ip, 0, HATS[L.hatKind] ?? -1, L.hatKind === 'hood' ? (L.ears ? 1 : 0) : (L.brim ?? 2.0), L.crown ?? 0.6);
+    putM(row, BONE.head, mH);
     v.set(0, 0, 0).applyMatrix4(mH); f.headPos.copy(v);
-    // 腕
-    const pv = PROPS[L.prop] ?? -1, upright = pv === 0 || pv === 4, propSide = upright ? 0 : 1;
+    // 腕（上腕・前腕）
+    const pv = PROPS[L.prop] ?? -1, upright = pv === 0 || pv === 4, propSide = upright ? 0 : 1, La = B.arm * s;
     for (let side = 0; side < 2; side++) {
       const ar = side ? j.aR : j.aL, sg = side ? 1 : -1;
-      mH.copy(mB).multiply(mT.makeTranslation(sg * shX, shY, 0)).multiply(rot(mR, ar[0], sg * ar[2], sg * ar[1], 'YZX'));
-      const li = ip * 4 + 2 + side;
+      mH.copy(mB).multiply(mT.makeTranslation(sg * shX, shY, 0)).multiply(rot(mR, ar[0], sg * ar[2], sg * ar[1], 'YXZ'));   // 横に開いてから前へ上げる（上げた腕が頭の上で交差しない）
       if (side === propSide || side) {
-        mT.copy(mH).multiply(mS.makeTranslation(0, -0.5 * B.arm * s, 0)).multiply(rot(mR, ar[3], 0, 0)).multiply(mS.makeTranslation(0, -0.47 * B.arm * s, 0));
+        mT.copy(mH).multiply(mS.makeTranslation(0, -0.5 * La, 0)).multiply(rot(mR, ar[3], 0, 0)).multiply(mS.makeTranslation(0, -0.47 * La, 0));
         if (side) { v2.set(0, 0, 0).applyMatrix4(mT); f.handPos.copy(v2); }
         if (side === propSide) hand.copy(mT);
       }
-      mH.multiply(mS.makeScale(B.arm * s, B.arm * s, B.arm * s));
-      M.limb.setMatrixAt(li, mH); col.set(L.sleeves === 'skin' ? L.skin : L.coat); M.limb.setColorAt(li, col); setC2(M.limb, li, L.sleeves === 'skin' ? (L.armTrim ?? L.skin) : L.skin); setIA(M.limb, li, ar[3], 0, B.armT, 0);
+      mU.copy(mH).multiply(mS.makeScale(La, La, La));
+      putM(row, side ? BONE.uaR : BONE.uaL, mU);
+      putM(row, side ? BONE.faR : BONE.faL, lowerOf(mU, ar[3], mH));
     }
     // 持ちもの
-    if (pv === 3) mH.copy(mB).multiply(mS.makeScale(s, s, s));
-    else if (upright) {
-      // 杖と灯籠は手の位置に、まっすぐ立てて持つ（体の向きだけ回す。歩くと少し前後にゆれる）
-      v2.set(0, 0, 0).applyMatrix4(hand);
-      mH.makeTranslation(v2.x, v2.y, v2.z).multiply(rot(mR, 0.08 * Math.sin(f._s.gait) * Math.min(1, f._s.speed), yr, -0.06)).multiply(mS.makeScale(s, s, s));
-    } else mH.copy(hand).multiply(mS.makeScale(s, s, s));
-    M.prop.setMatrixAt(ip, mH); col.set(0xffffff); M.prop.setColorAt(ip, col); setIA(M.prop, ip, 0, pv, L.propOpt ?? 0, 0);
+    if (pv >= 0) {
+      if (pv === 3) mH.copy(mB).multiply(mS.makeScale(s, s, s));
+      else if (upright) {
+        // 杖と灯籠は手の位置に、まっすぐ立てて持つ（体の向きだけ回す。歩くと少し前後にゆれる）
+        v2.set(0, 0, 0).applyMatrix4(hand);
+        mH.makeTranslation(v2.x, v2.y, v2.z).multiply(rot(mR, 0.08 * Math.sin(f._s.gait) * Math.min(1, f._s.speed), yr, -0.06)).multiply(mS.makeScale(s, s, s));
+      } else mH.copy(hand).multiply(mS.makeScale(s, s, s));
+      putM(row, BONE.prop, mH);
+    }
+    boneData.set(f._s.cols, (row * ROW + CS0) * 4);
     // 影
     mH.makeTranslation(f.pos.x, f.pos.y + 0.03, f.pos.z).multiply(mS.makeScale(0.42 * s, 1, 0.42 * s));
     return mH;
@@ -582,37 +701,44 @@ export function createFolk(env) {
       if (!wide && d > 5 && (dx * fx + dz * fz) < -0.25 * d) continue;
       (f.kind === 'wataduno' ? drawB : drawP).push(f);
     }
-    drawP.sort((a, b) => a._d - b._d); drawB.sort((a, b) => a._d - b._d);
+    drawP.sort(byDist); drawB.sort(byDist);
     if (drawP.length > MAXP) drawP.length = MAXP;
     if (drawB.length > MAXB) drawB.length = MAXB;
     // 近くの焚き火（灯った風見の灯）で人を照らす
     FIRE.set(0, -1000, 0, 0);
     try {
       let best = 30;
-      for (const p of env.props.api.ofKind('waylight')) {
+      const ways = env.props.api.ofKind('waylight');
+      for (let i = 0; i < ways.length; i++) {
+        const p = ways[i];
         if (!p.state.lit) continue;
         const a = p.anchors.fire, d = Math.hypot(a.x - cam.x, a.z - cam.z);
         if (d < best) { best = d; FIRE.set(a.x, a.y + 0.4, a.z, 0.25 + 1.2 * view.st.night); }
       }
     } catch (err) { /* noop */ }
     let ns = 0;
-    drawP.forEach((f, i) => {
-      const far = f._d > LOD_R;
-      const j = poseOf(f, dt, far);
+    for (const t of templates.values()) t.n = 0;
+    for (let i = 0; i < drawP.length; i++) {
+      const f = drawP[i], t = f._s.tpl;
+      const j = poseOf(f, dt, f._d > LOD_R);
       shadow.setMatrixAt(ns++, writePerson(f, j, i));
-    });
-    drawB.forEach((f, i) => {
-      const S2 = f._s;
+      t.geo.attributes.aRow.array[t.n++] = i;
+    }
+    for (const t of templates.values()) {
+      t.geo.instanceCount = t.n; t.mesh.visible = t.n > 0;
+      if (t.n) t.geo.attributes.aRow.needsUpdate = true;
+    }
+    if (drawP.length) boneTex.needsUpdate = true;
+    for (let i = 0; i < drawB.length; i++) {
+      const f = drawB[i], S2 = f._s;
       const dx = f.pos.x - S2.lastX, dz = f.pos.z - S2.lastZ; S2.lastX = f.pos.x; S2.lastZ = f.pos.z;
       const sp = dt > 0 ? Math.min(12, Math.hypot(dx, dz) / dt) : 0;
       S2.speed += (sp - S2.speed) * Math.min(1, dt * 8);
       S2.gait += dt * (S2.speed > 0.2 ? S2.speed / 1.2 * Math.PI : (f.pose === 'run' ? 10 : f.pose === 'walk' ? 5 : 0));
       S2.appear = Math.min(1, S2.appear + dt * 2.6);
       shadow.setMatrixAt(ns++, writeBeast(f, null, i));
-    });
-    const nP = drawP.length;
-    for (const k of ['torso', 'head', 'hat', 'prop']) M[k].count = nP;
-    M.limb.count = nP * 4; M.beast.count = drawB.length; shadow.count = ns;
+    }
+    M.beast.count = drawB.length; shadow.count = ns;
     for (const k in M) {
       const m = M[k];
       m.visible = m.count > 0;
@@ -621,9 +747,6 @@ export function createFolk(env) {
       m.geometry.attributes.iA.needsUpdate = true; m.geometry.attributes.iCol2.needsUpdate = true;
     }
     shadow.visible = ns > 0; shadow.instanceMatrix.needsUpdate = true;
-    let hats = 0, props = 0;
-    for (let i = 0; i < nP; i++) { if ((HATS[drawP[i].look.hatKind] ?? -1) >= 0) hats++; if ((PROPS[drawP[i].look.prop] ?? -1) >= 0) props++; }
-    M.hat.visible = M.hat.visible && hats > 0; M.prop.visible = M.prop.visible && props > 0;
   }
 
   const api = { spawn, remove, list, looks: FOLK_LOOKS, poses: FOLK_POSES };

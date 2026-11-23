@@ -8,7 +8,7 @@ import { buildShrine } from './landmarks/shrines.js';
 import { buildWaylight, buildBrazier } from './landmarks/camps.js';
 import { LAKE_LEVEL } from './layout.js';
 
-const VIEW = { chest: 80, pedestal: 80, crackrock: 150, thornvine: 110, iceblock: 150, pinwheel: 80, sleepbell: 110, racering: 150, lightbridge: 700, dummy: 80, appletree: 150, bush: 60 };
+const VIEW = { chest: 80, pedestal: 80, crackrock: 150, thornvine: 110, iceblock: 150, pinwheel: 80, sleepbell: 110, racering: 150, lightbridge: 700, dummy: 60, appletree: 150, bush: 60 };
 
 export function createProps(env, sp) {
   const group = new THREE.Group();

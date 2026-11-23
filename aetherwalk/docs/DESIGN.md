@@ -1421,6 +1421,22 @@ window.AW = {
 - **しゃがみの深さ**：`high` の当たりの線は立った高さ ×（0.78、`duckDepth: 'shallow'` は 0.86）＋0.02。`player.ducking` なら必ずよけ。
 - **`game.debug`**：`parry(kind, attackId?)`（次の一撃に合成の盾：`'perfect'|'normal'|'late'|'guard'`。attackId で最寄りの敵の次の技を決める）、`slow()`、`drill(on)`。
 
+### 10.22 v2 の契約・世界分（DESIGN_V2 §5.1・§5.2・§5.3。W1・W2、実装済み）
+
+- **人形**（W1、`js/world/folk.js`）：`world.folk = { spawn, remove, list, looks, poses }`。
+  - `spawn({ id, kind: 'adult'|'child'|'elder'|'wataduno', look, x, z, yaw, y? })` → Folk。`yaw` は**度**（0 = 北、時計回り）。`y` を省くと `groundAt`。
+  - `look`：省くと `id` の名前（`towa` `gando` `mio` `sora` `ruka` `zaji` `yukime` `toto` `en`）のひな形、文字列ならひな形の名前（ほかに `pilgrim` `pilgrim2` `pilgrim3` `keeper` `wataduno` `caravan`）、オブジェクトならひな形に重ねる。§5.3 の `{ coat, hood, skin, hat, prop }` も受ける：`hood` に色 → 頭巾、`hat` は `'hair'|'hood'|'brim'|'beard'|'fur'`、`prop` は `'staff'|'hammer'|'rod'|'basket'|'lantern'|'none'`。色は 16 進。
+  - `Folk = { id, kind, look, pos, yaw, visible, headPos, handPos, pose, seat?, setPose(name, t = 0.25), lookAt(vec3 | null), setTalk(0..1) }`。`pos`・`yaw` は持ち主が毎フレーム書く（`pos.y` も持ち主が合わせる）。`headPos`／`handPos` は描かれている間だけ毎フレーム更新（読むだけ）。`seat`（m、既定 0.42）は `sit`／`sleep` の腰の高さ（0.25 未満で地面に座りひざを立てる）。
+  - ポーズ：`idle walk run sit talk wave nod cheer cower climb work sleep dance`（`world.folk.poses`）。歩き・走りの足の運びは `pos` の動いた速さに合わせる（すべらない）。綿角は `idle`／`work`（草を食む）`walk` `run` `sit`／`sleep`。`look: 'caravan'` で荷鞍つき。
+  - 描くのは、カメラから 45 m 以内の近い人 8 人と綿角 4 頭だけ（背中側 5 m より遠い人は描かない）。体の形（体格・かぶりもの・持ちもの・重ね着・すそ）ごとに 1 つのメッシュで、同じ形の人は 1 回で描く。部位の行列と色は float テクスチャ（48×8）から頂点シェーダーが読む。ドローコール＝見えている形の数＋丸い影 1＋綿角 1（野営地の 4 人で 4、8 人がみな違う形でも 10）。三角形は 1 人約 900〜1,150、綿角 1 頭 800（8 人で約 8.3k）。灯った風見の灯の近くでは火の色で照らされる。
+- **人の立ち位置**：`world.spawnPoints.npcs = { gando, mio, sora, towa, zaji: { id, x, z, yaw, region, near } }`（`layout.js` の `NPC_SPOTS`）。野営地の稽古の木人 `dummy_camp`（prop kind `dummy`）は焚き火の西 5.6 m (−35.6, 470.4)、ガンド爺の立ち位置のとなり。
+- **登り面**（W2、`js/world/climb.js`）：`world.climb = { list, byId, grabAt(handPos, out), near(x, z, r, out = []) }`。
+  - 面：`{ id, kind: 'vine'|'pegs', x, z, yaw, width, y0, y1, pegs: [{ u, v }], ledges: [{ v, depth }], topExit: { x, y, z }, region, n: { x, z }, r: { x, z } }`。`yaw` と `n` は面の**外向き**。`(x, y0, z)` は面の下の辺のまん中。面の座標 `u` は `r` の向き（壁に向かって立った人の右手）、`v` は `y0` からの高さ。手は面の 0.12 m 手前（`n` の向きに +0.12）にあるとして判定する。
+  - `grabAt`：つたは面のどこでも（面の奥 0.15 m 〜手前 0.37 m）、楔はいちばん近い楔が 0.25 m 以内。true のとき `out.id`、`out.point`（面の上の掴む点、Vector3）、`out.normal`（外向き）、`out.u`、`out.v`。楔は 0.58 m おきの 2 列の互い違いで、最後の段は上の縁（`v = 高さ − 0.12`）で乗り越えに使う。
+  - 休み棚と上（`topExit`）は `addPlatform` ずみ（`surfaceAt` は `'rock'`）。面は `raycastSolid` で `'structure'`（矢が刺さる）、壁の前に歩いてめりこまない。アーチの背は外の斜面から頂（約 62 m）まで歩ける足場。
+  - MVP の 2 か所：`climb_mesa` つた壁 14.5 m（茜の台地の西の崖、峡谷の灯から見える。西の坂を回る道 約 310 m → 約 170 m の近道。ふもとに崩れ石の坂を盛った）、`climb_arch` 楔 35 本・約 21 m（風穴のアーチの北の脚に寄りそう岩の柱。上でアーチの背へ。背に宝箱 `chest_honey_arch`、`spawnPoints.chests[].y` あり）。ザジの立ち位置はつた壁のふもと。
+  - 見た目は 1 か所 1 ドローコール、80 m より遠い面は描かない。掴めるものは水色に光る（つたの節の花、楔の頭の輪、下の 3 つの握りのにじみ）。
+
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 
 1. **座標**：Y 上、+X 東、−Z 北。ヨー 0＝北、時計回りが正。単位は m・秒。原点は島の中心。

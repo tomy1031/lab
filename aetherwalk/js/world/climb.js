@@ -219,7 +219,7 @@ function buildVineWall(env, s, H) {
   const strata = strataColor(0);
   // 面の座標で部品を作り、最後に世界へ置く（u → −x' … ここではローカル x = u、y = v、z = d）
   // 岩の面：細かく分けて凹凸をつけた板と、上の縁、左右のふくらみ
-  const face = new THREE.PlaneGeometry(W + 2.4, H + 3.2, 14, 18);
+  const face = new THREE.PlaneGeometry(W + 2.4, H + 3.2, 10, 13);
   const fp = face.getAttribute('position');
   for (let i = 0; i < fp.count; i++) {
     const x = fp.getX(i), y = fp.getY(i);
@@ -237,7 +237,7 @@ function buildVineWall(env, s, H) {
   // つた：太い茎が面をのぼり、枝を出す。葉は面を向いてゆれる。節には水色の花（光る＝掴める）
   const stems = 11;
   const leafGeo = new THREE.BufferGeometry();
-  leafGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 0.5, 0.45, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, -0.5, 0.45, 0]), 3));
+  leafGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 0.62, 0.5, 0, 0, 0.95, 0, 0, 0, 0, 0, 0.95, 0, -0.62, 0.5, 0]), 3));
   leafGeo.computeVertexNormals();
   const flower = new THREE.CircleGeometry(1, 5);
   const VV = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -249,26 +249,26 @@ function buildVineWall(env, s, H) {
   for (let k = 0; k < stems; k++) {
     const u0 = -W / 2 + 0.5 + (k + rng.range(0.1, 0.9)) * ((W - 1) / stems), ph = rng.range(0, 6.28), amp = rng.range(0.25, 0.6);
     const pts = [], rad = [];
-    const n = 14;
+    const n = 10;
     for (let i = 0; i <= n; i++) {
       const v = -0.3 + (H + 0.4) * i / n;
       pts.push(VV(u0 + Math.sin(v * 0.55 + ph) * amp, v, 0.1 + 0.03 * Math.sin(v * 1.3 + k)));
       rad.push(0.055 * (1 - 0.45 * i / n));
     }
     // 茎は細い管（半径は一定。根もとの太さは 2 本重ねて出す）
-    P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 22, 0.06, 4, false), { color: 0x4f3d24, sway: 0.15 }));
+    P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 12, 0.06, 3, false), { color: 0x4f3d24, sway: 0.15 }));
     // 枝と葉
     for (let i = 1; i < n; i++) {
       const p = pts[i], t = i / n;
-      if (rng.next() < 0.55) {
+      if (rng.next() < 0.45) {
         const dir = rng.next() < 0.5 ? -1 : 1, len = rng.range(0.5, 1.2);
         const b = [VV(p.x, p.y, p.z), VV(p.x + dir * len * 0.5, p.y + len * 0.35, 0.13), VV(p.x + dir * len, p.y + len * 0.55, 0.12)];
-        P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(b), 4, 0.022, 3, false), { color: 0x5a4a2a, sway: 0.3 }));
-        addLeaf(b[2].x, b[2].y, dir * 0.8 + rng.range(-0.4, 0.4), rng.range(0.25, 0.38), t);
-        addLeaf(b[1].x, b[1].y, -dir * 0.5 + rng.range(-0.5, 0.5), rng.range(0.2, 0.32), t);
+        P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(b), 2, 0.022, 3, false), { color: 0x5a4a2a, sway: 0.3 }));
+        addLeaf(b[2].x, b[2].y, dir * 0.8 + rng.range(-0.4, 0.4), rng.range(0.4, 0.58), t);
+        addLeaf(b[1].x, b[1].y, -dir * 0.5 + rng.range(-0.5, 0.5), rng.range(0.34, 0.5), t);
       }
       // 葉の房：茎のまわりに重なる大きめの葉（面の 6 割ほどを覆う）
-      for (let q = 0; q < 6; q++) addLeaf(p.x + rng.range(-0.35, 0.35), p.y + rng.range(-0.5, 0.5), rng.range(-2.8, 2.8), rng.range(0.22, 0.4), t);
+      for (let q = 0; q < 5; q++) addLeaf(p.x + rng.range(-0.45, 0.45), p.y + rng.range(-0.7, 0.7), rng.range(-2.8, 2.8), rng.range(0.42, 0.66), t);
       if (i % 2 === 0) {
         // 節の花（水色、まんなかは白）
         P.push(part(flower, { pos: [p.x + rng.range(-0.08, 0.08), p.y, 0.24], scale: rng.range(0.07, 0.1), color: 0x7fe9ff, glow: 1 }));

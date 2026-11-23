@@ -53,6 +53,8 @@ export function installDebug(ctx, loop) {
     climb(id, ratio = 0) { return !!pl()?.climbing_?.debugClimb(id, +ratio || 0); },
     /** one pull of dy m (the leading hand pulled down, the other regrips above) */
     pull(dy = 0.4) { return !!pl()?.climbing_?.debugPull(+dy || 0.4); },
+    /** re-anchor the gripping hands where they are (after moving virtual hands onto the wall) */
+    regrip() { return !!pl()?.climbing_?.regrip(); },
     /** let go of the wall with both hands */
     letGo() { const c = pl()?.climbing_; if (!c) return false; let r = false; for (const h of ['left', 'right']) r = c.release(h) || r; return r; },
     climbs() { return (pl()?.climbing_?.surfaces() || []).map((s) => ({ id: s.id, kind: s.kind, x: s.x, z: s.z, y0: s.y0, y1: s.y1, topExit: s.topExit })); },

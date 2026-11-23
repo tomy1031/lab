@@ -334,8 +334,15 @@ export function createClimb(ctx, P, body) {
     return true;
   }
 
+  /** tests / shots: re-anchor the gripping hands where they are now (after moving virtual hands onto the wall) */
+  function regrip() {
+    if (!P.climbing) return false;
+    for (const hd of HANDS) { const h = hold[hd]; if (h.on) { handWorld(hd, h.at); h.glowAt.copy(h.at); } }
+    return true;
+  }
+
   return {
-    update, tryGrip, release, pcGrab,
+    update, tryGrip, release, pcGrab, regrip,
     isHolding: (hand) => hold[hand].on,
     get moveSpeed() { return moveSpeed; },
     addTemp, debugClimb, debugPull, grabAt: (p, out) => { const ok = grabAt(p); if (ok && out) Object.assign(out, { id: grabOut.id, point: grabOut.point.clone(), normal: grabOut.normal.clone() }); return ok; },
