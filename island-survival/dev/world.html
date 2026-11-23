@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>world viewer (dev)</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#000}canvas{display:block;width:100%;height:100%}</style></head>
+<body><canvas id="gl"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { Renderer } from '../js/engine/renderer.js';
+import { World } from '../js/world/world.js';
+const q = new URLSearchParams(location.search);
+const R = new Renderer(document.getElementById('gl'), q.get('quality') || 'mid');
+const t0 = performance.now();
+const W = new World(R, { seed: 7 });
+window.VIEW = { buildMs: performance.now() - t0, W, R, THREE };
+const cam = R.camera;
+window.VIEW.set = (x, y, z, yaw, pitch, hours = 10, weather = {}) => {
+  cam.position.set(x, y, z); cam.rotation.set(pitch, yaw, 0, 'YXZ');
+  for (let i = 0; i < 3; i++) W.update(0.016, { hours, weather: { cloud: 0.25, rain: 0, fog: 0, wind: 0.3, ...weather }, tide: 0, time: 12 }, cam.position, cam);
+  R.render(W.scene);
+  return R.info;
+};
+window.VIEW.shore = (deg) => W.terrain.shorePoint(deg * Math.PI / 180);
+window.VIEW.ready = true;
+</script></body></html>
