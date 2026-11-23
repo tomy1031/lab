@@ -1,92 +1,113 @@
-// sim/weather.js — weather states, transitions and the air temperature.
-// The state changes on the hour by a Markov table (WEATHER[x].next), blends smoothly over ~40 game minutes,
-// and gives: visual parameters for the sky/ocean/rain particles, air temperature (°C) at a place and time,
-// wind (0…1), rain (0…1) and sun strength for the body simulation.
-import { WEATHER, CLIMATE } from '../data/climate.js';
+// sim/weather.js — weather blocks, seasons, air temperature and wind (DESIGN.md §5.1–5.3).
+// The weather is decided for each 6-hour block (00/06/12/18). Day 1 is fixed (clear, clear, cloudy, cloudy)
+// so the first night is dry; day 2's evening turns to drizzle half of the time (to learn sheltering).
+// Fog can appear 06:00–08:30 after a rainy block; heat waves on dry-season clear afternoons.
+// Typhoons are scheduled by the events system (forceBlocks).
+import { WEATHER, CLIMATE, transitions } from '../data/climate.js';
 import { clamp, lerp } from '../core/rng.js';
 
 export class Weather {
-  constructor(game, rng) {
-    this.game = game;
+  constructor(rng, { startSeason = 'dry' } = {}) {
     this.rng = rng;
+    this.startSeason = startSeason;
+    this.block = -1;          // index of the current 6 h block since day 1 00:00
     this.type = 'clear';
     this.prev = 'clear';
-    this.blend = 1;          // 0 → prev, 1 → type
-    this.hoursLeft = 6;
-    this.lastHour = -1;
-    this.forecast = [];      // [{type, hours}] what comes next (shown by some items / the companion's guess)
-    this.lightningT = 3;
+    this.blend = 1;
+    this.windSpeed = 2;       // m/s (actual)
+    this.windTarget = 2;
+    this.windDir = 0.8;       // radians, the direction the air moves to (x = sin, z = cos)
+    this.forced = [];         // [{ block, type }] e.g. a typhoon
+    this.history = [];        // last few block types (for fog / river turbidity)
+    this.lastRainEndH = -99;
+    this.dayOffset = 0;
+    this.lightningT = 4;
   }
 
-  init(game) { this.game = game; }
-
-  param(k) {
-    const a = WEATHER[this.prev][k] ?? 0, b = WEATHER[this.type][k] ?? 0;
-    return lerp(a, b, this.blend);
+  /** dry or wet season on a game day */
+  season(day) {
+    const { dry, wet } = CLIMATE.seasonDays;
+    let d = (day - 1) % (dry + wet);
+    if (this.startSeason === 'wet') d = (d + dry) % (dry + wet);
+    return d < dry ? 'dry' : 'wet';
   }
+
+  W(t) { return WEATHER[t] || WEATHER.clear; }
+  param(k) { return lerp(this.W(this.prev)[k] ?? 0, this.W(this.type)[k] ?? 0, this.blend); }
   get rain() { return this.param('rain'); }
-  get wind() { return this.param('wind'); }
   get cloud() { return this.param('cloud'); }
   get fog() { return this.param('fog'); }
   get storm() { return this.param('storm'); }
-  get name() { return WEATHER[this.type].name; }
+  get sun() { return this.param('sun'); }
+  get humidity() { return this.param('humidity'); }
+  get wetPerH() { return this.param('wetPerH'); }
+  get name() { return this.W(this.type).name; }
+  /** wind 0…1 for visuals */
+  get wind() { return clamp(this.windSpeed / 22); }
 
-  /** seasonless tropical day curve: min at 05:00, max at 14:00 */
-  airTemp(hour, x = 0, z = 0, y = 0) {
-    const C = CLIMATE;
-    const k = 0.5 - 0.5 * Math.cos(((hour - 5 + 24) % 24) / 9 * Math.PI);  // 0 at 5:00 → 1 at 14:00
-    const day = hour >= 5 && hour <= 14 ? k : 0.5 + 0.5 * Math.cos(((hour - 14 + 24) % 24) / 15 * Math.PI);
-    let t = lerp(C.nightMin, C.dayMax, day);
-    t += this.param('temp');
-    t -= Math.max(0, y) * C.lapse;            // higher = cooler
-    t += this.dayOffset || 0;
-    return t;
+  /** choose the weather of a new block */
+  decide(block, day) {
+    const forced = this.forced.find((f) => f.block === block);
+    if (forced) return forced.type;
+    const hourStart = (block % 4) * 6;
+    if (day === 1) return ['clear', 'clear', 'cloudy', 'cloudy'][block % 4];
+    const season = this.season(day);
+    let next = this.rng.weighted(transitions(this.type, season));
+    if (day === 2 && hourStart === 18 && next === 'clear' && this.rng.chance(0.5)) next = 'drizzle';
+    // morning fog after rain
+    const wasRain = ['drizzle', 'rain', 'storm', 'typhoon'].includes(this.type);
+    if (hourStart === 6 && (next === 'clear' || next === 'cloudy') && wasRain && this.rng.chance(0.35)) { this.fogUntil = (block * 6 + 2.5); }
+    if (hourStart === 12 && season === 'dry' && next === 'clear' && this.rng.chance(0.15)) next = 'heat';
+    return next;
   }
 
-  /** wind speed felt (0…1) is lower in the jungle and inside shelters */
-  setState(type, blendNow = false) {
-    if (!WEATHER[type]) return;
-    this.prev = blendNow ? type : this.currentDominant();
-    this.type = type;
-    this.blend = blendNow ? 1 : 0;
-    const W = WEATHER[type];
-    this.hoursLeft = W.minH + this.rng.float(0, W.maxH - W.minH);
-    this.game?.bus?.emit('weather', { type, name: W.name });
+  /** call every frame with the game clock */
+  update(dt, gm, clock) {
+    const totalH = clock.total / 60;
+    const block = Math.floor(totalH / 6);
+    if (block !== this.block) {
+      const first = this.block < 0;
+      this.block = block;
+      const nt = this.decide(block, clock.day);
+      if (['drizzle', 'rain', 'storm', 'typhoon'].includes(this.type) && !['drizzle', 'rain', 'storm', 'typhoon'].includes(nt)) this.lastRainEndH = totalH;
+      this.prev = first ? nt : this.currentDominant();
+      this.type = nt;
+      this.blend = first ? 1 : 0;
+      this.history.push(nt); if (this.history.length > 8) this.history.shift();
+      const [a, b] = this.W(nt).wind;
+      this.windTarget = this.rng.float(a, b);
+      this.onChange?.(nt);
+    }
+    // fog overlay in the morning
+    if (this.fogUntil && totalH < this.fogUntil && clock.hour >= 6 && this.type !== 'fog') { this.prev = this.currentDominant(); this.type = 'fog'; this.blend = 0; }
+    if (this.fogUntil && totalH >= this.fogUntil && this.type === 'fog') { this.fogUntil = 0; this.prev = 'fog'; this.type = 'cloudy'; this.blend = 0; }
+    this.blend = Math.min(1, this.blend + gm / 15);
+    // gusty wind wandering around its target; the direction drifts slowly
+    this.windSpeed += (this.windTarget + Math.sin(totalH * 7.3) * 0.15 * this.windTarget - this.windSpeed) * Math.min(1, gm / 20);
+    this.windDir += (this.rng.next() - 0.5) * 0.02 * Math.min(gm, 5);
+    if (clock.day !== this.offDay) { this.offDay = clock.day; this.dayOffset = this.rng.float(-1, 1); }
   }
 
   currentDominant() { return this.blend > 0.5 ? this.type : this.prev; }
 
-  pickNext() {
-    const table = WEATHER[this.type].next;
-    const day = this.game?.clock?.day || 1;
-    const pairs = Object.entries(table).map(([k, w]) => [k, w * (k === 'storm' ? (this.game?.difficultyMul?.storm ?? 1) * (day > 3 ? 1 : 0.3) : 1)]);
-    return this.rng.weighted(pairs);
-  }
+  /** schedule a typhoon: 3 storm blocks starting at a block index */
+  scheduleTyphoon(startBlock) { for (let i = 0; i < 3; i++) this.forced.push({ block: startBlock + i, type: 'typhoon' }); }
 
-  update(dt, gm) {
-    if (gm <= 0) return;
-    this.blend = Math.min(1, this.blend + gm / 40);
-    this.hoursLeft -= gm / 60;
-    if (this.hoursLeft <= 0) this.setState(this.pickNext());
-    // lightning during storms
-    if (this.storm > 0.5) {
-      this.lightningT -= dt;
-      if (this.lightningT <= 0) {
-        this.lightningT = this.rng.float(4, 14);
-        const near = this.rng.next();
-        this.game.world?.sky?.strike(0.4 + 0.6 * (1 - near));
-        this.game.bus.emit('thunder', { distance: near });
-      }
-    }
-    // a daily random offset (±1.5 °C) for variety
-    const day = this.game.clock.day;
-    if (day !== this.offDay) { this.offDay = day; this.dayOffset = this.rng.float(-1.5, 1.5); }
+  /** outside air temperature at hour h (0…24), height y (m), zone, day */
+  airTemp(h, { y = 0, zone = null, day = 1 } = {}) {
+    if (zone === 'cave') return CLIMATE.caveTemp;
+    const rainy = ['cloudy', 'drizzle', 'rain', 'storm', 'typhoon', 'fog'].includes(this.type);
+    const swing = CLIMATE.swing * (rainy ? 0.6 : 1);
+    let t = this.param('tmean') + CLIMATE.seasonTemp[this.season(day)] + swing * Math.cos(((h - 14) / 24) * Math.PI * 2);
+    t -= Math.max(0, y) * CLIMATE.lapse;
+    if (zone && CLIMATE.zone[zone] && !(zone === 'jungle' && (h < 6 || h > 18))) t += CLIMATE.zone[zone];
+    return t + this.dayOffset;
   }
 
   /** for the sky / ocean / particles */
   visual() { return { cloud: this.cloud, rain: this.rain, fog: this.fog, wind: this.wind, storm: this.storm }; }
 
-  serialize() { return { type: this.type, prev: this.prev, blend: this.blend, hoursLeft: this.hoursLeft }; }
+  serialize() { return { block: this.block, type: this.type, prev: this.prev, blend: this.blend, windSpeed: this.windSpeed, windTarget: this.windTarget, windDir: this.windDir, forced: this.forced, history: this.history, lastRainEndH: this.lastRainEndH, startSeason: this.startSeason }; }
   deserialize(d) { Object.assign(this, d); }
-  debug() { return { type: this.type, rain: +this.rain.toFixed(2), wind: +this.wind.toFixed(2), hoursLeft: +this.hoursLeft.toFixed(1) }; }
+  debug() { return { type: this.type, rain: +this.rain.toFixed(2), wind: +this.windSpeed.toFixed(1) }; }
 }

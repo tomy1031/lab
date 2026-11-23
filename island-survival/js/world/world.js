@@ -31,7 +31,7 @@ export class World {
     const env = this.sky.update(dt, hours, weather, focus, time);
     env.tide = tide;
     this.ocean.update(env, camera);
-    this.flora.update(time, weather.wind ?? 0.3);
+    this.flora.update(time, weather.wind ?? 0.3, focus);
     this.env = env;
     return env;
   }

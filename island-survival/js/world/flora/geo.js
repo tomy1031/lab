@@ -111,7 +111,7 @@ export class Build {
     const seg = 1 / (pairs + 1);
     for (let k = 1; k <= pairs; k++) {
       const t = k * seg;
-      const p = P(t), p2 = P(Math.min(1, t + seg * 0.9));
+      const p = P(t), p2 = P(Math.min(1, t + seg * (o.wide ?? 0.9)));
       const ll = leafLen * (0.35 + 0.65 * Math.sin(Math.min(1, t * 1.05 + 0.08) * Math.PI)) * (t > 0.92 ? 0.5 : 1);
       const col = cA.clone().lerp(cB, t);
       const colTip = col.clone().multiplyScalar(1.12);

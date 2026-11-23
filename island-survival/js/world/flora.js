@@ -1,233 +1,16 @@
-// world/flora.js — procedural plants and rocks, drawn with InstancedMesh. Each harvestable instance is also a
-// "node" in the resource registry (world/nodes.js) so it can be gathered, chopped and later regrow.
+// world/flora.js — procedural jungle / beach / grassland vegetation, drawn with InstancedMesh. Each harvestable
+// instance is also a "node" in the resource registry (world/nodes.js) so it can be gathered, chopped and regrow.
 //
-// Kinds (node.kind): palm, tree, bush_berry, bush, fern, rock, boulder, bamboo, grass_tuft, herb, driftwood …
-// The meshes are low-poly but shaded with vertex colours + wind sway in the vertex shader.
+// Node kinds: palm, tree, bamboo, bush_berry, bush, fern, grass_tuft, herb, rock, boulder, driftwood,
+//             banana, vine, mushroom, aloe, shell, seaweed, flint, clay, sugarcane, nest.
+// Pure decoration (never registered): big-leaf understory, ground leaves, extra ferns, tall grass, dune grass,
+// morning-glory creepers, reeds and the near-player grass carpet.
+// Meshes are built in world/flora/*.js (vertex-coloured low-poly), shaded with a wind-sway vertex shader.
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RNG, clamp } from '../core/rng.js';
-
-// -------------------------------------------------------------- geometry builders (vertex-coloured)
-function paint(geo, color, jitter = 0.06, seed = 1) {
-  const r = new RNG(seed);
-  const c = new THREE.Color(color);
-  const n = geo.attributes.position.count;
-  const col = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const t = c.clone().offsetHSL((r.next() - 0.5) * jitter * 0.3, 0, (r.next() - 0.5) * jitter);
-    col[i * 3] = t.r; col[i * 3 + 1] = t.g; col[i * 3 + 2] = t.b;
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  return geo;
-}
-// all merged geometries need the same attribute set
-function clean(geo) {
-  const g = geo.index ? geo.toNonIndexed() : geo;
-  for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'color'].includes(k)) g.deleteAttribute(k);
-  if (!g.attributes.normal) g.computeVertexNormals();
-  return g;
-}
-const merge = (list) => mergeGeometries(list.map(clean), false);
-
-/** a bent palm: trunk of stacked rings following a curve + drooping fronds + coconuts */
-function palmGeometry(seed) {
-  const r = new RNG(seed);
-  const parts = [];
-  const H = r.float(6.5, 9.5), bend = r.float(0.8, 2.4);
-  const segs = 9;
-  let prev = new THREE.Vector3();
-  const pts = [];
-  for (let i = 0; i <= segs; i++) {
-    const t = i / segs;
-    pts.push(new THREE.Vector3(bend * t * t, H * t, 0));
-  }
-  const curve = new THREE.CatmullRomCurve3(pts);
-  const trunk = new THREE.TubeGeometry(curve, 12, 0.2, 7, false);
-  // taper: scale radius by height
-  const p = trunk.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const y = p.getY(i);
-    const t = y / H;
-    const c = curve.getPointAt(clamp(t, 0, 1));
-    const k = 1.35 - 0.55 * t;
-    p.setX(i, c.x + (p.getX(i) - c.x) * k);
-    p.setZ(i, c.z + (p.getZ(i) - c.z) * k);
-  }
-  trunk.computeVertexNormals();
-  // ring bands
-  const col = new Float32Array(p.count * 3);
-  const a = new THREE.Color('#8a6a45'), b = new THREE.Color('#5e4630');
-  for (let i = 0; i < p.count; i++) {
-    const band = (Math.sin(p.getY(i) * 7) * 0.5 + 0.5);
-    const c = a.clone().lerp(b, band * 0.7);
-    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
-  }
-  trunk.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  parts.push(trunk);
-  const top = curve.getPointAt(1);
-  prev = top;
-  // fronds: a strip of leaflets drooping out
-  const nF = r.int(7, 10);
-  for (let f = 0; f < nF; f++) {
-    const ang = (f / nF) * Math.PI * 2 + r.float(-0.2, 0.2);
-    const len = r.float(3.2, 4.6);
-    const droop = r.float(0.5, 1.1);
-    const verts = [], cols = [];
-    const green = new THREE.Color().setHSL(r.float(0.24, 0.29), r.float(0.45, 0.6), r.float(0.26, 0.34));
-    const n = 10;
-    for (let k = 0; k < n; k++) {
-      const t0 = k / n, t1 = (k + 1) / n;
-      const P = (t) => new THREE.Vector3(Math.cos(ang) * len * t, Math.sin(t * Math.PI * 0.55) * 0.9 - droop * t * t * 2.2, Math.sin(ang) * len * t);
-      const p0 = P(t0), p1 = P(t1);
-      const w0 = Math.sin((1 - t0) * Math.PI * 0.5 + 0.2) * 0.75, w1 = Math.sin((1 - t1) * Math.PI * 0.5 + 0.2) * 0.75;
-      const side = new THREE.Vector3(-Math.sin(ang), 0, Math.cos(ang));
-      // leaflets angle down a little at the sides (V shape)
-      const l0 = p0.clone().addScaledVector(side, w0).add(new THREE.Vector3(0, -0.18 * w0, 0)), r0 = p0.clone().addScaledVector(side, -w0).add(new THREE.Vector3(0, -0.18 * w0, 0));
-      const l1 = p1.clone().addScaledVector(side, w1).add(new THREE.Vector3(0, -0.18 * w1, 0)), r1 = p1.clone().addScaledVector(side, -w1).add(new THREE.Vector3(0, -0.18 * w1, 0));
-      for (const q of [p0, l0, p1, p1, l0, l1, p0, p1, r0, r0, p1, r1]) verts.push(q.x + top.x, q.y + top.y, q.z + top.z);
-      for (let m = 0; m < 12; m++) { const c = green.clone().offsetHSL(0, 0, (t0 - 0.5) * 0.08); cols.push(c.r, c.g, c.b); }
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-    g.computeVertexNormals();
-    parts.push(g);
-  }
-  // coconuts cluster
-  const nC = r.int(2, 4);
-  for (let c = 0; c < nC; c++) {
-    const s = new THREE.SphereGeometry(0.17, 7, 6);
-    s.translate(top.x + Math.cos(c * 2.1) * 0.25, top.y - 0.3, top.z + Math.sin(c * 2.1) * 0.25);
-    parts.push(paint(s, '#5b4a24', 0.1, seed + c));
-  }
-  const geo = merge(parts);
-  geo.userData = { height: H, top };
-  return geo;
-}
-
-function broadTreeGeometry(seed) {
-  const r = new RNG(seed);
-  const parts = [];
-  const H = r.float(5, 8);
-  const trunk = new THREE.CylinderGeometry(0.22, 0.38, H, 7, 3);
-  trunk.translate(0, H / 2, 0);
-  parts.push(paint(trunk, '#5b4632', 0.12, seed));
-  const nB = r.int(5, 8);
-  for (let i = 0; i < nB; i++) {
-    const s = new THREE.IcosahedronGeometry(r.float(1.3, 2.2), 0);
-    const p = s.attributes.position;
-    for (let k = 0; k < p.count; k++) { const f = 1 + (r.next() - 0.5) * 0.3; p.setXYZ(k, p.getX(k) * f, p.getY(k) * f * 0.8, p.getZ(k) * f); }
-    s.translate(r.float(-1.3, 1.3), H + r.float(-0.8, 1.2), r.float(-1.3, 1.3));
-    parts.push(paint(s, new THREE.Color().setHSL(r.float(0.22, 0.3), 0.5, r.float(0.2, 0.28)), 0.12, seed + i * 7));
-  }
-  const geo = merge(parts);
-  geo.computeVertexNormals();
-  return geo;
-}
-
-function bushGeometry(seed, berries = false) {
-  const r = new RNG(seed);
-  const parts = [];
-  const n = r.int(3, 5);
-  for (let i = 0; i < n; i++) {
-    const s = new THREE.IcosahedronGeometry(r.float(0.45, 0.8), 0);
-    s.scale(1, 0.75, 1);
-    s.translate(r.float(-0.5, 0.5), r.float(0.35, 0.7), r.float(-0.5, 0.5));
-    parts.push(paint(s, new THREE.Color().setHSL(r.float(0.24, 0.32), 0.5, r.float(0.2, 0.3)), 0.15, seed + i));
-  }
-  if (berries) {
-    for (let i = 0; i < 14; i++) {
-      const b = new THREE.SphereGeometry(0.07, 5, 4);
-      const a = r.float(0, Math.PI * 2), rr = r.float(0.45, 0.8);
-      b.translate(Math.cos(a) * rr, r.float(0.4, 0.95), Math.sin(a) * rr);
-      parts.push(paint(b, '#c3263f', 0.1, seed + 50 + i));
-    }
-  }
-  return merge(parts);
-}
-
-function fernGeometry(seed) {
-  const r = new RNG(seed);
-  const verts = [], cols = [];
-  const n = r.int(6, 9);
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 + r.float(-0.3, 0.3), len = r.float(0.7, 1.2);
-    const c = new THREE.Color().setHSL(r.float(0.25, 0.32), 0.55, r.float(0.22, 0.32));
-    const dx = Math.cos(a), dz = Math.sin(a), sx = -dz * 0.18, sz = dx * 0.18;
-    const tip = [dx * len, 0.25, dz * len], mid = [dx * len * 0.5, 0.55, dz * len * 0.5];
-    const tri = [[0, 0.05, 0], [mid[0] + sx, mid[1], mid[2] + sz], tip, [0, 0.05, 0], tip, [mid[0] - sx, mid[1], mid[2] - sz]];
-    for (const v of tri) { verts.push(...v); cols.push(c.r, c.g, c.b); }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-  g.computeVertexNormals();
-  return g;
-}
-
-function rockGeometry(seed, size = 1) {
-  const r = new RNG(seed);
-  const g = new THREE.DodecahedronGeometry(size, 1);
-  const p = g.attributes.position;
-  const sx = r.float(0.8, 1.4), sy = r.float(0.5, 0.9), sz = r.float(0.8, 1.3);
-  for (let i = 0; i < p.count; i++) {
-    const f = 1 + (r.next() - 0.5) * 0.25;
-    p.setXYZ(i, p.getX(i) * sx * f, Math.max(-0.2 * size, p.getY(i) * sy * f), p.getZ(i) * sz * f);
-  }
-  g.computeVertexNormals();
-  return paint(g, r.pick(['#8a8275', '#7a7368', '#958c7c']), 0.1, seed);
-}
-
-function bambooGeometry(seed) {
-  const r = new RNG(seed);
-  const parts = [];
-  const n = r.int(5, 9);
-  for (let i = 0; i < n; i++) {
-    const h = r.float(4, 7);
-    const c = new THREE.CylinderGeometry(0.06, 0.07, h, 6, 6);
-    c.translate(r.float(-0.6, 0.6), h / 2, r.float(-0.6, 0.6));
-    parts.push(paint(c, r.pick(['#8fae4a', '#a3b956', '#7b9a3c']), 0.08, seed + i));
-  }
-  return merge(parts);
-}
-
-function grassGeometry(seed) {
-  const r = new RNG(seed);
-  const verts = [], cols = [];
-  for (let i = 0; i < 9; i++) {
-    const a = r.float(0, Math.PI * 2), h = r.float(0.35, 0.75), x = r.float(-0.3, 0.3), z = r.float(-0.3, 0.3);
-    const c = new THREE.Color().setHSL(r.float(0.2, 0.28), 0.5, r.float(0.3, 0.42));
-    const dx = Math.cos(a) * 0.05, dz = Math.sin(a) * 0.05, lean = r.float(-0.15, 0.15);
-    for (const v of [[x - dx, 0, z - dz], [x + dx, 0, z + dz], [x + lean, h, z + lean * 0.5]]) { verts.push(...v); cols.push(c.r, c.g, c.b); }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-  g.computeVertexNormals();
-  return g;
-}
-
-function herbGeometry(seed) {
-  const r = new RNG(seed);
-  const parts = [fernGeometry(seed)];
-  parts[0].scale(0.45, 0.6, 0.45);
-  for (let i = 0; i < 5; i++) {
-    const f = new THREE.SphereGeometry(0.05, 5, 4);
-    f.translate(r.float(-0.2, 0.2), r.float(0.3, 0.42), r.float(-0.2, 0.2));
-    parts.push(paint(f, '#f2e35a', 0.1, seed + i));
-  }
-  return merge(parts);
-}
-
-function driftwoodGeometry(seed) {
-  const r = new RNG(seed);
-  const len = r.float(1.4, 2.6);
-  const c = new THREE.CylinderGeometry(0.09, 0.13, len, 6, 2);
-  c.rotateZ(Math.PI / 2);
-  c.rotateY(r.float(0, Math.PI));
-  c.translate(0, 0.1, 0);
-  return paint(c, '#a89478', 0.12, seed);
-}
+import { RNG, clamp, smoothstep } from '../core/rng.js';
+import { LAYOUT } from './terrain.js';
+import * as B from './flora/builders.js';
+import { GrassCarpet } from './flora/carpet.js';
 
 // -------------------------------------------------------------- the wind-sway material
 function swayMaterial(strength) {
@@ -243,92 +26,354 @@ function swayMaterial(strength) {
   vec3 ip = vec3(0.0);
 #endif
   float sway = (${strength.toFixed(3)}) * max(0.0, transformed.y) * (0.25 + uWind * 1.3);
-  transformed.x += sin(uTime * (1.2 + uWind) + ip.x * 0.3 + ip.z * 0.2) * sway * 0.06;
-  transformed.z += cos(uTime * (1.0 + uWind) + ip.z * 0.3) * sway * 0.04;`);
+  float ph = ip.x * 0.3 + ip.z * 0.2;
+  transformed.x += sin(uTime * (1.2 + uWind) + ph) * sway * 0.06;
+  transformed.z += cos(uTime * (1.0 + uWind) + ip.z * 0.3) * sway * 0.04;
+  // leaf flutter on the fine parts (tiny, scaled by height so trunks barely move)
+  float fl = sin(uTime * (2.6 + uWind * 2.0) + transformed.x * 2.1 + transformed.z * 1.7 + ph) * 0.012 * (0.3 + uWind) * min(1.0, transformed.y * 0.3);
+  transformed.y += fl * ${Math.min(1, strength + 0.2).toFixed(2)};
+  transformed.x += fl * 0.6;`);
   };
   return m;
 }
 
-// -------------------------------------------------------------- placement
+const ALL_LAND = { beach: 1, rocks: 1, jungle: 1, grass: 1, hill: 1 };
+const TAU = Math.PI * 2;
+
 /**
  * Flora places instanced plants on the terrain. `nodes` is the NodeRegistry: every harvestable instance is
  * registered there ({ kind, x, y, z, mesh, index, ... }); hiding an instance (gathered) scales it to 0.
  */
 export class Flora {
   constructor(scene, terrain, nodes, seed = 7, quality = 'high') {
-    this.scene = scene; this.terrain = terrain; this.nodes = nodes;
+    this.scene = scene; this.terrain = terrain; this.nodes = nodes; this.quality = quality;
     this.rng = new RNG(seed * 13 + 5);
-    this.materials = { tree: swayMaterial(0.35), low: swayMaterial(1.2), rock: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true }) };
+    this.dens = quality === 'low' ? 0.55 : quality === 'mid' ? 0.8 : 1;
+    this.materials = {
+      tree: swayMaterial(0.3),
+      mid: swayMaterial(0.6),
+      low: swayMaterial(1.2),
+      rock: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true }),
+      glass: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.28, metalness: 0.15, flatShading: true }),
+      decal: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+    };
     this.meshes = {};
-    const dens = quality === 'low' ? 0.55 : quality === 'mid' ? 0.8 : 1;
-    this.plan = [
-      // kind, variants, count, zones, material, builder, options
-      { kind: 'palm', variants: 4, count: 230 * dens, zones: ['beach', 'grass'], minH: 0.8, maxH: 9, mat: 'tree', build: palmGeometry, cast: true, radius: 0.6 },
-      { kind: 'tree', variants: 5, count: 620 * dens, zones: ['jungle', 'hill'], minH: 3, maxH: 60, mat: 'tree', build: broadTreeGeometry, cast: true, radius: 0.7 },
-      { kind: 'bamboo', variants: 3, count: 55 * dens, zones: ['jungle'], minH: 3, maxH: 30, mat: 'tree', build: bambooGeometry, cast: true, radius: 0.8, near: 'stream' },
-      { kind: 'bush_berry', variants: 3, count: 70 * dens, zones: ['jungle', 'grass'], minH: 2, maxH: 40, mat: 'low', build: (s) => bushGeometry(s, true), cast: true, radius: 0.9 },
-      { kind: 'bush', variants: 3, count: 420 * dens, zones: ['jungle', 'grass', 'hill'], minH: 2, maxH: 60, mat: 'low', build: (s) => bushGeometry(s, false), radius: 0.9 },
-      { kind: 'fern', variants: 3, count: 900 * dens, zones: ['jungle'], minH: 2, maxH: 50, mat: 'low', build: fernGeometry, radius: 0.6 },
-      { kind: 'grass_tuft', variants: 3, count: 1100 * dens, zones: ['grass', 'hill', 'jungle'], minH: 1.5, maxH: 60, mat: 'low', build: grassGeometry, radius: 0.4 },
-      { kind: 'herb', variants: 2, count: 45 * dens, zones: ['jungle', 'grass', 'hill'], minH: 2, maxH: 60, mat: 'low', build: herbGeometry, radius: 0.3 },
-      { kind: 'rock', variants: 4, count: 200 * dens, zones: ['rocks', 'hill', 'cliff', 'stream', 'beach'], minH: -0.3, maxH: 60, mat: 'rock', build: (s) => rockGeometry(s, 0.35), radius: 0.4 },
-      { kind: 'boulder', variants: 3, count: 60 * dens, zones: ['rocks', 'hill', 'cliff'], minH: 0, maxH: 60, mat: 'rock', build: (s) => rockGeometry(s, 1.6), cast: true, radius: 1.8 },
-      { kind: 'driftwood', variants: 3, count: 45 * dens, zones: ['beach'], minH: 0.3, maxH: 2.2, mat: 'rock', build: driftwoodGeometry, radius: 0.8 },
-    ];
+    this.counts = {};
+    this.placed = {};
+    this.carpet = null;
+    const sp = terrain.shorePoint(Math.atan2(95, 150), 1.5);
+    this.start = { x: sp.x, z: sp.z };
   }
 
+  // ---------------------------------------------------------------- field helpers
+  clump(x, z, f, off = 0) { return clamp(0.5 + this.terrain.noise2.fbm(x * f + off, z * f - off * 0.7, 3) * 0.9); }
+  streamD(x, z) { return this.terrain.streamInfo(x, z).d; }
+  pondD(x, z) { const P = LAYOUT.pond; return Math.hypot(x - P.x, z - P.z) - P.r; }
+
+  specs() {
+    const H = (h, s, l) => new THREE.Color().setHSL(h, s, l);
+    const rn = (n, f) => Array.from({ length: n }, (_, i) => f(i));
+    const seed = () => this.rng.int(1, 1e6);
+    // ---- tree variants: 3 emergent + 6 mid
+    const treeVars = [
+      { b: () => B.treeEmergent(seed(), 0.31), w: 0.11, occ: 1.5, cr: 0.8, r: 1.0, s: [0.9, 1.25], emergent: true },
+      { b: () => B.treeEmergent(seed(), 0.35), w: 0.10, occ: 1.5, cr: 0.8, r: 1.0, s: [0.9, 1.25], emergent: true },
+      { b: () => B.treeEmergent(seed(), 0.26), w: 0.08, occ: 1.5, cr: 0.8, r: 1.0, s: [0.9, 1.2], emergent: true },
+      { b: () => B.treeMid(seed(), { hue: 0.2, sat: 0.62, lite: 0.3 }), w: 0.14, occ: 0.8, cr: 0.4, r: 0.8, s: [0.85, 1.3], vine: true },
+      { b: () => B.treeMid(seed(), { hue: 0.29, sat: 0.55, lite: 0.22 }), w: 0.17, occ: 0.8, cr: 0.4, r: 0.8, s: [0.85, 1.3], vine: true },
+      { b: () => B.treeMid(seed(), { hue: 0.4, sat: 0.45, lite: 0.22 }), w: 0.13, occ: 0.8, cr: 0.4, r: 0.8, s: [0.85, 1.3], vine: true },
+      { b: () => B.treeMid(seed(), { hue: 0.27, sat: 0.55, lite: 0.25, flower: '#e8553a' }), w: 0.05, occ: 0.8, cr: 0.4, r: 0.8, s: [0.85, 1.2] },
+      { b: () => B.treeMid(seed(), { hue: 0.25, sat: 0.6, lite: 0.24, trunks: 2 }), w: 0.1, occ: 1.2, cr: 0.5, r: 0.9, s: [0.85, 1.25], vine: true },
+      { b: () => B.treeMid(seed(), { hue: 0.33, sat: 0.5, lite: 0.26, small: 0.7 }), w: 0.12, occ: 0.8, cr: 0.32, r: 0.7, s: [0.8, 1.2], small: true },
+    ];
+    const palmVars = rn(5, () => ({ b: () => B.palmGeometry(seed()), w: 1, occ: 1.0, cr: 0.3, r: 0.6, s: [0.85, 1.25] }));
+    const plain = (b, o = {}) => ({ b, w: 1, ...o });
+    const out = [];
+
+    // ================================================================ solids
+    out.push({ kind: 'tree', mat: 'tree', cast: true, count: 1250, vars: treeVars, solid: true,
+      zones: { jungle: 1, hill: 0.2, grass: 0.1 }, minH: 2.8, maxH: 40, openStart: true, clump: [0.03, 0.12, 0],
+      pick: (z, rng, vars) => (z === 'jungle' ? rng.weighted(vars.map((v, i) => [i, v.w])) : rng.weighted(vars.map((v, i) => [i, v.small || (!v.emergent && !v.flower) ? 1 : 0.0001]))),
+      scaleZone: (z) => (z === 'hill' ? 0.75 : z === 'grass' ? 0.9 : 1) });
+    out.push({ kind: 'palm', mat: 'tree', cast: true, count: 300, vars: palmVars, solid: true,
+      zones: { beach: 1, grass: 0.05, rocks: 0.15 }, minH: 1.3, maxH: 4.2, openStart: true, group: [1, 4, 5],
+      accept: (x, z, y) => smoothstep(1.3, 1.8, y) * (1 - smoothstep(3.2, 4.2, y)),
+      rot: (x, z, rng) => -(Math.atan2(z, x) + rng.float(-0.45, 0.45)) });
+    out.push({ kind: 'bamboo', mat: 'mid', cast: true, count: 75, vars: rn(3, () => plain(() => B.bambooGeometry(seed()), { occ: 1.7, cr: 0.75, r: 0.8 })), solid: true,
+      zones: { jungle: 1, grass: 0.3 }, minH: 2.5, maxH: 30, openStart: true, minStream: 3.5,
+      accept: (x, z) => { const d = this.streamD(x, z), p = this.pondD(x, z); return d < 22 || (p > 0 && p < 14) ? 1 : 0.04; } });
+    out.push({ kind: 'boulder', mat: 'rock', cast: true, count: 75, solid: true, openStart: true,
+      vars: [B.rockGeo(seed(), 1.6), B.rockGeo(seed(), 1.5), B.rockGeo(seed(), 1.9, { moss: 1 }), B.rockGeo(seed(), 1.5, { moss: 1 })].map((g) => ({ g, occ: 1.6, cr: 1.7, r: 1.8, s: [0.8, 1.3] })),
+      pick: (z, rng) => (z === 'jungle' || z === 'grass' ? rng.int(2, 3) : rng.int(0, 3)), tint: 0.12,
+      zones: { rocks: 1, hill: 1, cliff: 0.5, jungle: 0.05, grass: 0.04 }, minH: 1.3, maxH: 60, maxSlope: 2, rockLike: true });
+
+    // ================================================================ harvestable plants & items
+    out.push({ kind: 'banana', mat: 'mid', count: 160, vars: [0, 1, 2].map((i) => plain(() => B.bananaGeometry(seed(), i === 2), { r: 0.9, s: [0.9, 1.25] })),
+      zones: { jungle: 1, grass: 0.15 }, minH: 2.8, maxH: 30, clump: [0.05, 0.4, 5], group: [1, 4, 4.5], openStart: true, bananaTint: true });
+    out.push({ kind: 'bush_berry', mat: 'low', cast: false, count: 85, vars: rn(3, (i) => plain(() => B.bushGeometry(seed(), { berries: true, hue: 0.26 + i * 0.03, sat: 0.55, lite: 0.22 + i * 0.01 }), { r: 0.9 })),
+      zones: { jungle: 0.7, grass: 1 }, minH: 2, maxH: 40, group: [1, 3, 3.5] });
+    out.push({ kind: 'bush', mat: 'low', count: 440, vars: [
+      plain(() => B.bushGeometry(seed(), { hue: 0.27, sat: 0.55, lite: 0.2 }), { r: 0.9 }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.21, sat: 0.62, lite: 0.3 }), { r: 0.9 }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.38, sat: 0.45, lite: 0.22 }), { r: 0.9 }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.3, sat: 0.55, lite: 0.24, flowers: '#ff6f9e' }), { r: 0.9, w: 0.4 }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.28, sat: 0.55, lite: 0.24, flowers: '#ffb03a' }), { r: 0.9, w: 0.4 }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.24, sat: 0.45, lite: 0.26, bent: 0.35 }), { r: 0.9, hill: true }),
+      plain(() => B.bushGeometry(seed(), { hue: 0.22, sat: 0.4, lite: 0.28, bent: 0.5 }), { r: 0.9, hill: true }),
+    ], pick: (z, rng, vars) => rng.weighted(vars.map((v, i) => [i, z === 'hill' ? (v.hill ? 2 : 0.3) : v.hill ? 0 : (v.w ?? 1)])),
+    zones: { jungle: 0.8, grass: 1, hill: 0.7 }, minH: 2, maxH: 60, clump: [0.05, 0.1, 9], group: [1, 3, 3] });
+    out.push({ kind: 'bush', mat: 'low', count: 130, vars: rn(3, (i) => plain(() => B.bushGeometry(seed(), { round: true, hue: 0.2 + i * 0.015, sat: 0.5, lite: 0.3 }), { r: 0.9, s: [0.8, 1.1] })),
+      zones: { beach: 1 }, minH: 1.6, maxH: 3.4, openStart: true, group: [1, 3, 3], clump: [0.05, 0.25, 21] });
+    out.push({ kind: 'fern', mat: 'low', count: 800, vars: [0.29, 0.25, 0.33, 0.21].map((h) => plain(() => B.fernGeometry(seed(), h), { r: 0.6, s: [0.8, 1.4] })),
+      zones: { jungle: 1, grass: 0.08, hill: 0.1 }, minH: 2, maxH: 50, clump: [0.07, 0.15, 3], group: [1, 4, 2.5], minStream: 2.6,
+      accept: (x, z) => (this.streamD(x, z) < 18 ? 1 : 0.75) });
+    out.push({ kind: 'grass_tuft', mat: 'low', count: 800, vars: [
+      plain(() => B.grassTuft(seed(), { n: 16, h0: 0.6, h1: 1.1 }), { r: 0.4 }),
+      plain(() => B.grassTuft(seed(), { n: 18, h0: 0.7, h1: 1.25, hue: 0.25, seedHead: true, dry: 0.1 }), { r: 0.4 }),
+      plain(() => B.grassTuft(seed(), { n: 14, h0: 0.5, h1: 0.9, hue: 0.27 }), { r: 0.4 }),
+    ], zones: { grass: 1, hill: 0.5, jungle: 0.12 }, minH: 1.5, maxH: 60, group: [1, 4, 2], minStream: 2.6 });
+    out.push({ kind: 'herb', mat: 'low', count: 55, vars: rn(2, () => plain(() => B.herbGeometry(seed()), { r: 0.3 })), zones: { jungle: 1, grass: 1, hill: 0.8 }, minH: 2, maxH: 60 });
+    out.push({ kind: 'rock', mat: 'rock', count: 240, rockLike: true, maxSlope: 2, tint: 0.12,
+      vars: [B.rockGeo(seed(), 0.35), B.rockGeo(seed(), 0.4), B.rockGeo(seed(), 0.32), B.rockGeo(seed(), 0.38, { moss: 1 }), B.rockGeo(seed(), 0.36, { moss: 1 })].map((g) => ({ g, r: 0.4, s: [0.8, 1.3] })),
+      pick: (z, rng) => (z === 'jungle' || z === 'grass' ? rng.int(3, 4) : rng.int(0, 2)),
+      zones: { rocks: 1, hill: 0.4, cliff: 0.3, stream: 1, beach: 0.1, jungle: 0.06, grass: 0.06 }, minH: 1.3, maxH: 60, group: [1, 3, 1.5] });
+    out.push({ kind: 'driftwood', mat: 'rock', count: 70, vars: rn(4, () => plain(() => B.driftwoodGeometry(seed()), { r: 0.8, s: [0.8, 1.25] })),
+      zones: { beach: 1 }, minH: 1.3, maxH: 2.6, tint: 0.1, lift: 0.0 });
+
+    // ---- new resource kinds
+    out.push({ kind: 'mushroom', mat: 'low', count: 70, vars: [0, 0, 1, 2].map((t) => plain(() => B.mushroomGeometry(seed(), t), { r: 0.5, s: [1, 1.4] })), tint: 0.1,
+      gen: (ctx) => ctx.nearPlaced('tree', 70, 1.2, 3.6, ['jungle']) });
+    out.push({ kind: 'aloe', mat: 'low', count: 75, vars: [plain(() => B.aloeGeometry(seed(), false), { r: 0.6, s: [0.9, 1.3] }), plain(() => B.aloeGeometry(seed(), false), { r: 0.6, s: [0.9, 1.3] }), plain(() => B.aloeGeometry(seed(), true), { r: 0.6, s: [0.9, 1.2] })],
+      zones: { beach: 1, grass: 0.15, rocks: 0.15 }, minH: 1.7, maxH: 30, openStart: false, group: [1, 3, 2.5],
+      accept: (x, z, y, zone) => (zone === 'beach' ? smoothstep(1.7, 2.2, y) : 1) });
+    out.push({ kind: 'shell', mat: 'rock', count: 75, vars: [0, 1, 2].map((t) => plain(() => B.shellGeometry(seed(), t), { r: 0.4, s: [1.0, 1.4] })), zones: { beach: 1, rocks: 0.3 }, minH: -0.6, maxH: 1.1, intertidal: true, tint: 0.08, group: [1, 3, 3] });
+    out.push({ kind: 'seaweed', mat: 'rock', count: 55, vars: rn(3, () => plain(() => B.seaweedGeometry(seed()), { r: 0.5, s: [0.9, 1.4] })), zones: { beach: 1, rocks: 1 }, minH: -0.6, maxH: 1.1, intertidal: true, tint: 0.1, group: [1, 3, 2.5] });
+    out.push({ kind: 'flint', mat: 'glass', count: 50, vars: rn(3, () => plain(() => B.flintGeometry(seed()), { r: 0.4, s: [1.0, 1.4] })), zones: { rocks: 1, stream: 1, hill: 0.15 }, minH: 1.3, maxH: 45, maxSlope: 0.8, rockLike: true, tint: 0.08,
+      accept: (x, z, y, zone) => (zone === 'stream' ? 1 : zone === 'rocks' ? 0.5 : 0.3) });
+    out.push({ kind: 'clay', mat: 'decal', count: 42, vars: rn(3, () => plain(() => B.clayGeometry(seed()), { r: 1.0, s: [0.9, 1.5] })), zones: { jungle: 1, grass: 1, beach: 1, rocks: 0.5, hill: 0.3 }, minH: 1.3, maxH: 30, maxSlope: 0.35, minStream: 3.6,
+      accept: (x, z) => { const d = this.streamD(x, z), p = this.pondD(x, z); return (d < 9) || (p > 0.8 && p < 6) ? 1 : 0; }, tint: 0.1, lift: -0.02 });
+    out.push({ kind: 'sugarcane', mat: 'mid', count: 45, vars: [plain(() => B.sugarcaneGeometry(seed(), false), { r: 0.7 }), plain(() => B.sugarcaneGeometry(seed(), false), { r: 0.7 }), plain(() => B.sugarcaneGeometry(seed(), true), { r: 0.7 })],
+      zones: { jungle: 1, grass: 1, beach: 0.5 }, minH: 1.3, maxH: 30, minStream: 3.8, group: [1, 3, 2.2],
+      accept: (x, z) => { const d = this.streamD(x, z); return d < 16 ? 1 : 0; } });
+    out.push({ kind: 'nest', mat: 'rock', count: 40, vars: [2, 3, 4].map((n) => plain(() => B.nestGeometry(seed(), n), { r: 0.45, s: [1.1, 1.5] })), tint: 0.06,
+      gen: (ctx) => [...ctx.pickZone(['hill'], 14, 14), ...ctx.pickZone(['rocks'], 10, 0, (x, z, y) => y > 1.2), ...ctx.nearPlaced('palm', 14, 0.5, 1.1, ['beach', 'grass'])] });
+
+    // ================================================================ decoration (unregistered)
+    out.push({ kind: 'bigleaf', reg: false, mat: 'mid', count: 700, vars: [
+      plain(() => B.bigLeafGeometry(seed(), 0), { s: [0.9, 1.4] }), plain(() => B.bigLeafGeometry(seed(), 0), { s: [0.9, 1.4] }),
+      plain(() => B.bigLeafGeometry(seed(), 1), { s: [0.9, 1.4] }), plain(() => B.bigLeafGeometry(seed(), 1), { s: [0.9, 1.4] }), plain(() => B.bigLeafGeometry(seed(), 2), { s: [0.9, 1.3] }),
+    ], zones: { jungle: 1, grass: 0.1 }, minH: 2.8, maxH: 40, clump: [0.06, 0.1, 31], group: [1, 4, 2.5], minStream: 2.6, openStart: true });
+    out.push({ kind: 'groundleaf', reg: false, mat: 'low', count: 900, vars: [0.3, 0.26, 0.35].map((h) => plain(() => B.groundLeafGeometry(seed(), h), { s: [0.9, 1.6] })),
+      zones: { jungle: 1, grass: 0.2, hill: 0.2 }, minH: 2.8, maxH: 40, clump: [0.09, 0.05, 41], minStream: 2.6 });
+    out.push({ kind: 'fern2', reg: false, mat: 'low', count: 420, vars: [0.29, 0.25, 0.33].map((h) => plain(() => B.fernGeometry(seed(), h), { s: [0.9, 1.5] })),
+      zones: { jungle: 1 }, minH: 2.8, maxH: 40, clump: [0.08, 0.1, 51], minStream: 2.6, group: [1, 3, 2] });
+    out.push({ kind: 'tallgrass', reg: false, mat: 'low', count: 480, vars: [0, 1].map(() => plain(() => B.grassTuft(seed(), { n: 14, h0: 1.0, h1: 1.7, hue: 0.25, seedHead: true, dry: 0.12, bend: 0.5, w: 0.05 }), { s: [0.9, 1.3] })),
+      zones: { grass: 1, hill: 0.3, jungle: 0.06 }, minH: 1.8, maxH: 60, group: [1, 4, 2], minStream: 2.6 });
+    out.push({ kind: 'dunegrass', reg: false, mat: 'low', count: 330, vars: rn(3, () => plain(() => B.dunGrassGeometry(seed()), { s: [0.9, 1.4] })),
+      zones: { beach: 1 }, minH: 1.4, maxH: 3.6, group: [1, 4, 2.5], openStart: false, accept: (x, z, y) => smoothstep(1.4, 2.0, y) });
+    out.push({ kind: 'creeper', reg: false, mat: 'low', count: 130, vars: rn(3, () => plain(() => B.creeperGeometry(seed()), { s: [0.9, 1.5] })),
+      zones: { beach: 1 }, minH: 1.3, maxH: 3.2, group: [1, 2, 3] });
+    out.push({ kind: 'reed', reg: false, mat: 'low', count: 200, vars: rn(3, () => plain(() => B.reedGeometry(seed()), { s: [0.9, 1.4] })),
+      zones: { ...ALL_LAND, stream: 1 }, minH: 1.3, maxH: 30, minStream: 2.3, group: [1, 4, 2],
+      accept: (x, z) => { const d = this.streamD(x, z), p = this.pondD(x, z); return (d < 9 && d > 2.3) || (p > 0.4 && p < 5) ? 1 : 0; }, maxSlope: 0.9 });
+    return out;
+  }
+
+  // ---------------------------------------------------------------- build
   build() {
-    const t = this.terrain;
-    const dummy = new THREE.Object3D();
-    for (const spec of this.plan) {
-      const count = Math.round(spec.count);
-      const geos = [];
-      for (let v = 0; v < spec.variants; v++) geos.push(spec.build(this.rng.int(1, 1e6)));
-      // positions first, then split by variant
-      const per = geos.map(() => []);
-      let tries = 0;
-      while (per.reduce((s, a) => s + a.length, 0) < count && tries < count * 40) {
-        tries++;
-        const a = this.rng.float(0, Math.PI * 2), r = Math.sqrt(this.rng.next()) * 300;
-        const x = Math.cos(a) * r, z = Math.sin(a) * r;
-        const zone = t.zoneAt(x, z);
-        if (!spec.zones.includes(zone)) continue;
-        const y = t.heightAt(x, z);
-        if (y < spec.minH || y > spec.maxH) continue;
-        if (spec.near === 'stream' && t.streamInfo(x, z).d > 22) continue;
-        if (t.slopeAt(x, z) > (spec.kind === 'boulder' || spec.kind === 'rock' ? 2 : 0.8)) continue;
-        if (t.streamInfo(x, z).d < 3.5 && spec.kind !== 'rock') continue;
-        // keep the start beach clear-ish
-        per[this.rng.int(0, geos.length - 1)].push({ x, y, z, rot: this.rng.float(0, Math.PI * 2), s: this.rng.float(0.8, 1.25) });
+    const t = this.terrain, rng = this.rng;
+    const dummy = new THREE.Object3D(), tint = new THREE.Color();
+    // occupancy grid for solids (trunks must not overlap)
+    const occ = new Map();
+    const occKey = (x, z) => `${Math.floor(x / 3)},${Math.floor(z / 3)}`;
+    const occFree = (x, z, r) => {
+      const ix = Math.floor(x / 3), iz = Math.floor(z / 3);
+      for (let i = ix - 1; i <= ix + 1; i++) for (let j = iz - 1; j <= iz + 1; j++) {
+        const c = occ.get(`${i},${j}`); if (!c) continue;
+        for (const o of c) if (Math.hypot(o.x - x, o.z - z) < o.r + r) return false;
       }
-      geos.forEach((geo, v) => {
-        const list = per[v];
-        if (!list.length) return;
-        const mesh = new THREE.InstancedMesh(geo, this.materials[spec.mat], list.length);
-        mesh.castShadow = !!spec.cast;
-        mesh.receiveShadow = true;
-        mesh.name = `${spec.kind}#${v}`;
-        list.forEach((p, i) => {
-          dummy.position.set(p.x, p.y - 0.05, p.z);
-          dummy.rotation.set(0, p.rot, 0);
-          dummy.scale.setScalar(p.s);
-          dummy.updateMatrix();
-          mesh.setMatrixAt(i, dummy.matrix);
-          const solidR = { palm: 0.3, tree: 0.42, bamboo: 0.75, boulder: 1.7 }[spec.kind];
-          this.nodes.add({ kind: spec.kind, x: p.x, y: p.y, z: p.z, r: spec.radius * p.s, mesh, index: i, matrix: dummy.matrix.clone(), scale: p.s, height: geo.userData?.height, solid: !!solidR, cr: (solidR || 0) * p.s, variant: v });
-        });
-        mesh.instanceMatrix.needsUpdate = true;
-        mesh.computeBoundingSphere();
-        this.scene.add(mesh);
-        (this.meshes[spec.kind] ||= []).push(mesh);
+      return true;
+    };
+    const occAdd = (x, z, r) => { const k = occKey(x, z); (occ.get(k) || occ.set(k, []).get(k)).push({ x, z, r }); };
+
+    const ctx = {
+      nearPlaced: (kind, n, dmin, dmax, zones) => {
+        const src = this.placed[kind] || [], out = [];
+        for (let k = 0; k < n * 6 && out.length < n && src.length; k++) {
+          const p = src[rng.int(0, src.length - 1)], a = rng.float(0, TAU), d = rng.float(dmin, dmax);
+          const x = p.x + Math.cos(a) * d, z = p.z + Math.sin(a) * d;
+          if (!zones.includes(t.zoneAt(x, z)) || !t.isLand(x, z, 0.3) || t.slopeAt(x, z) > 0.8 || this.streamD(x, z) < 3) continue;
+          out.push({ x, z });
+        }
+        return out;
+      },
+      pickZone: (zones, n, _n, filter) => {
+        const out = [];
+        for (let k = 0; k < n * 600 && out.length < n; k++) {
+          const a = rng.float(0, TAU), r = Math.sqrt(rng.next()) * 285, x = Math.cos(a) * r, z = Math.sin(a) * r;
+          if (!zones.includes(t.zoneAt(x, z))) continue;
+          const y = t.heightAt(x, z);
+          if (y < 0.4 || t.slopeAt(x, z) > 1.0 || (filter && !filter(x, z, y))) continue;
+          out.push({ x, z });
+        }
+        return out;
+      },
+    };
+
+    for (const spec of this.specs()) {
+      const target = Math.round(spec.count * this.dens);
+      const vars = spec.vars;
+      const geos = vars.map((v) => v.g || v.b());
+      const items = [];
+      const clumpF = spec.clump;
+      const accept = (x, z) => {
+        const zone = t.zoneAt(x, z);
+        const zw = spec.zones[zone];
+        if (!zw) return null;
+        const y = t.heightAt(x, z);
+        if (y < spec.minH || y > spec.maxH) return null;
+        if (rng.next() > zw) return null;
+        if (clumpF) { const c = this.clump(x, z, clumpF[0], clumpF[2]); if (rng.next() > smoothstep(clumpF[1], clumpF[1] + 0.3, c)) return null; }
+        if (spec.accept && rng.next() > spec.accept(x, z, y, zone)) return null;
+        if (t.slopeAt(x, z) > (spec.maxSlope ?? 0.8)) return null;
+        if (spec.intertidal) {
+          if (this.streamD(x, z) < 3.5) return null;
+        } else if (!spec.rockLike) {
+          if (this.streamD(x, z) < (spec.minStream ?? 3.5)) return null;
+          if (!t.isLand(x, z, 0.3)) return null;
+        } else if (zone !== 'stream' && !t.isLand(x, z, 0.0)) return null;
+        if (spec.openStart && Math.hypot(x - this.start.x, z - this.start.z) < 14) return null;
+        return { zone, y };
+      };
+      const push = (x, z, zone, y, forceV) => {
+        const vi = forceV ?? (spec.pick ? spec.pick(zone, rng, vars) : rng.weighted(vars.map((v, i) => [i, v.w ?? 1])));
+        const v = vars[vi];
+        if (v.occ && !occFree(x, z, v.occ)) return false;
+        const sr = v.s || [0.85, 1.25];
+        const s = rng.float(sr[0], sr[1]) * (spec.scaleZone ? spec.scaleZone(zone) : 1);
+        const rot = spec.rot ? spec.rot(x, z, rng) : rng.float(0, TAU);
+        items.push({ x, z, y, rot, s, v: vi });
+        if (v.occ) occAdd(x, z, v.occ);
+        return true;
+      };
+      if (spec.gen) {
+        for (const p of spec.gen(ctx)) { const y = t.heightAt(p.x, p.z); push(p.x, p.z, t.zoneAt(p.x, p.z), y); if (items.length >= target) break; }
+      } else {
+        let tries = 0;
+        const grp = spec.group;
+        while (items.length < target && tries < target * 90) {
+          tries++;
+          const a = rng.float(0, TAU), r = Math.sqrt(rng.next()) * 285;
+          const x = Math.cos(a) * r, z = Math.sin(a) * r;
+          const ok = accept(x, z);
+          if (!ok) continue;
+          if (!push(x, z, ok.zone, ok.y)) continue;
+          if (grp && rng.next() < 0.7) {
+            const n = rng.int(grp[0], grp[1]);
+            for (let g = 0; g < n; g++) {
+              const ga = rng.float(0, TAU), gd = rng.float(0.6, grp[2]);
+              const gx = x + Math.cos(ga) * gd, gz = z + Math.sin(ga) * gd;
+              const ok2 = accept(gx, gz);
+              if (ok2) push(gx, gz, ok2.zone, ok2.y);
+            }
+          }
+        }
+      }
+      this.placed[spec.kind] = (this.placed[spec.kind] || []).concat(items);
+      this._emit(spec, geos, items, dummy, tint);
+    }
+
+    // ---- lianas hanging from mid-height trees
+    this._buildVines(dummy, tint);
+
+    // ---- near-player grass carpet
+    this.carpet = new GrassCarpet(this.scene, t, this.materials.low, this.dens);
+    this.carpet.update({ x: this.start.x, z: this.start.z });
+  }
+
+  _tint(c, amp, bananaTint) {
+    const r = this.rng;
+    c.setRGB(1 + (r.next() - 0.5) * amp * 0.9, 1 + (r.next() - 0.5) * amp * 1.4, 1 + (r.next() - 0.5) * amp * 1.0);
+    return c;
+  }
+
+  _emit(spec, geos, items, dummy, tint) {
+    const per = geos.map(() => []);
+    for (const it of items) per[it.v].push(it);
+    const reg = spec.reg !== false;
+    geos.forEach((geo, v) => {
+      const list = per[v];
+      if (!list.length) return;
+      const mesh = new THREE.InstancedMesh(geo, this.materials[spec.mat], list.length);
+      mesh.castShadow = !!spec.cast;
+      mesh.receiveShadow = true;
+      mesh.name = `${spec.kind}#${v}`;
+      const vv = spec.vars[v];
+      const amp = spec.tint ?? 0.3;
+      list.forEach((p, i) => {
+        dummy.position.set(p.x, p.y - (spec.lift ?? 0.05), p.z);
+        dummy.rotation.set(0, p.rot, 0);
+        dummy.scale.setScalar(p.s);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        mesh.setColorAt(i, this._tint(tint, amp));
+        if (reg) {
+          const cr = spec.solid ? (vv.cr || 0.4) * p.s : 0;
+          this.nodes.add({ kind: spec.kind, x: p.x, y: p.y, z: p.z, r: (vv.r ?? 0.6) * p.s, mesh, index: i, matrix: dummy.matrix.clone(), scale: p.s, height: geo.userData?.height, solid: !!spec.solid, cr, variant: v });
+        }
       });
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      this.scene.add(mesh);
+      (this.meshes[spec.kind] ||= []).push(mesh);
+      this.counts[spec.kind] = (this.counts[spec.kind] || 0) + list.length;
+    });
+  }
+
+  _buildVines(dummy, tint) {
+    const trees = this.placed.tree || [];
+    const rng = this.rng;
+    const treeSpec = this._treeVarsCache;
+    // rebuild the tree geometries' info: the tree meshes' geometries carry userData.top
+    const meshes = this.meshes.tree || [];
+    const byVariant = new Map();
+    for (const m of meshes) byVariant.set(+m.name.split('#')[1], m.geometry);
+    const per = new Map();
+    for (const p of trees) {
+      const g = byVariant.get(p.v);
+      if (!g || !g.userData.top || g.userData.crown !== 2.2 || p.s < 0.8) continue;
+      if (!this._vineOK(p.v)) continue;
+      if (rng.next() > 0.3) continue;
+      (per.get(p.v) || per.set(p.v, []).get(p.v)).push(p);
+    }
+    for (const [v, list] of per) {
+      const tg = byVariant.get(v);
+      const geo = B.vineGeometry(rng.int(1, 1e6), tg);
+      const { anchor } = geo.userData;
+      const mesh = new THREE.InstancedMesh(geo, this.materials.mid, list.length);
+      mesh.receiveShadow = true; mesh.name = `vine#${v}`;
+      list.forEach((p, i) => {
+        dummy.position.set(p.x, p.y - 0.05, p.z); dummy.rotation.set(0, p.rot, 0); dummy.scale.setScalar(p.s); dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+        mesh.setColorAt(i, this._tint(tint, 0.3));
+        const cs = Math.cos(p.rot), sn = Math.sin(p.rot);
+        const vx = p.x + (anchor.x * cs + anchor.z * sn) * p.s, vz = p.z + (-anchor.x * sn + anchor.z * cs) * p.s;
+        this.nodes.add({ kind: 'vine', x: vx, y: p.y, z: vz, r: 0.4, pickY: 1.2, mesh, index: i, matrix: dummy.matrix.clone(), scale: p.s, variant: v, solid: false, cr: 0 });
+      });
+      mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true; mesh.computeBoundingSphere();
+      this.scene.add(mesh);
+      (this.meshes.vine ||= []).push(mesh);
+      this.counts.vine = (this.counts.vine || 0) + list.length;
     }
   }
+  _vineOK(v) { return [3, 4, 5, 7].includes(v); }
 
-  update(time, wind) {
-    for (const m of [this.materials.tree, this.materials.low]) {
+  update(time, wind, camPos) {
+    for (const m of [this.materials.tree, this.materials.mid, this.materials.low]) {
       m.userData.uniforms.uTime.value = time;
       m.userData.uniforms.uWind.value = wind;
     }
+    if (camPos && this.carpet) this.carpet.update(camPos);
   }
 }

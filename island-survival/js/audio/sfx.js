@@ -309,10 +309,11 @@ const SOUNDS = {
   },
   // ---- gun
   gunshot(v) {
-    v.n(0, 0.07, { type: 'highpass', f: 1200, vol: 1 });
-    v.n(0, 0.35, { type: 'lowpass', f: 4500, f2: 350, vol: 0.9, a: 0.001 });
-    v.o(0, 0.4, { f: 150, f2: 32, vol: 0.9 });
-    v.n(0.03, 1.3, { buf: 'brown', type: 'lowpass', f: 500, f2: 120, vol: 0.9, a: 0.05 });
+    v.out.gain.value *= 0.75; // headroom: layers add up
+    v.n(0, 0.07, { type: 'highpass', f: 1200, vol: 0.7 });
+    v.n(0, 0.35, { type: 'lowpass', f: 4500, f2: 350, vol: 0.6, a: 0.001 });
+    v.o(0, 0.4, { f: 150, f2: 32, vol: 0.6 });
+    v.n(0.03, 1.3, { buf: 'brown', type: 'lowpass', f: 500, f2: 120, vol: 0.6, a: 0.05 });
     v.echo(0.21, 0.42, 0.45, 1800);
   },
   gun_empty(v) {

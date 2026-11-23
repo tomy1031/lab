@@ -15,7 +15,11 @@ export class AudioEngine {
       const c = this.ctx;
       this.master = c.createGain();
       this.master.gain.value = this.muted ? 0 : this.volume.master;
-      this.master.connect(c.destination);
+      // a gentle limiter so stacked loud sounds (gunshot + thunder + surf) do not clip
+      this.limiter = c.createDynamicsCompressor();
+      this.limiter.threshold.value = -6; this.limiter.knee.value = 6; this.limiter.ratio.value = 12;
+      this.limiter.attack.value = 0.003; this.limiter.release.value = 0.2;
+      this.master.connect(this.limiter).connect(c.destination);
       for (const k of ['sfx', 'amb', 'voice', 'ui']) {
         this[k] = c.createGain();
         this[k].gain.value = this.volume[k];

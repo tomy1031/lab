@@ -1,7 +1,7 @@
 // core/clock.js — game time. One game day lasts `dayMinutes` real minutes (chosen in the setup).
-// total = game minutes since day 1 00:00. The game starts on day 1 at 07:00.
+// total = game minutes since day 1 00:00. The game starts on day 1 at 08:00 (DESIGN.md §4.1).
 export class Clock {
-  constructor(dayMinutes = 20, total = 7 * 60) {
+  constructor(dayMinutes = 24, total = 8 * 60) {
     this.dayMinutes = dayMinutes;
     this.total = total;
     this.scale = 1;         // >1 while sleeping / waiting
@@ -25,10 +25,12 @@ export class Clock {
     const h = Math.floor(this.hour), m = Math.floor(this.minuteOfDay % 60);
     return `${this.day}日目 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
-  /** tide height (m): semi-diurnal, 12.42 h period, ±0.6 m, a little stronger on full/new moon days */
-  tide() {
-    const h = this.total / 60;
-    const spring = 0.8 + 0.2 * Math.cos((this.day / 14.77) * Math.PI * 2);
-    return Math.sin((h / 12.42) * Math.PI * 2) * 0.6 * spring;
+  /** tide (m), DESIGN.md §8.3: semi-diurnal + diurnal terms, spring/neap modulation; storms add surge elsewhere */
+  tide(t = this.total / 60) {
+    const spring = 1 + 0.3 * Math.cos((2 * Math.PI * (t / 24)) / 14.75);
+    // scaled ×0.7 from the design's ±1.2 m so the generated beaches keep a dry strip at high tide
+    return (0.9 * Math.sin((2 * Math.PI * t) / 12.4) + 0.3 * Math.sin((2 * Math.PI * t) / 24.8 + 1.0)) * spring * 0.7;
   }
+  /** game hours → real seconds per game hour */
+  get realSecPerHour() { return this.dayMinutes * 60 / 24; }
 }
