@@ -208,7 +208,9 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
     const g = T.g, C = g.sys.crafting, P = g.sys.player;
     if (!C) return { skip: true };
     P.inv.add('vine', 3, { q: 55 });
-    const vines = P.inv.stacks.filter((s) => s.id === 'vine').map((s) => s.uid);
+    // each entry is one unit (what the craft screen passes): three vines from the same stack
+    const v = P.inv.stacks.find((s) => s.id === 'vine').uid;
+    const vines = [v, v, v];
     const prev = C.preview('weave', vines);
     const r = C.craft('weave', vines, { score: 0.6 });
     return { prev: prev.map((p) => `${p.kind}:${p.id}`), ok: r?.ok, id: r?.stack?.id, q: r?.stack?.q };
@@ -253,12 +255,18 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
     g.player.place(fp.x + 2, fp.z, 0);
     g.clock.total = Math.floor(g.clock.total / 1440) * 1440 + 22 * 60; // 22:00
     P.body.s.rest = 30;
+    // keep the fire going through the night and sleep dry (otherwise you wake up cold — as designed)
+    rec.fire.fuel = Math.max(rec.fire.fuel, 300); rec.fire.lit = true;
+    P.body.s.wet = 0;
+    const blk = Math.floor(g.clock.total / 360);
+    for (let k = 0; k < 3; k++) g.sys.weather.forced.push({ block: blk + k, type: 'clear' });
     g.actions.sleep('morning');
     const sleeping = P.sleeping;
     // fast-forward the game loop (frames)
     for (let i = 0; i < 600 && P.sleeping; i++) { g.update(0.1); }
     const saved = g.save();
-    return { sleeping, awake: !P.sleeping, hour: g.clock.hour.toFixed(1), day: g.clock.day, rest: Math.round(P.body.s.rest), hp: Math.round(P.body.s.hp), saved, bt: P.body.s.bodyTemp.toFixed(1) };
+    const toasts = [...document.querySelectorAll('#hud-toasts *')].map((e) => e.textContent).slice(-4);
+    return { toasts, water: Math.round(P.body.s.water), feel: Math.round(P.body.feel), sleeping, awake: !P.sleeping, hour: g.clock.hour.toFixed(1), day: g.clock.day, rest: Math.round(P.body.s.rest), hp: Math.round(P.body.s.hp), saved, bt: P.body.s.bodyTemp.toFixed(1) };
   });
   log(JSON.stringify(sl));
   check(sl.sleeping && sl.awake && sl.rest > 60, `slept until ${sl.hour}h day ${sl.day} (rest ${sl.rest})`);
