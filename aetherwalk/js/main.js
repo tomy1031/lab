@@ -86,6 +86,11 @@ async function boot() {
   const loop = createLoop(ctx, report);
   ctx.loop = loop;
   landing = setupLanding(ctx);
+  // app-level actions other modules may call (the wrist menu's 記録 page: back to the title)
+  ctx.app = {
+    toTitle: () => landing.toTitle(),
+    get mode() { return landing.mode; },
+  };
   ctx.progress('起動中 starting', 0.05);
   installDebug(ctx, loop);
 

@@ -1,5 +1,7 @@
 // js/core/landing.js — the landing page behaviour (OPUS-A): loading bar, ENTER VR, PC PREVIEW,
-// the settings form (built from SETTING_DEFS), PWA status, and the attract view behind the panel.
+// the settings form (built from SETTING_DEFS), PWA status, the attract view behind the panel, and — when a save
+// exists — the つづきから / はじめから choice (はじめから asks once, then calls game.reset()). toTitle() brings
+// the player back here from the game (leaving XR first); main.js exposes it as ctx.app.toTitle().
 import { SETTING_DEFS } from './settings.js';
 import { errMsg } from './util.js';
 
@@ -29,9 +31,99 @@ export function setupLanding(ctx) {
   ctx.xr.supportedPromise.then((ok) => { xrOk = ok; refreshVR(); });
   refreshVR();
 
+  // ── つづきから / はじめから ──
+  const startBox = $('aw-start'), summaryEl = $('aw-save-summary'), noteEl = $('aw-start-note');
+  const confirmBox = $('aw-confirm'), yesBtn = $('aw-confirm-yes'), noBtn = $('aw-confirm-no');
+  const radios = startBox ? [...startBox.querySelectorAll('input[name="aw-start"]')] : [];
+  let confirming = false;
+  const game = () => (ctx.game && !ctx.game.isStub ? ctx.game : null);
+  /** the save on disk (null with ?fresh, the autoplay demo, no game or no save) */
+  function saveData() {
+    const g = game();
+    if (!g || !g.saver || !g.saver.enabled) return null;
+    try { return g.saver.read(); } catch { return null; }
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  function summaryOf(d) {
+    const g = game();
+    const st = d.quest && Number.isFinite(d.quest.stage) ? d.quest.stage : 0;
+    const stage = g?.quest?.STAGES?.[st]?.text || '';
+    const steps = Math.max(0, Math.round(d.stats?.steps || 0));
+    const min = Math.round((d.stats?.activeSec || 0) / 60);
+    const when = d.savedAt ? new Date(d.savedAt) : null;
+    return [stage, `${steps.toLocaleString('ja-JP')} 歩`, min > 0 ? `${min} 分` : null,
+      when ? `${when.getMonth() + 1}/${when.getDate()} ${pad(when.getHours())}:${pad(when.getMinutes())} に記録` : null]
+      .filter(Boolean).join(' ・ ');
+  }
+  function markChoice() {
+    for (const r of radios) r.closest('.aw-choice')?.classList.toggle('is-on', r.checked);
+  }
+  function choose(value) { for (const r of radios) r.checked = r.value === value; markChoice(); }
+  function setStartLocked(b) {
+    if (pcBtn) pcBtn.disabled = b;
+    if (b && vrBtn) vrBtn.disabled = true; else refreshVR();
+  }
+  /** show the choice when a save exists (after the game has loaded it); hide it otherwise */
+  function refreshSaves() {
+    if (!startBox) return;
+    const d = ready ? saveData() : null;
+    startBox.hidden = !d;
+    closeConfirm(false);
+    if (d) { if (summaryEl) summaryEl.textContent = summaryOf(d); choose('continue'); }
+  }
+  function openConfirm() {
+    if (!confirmBox) return;
+    confirming = true;
+    confirmBox.hidden = false;
+    setStartLocked(true);
+    noBtn?.focus();                                  // the safe answer has the focus
+  }
+  function closeConfirm(refocus = true) {
+    if (!confirmBox || !confirming) { if (confirmBox) confirmBox.hidden = true; return; }
+    confirming = false;
+    confirmBox.hidden = true;
+    setStartLocked(false);
+    if (refocus) radios.find((r) => r.checked)?.focus();
+  }
+  for (const r of radios) {
+    r.addEventListener('change', () => {
+      markChoice();
+      if (r.checked && r.value === 'new') openConfirm(); else closeConfirm(false);
+    });
+  }
+  noBtn?.addEventListener('click', () => { choose('continue'); closeConfirm(); });
+  yesBtn?.addEventListener('click', () => {
+    const g = game();
+    let ok = false;
+    try { ok = g ? g.reset() !== false : false; } catch (e) { ctx.report(`new game: ${errMsg(e)}`); }
+    confirming = false;
+    if (confirmBox) confirmBox.hidden = true;
+    setStartLocked(false);
+    if (startBox) startBox.hidden = true;
+    if (noteEl) noteEl.textContent = ok ? '記録を消しました。目覚めの石舞台から始めます — NEW GAME' : 'はじめからにできませんでした';
+    baseYaw = ((ctx.player?.yaw || 0) * 180) / Math.PI;
+    (vrBtn && !vrBtn.disabled ? vrBtn : pcBtn)?.focus();
+    ctx.events.emit('game:new', { ok });
+  });
+  confirmBox?.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); noBtn?.click(); }
+    else if (e.key === 'Tab') {                       // keep the focus inside the question
+      e.preventDefault();
+      (document.activeElement === yesBtn ? noBtn : yesBtn)?.focus();
+    }
+  });
+  markChoice();
+
+  /** leaving the title for the game: un-freeze a world paused by toTitle() */
+  function leaveTitle() {
+    if (noteEl) noteEl.textContent = '';
+    if (ctx.paused && ctx.pauseReason === 'title') ctx.setPaused(false, 'title');
+  }
+
   vrBtn?.addEventListener('click', async () => {
-    if (vrBtn.disabled) return;
+    if (vrBtn.disabled || confirming) return;
     vrBtn.disabled = true;
+    leaveTitle();
     try {
       ctx.audio?.resume?.();
       await ctx.xr.enter();
@@ -56,6 +148,8 @@ export function setupLanding(ctx) {
   });
 
   function startDesktop() {
+    if (confirming) return;
+    leaveTitle();
     mode = 'desktop';
     ctx.flags.desktop = true;
     body.classList.remove('landing');
@@ -72,7 +166,28 @@ export function setupLanding(ctx) {
     body.classList.remove('desktop');
     body.classList.add('landing');
     if (document.pointerLockElement) document.exitPointerLock();
+    refreshSaves();
   });
+
+  /** back to the title from the game (the wrist menu's 記録 page): save, leave XR, freeze the world, show the
+   *  landing with the choice refreshed */
+  async function toTitle() {
+    try { ctx.ui?.closeMenu?.(); } catch { /* ui stub */ }
+    try { game()?.save?.(); } catch (e) { ctx.report(`save: ${errMsg(e)}`); }
+    mode = 'landing';                                // (so xr:end lands here, not in the PC view)
+    if (ctx.renderer.xr.isPresenting) { try { await ctx.xr.exit(); } catch (e) { ctx.report(`exit VR: ${errMsg(e)}`); } }
+    if (document.pointerLockElement) document.exitPointerLock();
+    ctx.player?.desktop?.enable?.(false);
+    body.classList.remove('desktop', 'xr');
+    body.classList.add('landing');
+    if (!ctx.paused) ctx.setPaused(true, 'title');
+    baseYaw = ((ctx.player?.yaw || 0) * 180) / Math.PI;
+    $('aw-landing')?.scrollTo?.(0, 0);
+    refreshSaves();
+    (startBox && !startBox.hidden ? radios.find((r) => r.checked) : (vrBtn && !vrBtn.disabled ? vrBtn : pcBtn))?.focus();
+    refreshVR();
+    return true;
+  }
 
   // settings form
   const form = $('aw-settings');
@@ -156,8 +271,9 @@ export function setupLanding(ctx) {
       ready = true; refreshVR(); progress('準備完了 READY', 1); body.classList.add('ready');
       baseYaw = ((ctx.player?.yaw || 0) * 180) / Math.PI;
       ctx.loop?.addHook?.('landing', attract, 'pre');
+      refreshSaves();
     },
-    startDesktop,
+    startDesktop, toTitle, refreshSaves,
     pwaStatus, pwaUpdate, pwaInstallable,
     get mode() { return mode; },
   };
