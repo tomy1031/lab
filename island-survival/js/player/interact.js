@@ -73,6 +73,12 @@ export class Interact {
       const fp = fr.fire.group.position, d = Math.hypot(fp.x - P.pos.x, fp.z - P.pos.z);
       if ((((fp.x - P.pos.x) * fwd.x + (fp.z - P.pos.z) * fwd.z) / Math.max(d, 0.1) > 0.5) || d < 1.2) return { type: 'fire', fire: fr, label: '火', options: this.fireOptions(fr) };
     }
+    // traps (§26): the one in front of you
+    const trap = g.sys.traps?.nearest?.(P.pos, 2.4);
+    if (trap) {
+      const dx = trap.x - P.pos.x, dz = trap.z - P.pos.z, d = Math.hypot(dx, dz);
+      if (d < 1 || (dx * fwd.x + dz * fwd.z) / Math.max(0.1, d) > 0.55) return { type: 'trap', trap, label: '罠', options: g.sys.traps.optionsFor(trap) };
+    }
     const node = nodes.pick(eye, fwd, 2.6, (n) => (RESOURCE_OPTIONS[n.kind]?.length || n.kind === 'carcass' || n.kind === 'drop' || n.structure));
     if (node) {
       if (node.kind === 'drop') return { type: 'drop', node, label: node.data.name, options: [{ id: 'pick', label: `${g.sys.knowledge?.nameOf?.(node.data.stack.id) || node.data.name}を 拾う` }] };
@@ -213,6 +219,7 @@ export class Interact {
       case 'water': return this.waterAction(t, opt);
       case 'fire': return this.fireAction(t, opt);
       case 'carcass': return this.carcassAction(t, opt);
+      case 'trap': return this.trapAction(t.trap, opt);
       case 'site': return g.sys.building?.act?.(t.node, opt, this);
       case 'node': return this.nodeAction(t, opt);
       default: break;
@@ -483,6 +490,9 @@ export class Interact {
     if (ageMin > 60 && !node.data.gutted) g.bus.emit('toast', { text: mild ? '中身を 出すのが 遅れた。肉の 傷みが 早い' : '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
   }
 
+  /** §26 traps: delegate to player/trapwork.js */
+  async trapAction(trap, opt) { const TW = await import('./trapwork.js'); return TW.trapAction(this.game, this, trap, opt); }
+
   /** §25.3 birds: pluck → take the insides out, on the diagram (or skipped) */
   async birdCarcass(node) {
     const g = this.game, sp = SPECIES[node.data.species];
@@ -511,7 +521,7 @@ export class Interact {
     if (o.feathers && !sp.yield.feather) this.gain('feather', o.feathers);
     if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', node.data.arrows);
     g.sys.knowledge?.learn?.(sp.guide, 3, 'caught');
-    g.sys.fauna.removeCarcass(node.data.animal);
+    if (node.data.animal) g.sys.fauna.removeCarcass(node.data.animal);
   }
 
   // ---------------------------------------------------------------- held tool

@@ -131,3 +131,18 @@ export function feelOf(p) {
   const timeMul = p >= 0.9 ? 0.9 : p >= 0.4 ? 1 : p >= 0.25 ? 1.1 : 1.2;
   return { bonus, label, timeMul, good: p >= 0.7, fail: p < 0.25 };
 }
+
+// ---------------------------------------------------------------- traps (§26) — provisional, refined with the trap diagrams
+/** the work-table flow for setting (or resetting) a trap. opts: { K, reset, trail, water } */
+export function trapFlow(type, { K = 0, reset = false } = {}) {
+  const T = (kind, n, extra) => ({ kind, n, scene: 'trap', ...extra });
+  if (type === 'snare') return reset
+    ? [T('trace', 1, { label: '引き金を そっと かける', mode: 'line', path: 'notch', trigger: true })]
+    : [T('strike', 2, { label: '杭を 打つ', targets: [[300, 330], [300, 330]] }), T('twist', 4, { label: '輪を 結ぶ', tighten: true }), T('trace', 1, { label: '引き金を そっと かける', mode: 'line', path: 'notch', trigger: true }), T('place', 1, { label: 'エサを 置く', tokens: ['meat'], bait: true })];
+  if (type === 'deadfall') return reset
+    ? [T('place', 3, { label: '4 の 字に 組む', tokens: ['stick', 'stick', 'stick'], ordered: true }), T('trace', 1, { label: '石を そっと あずける', mode: 'line', path: 'cut', trigger: true })]
+    : [T('trace', 3, { label: '3 本に 切り欠きを 入れる', mode: 'line', path: 'notch' }), T('place', 3, { label: '4 の 字に 組む', tokens: ['stick', 'stick', 'stick'], ordered: true }), T('trace', 1, { label: '石を そっと あずける', mode: 'line', path: 'cut', trigger: true }), T('place', 1, { label: 'エサを 置く', tokens: ['meat'], bait: true })];
+  return reset
+    ? [T('place', 1, { label: 'かごを 流れに 置く', tokens: ['stone'] })]
+    : [T('place', 1, { label: 'かごを 流れに 置く（口を 下手に）', tokens: ['stone'] }), T('place', 2, { label: '石で 重しを する', tokens: ['stone', 'stone'] }), T('place', 1, { label: 'エサを 入れる', tokens: ['meat'], bait: true })];
+}

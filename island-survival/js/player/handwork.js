@@ -337,6 +337,7 @@ class Trace extends Kind {
       if (kbd) s = 0.5;
       this.record(s);
       if (this.step.notch) this.hw.sc.notch = clamp01(0.3 + s);
+      if (this.step.trigger && (s < 0.25 || this.speedMax > 1100)) this.hw.extra.snapped = true; // §26: a hasty hand springs the trap
       this.prog = this.line.pts.length - 1; this.markTraced();
       this.hw.sfx('rustle');
       if (!this.done) { this.li++; this.setLine(); }
@@ -564,6 +565,7 @@ class Place extends Kind {
     this.forcedP = score;
     for (const tk of this.tokens) if (!tk.placed) { tk.placed = true; }
     if (this.step.scene === 'filter') this.hw.sc.layers = this.order.slice();
+    if (this.step.bait) this.hw.extra.baited = true;
     super.autoFinish(score);
   }
   update(dt, I) {
@@ -597,6 +599,7 @@ class Place extends Kind {
     if (c && this.step.bstep === 'gut') c.removed = true;
     if (c && this.step.bstep === 'skin') c.skinned = true;
     if (this.step.firm && center * mul < 0.3) this.hw.extra.squeezed = true; // §25.2 にがい 袋
+    if (this.step.bait) this.hw.extra.baited = true;
     this.record(center * (right ? 1 : 0.5) * mul);
     this.hw.sfx('drop');
   }

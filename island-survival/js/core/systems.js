@@ -86,6 +86,9 @@ export async function installSystems(game, setup) {
   // building
   const bd = await optional('../sim/building.js');
   if (bd?.Building) { game.add('building', new bd.Building(game)); buildingAdapter(game); }
+  // traps (§11.6, §26)
+  const tr = await optional('../sim/traps.js');
+  if (tr?.Traps) game.add('traps', new tr.Traps(game));
   // events, rescue, endings
   const ev = await optional('../sim/events.js');
   if (ev?.Events) game.add('events', new ev.Events(game));
@@ -418,6 +421,9 @@ function makeActions(game) {
       return ok;
     },
     treat(uid) { const s = P().inv.get(uid); const d = s && itemDef(s.id, s); return d?.med ? this.treatWith(d.med, s) : false; },
+    /** §26 罠: set the trap in front of you by hand */
+    canSetTrap(uid) { const s = P().inv.get(uid); return !!(s && game.sys.traps && ['snare', 'deadfall', 'fish_trap', 'crab_pot'].includes(s.id)); },
+    async setTrap(uid) { const TW = await import('../player/trapwork.js'); game.screens?.hide?.(); return TW.setTrap(game, uid); },
     /** §25.3 魚の 下ごしらえ: 締める → うろこ → 中身 (on the diagram, or skipped) */
     canPrepFish(uid) { const s = P().inv.get(uid), d = s && itemDef(s.id, s); return !!(s && d && FISH_IDS.has(s.id) && !s.gutted && !(s.done > 0) && (!s.proc || s.proc === 'none')); },
     async prepFish(uid) {
