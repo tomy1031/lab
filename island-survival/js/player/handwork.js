@@ -273,7 +273,7 @@ class Trace extends Kind {
     else { this.from = [520, 236]; this.to = [600, 262]; this.stroke = null; }
     this.devSum = 0; this.devN = 0;
   }
-  setLine() { this.line = resample(this.step.lines ? this.step.lines[Math.min(this.li, this.step.lines.length - 1)] : pathFor(this.step.path, this.li)); this.prog = 0; this.lineT = 0; this.tracing = false; this.devSum = 0; this.devN = 0; this.speedMax = 0; }
+  setLine() { this.alongSpeed = 0; this.line = resample(this.step.lines ? this.step.lines[Math.min(this.li, this.step.lines.length - 1)] : pathFor(this.step.path, this.li)); this.prog = 0; this.lineT = 0; this.tracing = false; this.devSum = 0; this.devN = 0; this.speedMax = 0; }
   markTraced() {
     const c = this.hw.sc.carcass; if (!c || !this.step.bstep) return;
     const arr = (c.traced[this.step.bstep] = c.traced[this.step.bstep] || []);
@@ -336,10 +336,15 @@ class Trace extends Kind {
       else {
         this.lineT += dt;
         let best = this.prog, bd = Infinity;
-        for (let k = Math.floor(this.prog); k <= Math.min(N, Math.floor(this.prog) + 8); k++) { const d = dist(I.x, I.y, pts[k][0], pts[k][1]); if (d < bd) { bd = d; best = k; } }
+        // the nearest point ahead (a leap along the line counts as moving that fast)
+        for (let k = Math.floor(this.prog); k <= N; k++) { const d = dist(I.x, I.y, pts[k][0], pts[k][1]) + (k - this.prog) * 0.05; if (d < bd) { bd = d; best = k; } }
+        bd = dist(I.x, I.y, pts[best][0], pts[best][1]);
+        // how fast the blade moves along the line (px/s), measured per frame: a jump is "too fast"
+        if (best > this.prog && dt > 0) this.alongSpeed = Math.max(this.alongSpeed || 0, ((best - this.prog) * this.line.total) / N / dt);
         if (best > this.prog) this.prog = best;
         this.devSum += bd; this.devN++;
-        this.speedMax = Math.max(this.speedMax, I.speed || 0);
+        this.speedMax = Math.max(this.speedMax, I.speed || 0, this.alongSpeed || 0);
+        this.live = this.prog / N;
         // §25.2 腹を 開く: going deep (into the no-touch zone, or far off the line / too fast) spoils the meat
         if (this.step.noTouch && ((bd > 10 && this.step.noTouch.some((z) => ((I.x - z.x) / (z.rx * 0.75)) ** 2 + ((I.y - z.y) / (z.ry * 0.75)) ** 2 < 1)) || bd > 34 / this.tol || (I.speed || 0) > 1600)) { this.hw.extra.cutDeep = true; if (this.hw.sc.carcass) this.hw.sc.carcass.cutDeep = true; }
         if (this.step.scene !== 'carcass' && Math.random() < 0.15) this.hw.burst(I.x, I.y, 'shaving', 1);
@@ -585,6 +590,8 @@ class Place extends Kind {
     else this.slots = kinds.map((k, i) => (step.slotAt ? { x: step.slotAt[0], y: step.slotAt[1] - i * 8, w: step.slotAt[2] || 120, h: step.slotAt[3] || 70 } : sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
     this.held = null; this.drops = 0;
     if (sc === 'filter') hw.sc.layers = [];
+    // the piece is already in place: only turn it (fish trap mouth)
+    if (step.rotate && step.rotateOnly) { const tk = this.tokens[0]; tk.placed = true; tk.x = this.slots[0].x; tk.y = this.slots[0].y; this.rotating = { tk, base: 1, angle: step.rotate.start ?? 0, t: 0, moved: false }; if (hw.sc.trap) hw.sc.trap.mouthAngle = this.rotating.angle; }
   }
   get p() { return this.forcedP ?? clamp01(mean(this.scores) - 0.1 * this.drops); }
   autoFinish(score) {
@@ -621,6 +628,7 @@ class Place extends Kind {
     const right = !this.step.ordered || tk.id === this.order[this.count];
     if (!right) this.hw.failures.add('order');
     tk.placed = true; tk.x = slot.x; tk.y = slot.y;
+    (this.placedIds = this.placedIds || []).push(tk.id);
     if (this.step.rotate) { this.rotating = { tk, base: center * mul, angle: this.step.rotate.start ?? 0, t: 0 }; const c = this.hw.sc.trap; if (c) c.mouthAngle = this.rotating.angle; this.hw.sfx('drop'); return; }
     if (this.step.scene === 'filter') this.hw.sc.layers = (this.hw.sc.layers || []).concat([tk.kind]);
     const c = this.hw.sc.carcass;
@@ -660,7 +668,8 @@ class Place extends Kind {
     }
     this.slots.forEach((s, i) => { if (i >= this.count && !this.step.hideSlot) drawProp(ctx, 'slot', { x: s.x, y: s.y, w: s.w, h: s.h, active: i === this.count }); });
     for (const tk of this.tokens) {
-      if (tk.placed && this.step.scene === 'filter') continue;
+      if (tk.placed && (this.step.scene === 'filter' || this.step.hidePlaced)) continue;
+      if (this.step.hideTokens && tk !== this.held) continue;
       drawProp(ctx, 'token', { x: tk.x, y: tk.y, kind: tk.kind, held: tk === this.held });
       if (tk.label) { ctx.save(); ctx.font = '700 13px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#2a2923'; ctx.textAlign = 'center'; ctx.fillText(tk.label, tk.x, tk.y + 46); ctx.restore(); }
     }
@@ -669,7 +678,7 @@ class Place extends Kind {
       this.slots.forEach((s, i) => { if (i >= this.count) ctx.fillText(this.step.labels[i], s.x + s.w / 2 + 8, s.y + 5); });
       ctx.restore();
     }
-    if (this.step.ordered && this.count < this.slots.length) {
+    if (this.step.ordered && this.step.scene === 'filter' && this.count < this.slots.length) {
       ctx.save(); ctx.font = '600 14px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#5d5849'; ctx.textAlign = 'left';
       ctx.fillText('↑ 下から 順に', this.slots[0].x + 70, this.slots[0].y + 6); ctx.restore();
     }
@@ -918,6 +927,7 @@ export class Handwork {
 
   nextStep() {
     const st = this.active;
+    if (st.kind?.step.sync && this.sc.trap) st.kind.step.sync(st.kind, this.sc.trap, this, true);
     if (st.kind) st.results.push({ kind: st.kind.step.kind, p: st.kind.p, n: st.kind.step.weight ?? st.kind.n, bstep: st.kind.step.bstep, hid: st.kind.step.hid });
     // a gate can stop the flow after a step (e.g. the friction gave no ember → no blowing)
     if (st.kind && st.opts.gate && st.idx < st.flow.length && st.opts.gate(st.idx - 1, st.results) === false) { this.extra.stopped = true; return this.finish(); }
@@ -981,6 +991,8 @@ export class Handwork {
         if (!k.done && k.count >= k.need && k.need < k.n) { k.autoFinish(Math.min(0.85, k.p || 0.55)); this.autoVisual(); }
       }
     }
+    // the diagram follows the work (steps can carry a sync(kind, trapState, hw, done) hook)
+    if (k?.step.sync && this.sc.trap) k.step.sync(k, this.sc.trap, this, !!k.done);
     I.pressed = false; I.released = false; I.wheel = 0; I.hit.clear();
     this.draw(dt);
     if (k?.done && !st.done) { st.msgT += dt; if (st.msgT > 0.45) { st.msgT = 0; this.nextStep(); } }
@@ -1004,7 +1016,9 @@ export class Handwork {
     for (const p of this.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g ?? 380) * dt; ctx.save(); ctx.globalAlpha = clamp01(p.life * 2); drawSpark(ctx, p.x, p.y, p.size, p.kind); ctx.restore(); }
     // the working hand
     const hh = k && !k.done ? k.hand(st.I) : null;
-    if (hh) drawHand(ctx, { side: 'right', scale: 0.95, ...hh });
+    // on the field diagrams the hand only shows while you hold / drag, smaller, so it never hides the marks
+    const diagram = scene === 'trap' || scene === 'track' || scene === 'carcass';
+    if (hh && (!diagram || st.I.down)) { ctx.save(); if (diagram) ctx.globalAlpha = 0.8; drawHand(ctx, { side: 'right', scale: diagram ? 0.7 : 0.95, ...hh }); ctx.restore(); }
     // flash / feel text
     if (st.flashT > 0) {
       st.flashT -= dt;
@@ -1073,7 +1087,7 @@ export class Handwork {
         drawProp(ctx, 'fire', { x: 470, y: 380, scale: 1.1, t, power: 0 });
         break;
       case 'trap': // §26: trap / fieldcraft diagrams
-        if (sc.trap) TA.drawTrapScene?.(ctx, sc.trap.id || sc.trap.type, { ...sc.trap, K: sc.trap.K, drift: t, bend: sc.bend ?? sc.trap.bend, rockLift: sc.rockLift ?? sc.trap.rockLift }, sc.trap.view || 'mild', { x: 40, y: 30, w: 720, h: 450 });
+        if (sc.trap) TA.drawTrapScene?.(ctx, sc.trap.id || sc.trap.type, { ...sc.trap, drift: t }, sc.trap.view || 'mild', { x: 40, y: 30, w: 720, h: 450 });
         break;
       case 'track':
         if (sc.track) TA.drawTrackCard?.(ctx, sc.track.species, sc.track.kind, sc.track.age, { x: 220, y: 60, w: 360, h: 300 }, { K: sc.track.K });

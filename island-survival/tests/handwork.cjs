@@ -28,6 +28,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     const flow = new Function('M', 'BT', `return ${fe}`)(M, BT);
     window.__hw = null;
     window.ISLE.game.handwork.mastery = {}; // no 手慣れ shortcuts between the checks
+    window.ISLE.game.handwork.recent = [];  // nor the 4-per-hour "same rhythm" (§26.10)
     window.ISLE.game.handwork.run(flow, o).then((r) => { window.__hw = r; });
   }, [expr, opts]);
   const at = async () => { const b = await page.locator('.hw-cv').boundingBox(); return (x, y) => [b.x + (x / 800) * b.width, b.y + (y / 500) * b.height]; };
