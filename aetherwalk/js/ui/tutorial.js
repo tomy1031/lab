@@ -66,21 +66,16 @@ export function createTutorial(ctx, S, ui) {
   const targets = [];
   let placed = false, mode = 'none', fade = 0, fadeTo = 0, pendingMode = null, sig = '', drawT = 0, t = 0;
 
-  function place() {
-    const sp = ctx.world && ctx.world.spawnPoints && ctx.world.spawnPoints.player;
-    if (!sp) return false;
-    const yaw = (sp.yaw || 0) * Math.PI / 180;
-    const fx = Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = Math.sin(yaw);
-    // ahead and a little to the right, so the walk north and the lesson's branch stay in view
-    const x = sp.x + fx * 1.9 + rx * 0.95, z = sp.z + fz * 1.9 + rz * 0.95;
+  /** stand the board at (x, z), turned toward (lx, lz) at eye height */
+  function placeAt(x, z, lx, lz) {
     let gy = 0;
     try { gy = ctx.world.groundAt ? ctx.world.groundAt(x, z, 1e4) : ctx.world.heightAt(x, z); } catch (e) { gy = 0; }
     if (!Number.isFinite(gy)) gy = 0;
     const cy = gy + 1.42;
     root.position.set(x, cy, z);
     let ey = cy + 0.2;
-    try { ey = ctx.world.heightAt(sp.x, sp.z) + 1.62; } catch (e) { /* stub */ }
-    root.lookAt(sp.x, ey, sp.z);
+    try { ey = ctx.world.heightAt(lx, lz) + 1.62; } catch (e) { /* stub */ }
+    root.lookAt(lx, ey, lz);
     // stand: posts from the ground to the board, a rail on top
     const postH = cy - BOARD_H / 2 - gy + 0.06;
     const parts = [
@@ -94,9 +89,43 @@ export function createTutorial(ctx, S, ui) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.computeVertexNormals();
-    stand = new THREE.Mesh(geo, standMat);
-    root.add(stand);
+    if (stand) { stand.geometry.dispose(); stand.geometry = geo; } else { stand = new THREE.Mesh(geo, standMat); root.add(stand); }
     return true;
+  }
+  function place() {
+    const sp = ctx.world && ctx.world.spawnPoints && ctx.world.spawnPoints.player;
+    if (!sp) return false;
+    const yaw = (sp.yaw || 0) * Math.PI / 180;
+    const fx = Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = Math.sin(yaw);
+    // ahead and a little to the right, so the walk north and the lesson's branch stay in view
+    return placeAt(sp.x + fx * 1.9 + rx * 0.95, sp.z + fz * 1.9 + rz * 0.95, sp.x, sp.z);
+  }
+  /** DESIGN_V2 §4.6: during Gando's drill the board stands beside the dummy (one more card) */
+  function placeByDummy(D) {
+    const c = D.dummy && D.dummy.c, pl = ctx.player && ctx.player.pos;
+    if (!c || !pl) return false;
+    let dx = pl.x - c.x, dz = pl.z - c.z, L = Math.hypot(dx, dz);
+    if (L < 0.5) { dx = 0; dz = 1; L = 1; }
+    dx /= L; dz /= L;
+    // 1.5 m to the dummy's side, a little toward you, facing where you stand to train (2.6 m out)
+    const sx = c.x - dz * 1.5 + dx * 0.6, sz = c.z + dx * 1.5 + dz * 0.6;
+    return placeAt(sx, sz, c.x + dx * 2.6, c.z + dz * 2.6);
+  }
+  function drawGuard(D) {
+    frame('盾の稽古', 'SHIELD DRILL');
+    const p = D.progress;
+    text(g, '受けるな、迎えにいけ', 48, 182, { size: 54, weight: 800, color: C.gold, maxW: W - 96 });
+    text(g, '当たる瞬間に、盾を相手へ押し出す', 48, 248, { size: 40, weight: 700, color: C.white, maxW: W - 96 });
+    text(g, "DON'T JUST TAKE IT · PUSH THE SHIELD OUT AS IT LANDS", 50, 286, { size: 24, weight: 500, color: C.dim, maxW: W - 100 });
+    // perfect parries: three marks
+    for (let i = 0; i < p.need; i++) check(90 + i * 78, 370, 28, i < p.good);
+    text(g, `ジャスト ${Math.min(p.good, p.need)} / ${p.need}`, 90 + p.need * 78, 382, { size: 38, weight: 700, color: C.ink });
+    const broken = p.phase === 'broken';
+    if (broken) { roundRect(g, 30, 420, W - 60, 92, 18); g.fillStyle = 'rgba(255,215,106,0.2)'; g.fill(); g.lineWidth = 4; g.strokeStyle = C.gold; g.stroke(); }
+    text(g, '崩れたら 返し斬り — 強く斬る', 60, 476, { size: 42, weight: broken ? 800 : 600, color: broken ? C.gold : C.ink, maxW: W - 120 });
+    text(g, 'WHEN IT BREAKS · A HARD COUNTER STRIKE', 62, 504, { size: 22, weight: 500, color: C.dim, maxW: W - 120 });
+    text(g, '赤い予告の最後に 金の光と高い音 — それが合図', 48, H - 92, { size: 32, weight: 600, color: C.ink, maxW: W - 96 });
+    text(g, 'THE GOLD LIGHT AND HIGH NOTE AT THE END OF THE WARNING: NOW', 48, H - 52, { size: 22, weight: 500, color: C.dim, maxW: W - 96 });
   }
 
   // ── drawing ──
@@ -162,11 +191,12 @@ export function createTutorial(ctx, S, ui) {
     text(g, 'FOLLOW THE GOLD ARROWS · SHAKE THE WAYBELL OR PRESS X', 48, H - 52, { size: 24, weight: 500, color: C.dim, maxW: W - 96 });
   }
   function draw(Q) {
-    if (mode === 'tutorial') drawTutorial(Q); else if (mode === 'main') drawMain(Q);
+    if (mode === 'tutorial') drawTutorial(Q); else if (mode === 'main') drawMain(Q); else if (mode === 'guard' && ctx.game && ctx.game.drill) drawGuard(ctx.game.drill);
     tex.needsUpdate = true;
   }
   function signature(Q) {
     if (mode === 'tutorial') return `t|${Q.tutIndex()}|${Math.min(16, Q.tut.walk)}|${Math.min(10, Q.tut.run)}|${Q.tutDone(2)}${Q.tutDone(3)}${Q.tutDone(4)}`;
+    if (mode === 'guard') { const D = ctx.game && ctx.game.drill; return D ? `g|${D.progress.good}|${D.progress.phase}` : ''; }
     if (mode === 'main') { const h = Q.campHint || {}; return `m|${Q.mainDone(0)}${Q.mainDone(1)}${Q.mainDone(2)}|${h.phase}|${h.phase === 'carry' ? Math.round(h.dist / 5) : 0}`; }
     return '';
   }
@@ -199,13 +229,21 @@ export function createTutorial(ctx, S, ui) {
       const game = ctx.game, Q = game && game.quest;
       if (!Q || !Q.TUT) { root.visible = false; arrows.count = rings.count = 0; return; }
       // which card: the lesson (stage 0), the first main step (stage 1), nothing after
-      const want = Q.stage === 0 ? 'tutorial' : Q.stage === 1 ? 'main' : 'none';
+      const D = ctx.game && ctx.game.drill;
+      const want = D && D.active ? 'guard' : Q.stage === 0 ? 'tutorial' : Q.stage === 1 ? 'main' : 'none';
       if (mode === 'none' && want !== 'none' && !pendingMode) { mode = want; fadeTo = 1; sig = ''; drawT = 0; }
       else if (want !== mode && !pendingMode) setMode(want);
       if (!placed && want !== 'none') placed = place();
       // fades (switch card while invisible)
       fade += (fadeTo - fade) * Math.min(1, dt * 4);
-      if (pendingMode && fade < 0.03) { mode = pendingMode; pendingMode = null; sig = ''; drawT = 0; fadeTo = mode === 'none' ? 0 : 1; }
+      if (pendingMode && fade < 0.03) {
+        const was = mode;
+        mode = pendingMode; pendingMode = null; sig = ''; drawT = 0; fadeTo = mode === 'none' ? 0 : 1;
+        // move the board while it is invisible: beside the drill dummy, or back to the start
+        if (mode === 'guard') placed = placeByDummy(D);
+        else if (was === 'guard' && mode !== 'none') placed = place();
+      }
+      if (mode === 'none' && want === 'guard' && !pendingMode) { mode = 'guard'; placed = placeByDummy(D); }
       const pl = ctx.player && ctx.player.pos;
       const near = placed && pl ? Math.hypot(pl.x - root.position.x, pl.z - root.position.z) < 70 : false;
       root.visible = placed && near && mode !== 'none' && fade > 0.02 && S.hudVisible !== false;

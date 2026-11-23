@@ -2,8 +2,7 @@
 // Budget: ≤ 6 active, each ≤ 3 draw calls; shadows = 1 InstancedMesh, bolts = 1 InstancedMesh, ≤ 3 telegraph meshes visible.
 import * as THREE from 'three';
 import { ENEMY_DEFS, LINE_HALF, NOTICE_DAY, NOTICE_NIGHT, LEASH, ACTIVE_R, DESPAWN_R, MAX_ACTIVE, MAX_ATTACKERS,
-  PARRY_PERFECT, PARRY_PERFECT_WIDE, BREAK_T, BREAK_T_LURKER, COUNTER_MUL, COUNTER_CAP, COUNTER_SPEED, JUST_DODGE, JUST_STAGGER,
-  GUARD_BREAK_T, SLOW_SCALE, SLOW_T } from './enemies.data.js';
+  BREAK_T, BREAK_T_LURKER, COUNTER_MUL, COUNTER_CAP, COUNTER_SPEED, JUST_DODGE, JUST_STAGGER, SLOW_SCALE, SLOW_T } from './enemies.data.js';
 import { createModelKit, COLORS } from './enemyModels.js';
 import { createTelegraphs } from './telegraph.js';
 import { clamp, damp, yawTo, angDiff, heightAt, fx, flash, emit, spawnList, isNight, landmark, setting, DEG } from './util.js';
@@ -31,13 +30,12 @@ export function createEnemies(ctx, G) {
   let nextId = 1, groupCheckT = 0, frame = 0;
   const pendingBlasts = [];
 
-  // ── the counter flow (DESIGN_V2 §4): shield pushes (until items' blockTest reports `perfect`, A2), the duck
-  //    and the player's recent path for 見切り, the slow moment, one shared gold glow (break target / "now" cue) ──
+  // ── the counter flow (DESIGN_V2 §4): items' blockTest says perfect / guardBreak (A2, DESIGN §10.20); here: the
+  //    duck and the player's recent path for 見切り, one shared gold glow (break target / "now" cue) ──
   const rt = () => performance.now() / 1000;          // real time: input windows ignore the slow moment
-  const pushRT = { left: -10, right: -10 };
   const HIST = 48, hist = [];
   for (let i = 0; i < HIST; i++) hist.push({ t: -10, x: 0, z: 0 });
-  let histI = 0, duckRT = -10, guardBrokenRT = -10, slowT = 0;
+  let histI = 0, duckRT = -10, slowT = 0;
   const lastBlock = { result: '', perfect: false, pushAge: 99, heavy: false };
   let gold = null;
   try {
@@ -118,14 +116,12 @@ export function createEnemies(ctx, G) {
     hitTestPlayer,
     telegraphShow, telegraphHide,
     /** the slow moment after a perfect parry is running (game-local until ctx.slowmo exists) */
-    get slowNow() { return slowT > 0; },
+    get slowNow() { return slowT > 0 || (ctx.clock && ctx.clock.slow < 1); },
     /** how the last blocked blow went (the shield drill reads it): { result, perfect, pushAge, heavy } */
     lastBlock,
     breakEnemy: (e, sec) => breakEnemy(e, sec),
     /** tests: the next blow on the player meets a shield push — 'perfect' | 'normal' | 'late' | 'guard' (held, no push) */
     armParry(kind) { debugParry = kind || 'perfect'; return debugParry; },
-    /** real time (s) of the last outward shield push of that hand (the drill's はやい／おそい) */
-    pushTime(hand) { return pushRT[hand] ?? -10; },
     now: () => rt(),
     /** the drill borrows the gold glow: a target at pos (null = give it back) */
     goldAt(pos) { goldOverride = pos ? (goldOverride || new THREE.Vector3()).copy(pos) : null; },
@@ -477,15 +473,16 @@ export function createEnemies(ctx, G) {
     let b = null;
     const items = ctx.items;
     if (debugParry) b = synthBlock(debugParry);         // tests: a shield push timed to this blow
-    else if (rt() - guardBrokenRT >= GUARD_BREAK_T && items && typeof items.blockTest === 'function') {
+    else if (items && typeof items.blockTest === 'function') {
       try { b = items.blockTest(shape, fromPos); } catch (err) { b = null; }
     }
     debugParry = null;
     if (b && b.blocked) {
-      const perfect = !!b.parry && isPerfect(b);
+      const perfect = !!b.parry && !!b.perfect;
       const guardBreak = !b.parry && (typeof b.guardBreak === 'boolean' ? b.guardBreak : !!atk.heavy);
       lastBlock.result = perfect ? 'perfect' : b.parry ? 'parry' : guardBreak ? 'guardbreak' : 'block';
       lastBlock.perfect = perfect;
+      lastBlock.pushAge = Number.isFinite(b.pushAgo) && b.pushAgo >= 0 ? b.pushAgo : 99;
       emit(ctx, 'block', { itemId: b.itemId || 'shield', parry: !!b.parry, perfect, enemyId: src.id, attack: atk.id });
       if (b.point) fx(ctx, 'spark', b.point, { count: b.parry ? 18 : 8, color: 0xffd76a, speed: 3 });
       if (perfect) { perfectParry(src, atk, b, opts); return 'parry'; }
@@ -512,35 +509,20 @@ export function createEnemies(ctx, G) {
     const pl = ctx.player, ch = (pl.body && pl.body.chestPos) || pl.pos;
     const point = new THREE.Vector3().copy(ch);
     if (ctx.camera) { ctx.camera.getWorldDirection(_v); _v.y = 0; if (_v.lengthSq() > 1e-6) point.addScaledVector(_v.normalize(), 0.35); }
-    return { blocked: true, parry: kind !== 'guard', perfect: kind === 'perfect', itemId: 'shield', hand, point };
+    return { blocked: true, parry: kind !== 'guard', perfect: kind === 'perfect', guardBreak: kind === 'guard' ? undefined : false, pushAgo: kind === 'perfect' ? 0.05 : kind === 'normal' ? 0.2 : -1, itemId: 'shield', hand, point };
   }
 
   // ── perfect parry → break → counter (DESIGN_V2 §4.1) ──
-  function isPerfect(b) {
-    if (typeof b.perfect === 'boolean') return b.perfect;          // items decides (A2)
-    const wide = setting(ctx, 'parryWindow', 'normal') === 'wide' || !!setting(ctx, 'seated', false);
-    const age = rt() - (pushRT[b.hand] ?? -10);
-    lastBlock.pushAge = age;
-    return age <= (wide ? PARRY_PERFECT_WIDE : PARRY_PERFECT);
-  }
   function perfectParry(src, atk, b, opts) {
+    // (items draws the gold ring, the cross light and the sparks, rings the shield hand and calls ctx.slowmo — A2)
     const pos = (b.point || src.center || _pp).clone();
     emit(ctx, 'parry:perfect', { enemyId: src.id, attack: atk.id, pos, hand: b.hand });
-    fx(ctx, 'ring', pos, { color: 0xffd76a, size: 0.55 });
-    flash(ctx, pos, { color: 0xfff1c0, size: 1.8, life: 0.25 });
-    fx(ctx, 'spark', pos, { count: 26, color: 0xffd76a, speed: 4 });
-    const input = ctx.input;
-    if (input && input.haptic && b.hand) setTimeout(() => { try { input.haptic(b.hand, 0.6, 40); } catch (e) { /* ignore */ } }, 100);
     if (G.vitals) G.vitals.addStamina(5);              // +10 from the parry itself → +15
-    startSlow();
+    if (typeof ctx.slowmo !== 'function') startSlow();  // (older core: a game-local slow moment)
     // a shot comes back fast and breaks whoever it hits (boltsTick); anything else breaks now
     if (!opts.bolt && src.def && !src.ctrl && src.state !== 'dead') breakEnemy(src, src.type === 'lurker' ? BREAK_T_LURKER : src.type === 'rimeguard' ? 3 : BREAK_T);
   }
-  function startSlow() {
-    if (typeof ctx.slowmo === 'function') { try { ctx.slowmo(SLOW_SCALE, SLOW_T); slowT = SLOW_T; slowCore = true; return; } catch (e) { /* fall back */ } }
-    slowT = SLOW_T; slowCore = false;
-  }
-  let slowCore = false;
+  function startSlow() { slowT = SLOW_T; }
   function breakEnemy(e, dur) {
     if (!e || e.state === 'dead' || e.ctrl) return;
     cancelAttack(e);
@@ -551,9 +533,8 @@ export function createEnemies(ctx, G) {
     emit(ctx, 'enemy:break', { id: e.id, type: e.type, duration: dur });
   }
   function guardBreakNow(src, atk, b) {
-    guardBrokenRT = rt();
+    // (items knocks the shield aside for 0.8 s — items.shieldBroken(hand) — and rings the hand, A2)
     emit(ctx, 'guard:break', { enemyId: src.id, attack: atk.id, hand: b.hand });
-    try { ctx.input && ctx.input.haptic && b.hand && ctx.input.haptic(b.hand, 0.7, 200); } catch (e) { /* ignore */ }
     const pl = ctx.player;
     _dir.set(pl.pos.x - (src.pos ? src.pos.x : pl.pos.x), 0, pl.pos.z - (src.pos ? src.pos.z : pl.pos.z));
     if (_dir.lengthSq() < 1e-6) _dir.set(0, 0, 1);
@@ -730,13 +711,9 @@ export function createEnemies(ctx, G) {
   function update(dt) {
     frame++;
     if (dt <= 0) return;
-    trackPushes();
     histTick();
-    // the slow moment after a perfect parry: enemies, bolts and telegraphs at ×0.3 for 0.3 s of real time
-    if (slowT > 0) {
-      slowT -= (ctx.clock && ctx.clock.real > 0) ? Math.min(ctx.clock.real, 0.1) : dt;
-      if (!slowCore) dt *= SLOW_SCALE;
-    }
+    // an older core without ctx.slowmo: the perfect parry's slow moment for enemies and bolts only
+    if (slowT > 0) { slowT -= (ctx.clock && ctx.clock.real > 0) ? Math.min(ctx.clock.real, 0.1) : dt; dt *= SLOW_SCALE; }
     const pl = ctx.player;
     playerPosInto(_pp);
     const px = _pp.x, pz = _pp.z;
@@ -814,20 +791,6 @@ export function createEnemies(ctx, G) {
     fx(ctx, 'poof', e.center, FX_POOF);
     emit(ctx, 'enemy:recoil', { id: e.id, type: e.type, pos: e.center, banished: true });
     removeEnemy(e);
-  }
-
-  /** the shield face pushed outward fast (the same rule as items/shield.js) — for the perfect window */
-  function trackPushes() {
-    const items = ctx.items, input = ctx.input;
-    if (!items || !items.held || !input || !input.hands) return;
-    for (const hand of ['left', 'right']) {
-      const inst = items.held[hand];
-      if (!inst || !inst.def || !inst.def.block || !inst.quat) continue;
-      const v = input.hands[hand] && input.hands[hand].vel;
-      if (!v) continue;
-      _v2.set(1, 0, 0).applyQuaternion(inst.quat);
-      if (v.dot(_v2) >= (inst.def.block.parrySpeed || 1.5)) pushRT[hand] = rt();
-    }
   }
 
   function tickStatus(e, dt) {

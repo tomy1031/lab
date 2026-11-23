@@ -16,6 +16,7 @@ import { createSeeds } from './seeds.js';
 import { createBot } from './bot.js';
 import { createSafeZones } from './safezones.js';
 import { createEncounters } from './encounters.js';
+import { createDrill } from './drill.js';
 import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
@@ -42,6 +43,7 @@ export async function createGame(ctx) {
   G.bot = createBot(ctx, G);
   G.safe = createSafeZones(ctx, G);           // fire safe zones (the Nagi keep away)
   G.encounters = createEncounters(ctx, G);    // the first fight + the encounter director
+  G.drill = createDrill(ctx, G);              // Gando's shield drill (DESIGN_V2 §4.6)
   G.itemInfo = (id) => G.inventory.def(id) || ITEM_INFO[id] || null;
   /** [jp, en] one-line usage hint, or null */
   G.itemHint = (id) => ITEM_HINTS[id] || null;
@@ -261,6 +263,7 @@ export async function createGame(ctx) {
     ['safe', (dt) => G.safe.update(dt)],
     ['encounters', (dt) => G.encounters.update(dt)],
     ['enemies', (dt) => G.enemies.update(dt)],
+    ['drill', (dt) => G.drill.update(dt)],
     ['boss', (dt) => G.boss.update(dt)],
     ['pickups', (dt) => G.pickups.update(dt)],
     ['bot', (dt) => G.bot.update(dt)],
@@ -315,6 +318,7 @@ export async function createGame(ctx) {
       return G.enemies.armParry(kind);
     },
     slow: () => G.enemies.slowNow,
+    drill: (on = true) => (on ? G.drill.start() : (G.drill.stop(false), false)),
   };
   Object.defineProperty(G, 'checkpointId', { get: () => G.checkpoint });
   return G;

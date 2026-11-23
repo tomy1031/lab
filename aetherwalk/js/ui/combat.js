@@ -61,7 +61,9 @@ export function createCombatCues(ctx, S, ui) {
     }
   });
   on('safe:leave', (p) => { if (!p.quiet) pulse(false); });
-  on('combat:combo', (p) => { S.combo = p.n || 0; S.comboT = p.n ? 2 : 0; if (comboEl && p.n >= 2) comboEl.innerHTML = `×${p.n}<small>COMBO</small>`; });
+  on('combat:combo', (p) => { S.combo = p.n || 0; S.comboT = p.n ? 2 : 0; if (comboEl && p.n >= 2 && !(S.counterT > 0)) comboEl.innerHTML = `×${p.n}<small>COMBO</small>`; });
+  // 返し斬り (DESIGN_V2 §4.2): the combo line says 返し！ for a moment
+  on('counter', () => { S.counterT = 1.6; if (comboEl) comboEl.innerHTML = '返し！<small>COUNTER</small>'; });
 
   return {
     update(dt, vr) {
@@ -76,7 +78,8 @@ export function createCombatCues(ctx, S, ui) {
         quad.visible = false; if (zoneEl) zoneEl.style.display = 'none';
       }
       if (S.comboT > 0) { S.comboT -= dt; if (S.comboT <= 0) S.combo = 0; }
-      if (comboEl) comboEl.style.display = !vr && S.combo >= 2 && S.hudVisible !== false ? 'block' : 'none';
+      if (S.counterT > 0) { S.counterT -= dt; if (S.counterT <= 0 && comboEl && S.combo >= 2) comboEl.innerHTML = `×${S.combo}<small>COMBO</small>`; }
+      if (comboEl) comboEl.style.display = !vr && (S.combo >= 2 || S.counterT > 0) && S.hudVisible !== false ? 'block' : 'none';
     },
     hideAll() { quad.visible = false; if (zoneEl) zoneEl.style.display = 'none'; if (comboEl) comboEl.style.display = 'none'; },
     pulse,

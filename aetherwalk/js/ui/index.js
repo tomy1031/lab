@@ -19,7 +19,7 @@ export async function createUI(ctx) {
     cadence: 0, gait: 'idle', stepsToday: 0, kcalToday: 0, kmToday: 0, activeToday: 0,
     objective: null, objDist: null, objBearing: 0,
     trial: null, trialT: 0, boss: null, cooldown: null,
-    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null, combo: 0, comboT: 0,
+    toastQueue: [], titleQueue: [], currentToast: null, currentTitle: null, combo: 0, comboT: 0, counterT: 0,
     hudVisible: true, domMenu: null,
   };
   const forceVR = !!(ctx.params && ctx.params.has && ctx.params.has('vrhud'));

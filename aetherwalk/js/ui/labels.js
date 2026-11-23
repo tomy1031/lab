@@ -11,6 +11,8 @@ const CSS = `
 #aw-overlay .awui-label { position:fixed; bottom:200px; display:none; max-width:min(380px, 40vw); padding:8px 16px 9px 14px;
   background:rgba(27,36,64,0.8); border:1px solid rgba(255,215,106,0.35); border-left:5px solid #ffd76a; border-radius:12px; color:#f4ecd8; }
 #aw-overlay .awui-label.left { left:18%; } #aw-overlay .awui-label.right { right:18%; }
+#aw-overlay .awui-label.say { left:50%; right:auto; transform:translateX(-50%); bottom:auto; top:30%; text-align:center; }
+#aw-overlay .awui-label.say .n { font-size:30px; color:#ffd76a; } #aw-overlay .awui-label.say .e { display:block; margin:2px 0 0; }
 #aw-overlay .awui-label .n { font-size:19px; font-weight:800; } #aw-overlay .awui-label .e { font-size:12px; color:#ffd76a; margin-left:8px; letter-spacing:.06em; }
 #aw-overlay .awui-label .h { font-size:14px; margin-top:3px; } #aw-overlay .awui-label .he { font-size:11px; color:rgba(244,236,216,0.62); }
 `;
@@ -24,7 +26,9 @@ export function createLabels(ctx, S, ui) {
   const _h = new THREE.Vector3(), _t = new THREE.Vector3();
   const hover = { left: null, right: null };
   let grab = null;                 // { hand, itemId, hint, left }
-  let lastHover = 'right', shownKey = '';
+  // a short word in the world (the drill's はやい／おそい above the dummy) or at the shield (いま！) — beats the rest
+  let say = null;                  // { text, en, pos: Vector3 | null, hand, left, big }
+  let lastHover = 'right', shownKey = '', sayN = 0;
 
   // PC
   let dom = null;
@@ -43,6 +47,20 @@ export function createLabels(ctx, S, ui) {
     const G = ctx.game;
     const d = G && G.itemInfo ? G.itemInfo(id) : null;
     return { name: (d && d.name) || id, en: (d && d.en) || '' };
+  }
+  function drawSay(t) {
+    const g = panel.g, W = panel.w;
+    g.clearRect(0, 0, W, panel.h);
+    card(g, 4, 4, W - 8, 120, 22, 'rgba(27,36,64,0.85)', 'rgba(255,215,106,0.6)');
+    text(g, t.text, W / 2, 74, { size: t.big ? 64 : 50, weight: 800, color: C.gold, align: 'center', maxW: W - 40 });
+    if (t.en) text(g, t.en, W / 2, 110, { size: 22, weight: 600, color: C.ink, align: 'center', maxW: W - 40 });
+    panel.flush();
+    if (dom) {
+      dom.className = 'awui-label say';
+      dom.querySelector('.n').textContent = t.text;
+      dom.querySelector('.e').textContent = t.en || '';
+      dom.querySelector('.h').textContent = ''; dom.querySelector('.he').textContent = '';
+    }
   }
   function draw(hand, itemId, hint) {
     const g = panel.g, W = panel.w;
@@ -83,10 +101,39 @@ export function createLabels(ctx, S, ui) {
     if (p.itemId) lastHover = hand;
   });
   on('item:release', (p) => { if (grab && p.hand === grab.hand) grab.left = Math.min(grab.left, 0.6); });
+  on('ui:float', (p) => { if (p.text) say = { text: p.text, en: p.en || '', pos: p.pos ? new THREE.Vector3(p.pos.x, p.pos.y, p.pos.z) : null, hand: null, left: (p.ms || 1300) / 1000, big: false, key: (sayN++) }; });
+  // DESIGN_V2 §4.6: the drill and the first husk after the shield mark the last 0.25 s at the shield — いま！
+  on('enemy:cue', (p) => {
+    if (!p.mercy) return;
+    const h = ctx.items && ctx.items.held;
+    const hand = h && h.left && h.left.def && h.left.def.block ? 'left' : h && h.right && h.right.def && h.right.def.block ? 'right' : null;
+    if (hand) say = { text: 'いま！', en: 'PUSH NOW', pos: null, hand, left: 0.45, big: true, key: (sayN++) };
+  });
 
   return {
     update(dt, vr) {
       if (grab) { grab.left -= dt; if (grab.left <= 0) grab = null; }
+      if (say) { say.left -= dt; if (say.left <= 0) say = null; }
+      if (say && S.hudVisible !== false) {
+        const key = 'say|' + say.key;
+        if (key !== shownKey) { shownKey = key; drawSay(say); }
+        if (dom) dom.style.display = !vr ? 'block' : 'none';
+        let at = null;
+        if (say.pos) at = _t.copy(say.pos);
+        else if (vr && ctx.input && ctx.input.hands && ctx.input.hands[say.hand] && ctx.input.hands[say.hand].tracked) {
+          // in front of the shield, a little above it
+          _h.copy(ctx.input.head.pos);
+          at = _t.copy(ctx.input.hands[say.hand].pos);
+          at.x += (_h.x - at.x) * 0.25; at.z += (_h.z - at.z) * 0.25; at.y += 0.16;
+        }
+        if (!vr || !at) { panel.mesh.visible = false; return; }
+        _h.copy(ctx.input.head.pos);
+        panel.mesh.position.copy(at);
+        panel.mesh.lookAt(_h);
+        panel.mat.opacity = Math.min(1, say.left / 0.2);
+        panel.mesh.visible = true;
+        return;
+      }
       // what to show: a fresh grab beats a hover
       let hand = null, itemId = null, hint = null;
       if (grab) { hand = grab.hand; itemId = grab.itemId; hint = grab.hint; }

@@ -27,7 +27,8 @@ export function createHud(ctx, S) {
     const v = S.vitals;
     hearts(g, 22, 18, 36, v.hp, v.maxHp, 8);
     // hits landing within 2 s of each other (combat.js)
-    if (S.combo >= 2) {
+    if (S.counterT > 0) text(g, '返し！', W - 24, 50, { size: 34, weight: 800, color: C.gold, align: 'right' });
+    else if (S.combo >= 2) {
       text(g, `×${S.combo}`, W - 96, 50, { size: 34, weight: 800, color: C.gold, align: 'right' });
       text(g, 'COMBO', W - 24, 48, { size: 15, weight: 700, color: C.ink, align: 'right' });
     }
@@ -105,7 +106,7 @@ export function createHud(ctx, S) {
         const v = S.vitals;
         const sb = `${v.hp}|${v.maxHp}|${Math.round(v.stamina)}|${v.tier}|${S.cadence}`;
         if (showBand && sb !== sigB) { sigB = sb; drawBand(); }
-        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}|${S.combo >= 2 ? S.combo : 0}`;
+        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}|${S.combo >= 2 ? S.combo : 0}|${S.counterT > 0 ? 1 : 0}`;
         if (showFloat && sf !== sigF) { sigF = sf; drawFloat(); }
       }
       if (showFloat) {

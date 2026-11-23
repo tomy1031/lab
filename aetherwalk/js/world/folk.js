@@ -196,13 +196,14 @@ function propGeo() {
 }
 // 腕と脚（同じ形、長さ 1・半径 1 を行列とシェーダーで細くする）：上の節（主）、下の節（曲がる、主）、先（手＝差し色の肌 / 足＝長ぐつ）
 function limbGeo() {
-  const P = [];
-  P.push(bake(new THREE.CylinderGeometry(1.0, 0.86, 0.5, 7, 1, true), { m: [0, -0.25, 0], bend: 0 }));
-  P.push(bake(new THREE.SphereGeometry(0.98, 7, 5), { m: [0, 0, 0, 0, 0, 0, 1, 0.7, 1], bend: 0 }));
-  P.push(bake(new THREE.SphereGeometry(0.88, 7, 4), { m: [0, -0.5, 0], bend: 1 }));
-  P.push(bake(new THREE.CylinderGeometry(0.86, 0.74, 0.44, 7, 1, true), { m: [0, -0.72, 0], bend: 1 }));
-  P.push(bake(new THREE.CylinderGeometry(0.8, 0.8, 0.06, 7, 1, true), { m: [0, -0.9, 0], mat: 1, bend: 1 }));     // 袖口・長ぐつの口
-  P.push(bake(new THREE.SphereGeometry(0.82, 7, 5), { m: [0, -0.98, 0, 0, 0, 0, 0.95, 1.05, 1], mat: 1, bend: 1, tag: 5 }));
+  // 太さ 0.1（長さ 1 に対して）で作り、人ごとの太さはシェーダーで横方向だけ変える
+  const T = 0.1, P = [];
+  P.push(bake(new THREE.CylinderGeometry(T, T * 0.86, 0.5, 8, 1, true), { m: [0, -0.25, 0], bend: 0 }));
+  P.push(bake(new THREE.SphereGeometry(T * 0.98, 8, 5), { m: [0, -0.01, 0, 0, 0, 0, 1, 0.8, 1], bend: 0 }));
+  P.push(bake(new THREE.SphereGeometry(T * 0.87, 8, 5), { m: [0, -0.5, 0], bend: 1 }));
+  P.push(bake(new THREE.CylinderGeometry(T * 0.86, T * 0.72, 0.42, 8, 1, true), { m: [0, -0.71, 0], bend: 1 }));
+  P.push(bake(new THREE.CylinderGeometry(T * 0.8, T * 0.8, 0.07, 8, 1, true), { m: [0, -0.905, 0], mat: 1, bend: 1 }));     // 袖口・長ぐつの口
+  P.push(bake(new THREE.SphereGeometry(T * 0.86, 8, 6), { m: [0, -0.985, 0, 0, 0, 0, 0.92, 1.1, 1], mat: 1, bend: 1, tag: 5 }));
   return join(P);
 }
 // 綿角：綿のかたまりの胴、短い脚 4 本（しるし 10〜13 がふる）、首から先（しるし 6 がうなずく）、小さな巻き角、荷鞍（差し色、しるし 7）
@@ -259,9 +260,9 @@ void main() {
     if (aF.w > 1.5 && aF.w < 2.5) keep *= step(1.5, iA.z);
   } else if (uKind > 3.5 && uKind < 4.5) {
     // 手足：細さ（iA.z）。先が足なら前へのばした長ぐつ（iA.w = 1）
-    float th = iA.z;
-    p.xz *= th;
-    if (aF.w > 4.5) { if (iA.w > 0.5) { p.z = (p.z - 0.9 * th) * 1.9; p.y = max(p.y, -1.02) + 0.02; } }
+    p.xz *= iA.z / 0.1;
+    // 足：先を前（−Z）へのばして長ぐつに、底は平らに
+    if (aF.w > 4.5 && iA.w > 0.5) { p.z = p.z * 2.1 - 0.07; p.y = max(p.y, -1.03); }
   } else if (uKind > 4.5) {
     // 綿角：脚（しるし 10〜13）は付け根でふる、首（しるし 6）は付け根でうなずく、荷鞍（しるし 7）は iA.w = 1 のときだけ
     if (aF.w > 9.5) {

@@ -142,9 +142,13 @@ export function createBody(ctx, P) {
       }
     }
     if (!P.grounded) {
-      if (P.gliding) B.vy += ((P.glideTired ? -3 : -1.5) - B.vy) * ema(0.25, dt);
-      else B.vy = Math.max(B.vy - 9.8 * dt, -12);
-      P.pos.y += B.vy * dt;
+      if (P.gliding) { B.vy += ((P.glideTired ? -3 : -1.5) - B.vy) * ema(0.25, dt); P.pos.y += B.vy * dt; }
+      else {
+        // exact parabola per step (apex 0.95 m whatever the frame rate), terminal speed 12 m/s
+        const v1 = Math.max(B.vy - 9.8 * dt, -12);
+        P.pos.y += (B.vy + v1) * 0.5 * dt;
+        B.vy = v1;
+      }
       try { g = w.groundAt(cx, cz, P.pos.y); } catch { /* keep */ }
       if (P.pos.y < g && B.vy > 0) P.pos.y = g;                // rising into a slope: ride over it
       if (P.pos.y <= g && B.vy <= 0) {

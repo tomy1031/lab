@@ -61,7 +61,8 @@ export const ENEMY_DEFS = {
 };
 
 export const ENEMY_TYPES = Object.keys(ENEMY_DEFS);
-// the counter flow (DESIGN_V2 §4.1): perfect window (s, 'wide' setting / seated), break lengths, counter multiplier
-export const PARRY_PERFECT = 0.12, PARRY_PERFECT_WIDE = 0.2, BREAK_T = 2.5, BREAK_T_LURKER = 3.5, COUNTER_MUL = 2.5, COUNTER_CAP = 3,
-  COUNTER_SPEED = 3, JUST_DODGE = 0.2, JUST_STAGGER = 1.2, GUARD_BREAK_T = 0.8, SLOW_SCALE = 0.3, SLOW_T = 0.3;
+// the counter flow (DESIGN_V2 §4.1; the perfect window itself is items' blockTest, A2): break lengths, the counter
+// multiplier (with tailwind II at most ×3 in all) and its least swing speed, 見切り, the fallback slow moment
+export const BREAK_T = 2.5, BREAK_T_LURKER = 3.5, COUNTER_MUL = 2.5, COUNTER_CAP = 3, COUNTER_SPEED = 3,
+  JUST_DODGE = 0.2, JUST_STAGGER = 1.2, SLOW_SCALE = 0.3, SLOW_T = 0.3;
 export const NOTICE_DAY = 18, NOTICE_NIGHT = 24, LEASH = 40, ACTIVE_R = 60, DESPAWN_R = 80, MAX_ACTIVE = 6, MAX_ATTACKERS = 2;
