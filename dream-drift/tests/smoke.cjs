@@ -5,6 +5,7 @@
 //      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
 //   3. results screen; smooth motion (no judder against 60 / 144 Hz displays)
 //   4. phone touch controls   5. drift (starts only with a hop, eases in, moderate curve) and kart-to-kart knocks
+//   6. the handling tuning panel (test drive, live sliders, kept, copy / paste)
 //   node tests/smoke.cjs [outDir]
 const { chromium, devices } = require('playwright');
 const serve = require('./serve.cjs');
@@ -218,6 +219,52 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     const errs = [...errors, ...(await ddErrors(page))];
     check(errs.length === 0, `drift / knocks: no errors ${errs.join(' | ')}`);
     await page.close();
+  }
+
+  // 6. the tuning panel: a test drive from the settings (no CPUs, endless laps, the panel open); a slider changes the
+  //    handling at once (a neutral drift turns tighter), the values are kept, copied, and read back in
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, permissions: ['clipboard-read', 'clipboard-write'] });
+    const page = await ctx.newPage();
+    const errors = []; page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+    await page.goto(`${base}?nosound&quality=low`, { waitUntil: 'load' });
+    await page.waitForFunction(() => window.DD && window.DD.ready, null, { timeout: 90000 });
+    await page.evaluate(() => window.DD.debug.go('s-settings'));
+    await page.click('[data-act="tune-drive"]', { timeout: 60000, noWaitAfter: true });
+    await page.waitForFunction(() => window.DD.debug.state().screen === 'race' && window.DD.debug.race?.phase !== 'intro', null, { timeout: 120000 });
+    const td = await page.evaluate(() => ({ karts: window.DD.debug.race.karts.length, laps: window.DD.debug.race.laps, open: window.DD.debug.tune.panel.isOpen }));
+    check(td.karts === 1 && td.laps === 99 && td.open, `tuning: test drive from the settings (karts ${td.karts}, laps ${td.laps}, panel ${td.open})`);
+    const r = await page.evaluate(() => {
+      const D = window.DD.debug, T = D.tune, race = D.race, tr = race.track, me = race.karts[0], dt = 1 / 60;
+      while (race.phase !== 'race') D.steerProbe(10, dt, () => ({ steer: 0, throttle: 0 }));
+      const radius = () => {
+        me.placeOnTrack(tr, 104, 0); me.speed = 24; me.vel.set(Math.sin(me.heading) * 24, 0, Math.cos(me.heading) * 24);
+        me.drift.active = false; me.driftBlend = 0; D.raceCam.hint = -1; D.raceCam.snap(me);
+        D.steerProbe(20, dt, () => ({ steer: 0, throttle: 1 }));
+        const rec = D.steerProbe(84, dt, (t) => ({ steer: t < 0.2 ? 0.8 : 0, throttle: 1, drift: true }));
+        let sum = 0; for (let i = rec.length - 20; i < rec.length; i++) { let d = rec[i][1] - rec[i - 1][1]; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; sum += Math.abs(d) / dt; }
+        return rec[rec.length - 1][4] / (sum / 20);
+      };
+      const a = radius(); T.setTune('driftNeutral', 0.5); const b = radius(); T.resetTune();
+      // the panel's slider
+      const row = [...document.querySelectorAll('#tuner .tn-p')].find((x) => x.textContent.includes('内側に 入れた'));
+      const range = row.querySelector('input[type=range]'); range.value = '0.2'; range.dispatchEvent(new Event('input', { bubbles: true }));
+      return { a, b, driftIn: T.TUNE.driftIn, saved: localStorage.getItem('dream-drift-tune'), changed: row.classList.contains('changed') };
+    });
+    check(r.b < r.a * 0.8, `tuning: a stronger neutral drift turns tighter at once (radius ${r.a.toFixed(0)} → ${r.b.toFixed(0)} m)`);
+    check(r.driftIn === 0.2 && /"driftIn":0.2/.test(r.saved || '') && r.changed, `tuning: the slider sets the value and keeps it on the device (${r.saved})`);
+    await page.click('[data-tn="copy"]');
+    const clip = await page.evaluate(() => navigator.clipboard.readText());
+    check(/DREAM DRIFT 調整値/.test(clip) && /"driftIn":0.2/.test(clip), `tuning: 値を コピー puts every value on the clipboard (${clip.split('\n')[0]})`);
+    const back = await page.evaluate(async (clip) => {
+      const T = window.DD.debug.tune; T.resetTune(); window.DD.debug.tune.panel.refresh();
+      const out = document.querySelector('#tuner [data-tn="out"]'); out.value = clip;
+      document.querySelector('#tuner [data-tn="load"]').click();
+      const v = T.TUNE.driftIn; T.resetTune(); return v;
+    }, clip);
+    check(back === 0.2, `tuning: pasted values read back in (driftIn ${back})`);
+    check(errors.length === 0, `tuning: no errors ${errors.join(' | ')}`);
+    await ctx.close();
   }
 
   await browser.close();

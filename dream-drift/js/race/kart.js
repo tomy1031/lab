@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { clamp, damp, dampAngle, wrapAngle, hsl, linearOut } from '../engine/util.js';
 import { buildKart, statMultipliers } from './characters.js';
+import { TUNE } from './tune.js';
 
 export const SPEED_CLASSES = {
   easy: { id: 'easy', label: 'やさしい', max: 21, accel: 15, ai: [0.86, 0.93], aggr: 0.5 },
@@ -27,7 +28,7 @@ export class Kart {
     this.rig = buildKart(char, { noWheel: vrSeat });
     this.maxSpeed = cls.max * this.stats.speed;
     this.accel = cls.accel * this.stats.accel;
-    this.turn = 1.95 * this.stats.handling;
+    this.turn = TUNE.turn * this.stats.handling; // refreshed every step (the tuning panel can change it)
     this.weight = this.stats.weight;
     this.pos = new THREE.Vector3();
     this.vel = new THREE.Vector3();
@@ -140,7 +141,7 @@ export class Kart {
     if (btn && !this.lastDriftBtn) this.driftArm = 0.4;
     else if (btn && this.air) this.driftArm = Math.max(this.driftArm, 0.3);
     else this.driftArm = Math.max(0, this.driftArm - dt);
-    if (btn && !this.drift.active && this.driftArm > 0 && Math.abs(steer) > 0.3 && this.speed > 10 && this.spin <= 0) {
+    if (btn && !this.drift.active && this.driftArm > 0 && Math.abs(steer) > TUNE.driftStart && this.speed > 10 && this.spin <= 0) {
       this.drift.active = true; this.drift.dir = Math.sign(steer); this.drift.charge = 0; this.drift.level = 0;
       this.driftArm = 0; this.driftSteer = 0; // starts as a neutral drift; steering in/out takes effect smoothly
     }
@@ -161,30 +162,31 @@ export class Kart {
     // ---- steering
     const spdAbs = Math.abs(this.speed);
     // full-lock turn rate at this speed
-    const lock = this.turn * clamp(spdAbs / 6, 0, 1) * (1 - 0.26 * clamp(spdAbs / this.maxSpeed, 0, 1.2));
+    this.turn = TUNE.turn * this.stats.handling;
+    const lock = this.turn * clamp(spdAbs / 6, 0, 1) * (1 - TUNE.highSpeedLess * clamp(spdAbs / this.maxSpeed, 0, 1.2));
     let yaw = steer * lock;
     // drift: no steering follows an ordinary corner; steering in tightens it (for hairpins), steering out opens it
     // into a long sweeper. The steering inside a drift is smoothed and the drift eases in over ~0.4 s, so it never snaps
     if (this.drift.active) this.driftDir = this.drift.dir;
-    this.driftBlend = this.drift.active ? Math.min(1, this.driftBlend + dt / 0.4) : Math.max(0, this.driftBlend - dt / 0.25);
+    this.driftBlend = this.drift.active ? Math.min(1, this.driftBlend + dt / TUNE.driftEase) : Math.max(0, this.driftBlend - dt / TUNE.driftRelease);
     const db = this.driftBlend * this.driftBlend * (3 - 2 * this.driftBlend);
     if (db > 0) {
-      this.driftSteer += (steer * this.driftDir - this.driftSteer) * (1 - Math.exp(-dt / 0.12));
+      this.driftSteer += (steer * this.driftDir - this.driftSteer) * (1 - Math.exp(-dt / Math.max(1e-4, TUNE.driftSteerLag)));
       const sd = this.driftSteer;
       // at race speed: wide ≈ 160 m radius, neutral ≈ 55 m (a typical corner), tight ≈ 19 m (a hairpin)
-      const k = sd >= 0 ? 0.3 + 0.55 * sd : 0.3 + 0.2 * sd;
+      const k = Math.max(0, sd >= 0 ? TUNE.driftNeutral + TUNE.driftIn * sd : TUNE.driftNeutral + TUNE.driftOut * sd);
       yaw += (this.driftDir * lock * k - yaw) * db;
     }
     if (this.speed < 0) yaw = -yaw * 0.8;
-    if (this.air) yaw *= this.padJump ? 0.7 : 0.55; // the drift hop only nudges the nose round
+    if (this.air) yaw *= this.padJump ? 0.7 : TUNE.hopTurn; // the drift hop only nudges the nose round
     // into, through and out of a drift (and over a hop) the turn rate itself changes smoothly — no lurch
-    if (this.drift.active || this.driftBlend > 0 || this.air) yaw = this.yawRate + (yaw - this.yawRate) * (1 - Math.exp(-dt / 0.1));
+    if (this.drift.active || this.driftBlend > 0 || this.air) yaw = this.yawRate + (yaw - this.yawRate) * (1 - Math.exp(-dt / Math.max(1e-4, TUNE.turnLag)));
     this.yawRate = yaw;
     this.heading = wrapAngle(this.heading - yaw * dt);
 
     // ---- velocity (grip pulls the velocity toward the facing direction; low grip = slide)
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
-    let grip = 11 + (7.5 - 11) * db; // the body shows the drift angle; the path slides only a little
+    let grip = TUNE.grip + (TUNE.driftGrip - TUNE.grip) * db; // the body shows the drift angle; the path slides only a little
     if (this.air && this.padJump) grip = 1.2; // a drift hop keeps its grip (it used to land sliding sideways and run wide)
     if (this.spin > 0) grip = 1.4;
     if (this.bumpT > 0) { grip = Math.min(grip, 3.2); this.bumpT -= dt; } // a shove from another kart carries
@@ -280,7 +282,7 @@ export class Kart {
     rig.root.quaternion.setFromRotationMatrix(_mat);
     if (dt <= 0) return;
 
-    const dTarget = this.drift.active && !this.vrSeat ? -this.drift.dir * 0.42 : 0;
+    const dTarget = this.drift.active && !this.vrSeat ? -this.drift.dir * TUNE.driftAngle : 0;
     this.visYaw = damp(this.visYaw, dTarget, 8, dt);
     if (this.spin > 0 && !this.vrSeat) this.spinAngle += dt * 13; else this.spinAngle = damp(this.spinAngle, Math.round(this.spinAngle / (Math.PI * 2)) * Math.PI * 2, 10, dt);
     // a knock from a kart or a wall: the body rocks and twists for a moment (a damped wobble, never a blink)

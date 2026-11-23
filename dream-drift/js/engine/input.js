@@ -2,6 +2,7 @@
 // Race controls come from poll(); menu actions ('up','down','left','right','ok','back','pause') are sent
 // to onMenu as edges from any source.
 import { clamp } from './util.js';
+import { TUNE } from '../race/tune.js';
 
 const KEY = {
   left: ['ArrowLeft', 'KeyA'], right: ['ArrowRight', 'KeyD'], up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'],
@@ -22,7 +23,7 @@ export class Input {
     this.out = { steer: 0, throttle: 0, brake: 0, drift: false, item: false, source: 'keyboard' };
     this.axisLatch = { x: 0, y: 0 };
     addEventListener('keydown', (e) => {
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
       if (!e.repeat) this.keys.add(e.code);
       this.lastSource = 'keyboard';
       const a = menuActionForKey(e.code);
@@ -57,7 +58,7 @@ export class Input {
       const move = (e) => {
         const r = pad.getBoundingClientRect();
         const v = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 0.38), -1, 1);
-        this.touch.steer = Math.abs(v) < 0.08 ? 0 : Math.sign(v) * Math.pow((Math.abs(v) - 0.08) / 0.92, 1.3);
+        this.touch.steer = Math.abs(v) < 0.08 ? 0 : Math.sign(v) * Math.pow((Math.abs(v) - 0.08) / 0.92, TUNE.touchCurve);
       };
       pad.addEventListener('pointerdown', (e) => { e.preventDefault(); pad.setPointerCapture?.(e.pointerId); this.touch.steering = true; this.touch.active = true; this.lastSource = 'touch'; pad.classList.add('on'); move(e); });
       pad.addEventListener('pointermove', (e) => { if (this.touch.steering) move(e); });
@@ -69,7 +70,7 @@ export class Input {
   // small correction and a drift doesn't lurch
   shapeDigital(target, dt) {
     const s = this.steerSm;
-    const rate = target === 0 || Math.sign(target) !== Math.sign(s) ? 10 : 5.5;
+    const rate = target === 0 || Math.sign(target) !== Math.sign(s) ? TUNE.keyRelease : TUNE.keyEngage;
     this.steerSm = s + clamp(target - s, -rate * dt, rate * dt);
     return this.steerSm;
   }
@@ -107,7 +108,7 @@ export class Input {
       const b = (i) => (p.buttons[i] ? p.buttons[i].value || (p.buttons[i].pressed ? 1 : 0) : 0);
       const ax = Math.abs(p.axes[0] || 0) > 0.15 ? p.axes[0] : 0;
       const ay = Math.abs(p.axes[1] || 0) > 0.5 ? p.axes[1] : 0;
-      let ps = ax, pdig = false;
+      let ps = ax ? Math.sign(ax) * Math.pow((Math.abs(ax) - 0.15) / 0.85, TUNE.stickCurve) : 0, pdig = false;
       if (b(14) > 0.5) { ps = -1; pdig = true; }
       if (b(15) > 0.5) { ps = 1; pdig = true; }
       const pt = Math.max(b(0), b(7));
