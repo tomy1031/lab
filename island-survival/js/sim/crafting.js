@@ -18,6 +18,7 @@ import { METHODS, RECIPE_LIST, RECIPES, ATTRS, ATTR_TAG, REPAIRS, RANKS, variant
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const r2 = (v) => Math.round(v * 100) / 100;
+const r3 = (v) => Math.round(v * 1000) / 1000;
 const P_ORDER = { P0: 0, P1: 1, P2: 2 };
 const DIFF_DUR = { easy: 1.5, normal: 1.0, hard: 0.85, extreme: 0.7 };          // §17.1 道具の 耐久
 const HERBS = ['aloe', 'yomogi', 'dokudami', 'ginger', 'guava_leaf', 'turmeric', 'cinchona', 'neem_fruit', 'lemongrass'];
@@ -306,8 +307,8 @@ export class Crafting {
     const list = res.list.map((c) => this._public(c, ctx, opts));
     list.candidates = list;
     list.method = method;
-    list.missingTool = res.missingTool || null;
-    list.blocked = res.blocked || null;
+    list.missingTool = res.missingTool || undefined;
+    list.blocked = res.blocked || undefined;
     return list;
   }
 
@@ -874,7 +875,7 @@ export class Crafting {
     const consumedSlots = v.slots.map((s, si) => (s.consume !== false && S[s.key] ? si : -1)).filter((si) => si >= 0);
     x.attrs = this._inherit(plan, S, Q, blade);
     const stats = {};
-    for (const [k, val] of Object.entries(r.stats ? r.stats(Q, S, x) || {} : {})) stats[k] = typeof val === 'number' ? r2(val) : val;
+    for (const [k, val] of Object.entries(r.stats ? r.stats(Q, S, x) || {} : {})) stats[k] = typeof val === 'number' ? r3(val) : val;
 
     const wet = Math.max(0, ...consumedSlots.flatMap((si) => S[v.slots[si].key].items.map((it) => it.stack.wet || 0)));
     if (r.special === 'coconut') return this._makeCoconut(plan, S, Q);
