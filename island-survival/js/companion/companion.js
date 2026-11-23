@@ -487,7 +487,8 @@ export class Companion {
     if (!key) { this.game.screens?.show('companion'); return; }
     if (this.talk?.state === 'live' || this.talk?.state === 'connecting') { this.talk.stop(); this.game.bus.emit('toast', { text: `${this.name}との 会話を 終えた`, kind: 'info' }); return; }
     this.talk = new CompanionTalk({
-      apiKey: key, persona: systemPrompt(this.p, { playerName: this.game.setup.playerName, trust: this.trust, affinity: this.affinity, mood: this.mood, profession: this.sheet.profession, selfAwareness: selfAwareness(this.sheet, this.p).join('\n') }),
+      apiKey: key, persona: systemPrompt(this.p, { playerName: this.game.setup.playerName, trust: this.trust, affinity: this.affinity, mood: this.mood, profession: this.sheet.profession, selfAwareness: selfAwareness(this.sheet, this.p).join('\n') }) +
+        ((this.game.settings?.butcherView || 'mild') !== 'normal' ? '\n- 解体や ケガの 話は 生々しい 言葉を さけ、「下ごしらえ」「中身」の ように やわらかく 言う。' : ''),
       voiceName: this.p.voice, memory: this.memory, voice: this.voice, mic: this.mic,
       places: Object.values(this.game.world.layout).map((p) => p.name).filter(Boolean),
       jobs: Object.keys(JOBS),

@@ -27,6 +27,7 @@ export const CONTROLS = {
   stir: { mouse: '押したまま 円を 描く', touch: '指で 円を 描く', gesture: '人さし指で 円' },
   tend: { mouse: 'E・クリックで 返す／おろす、スペースで あおぐ', touch: 'タップで 返す、上へ スワイプで おろす', gesture: '手首を 返す／つかんで 引く' },
   place: { mouse: 'ドラッグして 枠へ', touch: 'ドラッグして 枠へ', gesture: 'つまんで 運んで はなす' },
+  choose: { mouse: 'クリック（1・2・3 キーでも）', touch: 'タップ', gesture: 'つまんで 選ぶ' },
 };
 
 const S = (kind, n, scene, extra = {}) => ({ kind, n, scene, ...extra });

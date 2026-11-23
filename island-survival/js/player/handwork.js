@@ -7,6 +7,7 @@
 //   const r = await game.handwork.run(flow, { title, key, scene: {...} })
 //   r = { ok, p, feel: { bonus, label, timeMul, good, fail }, steps: [{ kind, p }], mode, quick, cancelled, failures: [], extra }
 import { drawProp, drawHand, drawSpark } from '../ui/handwork-art.js';
+import { drawCarcass } from '../ui/butcher-art.js';
 import { HINTS, CONTROLS, KIND_NAMES, feelOf } from '../data/handwork.js';
 
 const W = 800, H = 500;
@@ -68,7 +69,7 @@ class Strike extends Kind {
     super(step, hw);
     this.T = 1.1 / (step.tempo || 1); this.phase = -0.4; this.miss2 = 0; this.down = 0;
     const sc = step.scene;
-    this.targets = sc === 'stake' ? [[400, 238]] : sc === 'filter' ? [[520, 190]] : sc === 'flint' ? [[372, 250], [380, 236], [366, 262]] : [[352, 300], [348, 268], [356, 334], [362, 246], [366, 352], [350, 286]];
+    this.targets = step.targets ? step.targets : sc === 'stake' ? [[400, 238]] : sc === 'filter' ? [[520, 190]] : sc === 'flint' ? [[372, 250], [380, 236], [366, 262]] : [[352, 300], [348, 268], [356, 334], [362, 246], [366, 352], [350, 286]];
     this.ti = 0;
   }
   get target() { const t = this.targets[this.ti % this.targets.length]; return this.step.scene === 'stake' ? [t[0], t[1] + this.hw.sc.depth * 70] : t; }
@@ -97,6 +98,7 @@ class Strike extends Kind {
   }
   effect(s, x, y, hit) {
     const hw = this.hw, sc = hw.sc;
+    if (this.step.scene === 'carcass') { const c = sc.carcass; if (c) { if (this.step.bstep === 'portion') c.portions = (c.portions || 0) + 1; if (s < 0.35) hw.extra.missedJoints = (hw.extra.missedJoints || 0) + 1; } hw.burst(x, y, 'dust', 3); hw.sfx(hit ? 'chop_weak' : null); hw.flash(s); return; }
     if (this.step.scene === 'core') { if (s >= 0.35) sc.chips = Math.min(6, (sc.chips || 0) + 1); if (hw.failures.has('core_cracked')) sc.cracked = true; }
     if (this.step.scene === 'stake') sc.depth = Math.min(1, (sc.depth || 0) + 0.12 + 0.14 * s);
     if (this.step.scene === 'flint') { if (s >= 0.3) { hw.burst(x + 20, y + 20, 'spark', 3 + Math.round(s * 4)); sc.heat = Math.max(sc.heat || 0, s); } hw.sfx('flint'); return; }
@@ -268,7 +270,12 @@ class Trace extends Kind {
     else { this.from = [520, 236]; this.to = [600, 262]; this.stroke = null; }
     this.devSum = 0; this.devN = 0;
   }
-  setLine() { this.line = resample(pathFor(this.step.path, this.li)); this.prog = 0; this.lineT = 0; this.tracing = false; this.devSum = 0; this.devN = 0; this.speedMax = 0; }
+  setLine() { this.line = resample(this.step.lines ? this.step.lines[Math.min(this.li, this.step.lines.length - 1)] : pathFor(this.step.path, this.li)); this.prog = 0; this.lineT = 0; this.tracing = false; this.devSum = 0; this.devN = 0; this.speedMax = 0; }
+  markTraced() {
+    const c = this.hw.sc.carcass; if (!c || !this.step.bstep) return;
+    const arr = (c.traced[this.step.bstep] = c.traced[this.step.bstep] || []);
+    arr[this.li] = clamp01(this.prog / (this.line.pts.length - 1));
+  }
   update(dt, I) {
     this.t += dt;
     if (this.mode === 'line') return this.updateLine(dt, I);
@@ -316,7 +323,10 @@ class Trace extends Kind {
         if (best > this.prog) this.prog = best;
         this.devSum += bd; this.devN++;
         this.speedMax = Math.max(this.speedMax, I.speed || 0);
-        if (Math.random() < 0.15) this.hw.burst(I.x, I.y, 'shaving', 1);
+        // §25.2 腹を 開く: going deep (into the no-touch zone, or far off the line / too fast) spoils the meat
+        if (this.step.noTouch && ((bd > 10 && this.step.noTouch.some((z) => ((I.x - z.x) / (z.rx * 0.75)) ** 2 + ((I.y - z.y) / (z.ry * 0.75)) ** 2 < 1)) || bd > 34 / this.tol || (I.speed || 0) > 1600)) { this.hw.extra.cutDeep = true; if (this.hw.sc.carcass) this.hw.sc.carcass.cutDeep = true; }
+        if (this.step.scene !== 'carcass' && Math.random() < 0.15) this.hw.burst(I.x, I.y, 'shaving', 1);
+        this.markTraced();
       }
     }
     if (this.prog >= N * 0.97) {
@@ -327,6 +337,7 @@ class Trace extends Kind {
       if (kbd) s = 0.5;
       this.record(s);
       if (this.step.notch) this.hw.sc.notch = clamp01(0.3 + s);
+      this.prog = this.line.pts.length - 1; this.markTraced();
       this.hw.sfx('rustle');
       if (!this.done) { this.li++; this.setLine(); }
     }
@@ -335,12 +346,13 @@ class Trace extends Kind {
     if (this.done) return;
     if (this.mode === 'line') {
       const pts = this.line.pts;
-      drawProp(ctx, 'path', { pts, done: this.prog / (pts.length - 1), width: 4 });
+      if (this.step.scene !== 'carcass') drawProp(ctx, 'path', { pts, done: this.prog / (pts.length - 1), width: 4 });
+      else if ((this.hw.sc.carcass?.knowledge ?? 0) < 2) { ctx.save(); ctx.globalAlpha = 0.22; drawProp(ctx, 'path', { pts, done: this.prog / (pts.length - 1), width: 3 }); ctx.restore(); }
       const at = pts[Math.min(pts.length - 1, Math.round(this.prog))];
       ctx.save(); ctx.strokeStyle = '#e8743b'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(at[0], at[1], 14 + Math.sin(this.t * 6) * 3, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     } else drawProp(ctx, 'arrow', { from: this.from, to: this.to });
   }
-  hand(I) { return { x: (I.active ? I.x : 540) + 20, y: (I.active ? I.y : 250) + 60, pose: 'grip', holding: 'blade', rot: 0.5 }; }
+  hand(I) { return { x: (I.active ? I.x : 540) + 20, y: (I.active ? I.y : 250) + 60, pose: 'grip', holding: 'blade', holdState: { kind: this.step.blade || 'knife' }, rot: 0.5 }; }
 }
 
 // weave: alternate sides on the beat
@@ -542,7 +554,8 @@ class Place extends Kind {
     this.tokens = shuffled.map((k, i) => ({ kind: k, x: 140, y: 150 + i * 78, hx: 140, hy: 150 + i * 78, placed: false }));
     const sc = step.scene;
     if (sc === 'drill') { this.tokens.forEach((t) => { t.x = t.hx = 400; t.y = t.hy = 345; }); }
-    this.slots = kinds.map((k, i) => (sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
+    if (step.tokenAt) this.tokens.forEach((t, i) => { const p = step.tokenAt[Math.min(i, step.tokenAt.length - 1)]; t.x = t.hx = p[0]; t.y = t.hy = p[1]; });
+    this.slots = kinds.map((k, i) => (step.slotAt ? { x: step.slotAt[0], y: step.slotAt[1] - i * 8, w: step.slotAt[2] || 120, h: step.slotAt[3] || 70 } : sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
     this.held = null; this.drops = 0;
     if (sc === 'filter') hw.sc.layers = [];
   }
@@ -580,6 +593,10 @@ class Place extends Kind {
     if (!right) this.hw.failures.add('order');
     tk.placed = true; tk.x = slot.x; tk.y = slot.y;
     if (this.step.scene === 'filter') this.hw.sc.layers = (this.hw.sc.layers || []).concat([tk.kind]);
+    const c = this.hw.sc.carcass;
+    if (c && this.step.bstep === 'gut') c.removed = true;
+    if (c && this.step.bstep === 'skin') c.skinned = true;
+    if (this.step.firm && center * mul < 0.3) this.hw.extra.squeezed = true; // §25.2 にがい 袋
     this.record(center * (right ? 1 : 0.5) * mul);
     this.hw.sfx('drop');
   }
@@ -594,7 +611,33 @@ class Place extends Kind {
   hand(I) { return this.held ? { x: I.x + 18, y: I.y + 54, pose: 'pinch' } : { x: I.active ? I.x + 18 : 330, y: (I.active ? I.y + 54 : 430), pose: 'open' }; }
 }
 
-const KINDS = { strike: Strike, rub: Rub, twist: Twist, trace: Trace, weave: Weave, stir: Stir, tend: Tend, place: Place };
+// choose: K0 butchering — which comes next? (a wrong pick costs time, not quality: §25.4)
+class Choose extends Kind {
+  constructor(step, hw) { super(step, hw); this.opts = step.options || []; this.msg = ''; this.msgT = 0; }
+  boxes() { return this.opts.map((o, i) => ({ ...o, x: 180 + i * 220, y: 440, w: 200, h: 46 })); }
+  update(dt, I) {
+    this.t += dt; this.msgT -= dt;
+    let pick = -1;
+    if (I.pressed) this.boxes().forEach((b, i) => { if (Math.abs(I.x - b.x) < b.w / 2 && Math.abs(I.y - b.y) < b.h / 2) pick = i; });
+    ['Digit1', 'Digit2', 'Digit3'].forEach((k, i) => { if (I.hit.has(k)) pick = i; });
+    if (pick < 0) return;
+    if (this.opts[pick]?.ok) { this.record(1); this.hw.sfx('pick'); }
+    else { this.msg = '…ちがう 気が する'; this.msgT = 1.6; this.hw.extra.wrongChoices = (this.hw.extra.wrongChoices || 0) + 1; this.hw.sfx('drop'); }
+  }
+  autoFinish(s) { super.autoFinish(s); }
+  draw(ctx) {
+    ctx.save(); ctx.font = '700 17px "Zen Maru Gothic", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const [i, b] of this.boxes().entries()) {
+      ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = '#2a2923'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect?.(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#2a2923'; ctx.fillText(`${i + 1}. ${b.label}`, b.x, b.y);
+    }
+    if (this.msgT > 0) { ctx.fillStyle = '#bf5424'; ctx.fillText(this.msg, 400, 60); }
+    ctx.restore();
+  }
+}
+
+const KINDS = { strike: Strike, rub: Rub, twist: Twist, trace: Trace, weave: Weave, stir: Stir, tend: Tend, place: Place, choose: Choose };
 
 // ------------------------------------------------------------------ the runner + overlay
 export class Handwork {
@@ -659,6 +702,7 @@ export class Handwork {
     root.id = 'handwork'; root.className = 'hw';
     root.innerHTML = `<div class="hw-panel" role="dialog" aria-label="作業"><div class="hw-head"><b class="hw-title"></b><span class="hw-step"></span><span class="hw-badge"></span></div>
       <canvas class="hw-cv" width="${W}" height="${H}"></canvas>
+      <div class="hw-say hidden"></div>
       <div class="hw-hint"></div>
       <div class="hw-foot"><span class="hw-dots"></span><span class="hw-sp"></span><button class="btn small hw-auto" type="button">おまかせで 仕上げる <kbd>Tab</kbd></button><button class="btn small ghost hw-stop" type="button">やめる <kbd>Esc</kbd></button></div></div>`;
     document.body.appendChild(root);
@@ -693,11 +737,16 @@ export class Handwork {
     };
     window.addEventListener('keydown', st.onKey, true);
     window.addEventListener('keyup', st.onKey, true);
+    // what the partner says while you work (the HUD subtitles are under this overlay)
+    const sayEl = root.querySelector('.hw-say');
+    st.onSay = (e) => { if (!e?.text || e.who === 'あなた') return; sayEl.textContent = `${e.who}「${e.text}」`; sayEl.classList.remove('hidden'); clearTimeout(st.sayT); st.sayT = setTimeout(() => sayEl.classList.add('hidden'), 3500 + e.text.length * 90); };
+    g.bus?.on('subtitle', st.onSay);
     root.querySelector('.hw-auto').onclick = () => this.autoComplete();
     root.querySelector('.hw-stop').onclick = () => this.cancel();
     st.resolve = (r) => {
       window.removeEventListener('keydown', st.onKey, true);
       window.removeEventListener('keyup', st.onKey, true);
+      g.bus?.off?.('subtitle', st.onSay); clearTimeout(st.sayT);
       root.remove();
       this.active = null;
       g.freezeRender = false;
@@ -711,7 +760,7 @@ export class Handwork {
 
   nextStep() {
     const st = this.active;
-    if (st.kind) st.results.push({ kind: st.kind.step.kind, p: st.kind.p, n: st.kind.n });
+    if (st.kind) st.results.push({ kind: st.kind.step.kind, p: st.kind.p, n: st.kind.step.weight ?? st.kind.n, bstep: st.kind.step.bstep });
     // a gate can stop the flow after a step (e.g. the friction gave no ember → no blowing)
     if (st.kind && st.opts.gate && st.idx < st.flow.length && st.opts.gate(st.idx - 1, st.results) === false) { this.extra.stopped = true; return this.finish(); }
     if (st.idx >= st.flow.length) return this.finish();
@@ -728,12 +777,14 @@ export class Handwork {
     if (step.content) this.sc.content = step.content;
     if (step.pestle != null) this.sc.pestle = step.pestle;
     st.kind.t = 0;
+    if (this.sc.carcass) { this.sc.carcass.step = step.bstep; if (st.idx > 1) { const prev = st.flow[st.idx - 2]; if (prev?.bstep) this.sc.carcass.done[prev.bstep] = true; } }
+    st.opts.onStep?.(step, st.idx - 1);
     const seen = this.seen[step.kind] || 0;
     const hintsOn = this.game.settings?.hints !== false;
     const ctl = CONTROLS[step.kind] || {};
     const how = this.game.hands?.ready ? ctl.gesture : this.game.setup?.control === 'touch' ? ctl.touch : ctl.mouse;
     st.root.querySelector('.hw-step').textContent = `${st.idx} / ${st.flow.length}　${step.label || KIND_NAMES[step.kind] || ''}`;
-    st.root.querySelector('.hw-hint').textContent = hintsOn && seen < 3 ? `${(HINTS[step.kind] || [''])[0]}　（${how || ''}）` : hintsOn ? `（${how || ''}）` : '';
+    st.root.querySelector('.hw-hint').textContent = step.hint ? `${step.hint}　（${how || ''}）` : hintsOn && seen < 3 ? `${(HINTS[step.kind] || [''])[0]}　（${how || ''}）` : hintsOn ? `（${how || ''}）` : '';
     st.root.querySelector('.hw-badge').textContent = st.opts.quick ? '手慣れた：ひと手で 仕上げ' : st.opts.mode === 'assist' ? '半自動' : st.opts.mode === 'auto' ? 'おまかせ' : '';
     this.seen[step.kind] = seen + 1;
   }
@@ -858,6 +909,9 @@ export class Handwork {
       case 'stake':
         drawProp(ctx, 'stake', { x: 400, y: 330, scale: 1.3, t, depth: sc.depth });
         break;
+      case 'carcass': // §25: the paper diagram (normal / mild), never 3D gore
+        if (sc.carcass) drawCarcass(ctx, sc.carcass.species, sc.carcass.view, sc.carcass, { x: 40, y: 30, w: 720, h: 450 });
+        break;
       case 'drill': // fire board on the ground, the drill upright between the palms, smoke and an ember at the notch
         drawProp(ctx, 'lap', { x: 400, y: 380, scale: 1.1, t });
         drawProp(ctx, 'stick', { x: 400, y: 250, scale: 0.75, rot: -Math.PI / 2, t, length: 1, straight: 1 });
@@ -926,9 +980,10 @@ export class Handwork {
       if (kinds.has('tend')) this.failures.add('burnt');
     }
     // show the result for a moment
-    const r = { ok: true, p, feel, steps: st.results.map((x) => ({ kind: x.kind, p: x.p })), mode: st.opts.mode, quick: !!st.opts.quick, cancelled: false, failures: [...this.failures], extra: { ...this.extra } };
+    const r = { ok: true, p, feel, steps: st.results.map((x) => ({ kind: x.kind, p: x.p, bstep: x.bstep })), mode: st.opts.mode, quick: !!st.opts.quick, cancelled: false, failures: [...this.failures], extra: { ...this.extra } };
     st.root.querySelector('.hw-hint').textContent = `${feel.label}（手仕事 ${feel.bonus >= 0 ? '＋' : '−'}${Math.abs(feel.bonus)}）`;
     st.root.classList.add('hw-done');
+    if (this.sc.carcass) { for (const s2 of st.flow) if (s2.bstep) this.sc.carcass.done[s2.bstep] = true; this.sc.carcass.step = null; }
     this.flash(p);
     setTimeout(() => st.resolve(r), st.opts.mode === 'auto' ? 350 : 900);
   }

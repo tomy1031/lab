@@ -195,7 +195,7 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   check(h.ammoUsed === 1 && h.alive === false && h.carcass, 'rifle shot killed the goat (one round used)');
 
   // 8. butcher it with the knife
-  const bu = await page.evaluate(() => {
+  const bu = await page.evaluate(async () => {
     const g = T.g, P = g.sys.player, F = g.sys.fauna;
     const goat = F.animals.find((a) => a.kind === 'goat' && !a.alive);
     if (!goat) return { err: 'no carcass' };
@@ -203,12 +203,18 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
     const it = g.sys.interact; it.update(0.016);
     const t = it.target;
     if (t?.type !== 'carcass') return { err: 'target ' + t?.type };
+    const label = t.options.find((o) => o.id === 'butcher')?.label;
     it.run(t, t.options.find((o) => o.id === 'butcher'));
     T.finishActivity('hold');
-    return { meat: P.inv.count('goat_meat'), hide: P.inv.count('hide'), organs: P.inv.count('organ_meat') };
+    // §25: the procedure on the diagram (おまかせ here: p 0.55)
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    await wait(200);
+    for (let i = 0; i < 150 && (g.handwork?.active || P.inv.count('goat_meat') === 0); i++) await wait(100);
+    return { meat: P.inv.count('goat_meat'), hide: P.inv.count('hide'), organs: P.inv.count('organ_meat'), label, K: g.sys.knowledge.level('howto_butcher_beast') };
   });
   log(JSON.stringify(bu));
   check(bu.meat >= 6 && bu.hide >= 1, `butchered: meat ${bu.meat}, hide ${bu.hide}`);
+  check(/下ごしらえ/.test(bu.label || '') && bu.K >= 1, `mild wording by default and the how-to learned (「${bu.label}」, K${bu.K})`);
 
   // 9. crafting (if the crafting system is there): a cord from 3 vines
   const cr = await page.evaluate(() => {

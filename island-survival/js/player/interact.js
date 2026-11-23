@@ -170,10 +170,11 @@ export class Interact {
   carcassOptions(node) {
     const sp = SPECIES[node.data.species];
     const tool = this.butcherTool();
-    if (sp.small) return [{ id: 'take_small', label: `${sp.name}を ${sp.flies || node.data.species === 'junglefowl' ? '羽を むしって さばく' : '拾う'}` }];
+    const mild = (this.game.settings?.butcherView || 'mild') !== 'normal';
+    if (sp.small) return [{ id: 'take_small', label: `${sp.name}を ${sp.flies || node.data.species === 'junglefowl' ? (mild ? '下ごしらえ する（羽を むしる）' : '羽を むしって さばく') : '拾う'}` }];
     if (tool === 'hands') return [{ id: 'butcher', label: `${sp.name}を さばく`, ok: false, reason: '刃物が 要る（石刃でも できる）' }];
-    const ops = [{ id: 'butcher', label: `${sp.name}を 解体する（${BUTCHER[tool].label}）` }];
-    if (!node.data.bled) ops.push({ id: 'bleed', label: '血抜きを する' });
+    const ops = [{ id: 'butcher', label: mild ? `${sp.name}の 下ごしらえを する（${BUTCHER[tool].label}）` : `${sp.name}を 解体する（${BUTCHER[tool].label}）` }];
+    if (!node.data.bled) ops.push({ id: 'bleed', label: mild ? '下じまいを する（しばらく つるす）' : '血抜きを する' });
     return ops;
   }
 
@@ -409,46 +410,105 @@ export class Interact {
   carcassAction(t, opt) {
     const g = this.game, P = g.sys.player, node = t.node, sp = SPECIES[node.data.species];
     if (opt.id === 'take_small') {
+      if ((sp.flies || node.data.species === 'junglefowl') && g.handwork) { this.birdCarcass(node); return; }
       this.startActivity({ kind: 'hold', title: opt.label, params: { seconds: 1.2 } }, () => { this.takeSmallCarcass(node); g.passTime(sp.flies || node.data.species === 'junglefowl' ? 10 : 1); });
       return;
     }
-    if (opt.id === 'bleed') { node.data.bled = true; g.passTime(5); g.bus.emit('toast', { text: '血抜きを した（肉の 傷みが 遅く なる）', kind: 'info' }); P.bloodyHands = true; return; }
-    const tool = this.butcherTool(), B = BUTCHER[tool];
-    const minutes = B.minutes[node.data.species === 'boar' ? 1 : 0];
-    this.startActivity({ kind: 'hold', title: `${sp.name}を 解体する`, params: { seconds: 3.0 } }, () => {
-      const y = sp.yield;
-      const ageH = (g.clock.total - node.data.diedAt) / 60;
-      const fresh = clamp(100 - ageH * 4 * (node.data.gutted ? 1 : 1.5), 0, 100);
-      const extra = { fresh, bled: !!node.data.bled, gutted: true, source: sp.name, rng: g.rng };
-      const meatId = Object.keys(y).find((k) => /meat|small_game/.test(k));
-      // §23.3 猟師の 読み: a hunter partner beside you gets ~10 % more meat out of the carcass
-      const huntPal = g.sys.companion?.perkNear?.('tracker', 8) ? 1.1 : 1;
-      let meat = Math.round(y[meatId] * B.meat * huntPal) - (node.data.meatLoss || 0);
-      if (node.data.dirty) extra.q = 30;
-      this.gain(meatId, Math.max(1, meat), extra);
-      if (y.hide && B.hide) this.gain('hide', Math.max(1, Math.round(y.hide * B.hide)), { q: B.hideQ });
-      if (y.sinew && B.sinew) this.gain('sinew', Math.round(y.sinew * B.sinew));
-      if (y.bone) this.gain('bone', y.bone);
-      if (y.fat && B.fat) this.gain('fat', Math.max(1, Math.round(y.fat * B.fat)), { fresh });
-      if (y.horn) this.gain('horn', y.horn);
-      if (B.organs) this.gain('organ_meat', 1, { fresh });
-      if (B.marrow) this.gain('marrow', 1, { fresh });
-      if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', Math.round(node.data.arrows * 0.8));
-      P.body.s.hygiene = Math.max(0, P.body.s.hygiene - 8);
-      P.bloodyHands = true;
-      P.body.s.stamina = Math.max(0, P.body.s.stamina - 6);
-      if (!P.firstKillDone) { P.firstKillDone = true; P.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); }
-      g.sys.fauna.removeCarcass(node.data.animal);
-      g.sys.knowledge?.learn?.(sp.guide, 3, 'butchered');
-      g.passTime(minutes, { heavy: true });
-      if (g.clock.total - node.data.diedAt > 60 && !node.data.gutted) g.bus.emit('toast', { text: '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
-    });
+    if (opt.id === 'bleed') { node.data.bled = true; g.passTime(5); g.bus.emit('toast', { text: (this.game.settings?.butcherView || 'mild') !== 'normal' ? '下じまいを した（肉の 傷みが 遅く なる）' : '血抜きを した（肉の 傷みが 遅く なる）', kind: 'info' }); P.bloodyHands = true; return; }
+    this.butcherCarcass(node);
   }
 
-  takeSmallCarcass(node) {
+  /** §25: butchering on the paper diagram (or skipped), then the yields — p moves them 0.9–1.08× */
+  async butcherCarcass(node) {
+    const g = this.game, P = g.sys.player, sp = SPECIES[node.data.species];
+    const tool = this.butcherTool(), B = BUTCHER[tool];
+    const minutes = B.minutes[node.data.species === 'boar' ? 1 : 0];
+    const BT = await import('./butcher.js');
+    const kind = BT.butcherKind(node.data.species), view = BT.viewOf(g);
+    const K0 = g.sys.knowledge?.level?.(kind.howto) ?? 0;
+    const K = P.inv.find('guide') ? Math.max(K0, 2) : K0; // the survival guide shows the beast steps (§20.3)
+    const ageMin = g.clock.total - node.data.diedAt;
+    const teachC = BT.teacher(g, kind);
+    let r;
+    if (view === 'skip' || !g.handwork) {
+      await BT.skipFade(view === 'skip' ? 'ていねいに 下ごしらえを した。' : `${sp.name}を 解体した。`);
+      r = { ok: true, p: 0.55, steps: [], extra: {}, skipped: true };
+    } else {
+      const flow = BT.butcherFlow({ kind, view, K, bledOK: !node.data.bled && ageMin <= 30, axe: tool === 'axe', teach: !!teachC });
+      r = await g.handwork.run(flow, {
+        title: view === 'normal' ? `${sp.name}を 解体する（${B.label}）` : `${sp.name}の 下ごしらえ`, key: `butcher:${kind.cat}`,
+        tolMul: (K >= 3 ? 1.2 : K >= 2 ? 1.1 : K === 0 ? 0.85 : 1) * (g.sys.companion?.near?.(4) ? 1.15 : 1),
+        scene: { carcass: { species: kind.diagram, view, knowledge: teachC ? Math.max(2, K) : K, showNoTouch: K >= 3, done: {}, traced: {}, portions: 0 } },
+        onStep: (step) => { if (teachC && step.kind !== 'choose') BT.teachLine(teachC, kind, step.bstep, view); },
+      });
+      if (r.cancelled) return;
+    }
+    const ps = BT.stepScores(r), p = r.p;
+    const pOf = (k) => ps[k] ?? (r.skipped ? 0.55 : 0.3);
+    const y = sp.yield;
+    const fresh = clamp(100 - (ageMin / 60) * 4 * (node.data.gutted ? 1 : 1.5), 0, 100);
+    const extra = { fresh, bled: !!node.data.bled || (ps.bleed ?? 0) >= 0.3, gutted: true, source: sp.name, rng: g.rng };
+    if (r.extra.cutDeep) extra.contam = K >= 3 ? 1.3 : 1.5; else if (K >= 3) extra.contam = 0.85;
+    const meatId = Object.keys(y).find((k) => /meat|small_game/.test(k));
+    // §23.3 猟師の 読み: a hunter partner beside you gets ~10 % more meat out of the carcass
+    const huntPal = g.sys.companion?.perkNear?.('tracker', 8) ? 1.1 : 1;
+    let meat = Math.round(y[meatId] * B.meat * huntPal * (0.9 + 0.18 * p)) - (node.data.meatLoss || 0) - (r.extra.squeezed ? 1 : 0);
+    if (node.data.dirty) extra.q = 30;
+    this.gain(meatId, Math.max(1, meat), extra);
+    const pSkin = pOf('skin');
+    if (y.hide && B.hide) this.gain('hide', Math.max(1, Math.round(y.hide * B.hide)), { q: Math.max(5, B.hideQ + Math.round(-10 + 18 * pSkin) - (pSkin < 0.3 ? 15 : 0)) });
+    if (y.sinew && B.sinew) this.gain('sinew', Math.max(0, Math.round(y.sinew * B.sinew * (0.8 + 0.4 * p))));
+    const missed = r.extra.missedJoints || 0;
+    if (y.bone) this.gain('bone', Math.max(0, y.bone - (missed ? 1 : 0)));
+    if (y.fat && B.fat) this.gain('fat', Math.max(1, Math.round(y.fat * B.fat * (pSkin < 0.3 ? 0.8 : 1))), { fresh });
+    if (y.horn) this.gain('horn', y.horn);
+    if (B.organs && !r.extra.squeezed) this.gain('organ_meat', 1, { fresh });
+    if (B.marrow && !missed) this.gain('marrow', 1, { fresh });
+    if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', Math.round(node.data.arrows * 0.8));
+    if (missed) { const blade = P.heldStack(); if (blade?.dur != null) blade.dur = Math.max(1, blade.dur - 2 * missed); }
+    P.body.s.hygiene = Math.max(0, P.body.s.hygiene - 8);
+    P.bloodyHands = true;
+    P.body.s.stamina = Math.max(0, P.body.s.stamina - 6);
+    if (!P.firstKillDone) { P.firstKillDone = true; P.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); BT.firstKillLine(g); }
+    g.sys.fauna.removeCarcass(node.data.animal);
+    g.sys.knowledge?.learn?.(sp.guide, 3, 'butchered');
+    const lv = BT.learnButcher(g, kind, { p, skipped: !!r.skipped, teach: !!teachC });
+    if (teachC) teachC.adjust(0, 1);
+    const tm = (1.2 - 0.36 * p) * (K >= 3 ? 0.9 : K >= 2 ? 0.95 : 1) * (1 + 0.1 * (r.extra.wrongChoices || 0)) * (g.sys.companion?.near?.(4) ? 0.8 : 1);
+    g.passTime(Math.round(minutes * tm), { heavy: true });
+    const mild = view !== 'normal';
+    if (r.extra.cutDeep) g.bus.emit('toast', { text: mild ? '中身を 傷つけて、肉が 傷みやすく なった（よく 火を 通そう）' : '腸を 破って 肉が 汚れた（よく 火を 通そう）', kind: 'warn' });
+    if (r.extra.squeezed) g.bus.emit('toast', { text: mild ? '中身を つぶして しまい、取れた 物が 減った' : 'にがい 袋を つぶして しまった', kind: 'warn' });
+    if (!r.skipped) g.bus.emit('toast', { text: `${mild ? '下ごしらえ' : '解体'}：${r.feel?.label || ''}（肉 ${Math.max(1, meat)}）${lv > K0 ? `・図鑑「${mild ? '下ごしらえ' : '解体'}の 手順」が K${lv} に` : ''}`, kind: 'good' });
+    if (ageMin > 60 && !node.data.gutted) g.bus.emit('toast', { text: mild ? '中身を 出すのが 遅れた。肉の 傷みが 早い' : '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
+  }
+
+  /** §25.3 birds: pluck → take the insides out, on the diagram (or skipped) */
+  async birdCarcass(node) {
+    const g = this.game, sp = SPECIES[node.data.species];
+    const BT = await import('./butcher.js');
+    const kind = BT.butcherKind(node.data.species), view = BT.viewOf(g);
+    const K = g.sys.knowledge?.level?.(kind.howto) ?? 0;
+    let r = { p: 0.55, steps: [], extra: {}, skipped: true };
+    if (view !== 'skip' && g.handwork) {
+      r = await g.handwork.run(BT.butcherFlow({ kind, view, K, teach: !!BT.teacher(g, kind) }), { title: view === 'normal' ? `${sp.name}を さばく` : `${sp.name}の 下ごしらえ`, key: 'butcher:bird', scene: { carcass: { species: 'bird', view, knowledge: K, done: {}, traced: {}, portions: 0 } } });
+      if (r.cancelled) return;
+      r.skipped = false;
+    } else await BT.skipFade();
+    this.takeSmallCarcass(node, { p: r.p, contam: r.extra.cutDeep ? 1.5 : 1, feathers: r.skipped ? 1 : 2 });
+    BT.learnButcher(g, kind, { p: r.p, skipped: r.skipped });
+    if (!g.sys.player.firstKillDone) { g.sys.player.firstKillDone = true; g.sys.player.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); BT.firstKillLine(g); }
+    g.passTime(Math.round(10 * (1.2 - 0.36 * r.p)));
+  }
+
+  takeSmallCarcass(node, o = {}) {
     const g = this.game, sp = SPECIES[node.data.species];
     const ageH = (g.clock.total - node.data.diedAt) / 60;
-    for (const [id, n] of Object.entries(sp.yield)) this.gain(id, n, { fresh: clamp(100 - ageH * 4, 0, 100), rng: g.rng });
+    for (const [id, n] of Object.entries(sp.yield)) {
+      const k = id === 'feather' ? n + (o.feathers ? o.feathers - 1 : 0) : o.p != null && /meat|small_game|fowl/.test(id) ? Math.max(1, Math.round(n * (0.9 + 0.18 * o.p))) : n;
+      this.gain(id, k, { fresh: clamp(100 - ageH * 4, 0, 100), rng: g.rng, ...(o.contam && o.contam !== 1 && /meat|small_game|fowl/.test(id) ? { contam: o.contam } : {}) });
+    }
+    if (o.feathers && !sp.yield.feather) this.gain('feather', o.feathers);
     if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', node.data.arrows);
     g.sys.knowledge?.learn?.(sp.guide, 3, 'caught');
     g.sys.fauna.removeCarcass(node.data.animal);

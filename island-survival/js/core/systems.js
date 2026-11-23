@@ -14,6 +14,8 @@ import { Placement } from '../world/placement.js';
 import { RainFX } from '../world/rainfx.js';
 import { FishingMemory } from '../sim/fishing.js';
 import { DIFFICULTY } from '../data/conditions.js';
+import { FISH } from '../data/fauna.js';
+const FISH_IDS = new Set(Object.keys(FISH).filter((k) => k !== 'junk'));
 import { itemDef } from '../data/items.js';
 import { WATERS, TREATMENTS } from '../data/water.js';
 import { riskBand, RISK_LABEL, eatRisk, freshStage } from '../sim/body.js';
@@ -416,6 +418,33 @@ function makeActions(game) {
       return ok;
     },
     treat(uid) { const s = P().inv.get(uid); const d = s && itemDef(s.id, s); return d?.med ? this.treatWith(d.med, s) : false; },
+    /** §25.3 魚の 下ごしらえ: 締める → うろこ → 中身 (on the diagram, or skipped) */
+    canPrepFish(uid) { const s = P().inv.get(uid), d = s && itemDef(s.id, s); return !!(s && d && FISH_IDS.has(s.id) && !s.gutted && !(s.done > 0) && (!s.proc || s.proc === 'none')); },
+    async prepFish(uid) {
+      const inv = P().inv, s = inv.get(uid);
+      if (!this.canPrepFish(uid)) return false;
+      const BT = await import('../player/butcher.js');
+      const kind = BT.butcherKind('fish'), view = BT.viewOf(game);
+      const hasBlade = inv.stacks.some((x) => (x.stats?.sharp ?? itemDef(x.id)?.tool?.sharp ?? itemDef(x.id)?.attrs?.sharp ?? 0) >= 3);
+      if (!hasBlade) { toast('刃物（貝殻・石刃でも）が 要る', 'warn'); return false; }
+      let r = { p: 0.55, steps: [], extra: {}, skipped: true };
+      if (view !== 'skip' && game.handwork) {
+        const K = game.sys.knowledge?.level?.(kind.howto) ?? 0;
+        r = await game.handwork.run(BT.butcherFlow({ kind, view, K, teach: !!BT.teacher(game, kind) }), { title: `${itemDef(s.id)?.name}の 下ごしらえ`, key: 'butcher:fish', scene: { carcass: { species: 'fish', view, knowledge: K, done: {}, traced: {}, portions: 0 } } });
+        if (r.cancelled) return false;
+        r.skipped = false;
+      } else await BT.skipFade();
+      const part = inv.take(uid, 1)[0];
+      part.bled = true; part.gutted = true;
+      const ps = BT.stepScores(r);
+      if ((ps.scale ?? 0.55) < 0.3) part.q = Math.max(1, (part.q ?? 50) - 5);
+      if (r.extra.cutDeep) { part.q = Math.max(1, (part.q ?? 50) - 10); part.contam = 1.2; }
+      inv.addStack(part); P().validate();
+      BT.learnButcher(game, kind, { p: r.p, skipped: r.skipped });
+      game.passTime(5);
+      toast(`${itemDef(part.id)?.name}を 下ごしらえ した（傷みにくく なった）`, 'good');
+      return true;
+    },
     /** §24.3 研ぐ: a blade + a flat stone (and a little water) → durability back, maybe +1 sharpness */
     canSharpen(uid) {
       const s = P().inv.get(uid), d = s && itemDef(s.id, s);
@@ -492,7 +521,7 @@ function foodOf(s, d) {
   const f = d.food;
   const st = s.stage && f.stage?.[s.stage];
   return {
-    name: d.name, food: st?.food ?? f.food, water: st?.water ?? f.water, B: f.B, parasite: f.parasite, fresh: s.fresh ?? 100, done: s.done || 0, proc: s.proc,
+    name: d.name, food: st?.food ?? f.food, water: st?.water ?? f.water, B: f.B * (s.contam || 1), parasite: f.parasite, fresh: s.fresh ?? 100, done: s.done || 0, proc: s.proc,
     poison: f.poison ? { ...f.poison, cookable: !!f.poison.heatKills } : null, rawPenalty: f.rawPenalty,
   };
 }

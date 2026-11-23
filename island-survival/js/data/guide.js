@@ -22,6 +22,28 @@ export const GUIDE_CATS = {
 };
 
 export const GUIDE = {
+  // ── 手順の 項目（§25.4 解体の 手順：K0〜K3。やって 覚える・図鑑・仲間に 教わる） ──────────
+  howto_butcher_beast: {
+    cat: 'animal', name: 'けものの 下ごしらえ（解体の 手順）', provisional: '解体の 手順（けもの）', verdict: 'food', howto: true,
+    features: '① 下じまい（のどの 線）→ ② 腹の 線に そって 浅く 開く → ③ 中身を そっと 取り出す → ④ 皮を 外す → ⑤ 関節で 切り分ける。',
+    uses: '手順を 知って いるほど 線と 印が 見え、まちがいが 減る。K3 で「さわらない 所」が 分かり、肉が 傷みにくい（B ×0.85）。',
+    lookalike: null, where: 'しとめた けもの（ヤギ・イノシシ・小さい けもの）', when: '倒して 30 分 以内に 下じまい、1 時間 以内に 中身を 出す',
+    icon: '🔪', color: '#8c8570',
+  },
+  howto_butcher_fish: {
+    cat: 'sea', name: '魚の 下ごしらえ', provisional: '下ごしらえの 手順（魚）', verdict: 'food', howto: true,
+    features: '① 釣って すぐ 下じまい（目の 後ろ）→ ② うろこを 尾から 頭へ → ③ 腹を 開いて 中身を 取る。',
+    uses: '締めると 傷みが ×0.7、中身を 取ると さらに ×0.8。毒の ある 魚は K3 で ないと 毒の 場所が 分からない。',
+    lookalike: null, where: '釣った 魚・網の 魚', when: '釣った その 場で',
+    icon: '🐟', color: '#4a8fb0',
+  },
+  howto_butcher_bird: {
+    cat: 'animal', name: '鳥の 下ごしらえ', provisional: '下ごしらえの 手順（鳥）', verdict: 'food', howto: true,
+    features: '① 羽を つまんで 引く（湯に つけると 楽）→ ② 腹を 短く 開いて 中身を 取る。',
+    uses: '羽根は 矢羽根・ウキ・詰め物に 使える。',
+    lookalike: null, where: '海鳥・野鶏', when: 'しとめて すぐ',
+    icon: '🪶', color: '#c9a96a',
+  },
   // ── 🌿 植物 ─────────────────────────────────────────────
   berry: {
     cat: 'plant', name: '野イチゴ', provisional: '赤い実', verdict: 'food',
