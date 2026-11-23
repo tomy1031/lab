@@ -59,7 +59,7 @@ const vrWorldPos = new THREE.Vector3();
 const state = {
   screen: 'loading', control: 'pad', inRace: false, paused: false, freeCam: null,
   world: null, race: null, me: null, courseIdx: 0,
-  gp: null, attractIdx: Number(params.get('attract') || 0), resultsTimer: 0,
+  gp: null, attractIdx: Number(params.get('attract') || 0), resultsTimer: 0, loadToken: 0, goingTitle: false,
   fps: 60, fpsAcc: 0, fpsN: 0, fpsT: 0, lowT: 0,
   history: [],
 };
@@ -249,14 +249,26 @@ function loadCourse(idx) {
   return course;
 }
 
+// run fn (building a course) once the loading screen has had a chance to show. Inside a VR session the page's
+// own animation frames stop (only the headset's run), so this must not wait on requestAnimationFrame alone —
+// it did, and the next race only loaded once you took the headset off. A newer call cancels an older one.
+function afterLoadingShown(fn) {
+  const token = ++state.loadToken;
+  let done = false;
+  const run = () => { if (done || token !== state.loadToken) return; done = true; fn(); };
+  if (inVR()) setTimeout(run, 150); // a few headset frames show the "loading" message first
+  else { requestAnimationFrame(() => setTimeout(run, 30)); setTimeout(run, 400); }
+}
+
 function goTitle() {
   if (inVR()) xr.exit();
   cockpit?.closeMenu();
-  state.inRace = false; state.gp = null; state.paused = false;
+  state.inRace = false; state.gp = null; state.paused = false; state.goingTitle = true;
   hud?.show(false);
   $('touch').classList.remove('show');
   showScreen('s-loading');
-  requestAnimationFrame(() => setTimeout(() => {
+  afterLoadingShown(() => {
+    state.goingTitle = false;
     const idx = state.attractIdx++ % COURSES.length;
     const course = loadCourse(idx);
     const rng = makeRng(raceSeed++);
@@ -269,7 +281,7 @@ function goTitle() {
     audio.engine(false);
     showScreen('s-title');
     DD.ready = true;
-  }, 30));
+  });
 }
 
 function entrantsFor(courseIdx) {
@@ -302,8 +314,9 @@ function startRace(idx, restart = false) {
   showScreen('s-loading');
   hud?.show(false);
   cockpit?.closeMenu();
+  if (inVR()) cockpit.message('よみこみ中…', { size: 130, dur: 30 });
   if (state.control === 'vr' && renderer.qname !== 'vr') renderer.setQuality('vr');
-  requestAnimationFrame(() => setTimeout(() => {
+  afterLoadingShown(() => {
     const course = loadCourse(idx);
     const entrants = entrantsFor(idx);
     if (state.gp && !state.gp.roster) state.gp.roster = entrants.map((e) => e.char.id);
@@ -334,7 +347,7 @@ function startRace(idx, restart = false) {
     state.inRace = true; state.paused = false; state.resultsTimer = 0;
     showScreen(null);
     if (params.has('skipintro')) race.skipIntro();
-  }, 30));
+  });
 }
 
 function startGP() {
@@ -632,7 +645,8 @@ async function boot() {
     cockpit.releaseCamera();
     cockpit.closeMenu();
     renderer.setQuality(settings.quality);
-    if (state.screen !== 's-title' && state.screen !== 's-loading') { toast('VR を おわりました'); goTitle(); }
+    // back to the title — also when a race was still loading (it would start with no way to drive it)
+    if (state.screen !== 's-title' && !state.goingTitle) { toast('VR を おわりました'); goTitle(); }
   };
   xr.onBlur = () => { if (state.inRace && !state.paused && state.race && state.race.phase !== 'done') pause(true); };
   xr.ready.then((ok) => {
