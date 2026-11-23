@@ -486,7 +486,8 @@ export function createFolk(env) {
       if (Math.abs(d) > 1.6) { ty = 0; tp = 0; }
     }
     S2.hy += (ty - S2.hy) * Math.min(1, dt * 5); S2.hp += (tp - S2.hp) * Math.min(1, dt * 5);
-    j.hy += S2.hy * 0.75; j.sy += S2.hy * 0.25; j.hp += S2.hp;
+    // 時計回り（右）が正の向きの差 → Y 軸の回転は反時計回りが正なので符号を返す
+    j.hy -= S2.hy * 0.75; j.sy -= S2.hy * 0.25; j.hp += S2.hp;
     return j;
   }
 
@@ -500,23 +501,24 @@ export function createFolk(env) {
     if (j.hipY <= -1 && seatH < 0.25) { setA(j.lL, 1.15, 0.3, -2.2); setA(j.lR, 1.05, 0.22, -2.1); }
     const seat = j.hipY < 0 ? hipH + j.hipY * (hipH - (j.hipY <= -1 ? Math.max(0.1, seatH) : 0.42) * s) : hipH;
     mA.makeTranslation(f.pos.x, f.pos.y + seat + j.bob * s, f.pos.z);
-    mA.multiply(rot(mR, B.hunch * 0.2 + j.lean, yr + j.twist, j.roll));
+    // 前かがみ（lean・sp）は正の値で前へ、頭の hp は正の値で下を向く（X 軸の回転は正で後ろへ倒れるので符号を返す）
+    mA.multiply(rot(mR, -(B.hunch * 0.2 + j.lean), yr + j.twist, j.roll));
     // 脚
     for (let side = 0; side < 2; side++) {
       const lg = side ? j.lR : j.lL, sg = side ? 1 : -1;
-      mB.copy(mA).multiply(mT.makeTranslation(sg * B.hp * s, 0, 0)).multiply(rot(mR, lg[0] - (B.hunch * 0.2 + j.lean), 0, sg * lg[1])).multiply(mS.makeScale(B.leg * s, B.leg * s, B.leg * s));
+      mB.copy(mA).multiply(mT.makeTranslation(sg * B.hp * s, 0, 0)).multiply(rot(mR, lg[0] + (B.hunch * 0.2 + j.lean), 0, sg * lg[1])).multiply(mS.makeScale(B.leg * s, B.leg * s, B.leg * s));
       const li = ip * 4 + side;
       M.limb.setMatrixAt(li, mB); col.set(L.legs); M.limb.setColorAt(li, col); setC2(M.limb, li, L.boots); setIA(M.limb, li, lg[2], 0, B.legT, 1);
     }
     // 胴（背の丸みは胸から先を前へ）
-    mB.copy(mA).multiply(rot(mR, j.sp + B.hunch * 0.55, j.sy, j.sr));
+    mB.copy(mA).multiply(rot(mR, -(j.sp + B.hunch * 0.55), j.sy, j.sr));
     mH.copy(mB).multiply(mS.makeScale(B.torso[0] * s, B.torso[1] * s, B.torso[2] * s));
     M.torso.setMatrixAt(ip, mH); col.set(L.coat); M.torso.setColorAt(ip, col); setC2(M.torso, ip, L.trim);
     setIA(M.torso, ip, 0, OVER[L.over] ?? -1, L.hem ?? 1, L.flare ?? 1.1);
     const tH = 0.58 * B.torso[1] * s, shY = 0.47 * B.torso[1] * s, shX = B.sh * s;
     // 頭とかぶりもの
     const hr = B.head * s * (f.kind === 'child' ? 1 : 1);
-    mH.copy(mB).multiply(mT.makeTranslation(0, tH, 0)).multiply(rot(mR, j.hp + B.hunch * 0.4, j.hy, j.hr)).multiply(mT.makeTranslation(0, hr * 0.92, -hr * 0.08)).multiply(mS.makeScale(hr, hr, hr));
+    mH.copy(mB).multiply(mT.makeTranslation(0, tH, 0)).multiply(rot(mR, -(j.hp - B.hunch * 0.55), j.hy, j.hr)).multiply(mT.makeTranslation(0, hr * 0.92, -hr * 0.08)).multiply(mS.makeScale(hr, hr, hr));
     M.head.setMatrixAt(ip, mH); col.set(L.skin); M.head.setColorAt(ip, col); setC2(M.head, ip, L.hair); setIA(M.head, ip, 0, -2, 0, 0);
     M.hat.setMatrixAt(ip, mH); col.set(L.hat); M.hat.setColorAt(ip, col); setC2(M.hat, ip, L.hatKind === 'hood' ? (L.trim ?? 0xf4ecd8) : (L.hatKind === 'brim' ? L.trim : L.hair));
     setIA(M.hat, ip, 0, HATS[L.hatKind] ?? -1, L.hatKind === 'hood' ? (L.ears ? 1 : 0) : (L.brim ?? 2.0), L.crown ?? 0.6);

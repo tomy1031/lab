@@ -171,6 +171,8 @@ export function createPickups(ctx, G) {
         const d = Math.hypot(_p.x - c.x, _p.z - c.z);
         if (c.pedestal) { pedestalTick(c, d); continue; }
         if (d > 1.5) continue;
+        // a chest up on a ledge (the arch crest) opens only from its own height, not from underneath
+        if (Number.isFinite(c.c.y) && Math.abs(_p.y - c.c.y) >= 2) continue;
         if (c.c.hiddenBy) {
           const h = ctx.world && ctx.world.props && ctx.world.props.byId && ctx.world.props.byId[c.c.hiddenBy];
           if (h && h.state && !(h.state.broken || h.state.burnt || h.state.melted)) continue;

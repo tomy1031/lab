@@ -165,7 +165,7 @@ export function createClimb(ctx, P, body) {
     if (d < 0.25) { ctx.rig.position.x += s.n.x * (0.25 - d); ctx.rig.position.z += s.n.z * (0.25 - d); }
   }
 
-  let lastRigY = 0, moveSpeed = 0;
+  let lastRigY = 0, moveSpeed = 0, slipFrame = -1;
   function update(dt) {
     if (dt <= 0) return;
     const rig = ctx.rig;
@@ -176,10 +176,10 @@ export function createClimb(ctx, P, body) {
       rig.position.lerpVectors(mantle.from, mantle.to, e);
       rig.updateMatrixWorld();
       if (k >= 1) finishMantle();
-      moveSpeed = 3;
+      moveSpeed = 3; P.climbSpeed = 3;
       return;
     }
-    if (!P.climbing) { moveSpeed = 0; return; }
+    if (!P.climbing) { moveSpeed = 0; P.climbSpeed = 0; return; }
     const s = surf;
     // A on the wall: jump away from it, along where the head looks (3.5 m/s out, 3 m/s up)
     if (input.justPressed('a') && P.enabled) {
@@ -203,7 +203,12 @@ export function createClimb(ctx, P, body) {
       // an empty tailwind: a grip holds 1.5 s, sliding down 0.8 m/s, then slips
       if (empty) {
         h.at.y -= 0.8 * dt;
-        if (h.since > 1.5 && !pcGrip) { ctx.events.emit('climb:slip', {}); input.haptic(hd, 0.3, 60); release(hd, 'slip'); if (!P.climbing) return; continue; }
+        if (h.since > 1.5 && !pcGrip) {
+          if (ctx.clock.frame !== slipFrame) { slipFrame = ctx.clock.frame; ctx.events.emit('climb:slip', {}); }
+          input.haptic(hd, 0.3, 60); release(hd, 'slip');
+          if (!P.climbing) return;
+          continue;
+        }
       }
       sprites.push(h.glowAt, 0.12, GLOW);
     }
@@ -222,7 +227,7 @@ export function createClimb(ctx, P, body) {
       rig.position.z += h.at.z - _hw.z;
       // never below the foot of the wall's ground
       let g = -1e9;
-      try { g = ctx.world.groundAt(P.pos.x, P.pos.z, rig.position.y + 0.3); } catch { /* stub */ }
+      try { g = ctx.world.groundAt(P.pos.x, P.pos.z, rig.position.y - 0.6); } catch { /* stub */ }   // (not a ledge above)
       if (rig.position.y < g) { const dy = g - rig.position.y; rig.position.y = g; for (const hd of HANDS) if (hold[hd].on) hold[hd].at.y += dy; }
     }
     keepOff(s);
@@ -234,6 +239,7 @@ export function createClimb(ctx, P, body) {
     }
     moveSpeed = Math.abs(rig.position.y - lastRigY) / dt;
     lastRigY = rig.position.y;
+    P.climbSpeed = moveSpeed;
     // over the top: pulled 0.2 m above the edge
     if (headY() > s.y1 + 0.2) startMantle();
   }
@@ -243,8 +249,9 @@ export function createClimb(ctx, P, body) {
     if (P.climbing) { pcGrip = false; for (const hd of HANDS) release(hd); return true; }
     // a wall in front of the eyes, within 1 m: put both virtual hands on it
     const f = _d.set(0, 0, -1).applyQuaternion(input.head.quat).setY(0).normalize();
-    for (const step of [0.35, 0.55, 0.75, 0.95]) {
-      _p.copy(input.head.pos).addScaledVector(f, step); _p.y -= 0.1;
+    for (let k = 0; k < 24; k++) {
+      const step = 0.35 + (k % 4) * 0.2, up = [-0.1, 0.15, -0.35, 0.35, -0.6, 0.55][(k / 4) | 0];
+      _p.copy(input.head.pos).addScaledVector(f, step); _p.y += up;
       if (!grabAt(_p)) continue;
       pcGrip = true;
       const s = grabOut.surface;
@@ -293,7 +300,9 @@ export function createClimb(ctx, P, body) {
     // stand the head 0.35 m off the face with the grip at hand height
     const hx = s.x + s.n.x * 0.35, hz = s.z + s.n.z * 0.35;
     const yawDeg = ((Math.atan2(-s.n.x, s.n.z) / DEG) + 360) % 360;   // facing the wall (−n)
-    P.teleport(hx, hz, yawDeg, s.y0 + v - P.standHeight + 0.15);
+    let g = -1e9;
+    try { g = ctx.world.groundAt(hx, hz, s.y0 + v); } catch { /* stub */ }
+    P.teleport(hx, hz, yawDeg, Math.max(g, s.y0 + v - P.standHeight + 0.15));   // (feet never below the ground)
     ctx.rig.updateMatrixWorld();
     input.head.pos.copy(input.head.localPos).applyMatrix4(ctx.rig.matrixWorld);
     for (const hd of HANDS) {
@@ -305,7 +314,7 @@ export function createClimb(ctx, P, body) {
       C.hands[hd] = true;
     }
     lead = 'right'; surf = s;
-    pcGrip = true;
+    pcGrip = false;                     // (as if both real hands gripped: tailwind rules apply)
     setClimbing(true, s);
     return true;
   }

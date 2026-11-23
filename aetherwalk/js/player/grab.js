@@ -9,7 +9,7 @@ const HANDS = ['left', 'right'];
 
 const _v = new THREE.Vector3(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3();
 
-export function createGrab(ctx, P, holsters) {
+export function createGrab(ctx, P, holsters, climb = null) {
   const input = ctx.input;
   const toggled = { left: false, right: false };
 
@@ -71,10 +71,12 @@ export function createGrab(ctx, P, holsters) {
         return true;
       }
     }
-    // 4. something within reach
+    // 4. a climbing surface (DESIGN_V2 §2): the hand locks to the wall
+    if (climb && climb.tryGrip(hand)) return true;
+    // 5. something within reach
     const near = items.nearestGrabbable(hd.pos, 0.25);
     if (near) { items.grabWorld(near, hand); input.haptic(hand, HAPTIC.grab[0], HAPTIC.grab[1]); return true; }
-    // 5. pull something the hand points at (desktop: what the reticle looks at)
+    // 6. pull something the hand points at (desktop: what the reticle looks at)
     if (ctx.flags.xr) {
       _o.copy(hd.aimPos);
       _d.set(0, 0, -1).applyQuaternion(hd.aimQuat);
@@ -88,6 +90,7 @@ export function createGrab(ctx, P, holsters) {
   }
 
   function release(hand) {
+    if (climb && climb.release(hand)) return;          // let go of the wall
     const items = ctx.items;
     if (!items || items.isStub) return;
     const inst = items.held[hand];
@@ -113,7 +116,7 @@ export function createGrab(ctx, P, holsters) {
       const held = ctx.items?.held?.[hand];
       if (toggle) {
         if (input.justPressed(g)) {
-          if (held) release(hand); else toggled[hand] = tryGrab(hand);
+          if (held || climb?.isHolding(hand)) release(hand); else toggled[hand] = tryGrab(hand);
         }
       } else {
         if (input.justPressed(g) && !held) tryGrab(hand);

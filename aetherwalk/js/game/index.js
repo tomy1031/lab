@@ -17,6 +17,7 @@ import { createBot } from './bot.js';
 import { createSafeZones } from './safezones.js';
 import { createEncounters } from './encounters.js';
 import { createDrill } from './drill.js';
+import { createNpcs } from './npcs.js';
 import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
@@ -44,6 +45,7 @@ export async function createGame(ctx) {
   G.safe = createSafeZones(ctx, G);           // fire safe zones (the Nagi keep away)
   G.encounters = createEncounters(ctx, G);    // the first fight + the encounter director
   G.drill = createDrill(ctx, G);              // Gando's shield drill (DESIGN_V2 §4.6)
+  G.npcs = createNpcs(ctx, G);                // the people of the island (DESIGN_V2 §1)
   G.itemInfo = (id) => G.inventory.def(id) || ITEM_INFO[id] || null;
   /** [jp, en] one-line usage hint, or null */
   G.itemHint = (id) => ITEM_HINTS[id] || null;
@@ -264,6 +266,7 @@ export async function createGame(ctx) {
     ['encounters', (dt) => G.encounters.update(dt)],
     ['enemies', (dt) => G.enemies.update(dt)],
     ['drill', (dt) => G.drill.update(dt)],
+    ['npcs', (dt) => G.npcs.update(dt)],
     ['boss', (dt) => G.boss.update(dt)],
     ['pickups', (dt) => G.pickups.update(dt)],
     ['bot', (dt) => G.bot.update(dt)],
@@ -319,6 +322,9 @@ export async function createGame(ctx) {
     },
     slow: () => G.enemies.slowNow,
     drill: (on = true) => (on ? G.drill.start() : (G.drill.stop(false), false)),
+    /** DESIGN_V2 §5.3: the people now — [{ id, x, z, visible, pose }] */
+    npcs: () => G.npcs.list.map((n) => ({ id: n.id, x: +n.x.toFixed(2), z: +n.z.toFixed(2), visible: n.visible, pose: n.folk.pose })),
+    talk: (id) => G.npcs.talk(id),
   };
   Object.defineProperty(G, 'checkpointId', { get: () => G.checkpoint });
   return G;

@@ -80,6 +80,13 @@ export function createBody(ctx, P) {
     _hw.copy(input.head.localPos).applyMatrix4(rig.matrixWorld);
     const fx = _hw.x, fz = _hw.z;           // feet = under the head (includes physical head motion)
     if (dt <= 0) { P.pos.x = fx; P.pos.z = fz; P.vel.set(0, 0, 0); return; }
+    if (P.climbing || P.mantling) {
+      // on a wall (climb.js moves the rig): no walking, no gravity; the feet hang under the head
+      P.pos.set(fx, rig.position.y + B.viewDrop, fz);
+      P.vel.set(0, 0, 0); B.vy = 0; B.imp.set(0, 0, 0); B.jumped = false; B.viewDrop = 0;
+      P.grounded = false;
+      return;
+    }
 
     // jump timers / a remembered press
     if (P.grounded) B.landT += dt; else if (!B.jumped) B.coyoteT += dt;

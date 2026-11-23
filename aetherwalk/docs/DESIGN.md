@@ -1388,7 +1388,15 @@ window.AW = {
   - `guardBreak`：`shape.heavy`（game が付ける）の攻撃を押し出さずに受けた。`blocked: true` のまま返す（ダメージ半分・`guard:break` は game）。その盾は 0.8 s 何も受けず（`items.shieldBroken(hand)`）、外へはじかれてくすむ。手は 0.7／200 ms。
   - `pushAgo`：押し出しから当たりまでの秒（パリィのときだけ、ほかは −1）。
 - **`ctx.slowmo(scale, seconds)`**（`core/loop.js`）：実時間で `seconds` のあいだ、game・world（粒子）・items の飛び道具に渡す `dt` に `scale` を掛ける。player・input・ui・audio・手に持った物は実時間。重ねて呼ぶと小さい方の倍率・遅い方の終わり。一時停止中は無効（false）。いまの倍率は `ctx.clock.slow`（1 = ふつう）。呼ぶたび `slowmo { scale, seconds }` を出す。
-- **`AW.debug`**：`jump()`、`parry('perfect'|'normal'|'late')`（次に盾が受ける攻撃に合わせて押し出しを合成。向き・構えの判定は省く）、`state()` に `airborne climbing slow`。
+- **登る**（A3、`js/player/climb.js`）：面は `world.climb`（W2）。テスト用に `AW.debug.addClimb({ x, z, yaw, width, y0, y1 })` の仮の面も同じ形で足せる。
+  - 空の手が面の 0.25 m 以内でグリップ（grab.js の順番：矢筒 → ホルスター → 手首の鈴 → **登り面** → 世界の物 → 引き寄せ）→ その手を握った場所に固定し、`climb:grab { hand, surfaceId, point }`、振動 0.5／30 ms、握った点に水色の光。物を持っている手では掴まない（もう片手で使える）。空中でも掴める（跳びつき）。
+  - 固定中はリグを「先に動く手（あとから握った手）の動きの逆」に 1 対 1 で動かす。頭は面から 0.25 m 手前に保つ。登っている間は足踏みの移動・重力・ジャンプを止める（スナップターンは使える）。`player.climbing = true`、`player.climb = { surfaceId, hands: { left, right } }`（握っている手が true）、`player:climb { on, surfaceId }`。
+  - 両手を離すと落ちる（足もと 0.6 m 以内に地面か休み棚があれば立つ。落下ダメージなし）。頭が上端 −0.3 m より上で手を離すか、上端 +0.2 m まで引き上げると 0.25 s で `topExit` へ（`player.mantling`、ビネット強）→ `climb:top { surfaceId }`。
+  - 追い風（`vitals`）：握っている間 −3/s、0.25 m 引き上げるごとに +2。0 のときは握りが 1.5 s でずり落ち（0.8 m/s）→ `climb:slip {}` で離れる。休み棚の足踏みでの回復は v1 の歩数のまま（game）。
+  - `climbAssist`（または `seated`）：握っている間 0.8 m/s で昇る。壁で A（Space）→ 頭の向き（壁の外向きに限る）へ 3.5 m/s・上へ 3 m/s で跳び離れる。PC：壁の前で E（両手で掴む・もう一度 E で離す）、W で登る、S で下りる。
+  - ビネット：壁の上で 1 m/s 以上動く間と乗り越えの間。
+- **身ぶり**（A4、`js/player/gestures.js`）：`gesture { kind:'wave'|'nod'|'shake', hand }`。手を振る＝肩より上の手が左右に 3 回折り返す（7 cm 以上、1.2 s 以内、`hand` 付き）。うなずく＝頭のピッチが 3 回折り返す（6° 以上、1.0 s 以内、ヨーはほぼ動かない）。首を振る＝ヨーが 3 回折り返す（7° 以上、1.0 s 以内、ピッチはほぼ動かない）。走り・滑空・登り・武器を速く振っている間は出さない。うなずき・首振りは足踏みしていない（`gait === 'idle'`）ときだけ。同じ身ぶりは 1.2 s に 1 回。話しかけ方・はい／いいえへの結びつけは game（B2）。
+- **`AW.debug`**：`jump()`、`parry('perfect'|'normal'|'late')`（次に盾が受ける攻撃に合わせて押し出しを合成。向き・構えの判定は省く）、`addClimb(o)` → id、`climb(id, ratio)`（両手で掴まった状態で高さの割合 0..1 に置く）、`pull(dy = 0.4)`（先の手を dy 引き下げ、もう片手を上で握り直す合成）、`letGo()`、`climbs()`、`state()` に `airborne climbing slow`。
 
 ### 10.21 v2 の契約・OPUS-B 分（DESIGN_V2 §5.3。実装済みのものから）
 
@@ -1400,6 +1408,16 @@ window.AW = {
   - 予告の最後 0.25 s に `enemy:cue { id, type, attack, pos, mercy }`（金の光 1 つ＝`art.glow` を使い回す。崩れの的が優先）。`mercy: true`（稽古・盾を拾ったあと最初の殻の 2 回）のとき ui が盾の前に「いま！」。
   - 状態 `'break'` は `enemies.inCombat()` に入る。`enemies.lastBlock`（`{ result, perfect, pushAge, heavy }`、最後に受けた一撃）、`enemies.breakEnemy(e, s)`、`enemies.slowNow`。
 - **盾の稽古**（`game/drill.js`）：`game.drill = { active, progress: { phase, good, need }, dummy, ready(), start(near?), stop() }`。`drill:start / drill:ready / drill:progress { good, need } / drill:end { done }`、言葉は `ui:float { text, en, pos, ms }`（ui/labels がその位置に出す）。完了で `quest.flags.drill` を数える。
+- **人**（B2、`game/npcs.js`・`npcs.data.js`・`ui/talk.js`）：`game.npcs = { list, byId, talk(id), near(x, z, r), answer(yes), skip(), pressTalk(), talking, nearId }`。人は `world.folk.spawn` で作り（位置は `world.spawnPoints.npcs`）、`pos` と `yaw`（度）を毎フレーム書く。MVP は `gando` `towa` `mio` `sora` `zaji`。
+  - せりふ：`npcs.data.js` の `talks: [{ id, when(s), lines | lines(s), action | ask/yes/no }]`、`s = { n, stage, met, drill, has(id), said(talkId) }`。1 行 24 字まで。上から最初に合うもの。
+  - 出現：トワは剣のあと（`stage ≥ 2` か剣を持つ）。鐘 1〜3 つでは次の鐘塔の扉の前 7.5 m、4 つで `pier`。双子は 8 m より遠いと追いかけっこ。ザジは 14 m 以内でつた壁の登り方を見せる。
+  - 会話：6 m で `lookAt`、3 m で `npc:near { id, name, en }`（id null で離れた）。始め方：指してトリガー（手の −Z から 12° 以内、7 m）・1.6 m で 0.8 s 見つめる（`talkGesture` が `'button'` 以外）・`gesture { kind:'wave' }`（A4）・PC の E（`pressTalk`）。`npc:talk { id, name, en, line, i, of, pitch, pos, ask? }` を 1 行ずつ（2.8 s、トリガー／空の手のグリップ／E で送る）、問いは `npc:ask { id, text }` → `gesture nod/shake`、A／B、PC の Y／N（問いの間は `player.noJump`）。`npc:end { id, finished, answer }`。4 m 離れる・`enemies.inCombat()` で終わる。
+  - 行い：`action: 'smith'` は鍛え直しか稽古ができるときだけ `npc:menu { page: 'smith' }` → ui が手首メニューの隠しページ「ガンド爺の鍛え直し」（鍛え直し 2 行＋盾の稽古の開始）を開く。休むページから鍛え直しは外した。`'drill'` は `game.drill.start()`。
+  - 保存：`quest.flags.npc[id] = { met, last, said: { talkId: 1 } }`。
+  - 声：audio が `npc:talk` で合成の「ぽぽぽ」（`pitch` が人ごとの高さ、音の数は行の長さ）。
+  - `game.debug.npcs()` → `[{ id, x, z, visible, pose }]`、`game.debug.talk(id)`。
+- **宝箱の高さ**：`spawnPoints.chests[i].y` があれば、2D で 1.5 m 以内かつ高さの差 2 m 未満で開く（アーチの上の箱は下から開かない）。
+- **手首メニュー「記録」**：「タイトルへ戻る」（保存してから `ctx.app.toTitle()`。無ければ出さない）。
 - **しゃがみの深さ**：`high` の当たりの線は立った高さ ×（0.78、`duckDepth: 'shallow'` は 0.86）＋0.02。`player.ducking` なら必ずよけ。
 - **`game.debug`**：`parry(kind, attackId?)`（次の一撃に合成の盾：`'perfect'|'normal'|'late'|'guard'`。attackId で最寄りの敵の次の技を決める）、`slow()`、`drill(on)`。
 

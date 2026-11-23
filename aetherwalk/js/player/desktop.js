@@ -222,7 +222,7 @@ export function createDesktop(ctx, P, holsters) {
         clearTimeout(leanTimer); leanTimer = setTimeout(() => V.setLean(0), 600); break;
       case 'KeyG': V.spreadArms(!V.state.spread); break;
       case 'Space': V.press('a', 120); break;                      // jump (A)
-      case 'KeyE': grabNearest('right'); break;
+      case 'KeyE': if (!P.climbing_?.pcGrab()) grabNearest('right'); break;   // a wall in front: grip it (E again lets go)
       case 'KeyQ': throwHeld('right'); break;
       case 'KeyF': useHeld(); break;
       case 'KeyH': { const on = !document.body.classList.contains('aw-nohud'); window.AW?.debug?.hud?.(!on); break; }

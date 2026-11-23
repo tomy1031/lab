@@ -178,8 +178,9 @@ export function createFx(env) {
         // にじみの中に入ったら消す（画面いっぱいの白飛びを防ぐ）
         k *= smoothstep(s * 0.55, s * 1.5, dist);
         vC = aCol.rgb * k;
-        // 板をカメラの方へ寄せる（地面や壁に切られない）。見かけの大きさは保つ
-        float pull = min(s * 0.85, dist * 0.6);
+        // 板をカメラの方へ寄せる（地面や壁に切られない）。見かけの大きさは保つ。
+        // 大きさの 1.5 倍まで寄せる：焚き火のにじみの下半分が手前の地面で水平に切れない
+        float pull = min(s * 1.5, dist * 0.7);
         float sc = (dist - pull) / max(dist, 1e-3);
         mv.xyz *= sc;
         mv.xy += position.xy * s * sc * step(0.002, k);

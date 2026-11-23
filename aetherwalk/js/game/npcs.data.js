@@ -50,5 +50,13 @@ export const NPC_DEFS = {
       { id: 'camp', when: () => true, lines: ['ミオはすぐ走っていっちゃうの。', '火のそばなら、こわくないよ。'] },
     ],
   },
+  zaji: {
+    name: 'ザジ', en: 'ZAJI', kind: 'adult', pitch: 0.95, idle: 'idle', demo: 'climb_mesa',
+    // at the foot of the vine wall on the canyon mesa: shows how it is done while you are near (§2.6)
+    talks: [
+      { id: 'first', when: (s) => !s.met, lines: ['光ってる楔が見えるか。あれを握れ。', '腕で引くんじゃない、体を寄せるんだ。', '追い風があるうちは手がすべらん。'] },
+      { id: 'again', when: () => true, lines: ['上には風の通る棚がある。', '疲れたら棚で休め。落ちても痛くはない。'] },
+    ],
+  },
 };
 export const NPC_IDS = Object.keys(NPC_DEFS);
