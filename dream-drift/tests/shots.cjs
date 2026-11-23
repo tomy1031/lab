@@ -7,13 +7,13 @@ const path = require('path');
 const fs = require('fs');
 
 const root = path.resolve(__dirname, '..');
-const IDS = ['candy', 'forest', 'coral', 'galaxy'];
+const IDS = ['candy', 'forest', 'coral', 'galaxy', 'angkor', 'phnompenh', 'bokor', 'battambang'];
 // lap seconds to fast-forward before the shot, per course (karts spread out, scenery in view)
-const AT = { 1: 7, 2: 9, 3: 10, 4: 7 };
+const AT = { 1: 7, 2: 9, 3: 10, 4: 7, 5: 33, 6: 6, 7: 5, 8: 6 };
 
 (async () => {
   const which = process.argv.slice(2).map(Number).filter(Boolean);
-  const list = which.length ? which : [1, 2, 3, 4];
+  const list = which.length ? which : [1, 2, 3, 4, 5, 6, 7, 8];
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}/`;
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

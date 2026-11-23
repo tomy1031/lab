@@ -81,7 +81,7 @@ export class RaceCamera {
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);
       this.keepInside(tr, _v);
-      const lifted = this.overKarts(race, k, _v);
+      const lifted = this.overKarts(race, k, _v) | this.clearHazards(race, _v);
       const kxz = 1 - Math.exp(-16 * dt), ky = 1 - Math.exp(-(lifted && _v.y > this.pos.y ? 12 : 6) * dt);
       this.pos.x += (_v.x - this.pos.x) * kxz; this.pos.z += (_v.z - this.pos.z) * kxz;
       this.pos.y += (_v.y - this.pos.y) * ky;
@@ -112,6 +112,13 @@ export class RaceCamera {
     }
     if (top > v.y) { v.y = top; return true; }
     return false;
+  }
+
+  // keep the lens out of solid moving things (a passing train): rise over them
+  clearHazards(race, v) {
+    let lifted = false;
+    for (const h of race.hazards || []) if (h.clearCamera?.(v)) lifted = true;
+    return lifted;
   }
 
   // pull a camera position back between the walls: everything else on a course stands outside them
@@ -167,7 +174,7 @@ export class RaceCamera {
       const dist = cut.style === 0 ? 7 : 5.2, h = cut.style === 0 ? 3 : 1.6;
       this.chaseTarget(k, _v, _w, dist, h);
       this.keepInside(race.track, _v, true);
-      this.overKarts(race, k, _v);
+      this.overKarts(race, k, _v); this.clearHazards(race, _v);
       if (cut.fresh) { this.pos.copy(_v); this.look.copy(_w); }
       this.pos.lerp(_v, 1 - Math.exp(-8 * dt)); this.look.lerp(_w, 1 - Math.exp(-12 * dt));
       this.fov = cut.style === 0 ? 66 : 74;

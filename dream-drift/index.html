@@ -137,6 +137,8 @@
 
   /* course select */
   .coursegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: min(1150px, 100%); }
+  .cuphead { grid-column: 1 / -1; margin: 6px 0 -4px; font-size: 22px; font-weight: 900; }
+  .opt[hidden] { display: none; }
   .course { cursor: pointer; border-radius: 22px; overflow: hidden; border: 3px solid var(--line); background: var(--panel); text-align: left; padding: 0; transition: transform 0.12s; }
   .course .img { aspect-ratio: 16 / 9; background-size: cover; background-position: center; }
   .course .tx { padding: 10px 14px 14px; }
@@ -349,6 +351,10 @@
       <div class="opt"><h4>モード</h4><div class="seg" data-group="mode">
         <button data-nav data-val="gp">グランプリ<small>4コースを 続けて 走り、合計ポイントで 勝負</small></button>
         <button data-nav data-val="free">フリーレース<small>好きな コースを 1つ えらぶ</small></button>
+      </div></div>
+      <div class="opt" id="opt-cup"><h4>カップ</h4><div class="seg" data-group="cup">
+        <button data-nav data-val="dream">ドリームカップ<small>雲の キャンディ・ほたるの森・海の底・星の海</small></button>
+        <button data-nav data-val="cambodia">カンボジアカップ<small>アンコール・プノンペン・ボコー山・バッタンバン</small></button>
       </div></div>
       <div class="opt"><h4>スピード（CPUの 強さ）</h4><div class="seg" data-group="cls">
         <button data-nav data-val="easy">やさしい<small>ゆっくり。はじめての 人に</small></button>

@@ -27,12 +27,14 @@ export function buildWorld(course, { shadowSize = 2048 } = {}) {
   const track = new Track(course);
   scene.add(track.buildMeshes(course.road));
 
-  const updaters = [];
+  const updaters = [], hazards = [];
   const ctx = {
     THREE, scene, track, props, course,
     rng: makeRng(course.seed || 1),
     add: (o) => { scene.add(o); return o; },
     onUpdate: (fn) => updaters.push(fn),
+    // things the race steps and karts can run into (trains): see track/rail.js
+    addHazard: (h) => { hazards.push(h); return h; },
   };
   course.build(ctx);
   linearOutTree(scene);
@@ -42,7 +44,7 @@ export function buildWorld(course, { shadowSize = 2048 } = {}) {
   const lu = new THREE.Vector3().crossVectors(lr, sunDir).normalize();
   const texel = (2 * S) / shadowSize;
   return {
-    scene, track, sky, sun, hemi,
+    scene, track, sky, sun, hemi, hazards,
     update(dt, t, camera, target) {
       sky.position.copy(camera.position);
       sky.userData.update(dt, t);

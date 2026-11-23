@@ -87,6 +87,28 @@ export class AIDriver {
     if (this.reverseT > 0) { this.reverseT -= dt; thr = 0; brk = 1; steer = -steer; }
     else if (Math.abs(ang) > 2.0 && speed < 4) this.reverseT = 0.8;
 
+    // a closed level crossing ahead: ease off and stop before the barrier (unless already too close to stop)
+    const cr = race.crossingAhead?.(k, 75);
+    if (cr) {
+      // stop line 11 m before the rails (already past it at speed: carry on through), or behind a kart already
+      // waiting in this lane
+      const line = cr.dist - 11, v = Math.max(0, k.speed), step = tr.step;
+      if (line > -1 || v < 7) {
+        let stopAt = line;
+        for (const o of race.karts) {
+          if (o === k || o.speed > 4) continue;
+          let ds = o.prog - k.prog; if (ds < -N / 2) ds += N; else if (ds > N / 2) ds -= N;
+          const m = ds * step;
+          if (m > 0 && m < line + 6 && Math.abs(o.loc.d - k.loc.d) < 2.8) stopAt = Math.min(stopAt, m - 4.8);
+        }
+        const need = (v * v) / (2 * Math.max(0.4, stopAt));
+        if (stopAt < 0.5) { thr = 0; brk = v > 1.2 ? 1 : 0; }
+        else if (v < 1.2) { thr = stopAt > 3 ? 0.35 : 0; brk = 0; }
+        else if (need > 7) { thr = 0; brk = clamp(need / 30, 0.25, 1); }
+        else if (stopAt < v * 1.6) thr = 0;
+      }
+    }
+
     ctl.steer = steer; ctl.throttle = thr; ctl.brake = brk;
     this.useItems(dt, race);
     return ctl;

@@ -1,6 +1,6 @@
 // engine/audio.js — everything you hear is synthesized with Web Audio: engine hum, effects and a small
 // sequencer that plays each course's own tune (drums, bass, chords, arpeggio and a seeded melody).
-import { makeRng } from './util.js';
+import { makeRng, clamp } from './util.js';
 
 const SCALES = {
   major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10],
@@ -99,6 +99,18 @@ export class GameAudio {
       case 'driftlevel': this.tone([0, 1047, 1319, 1760][arg] || 1047, 0.12, { type: 'triangle', vol: 0.12 }); break;
       case 'hop': this.tone(300, 0.12, { type: 'sine', vol: 0.12, slide: 2 }); break;
       case 'wall': this.noiseHit(0.18, { vol: 0.35, type: 'lowpass', freq: 600 }); this.tone(90, 0.15, { type: 'sine', vol: 0.3, slide: 0.6 }); break;
+      case 'bell': { // level-crossing bell; arg = loudness 0…1
+        const v = clamp(arg, 0.05, 1);
+        this.tone(880, 0.22, { type: 'triangle', vol: 0.16 * v }); this.tone(1320, 0.18, { type: 'sine', vol: 0.07 * v });
+        break;
+      }
+      case 'horn': { // train horn: two low reedy notes together; arg = loudness 0…1
+        const v = clamp(arg, 0.05, 1);
+        this.tone(311, 1.1, { type: 'sawtooth', vol: 0.08 * v, filter: 900, attack: 0.06, release: 0.25 });
+        this.tone(370, 1.1, { type: 'sawtooth', vol: 0.07 * v, filter: 900, attack: 0.06, release: 0.25 });
+        this.tone(466, 1.1, { type: 'square', vol: 0.03 * v, filter: 1200, attack: 0.06, release: 0.25 });
+        break;
+      }
       case 'bump': // arg 0…1: how hard
         this.noiseHit(0.14 + 0.1 * arg, { vol: 0.28 + 0.17 * arg, type: 'lowpass', freq: 900 + 500 * arg });
         this.tone(130, 0.14, { type: 'sine', vol: 0.24 + 0.14 * arg, slide: 0.55 });

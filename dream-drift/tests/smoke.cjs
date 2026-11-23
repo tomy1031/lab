@@ -1,6 +1,7 @@
 // tests/smoke.cjs — end-to-end checks in headless Chromium (SwiftShader):
 //   1. title → menus → Grand Prix race with the keyboard; the kart drives; pause / resume
-//   2. every course: a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no errors);
+//   2. every course (both cups): a full 8-kart race fast-forwarded to the finish (all finish, no respawns, no
+//      errors); on Battambang the train crosses the road, the barriers close and the CPUs wait;
 //      on course 1 also the camera probe (nothing on the lens — see DD.debug.probe)
 //   3. results screen; smooth motion (no judder against 60 / 144 Hz displays)
 //   4. phone touch controls   5. drift (starts only with a hop, eases in, moderate curve) and kart-to-kart knocks
@@ -75,7 +76,7 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
   }
 
   // 2. every course: full race, fast-forwarded
-  for (let c = 1; c <= 4; c++) {
+  for (let c = 1; c <= 8; c++) {
     const { page, errors } = await open(browser, `${base}?course=${c}&autoplay&nosound&quality=low&seed=${c * 7}`);
     await page.waitForFunction(() => window.DD.debug.state().screen === 'race', null, { timeout: 90000 });
     if (c === 1) {
@@ -83,13 +84,26 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
       const pr = await page.evaluate(() => window.DD.debug.probe(60));
       check(pr.kartNear.length === 0 && pr.outside.length === 0, `course 1: camera stays clear for 60 s (kart at lens ${pr.kartNear.length}, outside walls ${pr.outside.length})`);
     }
+    if (c === 8) {
+      // Battambang: the train crosses the road; the barriers close, CPUs wait at them and none is run over
+      const t = await page.evaluate(() => {
+        const r = window.DD.debug.race, rail = r.hazards.find((h) => h.solid), ctl = new Map();
+        r.skipIntro();
+        let closed = 0, waited = 0, hit = 0;
+        const emit0 = r.emit.bind(r); r.emit = (ty, d) => { if (ty === 'trap' && d.kind === 'train') hit++; return emit0(ty, d); };
+        for (let i = 0; i < 60 * 70; i++) { r.step(1 / 60, ctl); if (rail.crossings.some((c) => c.closed)) closed++; if (r.karts.some((k) => k.waiting)) waited++; }
+        r.emit = emit0;
+        return { crossings: rail.crossings.length, closed: closed / 60, waited: waited / 60, hit };
+      });
+      check(t.crossings === 2 && t.closed > 5 && t.waited > 2 && t.hit === 0, `course 8: the train crosses — barriers closed ${t.closed.toFixed(1)} s, karts waited ${t.waited.toFixed(1)} s, run over ${t.hit}`);
+    }
     const s = await page.evaluate(() => window.DD.debug.simulate(420));
     const resp = s.karts.reduce((a, k) => a + k.respawns, 0);
     const times = s.karts.map((k) => k.time).sort((a, b) => a - b);
     check(s.phase === 'done' && s.karts.every((k) => k.finished), `course ${c}: all ${s.karts.length} karts finish (${times[0].toFixed(1)}–${times[times.length - 1].toFixed(1)} s)`);
     check(resp === 0, `course ${c}: no respawns (${resp})`);
     log(`course ${c}: me ${s.me.place}位, drawCalls ${s.drawCalls}, triangles ${s.triangles}`);
-    if (c === 4) {
+    if (c === 8) {
       await page.evaluate(() => window.DD.debug.showResults());
       await waitScreen(page, 's-results');
       const rows = await page.$$eval('#res-table .rrow', (r) => r.length);
