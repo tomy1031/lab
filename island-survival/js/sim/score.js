@@ -61,7 +61,7 @@ export function computeScore(stats = {}, setup = {}, diffEntry = null) {
   const avg = (num(stats.hp) + num(stats.food) + num(stats.water) + num(stats.morale)) / 4;
   const ach = Array.isArray(stats.achievements) ? stats.achievements.length : num(stats.achievements);
   const parts = [
-    { label: '生存日数', value: days * 100 },
+    { label: '生存日数', value: Math.round(days * 100) },
     { label: '生還・救助・脱出', value: survived ? 500 : 0 },
     { label: '終了時の 状態', value: Math.round(Math.min(300, avg * 3)) },
     { label: '作った 型', value: num(stats.designsMade) * 10 },

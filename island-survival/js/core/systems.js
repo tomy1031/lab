@@ -577,7 +577,7 @@ function endGame(game, info) {
     const days = Math.floor(st.daysSurvived * 10) / 10;
     game.pause(true);
     game.screens?.show('result', {
-      type, result: info.result, headline: head, sub: info.result === 'dead' ? `死因：${S.DEATH_NAMES?.[info.cause] || info.cause}` : `${days} 日間 生きのびた`, days, seed: game.setup.seed,
+      type, result: info.result, headline: head, sub: info.result === 'dead' ? `死因：${S.DEATH_NAMES?.[info.cause] || info.cause}` : info.how === 'promised' ? `${game.setup.days} 日間 チャレンジ 達成！` : info.result === 'rescued' && info.how === 'early' ? `${game.setup.days} 日の 約束より 早く 島を 出た` : null, days, seed: game.setup.seed,
       review, score, achievements: (ach || []).map((x) => ({ name: x.name, desc: x.desc, icon: x.icon })), stats: st, canRetry: info.result === 'dead' && (game.diff.retries ?? 0) > 0,
       records: [{ label: '釣った 魚', value: P.stats.fishCaught }, { label: 'しとめた 動物', value: P.stats.animalsHunted }, { label: '作った 物', value: P.stats.crafted }, { label: '火を おこした', value: P.stats.firesLit }, { label: '歩いた 距離', value: `${Math.round(P.stats.distance)} m` }],
     });

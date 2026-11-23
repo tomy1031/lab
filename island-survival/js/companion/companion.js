@@ -87,6 +87,7 @@ export class Companion {
   /** §23.5: the sheet's derived values drive the body, the bag, the legs and the chatter */
   setSheet(sheet) {
     this.sheet = sheet;
+    if (this.game?.setup) this.game.setup.companionSheet = sheet; // the score (§23.6) and the save use the sheet actually played
     const d = this.derived = derived(sheet);
     this.vitals.drainMul = d.appetite;                    // already includes the companion's ×0.8 and sex ×0.9
     const t = {}; for (const k of SHEET_TRAITS) t[k] = d[k];
