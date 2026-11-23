@@ -106,17 +106,30 @@ export function createClimb(env, sp) {
     sites.push({ s, mesh });
     // 下の 3 つの握りと休み棚：水色のかすかな光（世界の glows で 1 回の描画にまとまる）
     const marks = s.kind === 'pegs' ? s.pegs.slice(0, 3).map((p) => [p.u, p.v]) : [[-1.6, 1.0], [0.4, 1.4], [2.2, 0.9]];
-    for (const [u, v] of marks) { at(s, u, v, 0.16, V); env.fx.glows.add({ x: V.x, y: V.y, z: V.z, size: 0.32, color: 0x7fe9ff, intensity: 0.45 }); }
+    for (const [u, v] of marks) { at(s, u, v, 0.16, V); env.fx.glows.add({ x: V.x, y: V.y, z: V.z, size: 0.22, color: 0x7fe9ff, intensity: 0.3 }); }
+  }
+  // つた壁の上：面から奥 5 m を平らな足場に（崖の縁のくぼみを歩けるように）
+  for (const s of surfaces) {
+    if (s.kind !== 'vine') continue;
+    if (Math.abs(Math.sin(s.yaw * DEG * 2)) < 1e-3) {
+      // 東西南北を向く壁：1 枚の長方形
+      const a = at(s, -s.width / 2, 0, 0, new THREE.Vector3()), b = at(s, s.width / 2, 0, -4.8, new THREE.Vector3());
+      col.addPlatform({ x0: a.x, x1: b.x, z0: a.z, z1: b.z, y: s.y1, surface: 'rock' });
+    } else for (let d = -0.6; d >= -4.6; d -= 1.3) for (let u = -s.width / 2 + 0.6; u <= s.width / 2 - 0.6 + 1e-3; u += 1.3) {
+      at(s, u, 0, d, V);
+      col.addPlatform({ x: V.x, z: V.z, r: 0.95, y: s.y1, surface: 'rock' });
+    }
   }
   // アーチの背を歩けるように：背の上に円の足場を並べる（外の斜面から頂まで）
   const arch = surfaces.find((s) => s.arch);
   if (arch) {
     const def = arch.arch.def;
-    for (let lx = arch.arch.lx - 0.5; lx >= -9; lx -= 1.6) {
+    // 0.8 m おき（段差 0.5 m 以下）。足場の上がりは 0.6 m まで
+    for (let lx = arch.arch.lx - 0.4; lx >= -9; lx -= 0.8) {
       const y = def.y + archTopY(lx);
-      for (const lz of lx > 9 ? [-2.6, -0.8] : [-1.6, 0, 1.6]) {
+      for (const lz of lx > 9 ? [-2.4, -0.9] : [-1.0, 1.0]) {
         const p = toWorld(def, lx, 0, lz);
-        col.addPlatform({ x: p.x, z: p.z, r: 1.25, y: y + 0.02, surface: 'rock' });
+        col.addPlatform({ x: p.x, z: p.z, r: 1.15, y: y + 0.02, surface: 'rock' });
       }
     }
     // 柱の上（楔の終わり）から背へ
@@ -185,6 +198,19 @@ export function createClimb(env, sp) {
   return { group, update, api };
 }
 
+// 休み棚：上は平ら、下は壁へすぼまる。白っぽい砂岩
+function ledgeGeo(l, w) {
+  const g = new THREE.BoxGeometry(w, 0.7, l.depth + 0.25, 3, 1, 1);
+  const p = g.getAttribute('position');
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (y < 0) p.setXYZ(i, x * 0.8, y, z < 0 ? z : z - (l.depth + 0.1));       // 下の前の辺を壁へ引く
+    if (Math.abs(x) > w * 0.45) p.setY(i, p.getY(i) - 0.08 * Math.sign(y + 1));
+  }
+  g.computeVertexNormals();
+  return part(g, { pos: [0, l.v - 0.35, (l.depth + 0.25) / 2 - 0.25], color: (q, n) => { const k = 0.82 + 0.18 * Math.max(0, n.y) + 0.05 * Math.sin(q.x * 5); return [0.72 * k, 0.6 * k, 0.45 * k]; }, jitter: 0.03 });
+}
+
 // ── つた壁：岩の面（地層の色）＋太いつた（ゆれる）＋葉＋節の水色の花＋休み棚 ──
 function buildVineWall(env, s, H) {
   const rng = env.fork('climb-' + s.id);
@@ -204,12 +230,12 @@ function buildVineWall(env, s, H) {
   face.computeVertexNormals();
   P.push(part(face, { pos: [0, (H + 3.2) / 2 - 3.0, 0], color: (p, n) => { const c = strata({ x: p.x, y: p.y + s.y0, z: p.z }, n); const k = 0.82 + 0.1 * Math.sin(p.x * 2.3 + p.y * 1.1); return [c[0] * k, c[1] * k, c[2] * k]; } }));
   // 上の縁（段丘の乾いた土の色）と左右の岩のふくらみ
-  P.push(part(G.box(W + 2.6, 0.7, 2.4), { pos: [0, H + 0.05, -1.1], color: 0xb8865a, jitter: 0.12 }));
+  P.push(part(G.box(W + 2.6, 0.7, 3.0), { pos: [0, H - 0.35, -1.4], color: 0xb8865a, jitter: 0.06 }));
   for (const sx of [-1, 1]) P.push(part(G.dodeca(1.0), { pos: [sx * (W / 2 + 1.6), H * 0.45, -1.2], scale: [1.8, H * 0.55, 1.8], color: strata, jitter: 0.25 }));
-  // 休み棚：白っぽい岩の棚
-  for (const l of s.ledges) P.push(part(G.box(3.2, 0.32, l.depth + 0.3), { pos: [0, l.v - 0.16, l.depth / 2 - 0.1], color: 0xe6d6bd, jitter: 0.05, vary: 0.08 }));
+  // 休み棚：白っぽい岩の棚（下は壁へすぼまるくさび形）
+  for (const l of s.ledges) P.push(ledgeGeo(l, 3.4));
   // つた：太い茎が面をのぼり、枝を出す。葉は面を向いてゆれる。節には水色の花（光る＝掴める）
-  const stems = 8;
+  const stems = 11;
   const leafGeo = new THREE.BufferGeometry();
   leafGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 0.5, 0.45, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, -0.5, 0.45, 0]), 3));
   leafGeo.computeVertexNormals();
@@ -229,9 +255,8 @@ function buildVineWall(env, s, H) {
       pts.push(VV(u0 + Math.sin(v * 0.55 + ph) * amp, v, 0.1 + 0.03 * Math.sin(v * 1.3 + k)));
       rad.push(0.055 * (1 - 0.45 * i / n));
     }
-    const tube = (pp, rr, sides) => { const g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pp), pp.length * 2, 1, sides, false); const p = g.getAttribute('position'); return g; };
     // 茎は細い管（半径は一定。根もとの太さは 2 本重ねて出す）
-    P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 22, 0.05, 4, false), { color: 0x4a3a22, sway: 0.15 }));
+    P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 22, 0.06, 4, false), { color: 0x4f3d24, sway: 0.15 }));
     // 枝と葉
     for (let i = 1; i < n; i++) {
       const p = pts[i], t = i / n;
@@ -239,14 +264,15 @@ function buildVineWall(env, s, H) {
         const dir = rng.next() < 0.5 ? -1 : 1, len = rng.range(0.5, 1.2);
         const b = [VV(p.x, p.y, p.z), VV(p.x + dir * len * 0.5, p.y + len * 0.35, 0.13), VV(p.x + dir * len, p.y + len * 0.55, 0.12)];
         P.push(part(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(b), 4, 0.022, 3, false), { color: 0x5a4a2a, sway: 0.3 }));
-        addLeaf(b[2].x, b[2].y, dir * 0.8 + rng.range(-0.4, 0.4), rng.range(0.16, 0.24), t);
-        addLeaf(b[1].x, b[1].y, -dir * 0.5 + rng.range(-0.5, 0.5), rng.range(0.13, 0.2), t);
+        addLeaf(b[2].x, b[2].y, dir * 0.8 + rng.range(-0.4, 0.4), rng.range(0.25, 0.38), t);
+        addLeaf(b[1].x, b[1].y, -dir * 0.5 + rng.range(-0.5, 0.5), rng.range(0.2, 0.32), t);
       }
-      for (let q = 0; q < 3; q++) addLeaf(p.x + rng.range(-0.15, 0.15), p.y + rng.range(-0.3, 0.3), rng.range(-2.6, 2.6), rng.range(0.13, 0.22), t);
+      // 葉の房：茎のまわりに重なる大きめの葉（面の 6 割ほどを覆う）
+      for (let q = 0; q < 6; q++) addLeaf(p.x + rng.range(-0.35, 0.35), p.y + rng.range(-0.5, 0.5), rng.range(-2.8, 2.8), rng.range(0.22, 0.4), t);
       if (i % 2 === 0) {
         // 節の花（水色、まんなかは白）
-        P.push(part(flower, { pos: [p.x + rng.range(-0.08, 0.08), p.y, 0.2], scale: rng.range(0.05, 0.075), color: 0x7fe9ff, glow: 1 }));
-        P.push(part(new THREE.CircleGeometry(1, 4), { pos: [p.x, p.y, 0.205], scale: 0.022, color: 0xfffbe8, glow: 1 }));
+        P.push(part(flower, { pos: [p.x + rng.range(-0.08, 0.08), p.y, 0.24], scale: rng.range(0.07, 0.1), color: 0x7fe9ff, glow: 1 }));
+        P.push(part(new THREE.CircleGeometry(1, 4), { pos: [p.x, p.y, 0.245], scale: 0.03, color: 0xfffbe8, glow: 1 }));
       }
     }
   }
@@ -279,13 +305,13 @@ function buildPegRoute(env, s, H) {
     const c = strata({ x: p.x, y: p.y + s.y0, z: p.z }, n);
     // 前の面のまんなか：風に磨かれた明るい帯（登る道すじ）
     const band = n.z > 0.6 ? Math.max(0, 1 - Math.abs(p.x) / (W * 0.42)) : 0;
-    const k = 0.86 + 0.24 * band;
-    return [c[0] * k + 0.05 * band, c[1] * k + 0.04 * band, c[2] * k + 0.03 * band];
+    const k = 0.72 + 0.2 * band;
+    return [c[0] * k + 0.04 * band, c[1] * k + 0.03 * band, c[2] * k + 0.025 * band];
   } }));
   // 休み棚
-  for (const l of s.ledges) P.push(part(G.box(2.8, 0.3, l.depth + 0.3), { pos: [0, l.v - 0.15, l.depth / 2 - 0.12], color: 0xe6d6bd, jitter: 0.05, vary: 0.08 }));
+  for (const l of s.ledges) P.push(ledgeGeo(l, 2.9));
   // 楔：岩に打った金の楔と、頭の水色の輪。まわりに手の白い跡（チョーク）
-  const ring = new THREE.RingGeometry(0.035, 0.07, 8);
+  const ring = new THREE.RingGeometry(0.045, 0.085, 8);
   const shaft = G.cyl(0.026, 0.034, 0.16, 5);
   const chalk = new THREE.CircleGeometry(1, 6);
   s.pegs.forEach((pg, i) => {

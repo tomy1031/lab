@@ -341,7 +341,10 @@ export function buildHeightfield(seed = 7) {
   for (const w of CLIMBS) {
     if (!w.carve) continue;
     const yr = w.yaw * Math.PI / 180, nx = Math.sin(yr), nz = -Math.cos(yr), rx = -Math.cos(yr), rz = -Math.sin(yr);
-    const top = heightAt(w.x - nx * 8, w.z - nz * 8), foot = top - w.height;
+    // 上：壁の奥 10〜16 m の段丘の高さ（崖の斜面を拾わない）
+    let top = -1e9;
+    for (let dd = 10; dd <= 16; dd += 2) top = Math.max(top, heightAt(w.x - nx * dd, w.z - nz * dd));
+    const foot = top - w.height;
     w.y0 = foot; w.y1 = top;
     const R = w.width / 2 + 16;
     const i0 = Math.max(0, Math.floor((w.x - R + HALF) / CELL)), i1 = Math.min(N - 1, Math.ceil((w.x + R + HALF) / CELL));
@@ -351,7 +354,8 @@ export function buildHeightfield(seed = 7) {
       const d = px * nx + pz * nz, u = Math.abs(px * rx + pz * rz);
       const wu = smoothstep(w.width / 2 + 7, w.width / 2 + 1.5, u);
       if (wu <= 0) continue;
-      const target = d > 0 ? foot - d * 0.58 : Math.min(top, foot + (-d) * 4);
+      // 前：崩れ石の坂。面のすぐ奥（2.2 m）はふもとの高さ（地面が面の前にはみ出さない）、その奥は段丘の高さ
+      const target = d > 0 ? foot - d * 0.58 : d > -2.2 ? foot : top;
       if (d > -9 && H[k] < target) H[k] += (target - H[k]) * wu;
     }
   }
