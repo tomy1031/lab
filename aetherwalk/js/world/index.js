@@ -20,6 +20,7 @@ import { createLandmarks } from './landmarks/index.js';
 import { buildSpawnPoints } from './spawns.js';
 import { createMap } from './map.js';
 import { createFolk } from './folk.js';
+import { createClimb } from './climb.js';
 
 export async function createWorld(ctx) {
   const T0 = performance.now();
@@ -142,6 +143,10 @@ export async function createWorld(ctx) {
   const folk = createFolk(env);
   root.add(folk.group);
   world.folk = folk.api;
+  // ── 登り面（DESIGN_V2 §5.2）──
+  const climb = createClimb(env, sp);
+  root.add(climb.group);
+  world.climb = climb.api;
 
   const map = createMap(env, sp);
   world.drawMap = map.drawMap; world.worldToMap = map.worldToMap;
@@ -227,6 +232,7 @@ export async function createWorld(ctx) {
     props.update(view);
     landmarks.update(view);
     folk.update(view);
+    climb.update(view);
     if (elapsed > 0.5) env.ready = true;
   };
   world.setQuality = (level) => {

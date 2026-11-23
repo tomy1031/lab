@@ -1390,6 +1390,19 @@ window.AW = {
 - **`ctx.slowmo(scale, seconds)`**（`core/loop.js`）：実時間で `seconds` のあいだ、game・world（粒子）・items の飛び道具に渡す `dt` に `scale` を掛ける。player・input・ui・audio・手に持った物は実時間。重ねて呼ぶと小さい方の倍率・遅い方の終わり。一時停止中は無効（false）。いまの倍率は `ctx.clock.slow`（1 = ふつう）。呼ぶたび `slowmo { scale, seconds }` を出す。
 - **`AW.debug`**：`jump()`、`parry('perfect'|'normal'|'late')`（次に盾が受ける攻撃に合わせて押し出しを合成。向き・構えの判定は省く）、`state()` に `airborne climbing slow`。
 
+### 10.21 v2 の契約・OPUS-B 分（DESIGN_V2 §5.3。実装済みのものから）
+
+- **返しの流れ**（B1）：`enemies.data.js` の攻撃に `heavy: true`（殻の `slam`・砂潜りの `charge`・番人の `beam` `quake`）と `chain`/`chainGap`（殻の `sweep2`：横なぎ → 0.5 s → `slam`）。game は攻撃の形に `shape.heavy` を付けて `items.blockTest` を呼び、戻り値の `perfect`／`guardBreak` で決める（§10.20）。
+  - ジャスト受け → `parry:perfect { enemyId, attack, pos, hand }`、敵は状態 `'break'`（崩れ）2.5 s（砂潜り 3.5 s・番人 3 s）で `enemy:break { id, type, duration }`、終わると `duration: 0` でもう一度出す。追い風 +15（`block` の +10 に +5）。光弾は `×2` の速さで戻り、当たった敵を崩す。
+  - 返し斬り：`'break'` の敵への最初の一撃（`hit.speed ≥ 3` か speed なし、火以外）はダメージ ×2.5（`vitals.damageMul` と合わせて上限 ×3）。`counter { id, type, damage, killed }`。倒れなければ大きく押し戻してのけぞり（崩れは終わる）。ヒットストップ 85 ms。
+  - ガード崩れ：`guard:break { enemyId, attack, hand }`、被ダメは攻撃の半分（`vitals.damage(…, { guardBreak: true })`）。
+  - 見切り：`dodge:just { enemyId, attack }`。`high` はしゃがみ始め（頭が立った高さの 0.93 を切った時刻）が当たりの 0.2 s 以内、`line`/`sphere` は 0.2 s 前の立ち位置が当たりの中だったとき。敵は 1.2 s よろけ、追い風 +12（`player:dodge` の +8 に +4）。
+  - 予告の最後 0.25 s に `enemy:cue { id, type, attack, pos, mercy }`（金の光 1 つ＝`art.glow` を使い回す。崩れの的が優先）。`mercy: true`（稽古・盾を拾ったあと最初の殻の 2 回）のとき ui が盾の前に「いま！」。
+  - 状態 `'break'` は `enemies.inCombat()` に入る。`enemies.lastBlock`（`{ result, perfect, pushAge, heavy }`、最後に受けた一撃）、`enemies.breakEnemy(e, s)`、`enemies.slowNow`。
+- **盾の稽古**（`game/drill.js`）：`game.drill = { active, progress: { phase, good, need }, dummy, ready(), start(near?), stop() }`。`drill:start / drill:ready / drill:progress { good, need } / drill:end { done }`、言葉は `ui:float { text, en, pos, ms }`（ui/labels がその位置に出す）。完了で `quest.flags.drill` を数える。
+- **しゃがみの深さ**：`high` の当たりの線は立った高さ ×（0.78、`duckDepth: 'shallow'` は 0.86）＋0.02。`player.ducking` なら必ずよけ。
+- **`game.debug`**：`parry(kind, attackId?)`（次の一撃に合成の盾：`'perfect'|'normal'|'late'|'guard'`。attackId で最寄りの敵の次の技を決める）、`slow()`、`drill(on)`。
+
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 
 1. **座標**：Y 上、+X 東、−Z 北。ヨー 0＝北、時計回りが正。単位は m・秒。原点は島の中心。

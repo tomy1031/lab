@@ -1,6 +1,8 @@
 // js/world/spawns.js — FABLE
 // layout.js の配置を実際の地形に合わせて確定する（急斜面・水・木を避けて少しずらす）→ world.landmarks / vistas / spawnPoints と、しかけの定義。
 import { LANDMARKS, LM, VISTAS, TOWERS, SHRINES, TORCH_TARGET, WAYLIGHTS, CHESTS, BLOCKERS, SEEDS, ENEMIES, GATHER, LAKE_LEVEL, NPC_SPOTS, DUMMY_CAMP } from './layout.js';
+import { buildClimbSurfaces, archTopY } from './climb.js';
+import { toWorld } from './landmarks/common.js';
 
 export function buildSpawnPoints(env) {
   const { hf, col } = env;
@@ -86,6 +88,13 @@ export function buildSpawnPoints(env) {
   for (const b of BLOCKERS) blockerOf[b.id] = b;
   const usedBlockers = new Set();
   for (const c of CHESTS) {
+    if (c.onArch) {
+      // アーチの背の上（登って行く宝箱）。y を持つ
+      const def = landmarks.great_arch, p = toWorld(def, c.onArch.lx, 0, c.onArch.lz), y = def.y + archTopY(c.onArch.lx);
+      spawnPoints.chests.push({ id: c.id, x: p.x, z: p.z, y, yaw: c.onArch.yaw, loot: c.loot, hiddenBy: null });
+      addProp(c.id, 'chest', p.x, p.z, c.onArch.yaw, { loot: c.loot }, 0.8, y);
+      continue;
+    }
     if (c.pedestal) {
       const l = landmarks.camp_meadow;
       const y = hf.heightAt(c.x, c.z);
@@ -166,5 +175,7 @@ export function buildSpawnPoints(env) {
     const p = snap(x, z, { clear: 0.7 });
     addProp(id, 'brazier', p.x, p.z, 0, {}, 0.5);
   }
-  return { landmarks, landmarkList, vistas, spawnPoints, props };
+  // 登り面（DESIGN_V2 §5.2）。world.climb.list と同じもの
+  const climbs = buildClimbSurfaces(hf, landmarks);
+  return { landmarks, landmarkList, vistas, spawnPoints, props, climbs };
 }
