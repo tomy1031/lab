@@ -31,6 +31,8 @@ export function noticeProbability(kind, sig = {}, ctx = {}) {
   if (sig.smoke) add(sig.smoke === 'hill' ? 'smokeHill' : sig.smoke === 'beach' ? 'smokeBeach' : 'smokeOther', '狼煙');
   if (sig.bigFire) add(sig.bigFireHill ? 'bigFireHill' : 'bigFire', '大きな 火');
   const sos = sig.sos | 0; if (sos >= 2) add('sos2', 'SOS(2 か所)'); else if (sos === 1) add('sos1', 'SOS');
+  // §26.9 how well the signals were made by hand
+  for (const pt of parts) { if (/^sos/.test(pt.key) && sig.sosMul) pt.value *= sig.sosMul; if (/^smoke/.test(pt.key) && sig.smokeMul) pt.value *= sig.smokeMul; }
   if (sig.mirrorQ != null && !night && ['clear', 'heat', undefined].includes(ctx.weather)) parts.push({ key: 'mirror', label: '合図の 鏡', value: 0.15 + sig.mirrorQ / 400 });
   if (sig.waving) add('waving', '手を 振る');
   if (sig.companionWave) add('companionWave', '仲間も 振る');

@@ -73,6 +73,11 @@ export class Interact {
       const fp = fr.fire.group.position, d = Math.hypot(fp.x - P.pos.x, fp.z - P.pos.z);
       if ((((fp.x - P.pos.x) * fwd.x + (fp.z - P.pos.z) * fwd.z) / Math.max(d, 0.1) > 0.5) || d < 1.2) return { type: 'fire', fire: fr, label: '火', options: this.fireOptions(fr) };
     }
+    // tracks / droppings on a game trail (§26.3): look closely (crouch) or know tracks
+    const sign = g.sys.traps?.signAt?.(P.pos, 1.7);
+    if (sign && (P.crouch || (g.sys.knowledge?.level?.('howto_read_tracks') ?? 0) >= 1) && !g.sys.traps?.nearest?.(P.pos, 2.4)) {
+      return { type: 'sign', sign, label: sign.kind === 'scat' ? 'ふん' : '足跡', options: [{ id: 'read', label: `${sign.kind === 'scat' ? 'ふん' : '足跡'}を 調べる（だれの？ いつの？）` }] };
+    }
     // traps (§26): the one in front of you
     const trap = g.sys.traps?.nearest?.(P.pos, 2.4);
     if (trap) {
@@ -158,7 +163,7 @@ export class Interact {
     const tinder = bestTinder(inv);
     const hereShelter = g.sys.building?.shelterAt?.(rec.fire.group.position.x, rec.fire.group.position.z) || { rain: 0, wind: 0 };
     const damp = dampness({ rain: W.rain, humidity: W.humidity, roof: hereShelter.rain >= 0.7, hour: g.clock.hour, tinderWet: tinder.stack?.wet > 60 });
-    const base = { tinderMul: tinder.mul * (rec.layP != null ? 0.8 + 0.4 * rec.layP : 0.9), damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 }; // §26 the lay
+    const base = { tinderMul: tinder.mul * (rec.layMul ?? 1), damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 }; // §26 the lay
     const out = [];
     const has = (id) => inv.stacks.find((s) => s.id === id);
     const steelish = inv.stacks.find((s) => /knife|axe|metal_scrap|nail|can/.test(s.id) || itemDef(s.id)?.tags?.includes('steel'));
@@ -224,6 +229,7 @@ export class Interact {
       case 'fire': return this.fireAction(t, opt);
       case 'carcass': return this.carcassAction(t, opt);
       case 'trap': return this.trapAction(t.trap, opt);
+      case 'sign': return this.readSign(t.sign);
       case 'site': return g.sys.building?.act?.(t.node, opt, this);
       case 'node': return this.nodeAction(t, opt);
       default: break;
@@ -350,14 +356,16 @@ export class Interact {
   /** §26 火の 組み方: lay tinder, kindling and fuel in order — a good lay lights more easily (×0.8–1.2) */
   async layFire(rec) {
     const g = this.game, P = g.sys.player, inv = P.inv;
-    const { WORK_FLOW } = await import('../data/handwork.js');
-    const K = g.sys.knowledge?.level?.('howto_fire_lay') ?? 0;
-    const r = await g.handwork.run(WORK_FLOW.firelay(), { title: '薪を 組む', key: 'firelay', tolMul: [0.9, 1, 1.1, 1.2][K], scene: { showOrder: K >= 2 || !!inv.find('guide') } });
+    const FF = await import('./fieldflows.js');
+    const K = Math.max(g.sys.knowledge?.level?.('howto_fire_lay') ?? 0, inv.find('guide') ? 2 : 0);
+    const r = await g.handwork.run(FF.fireLayFlow({ K }), { title: '薪を 組む', key: 'firelay', tolMul: [0.9, 1, 1.1, 1.2][K], scene: { trap: { id: 'firelay', K, view: 'mild' } } });
     if (r.cancelled) return;
     inv.take('twig', 2); const br = inv.stacks.find((s) => /branch|driftwood|firewood/.test(s.id)); const fuel = br ? inv.take(br.uid, 1)[0] : null;
     if (fuel) g.sys.fires.addFuel(rec, fuel);
     P.validate();
+    // §26.9: ignition × (0.85 + 0.27 p) × the lay (teepee 1.1, log cabin 1.0, star 0.9); thick wood first chokes it
     rec.layP = r.failures.includes('order') ? Math.min(r.p, 0.3) : r.p;
+    rec.layMul = (0.85 + 0.27 * rec.layP) * (FF.LAY_MUL[r.extra.layType] ?? 1) * (r.failures.includes('order') ? 0.5 : 1);
     g.passTime(3);
     const lv = Math.max(K, 1) + (K < 2 && (P.stats.fireLays = (P.stats.fireLays || 0) + 1) >= 3 ? 1 : 0);
     if (lv > K) g.sys.knowledge?.learn?.('howto_fire_lay', Math.min(lv, 2), 'やって 覚えた');
@@ -510,6 +518,29 @@ export class Interact {
     if (r.extra.squeezed) g.bus.emit('toast', { text: mild ? '中身を つぶして しまい、取れた 物が 減った' : 'にがい 袋を つぶして しまった', kind: 'warn' });
     if (!r.skipped) g.bus.emit('toast', { text: `${mild ? '下ごしらえ' : '解体'}：${r.feel?.label || ''}（肉 ${Math.max(1, meat)}）${lv > K0 ? `・図鑑「${mild ? '下ごしらえ' : '解体'}の 手順」が K${lv} に` : ''}`, kind: 'good' });
     if (ageMin > 60 && !node.data.gutted) g.bus.emit('toast', { text: mild ? '中身を 出すのが 遅れた。肉の 傷みが 早い' : '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
+  }
+
+  /** §26.3 足跡・ふんを 読む: who left it, and (K2+) how old it is */
+  async readSign(sign) {
+    const g = this.game, P = g.sys.player, K = g.sys.knowledge?.level?.('howto_read_tracks') ?? 0;
+    const FF = await import('./fieldflows.js');
+    const all = ['goat', 'boar', 'junglefowl', 'seabird', 'rat', 'monitor', 'coconut_crab'].filter((x) => x !== sign.species);
+    const others = all.sort(() => Math.random() - 0.5).slice(0, 2);
+    const ageH = ((g.clock.total / 60) + sign.x * 7 + sign.z * 3) % 30;
+    const age = ageH < 6 ? 'fresh' : ageH < 18 ? 'half' : 'old';
+    const r = await g.handwork.run(FF.tracksFlow({ K, species: sign.species, kind: sign.kind, age, others }), { title: `${sign.kind === 'scat' ? 'ふん' : '足跡'}を 読む`, key: 'tracks', scene: { track: { species: sign.species, kind: sign.kind, age, K } } });
+    if (r.cancelled) return;
+    g.passTime(3);
+    const who = r.steps.find((x) => x.hid === 'who'), when = r.steps.find((x) => x.hid === 'when');
+    const right = (r.extra.wrongChoices || 0) === 0 || (who?.p ?? 0) >= 0.7;
+    const st = (P.stats.tracks = P.stats.tracks || { right: 0, ages: 0 });
+    if (right) { st.right++; sign.trail.known = true; }
+    if (when && when.p >= 0.7) st.ages++;
+    const lv = Math.max(K, 1, st.right >= 5 ? 2 : 0, K >= 2 && st.ages >= 5 ? 3 : 0);
+    if (lv > K) g.sys.knowledge?.learn?.('howto_read_tracks', lv, '読んで 覚えた');
+    const { TRACKS, TRACK_AGE } = await import('../data/fieldcraft.js');
+    g.bus.emit('toast', { text: right ? `${TRACKS[sign.species]?.name || sign.species}の ${sign.kind === 'scat' ? 'ふん' : '足跡'}${K >= 2 ? `（${TRACK_AGE[age]?.name}）` : ''}。この 道を 通って いる` : '…ちがうかも（だれの 跡か 分からなかった）', kind: right ? 'good' : 'info' });
+    g.sys.traps?.updateTrailVisibility?.();
   }
 
   /** §26 traps: delegate to player/trapwork.js */
@@ -718,7 +749,8 @@ export class Interact {
     const spec = { kind: 'rod', title: '釣り', params: { biteMin: Math.max(2, wait * 0.85), biteMax: Math.max(3, wait * 1.15), window, fish: { pull: F.power / 60, stamina: F.stamina / 50 }, lineStrength: lineStrength * tensionCap(sp, lineStrength) } };
     this.fishing = { spot, sp, bait };
     this.startActivity(spec, (r) => {
-      const ho = hookOutcome(sp, hook);
+      const ho = { ...hookOutcome(sp, hook) };
+      if (h.s?.knotP != null || h.id === 'rod') ho.escape *= 1.33 - 0.6 * (h.s?.knotP ?? 0.8); // §26.9 the knot you tied (a new rod's knot ≈ 0.8)
       P.body.s.stamina = Math.max(0, P.body.s.stamina - 3);
       if (r.ok && g.rng.next() < ho.escape) r = { ok: false, why: 'escaped' };
       if (bait && (r.ok || r.why === 'missed' || g.rng.next() < ho.nibbleOnly)) P.inv.take(bait.uid, 1);

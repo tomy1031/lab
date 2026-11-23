@@ -8,6 +8,9 @@
 //   r = { ok, p, feel: { bonus, label, timeMul, good, fail }, steps: [{ kind, p }], mode, quick, cancelled, failures: [], extra }
 import { drawProp, drawHand, drawSpark } from '../ui/handwork-art.js';
 import { drawCarcass } from '../ui/butcher-art.js';
+// the trap / fieldcraft diagrams load lazily (a missing file must not take the whole work table down)
+let TA = {};
+import('../ui/trap-art.js').then((m) => { TA = m; }).catch(() => {});
 import { HINTS, CONTROLS, KIND_NAMES, feelOf } from '../data/handwork.js';
 
 const W = 800, H = 500;
@@ -308,6 +311,20 @@ class Trace extends Kind {
   }
   updateLine(dt, I) {
     const pts = this.line.pts, N = pts.length - 1;
+    if (this.step.depthStop && this.tracing && !I.down && this.prog > N * 0.12) {
+      // let go where it should catch: d 0.35–0.65 is just right (§26.5 引き金)
+      const d = this.prog / N, [b0, b1] = this.step.band || [0.35, 0.65];
+      const md = this.devN ? this.devSum / this.devN : 20;
+      let s = clamp01(1 - Math.max(0, Math.abs(d - (b0 + b1) / 2) - (b1 - b0) / 2) / (0.25 * this.tol)) * clamp01(1.15 - md / (40 * this.tol));
+      if (this.speedMax > 1100) { this.hw.extra.snapped = true; s = Math.min(s, 0.1); }
+      if (d < b0) this.hw.extra.triggerShallow = true;
+      if (d > b1) this.hw.extra.triggerDeep = true;
+      this.hw.extra.triggerD = d;
+      this.tracing = false; this.prog = N; this.markTraced();
+      const c = this.hw.sc.trap; if (c) { c.trigger = d; c.set = true; }
+      this.record(s); this.hw.sfx('pick');
+      return;
+    }
     const kbd = I.hit.has('Space');
     if (kbd) { this.devSum += 10; this.devN++; this.prog = N; }
     if (!this.tracing && I.down) {
@@ -550,13 +567,21 @@ class Place extends Kind {
     super(step, hw);
     const kinds = (step.tokens || ['stone']).slice(0, this.n);
     while (kinds.length < this.n) kinds.push(kinds[kinds.length - 1] || 'stone');
-    this.order = kinds;
-    const shuffled = step.ordered ? kinds.slice().sort(() => Math.random() - 0.5) : kinds.slice();
-    this.tokens = shuffled.map((k, i) => ({ kind: k, x: 140, y: 150 + i * 78, hx: 140, hy: 150 + i * 78, placed: false }));
+    // tokens can carry ids (the order is checked on ids: the three sticks of a figure-4 look alike) and labels
+    const ids = step.tokenIds || kinds;
+    this.order = ids.slice(0, this.n);
+    const list = kinds.map((k, i) => ({ kind: k, id: ids[i] ?? k, label: step.tokenLabels?.[i] || null }));
+    const shuffled = step.ordered ? list.slice().sort(() => Math.random() - 0.5) : list;
+    const gap = Math.min(78, 360 / Math.max(1, shuffled.length));
+    this.tokens = shuffled.map((k, i) => ({ ...k, x: 110, y: 120 + i * gap, hx: 110, hy: 120 + i * gap, placed: false }));
     const sc = step.scene;
     if (sc === 'drill') { this.tokens.forEach((t) => { t.x = t.hx = 400; t.y = t.hy = 345; }); }
     if (step.tokenAt) this.tokens.forEach((t, i) => { const p = step.tokenAt[Math.min(i, step.tokenAt.length - 1)]; t.x = t.hx = p[0]; t.y = t.hy = p[1]; });
-    if (sc === 'firelay') this.slots = kinds.map((k, i) => ({ x: 470, y: 360 - i * 62, w: 170 - i * 20, h: 52 }));
+    const fromList = step.slotListFrom ? step.slotListFrom(hw.extra) : step.slotList;
+    const one = step.slotFrom ? step.slotFrom(hw.extra) : null;
+    if (fromList) this.slots = kinds.map((k, i) => { const q = fromList[Math.min(i, fromList.length - 1)]; return { x: q[0], y: q[1], w: q[2], h: q[3] }; });
+    else if (one) this.slots = kinds.map(() => ({ x: one[0], y: one[1], w: one[2], h: one[3] }));
+    else if (sc === 'firelay') this.slots = kinds.map((k, i) => ({ x: 470, y: 360 - i * 62, w: 170 - i * 20, h: 52 }));
     else this.slots = kinds.map((k, i) => (step.slotAt ? { x: step.slotAt[0], y: step.slotAt[1] - i * 8, w: step.slotAt[2] || 120, h: step.slotAt[3] || 70 } : sc === 'drill' ? { x: 560, y: 350, w: 110, h: 70 } : sc === 'filter' ? { x: 520, y: 260 + (74 - 44 * i) * 1.2, w: 122, h: 48 } : sc === 'weave' ? { x: 400, y: 330 - i * 50, w: 240, h: 44 } : { x: 400 + (i - (kinds.length - 1) / 2) * 90, y: 262, w: 80, h: 80 }));
     this.held = null; this.drops = 0;
     if (sc === 'filter') hw.sc.layers = [];
@@ -571,10 +596,11 @@ class Place extends Kind {
   }
   update(dt, I) {
     this.t += dt;
+    if (this.rotating) return this.updateRotate(dt, I);
     const slot = this.slots[this.count];
     if (!slot) return;
     if (I.hit.has('Space')) { // keyboard: place the right piece
-      const tk = this.tokens.find((t) => !t.placed && t.kind === this.order[this.count]) || this.tokens.find((t) => !t.placed);
+      const tk = this.tokens.find((t) => !t.placed && t.id === this.order[this.count]) || this.tokens.find((t) => !t.placed);
       if (tk) this.drop(tk, slot.x, slot.y, 0.6);
       return;
     }
@@ -592,9 +618,10 @@ class Place extends Kind {
   drop(tk, x, y, mul) {
     const slot = this.slots[this.count];
     const center = 1 - Math.min(1, dist(x, y, slot.x, slot.y) / (60 * this.tol)) * 0.5;
-    const right = !this.step.ordered || tk.kind === this.order[this.count];
+    const right = !this.step.ordered || tk.id === this.order[this.count];
     if (!right) this.hw.failures.add('order');
     tk.placed = true; tk.x = slot.x; tk.y = slot.y;
+    if (this.step.rotate) { this.rotating = { tk, base: center * mul, angle: this.step.rotate.start ?? 0, t: 0 }; const c = this.hw.sc.trap; if (c) c.mouthAngle = this.rotating.angle; this.hw.sfx('drop'); return; }
     if (this.step.scene === 'filter') this.hw.sc.layers = (this.hw.sc.layers || []).concat([tk.kind]);
     const c = this.hw.sc.carcass;
     if (c && this.step.bstep === 'gut') c.removed = true;
@@ -604,9 +631,39 @@ class Place extends Kind {
     this.record(center * (right ? 1 : 0.5) * mul);
     this.hw.sfx('drop');
   }
+  /** turn the placed piece (wheel / Q E / drag left-right / turn the wrist), then confirm (click / Enter / pinch) */
+  updateRotate(dt, I) {
+    const R = this.rotating, c = this.hw.sc.trap;
+    R.t += dt;
+    if (I.wheel) R.angle += Math.sign(I.wheel) * 0.12;
+    if (I.keys.has('KeyQ')) R.angle -= dt * 1.6;
+    if (I.keys.has('KeyE')) R.angle += dt * 1.6;
+    if (I.down && R.dragX != null) R.angle += (I.x - R.dragX) * 0.012;
+    R.dragX = I.down ? I.x : null;
+    for (const e of I.gest) if (e.type === 'reel') R.angle += (e.dir === 'ccw' ? -1 : 1) * 0.4;
+    if (c) c.mouthAngle = R.angle;
+    const confirm = (R.t > 0.4 && (I.hit.has('Enter') || I.hit.has('Space') || (I.released && Math.abs(I.dragY) < 8 && R.moved))) || R.t > 12;
+    if (I.down) R.moved = true;
+    if (!confirm) return;
+    const want = this.step.rotate.target ?? 0;
+    const err = Math.abs(Math.atan2(Math.sin(R.angle - want), Math.cos(R.angle - want))) * 180 / Math.PI;
+    const dirMul = err >= 90 ? 0.3 : 1 - 0.25 * Math.floor(err / 45);
+    this.hw.extra.mouthErr = err; this.hw.extra.mouthMul = dirMul;
+    this.rotating = null;
+    this.record(R.base * clamp01(1 - err / 120));
+    this.hw.sfx('pick');
+  }
   draw(ctx) {
-    this.slots.forEach((s, i) => { if (i >= this.count || this.step.scene !== 'filter') if (i >= this.count) drawProp(ctx, 'slot', { x: s.x, y: s.y, w: s.w, h: s.h, active: i === this.count }); });
-    for (const tk of this.tokens) if (!tk.placed || this.step.scene !== 'filter') drawProp(ctx, 'token', { x: tk.x, y: tk.y, kind: tk.kind, held: tk === this.held });
+    if (this.rotating) {
+      ctx.save(); ctx.font = '700 17px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#e8743b'; ctx.textAlign = 'center';
+      ctx.fillText('向きを 合わせて 決定（ホイール・Q E・左右ドラッグ → クリック／Enter）', 400, 470); ctx.restore();
+    }
+    this.slots.forEach((s, i) => { if (i >= this.count && !this.step.hideSlot) drawProp(ctx, 'slot', { x: s.x, y: s.y, w: s.w, h: s.h, active: i === this.count }); });
+    for (const tk of this.tokens) {
+      if (tk.placed && this.step.scene === 'filter') continue;
+      drawProp(ctx, 'token', { x: tk.x, y: tk.y, kind: tk.kind, held: tk === this.held });
+      if (tk.label) { ctx.save(); ctx.font = '700 13px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#2a2923'; ctx.textAlign = 'center'; ctx.fillText(tk.label, tk.x, tk.y + 46); ctx.restore(); }
+    }
     if (this.step.labels && this.hw.sc.showOrder) {
       ctx.save(); ctx.font = '600 13px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#1f7f86'; ctx.textAlign = 'left';
       this.slots.forEach((s, i) => { if (i >= this.count) ctx.fillText(this.step.labels[i], s.x + s.w / 2 + 8, s.y + 5); });
@@ -620,33 +677,116 @@ class Place extends Kind {
   hand(I) { return this.held ? { x: I.x + 18, y: I.y + 54, pose: 'pinch' } : { x: I.active ? I.x + 18 : 330, y: (I.active ? I.y + 54 : 430), pose: 'open' }; }
 }
 
+// hold (§26.2): keep the force needle inside a narrowing band — bend a sapling, prop a rock, lower it gently
+class Hold extends Kind {
+  constructor(step, hw) {
+    super(step, hw);
+    this.dur = Math.max(2, step.n || 4); this.band = step.band || [0.45, 0.75]; this.narrow = step.narrow ?? 0.5;
+    this.f = 0.2; this.fill = 0; this.inT = 0; this.allT = 0; this.outT = 0; this.slips = 0; this.started = false;
+    this.pushAt = 0.8 + Math.random() * (this.dur - 1.2); this.pushed = false; this.kick = 0; this.bonus = 0; this.dropped = false;
+  }
+  get count() { return this.done ? this.n : 0; }
+  set count(v) { /* derived */ }
+  get progress() { return clamp01(this.fill / this.dur); }
+  get p() { return this.forcedP ?? clamp01((this.allT ? this.inT / this.allT : 0) - 0.15 * this.slips + this.bonus); }
+  autoFinish(score) { this.forcedP = score; this.fill = this.dur; this.done = true; this.hw.sc.bend = 1; this.hw.sc.rockLift = this.step.release === 'gentle' ? 0.2 : 1; }
+  bandNow() {
+    const c = (this.band[0] + this.band[1]) / 2, w0 = (this.band[1] - this.band[0]) * this.tol;
+    const w = w0 * (1 - (1 - this.narrow) * clamp01(this.allT / this.dur));
+    return [c - w / 2, c + w / 2, c, w];
+  }
+  update(dt, I) {
+    this.t += dt;
+    const holding = I.down || I.keys.has('KeyW') || I.keys.has('KeyS') || (I.hand && I.gest.every((e) => e.type !== 'release') && I.handGrab);
+    if (!this.started) { if (holding) this.started = true; else return; }
+    // the force: pointer height while pressed (top = strong), W / S, or the closed hand's height
+    if (I.down) this.f = clamp01(1 - (I.y - 70) / 360);
+    if (I.keys.has('KeyW')) this.f = clamp01(this.f + dt * 0.7);
+    if (I.keys.has('KeyS')) this.f = clamp01(this.f - dt * 0.7);
+    if (I.hand && I.handGrab && !I.down) this.f = clamp01(1 - I.hand.y);
+    const [lo, hi, c, w] = this.bandNow();
+    if (!this.pushed && this.allT > this.pushAt) { this.pushed = true; this.kick = w * 0.5 * (Math.random() < 0.5 ? -1 : 1); this.hw.sfx('drop'); }
+    this.kick *= Math.exp(-dt * 2.2);
+    this.needle = clamp01(this.f + Math.sin((this.t * Math.PI * 2) / 1.2) * w * 0.2 + this.kick);
+    const released = I.released || (!I.down && !I.keys.has('KeyW') && !I.keys.has('KeyS') && !(I.hand && I.handGrab));
+    if (released && this.fill < this.dur) {
+      // let go too early: the sapling springs / the rock drops (§26.6)
+      this.dropped = true; this.hw.extra.dropped = this.step.hid || this.step.bstep || true; this.forcedP = 0.1; this.done = true; this.hw.flash(0); this.hw.sfx('stone_hit');
+      return;
+    }
+    this.allT += dt;
+    const inBand = this.needle >= lo && this.needle <= hi;
+    if (inBand) { this.inT += dt; this.fill += dt; this.outT = 0; }
+    else { this.outT += dt; if (this.outT >= 0.5) { this.slips++; this.outT = -1e9; this.fill = Math.max(0, this.fill - this.dur * 0.3); this.hw.flash(0.2); } }
+    if (!inBand && this.outT < 0) this.outT = this.outT; else if (inBand) this.outT = 0;
+    const sc = this.hw.sc;
+    sc.bend = clamp01(this.f); sc.rockLift = clamp01(this.f);
+    if (this.fill >= this.dur) {
+      if (this.step.release === 'gentle') {
+        this.waitRelease = true;
+        if (released || I.released) { if (Math.abs(this.needle - c) <= w * 0.25) this.bonus = 0.1; sc.rockLift = 0.2; this.done = true; this.hw.sfx('pick'); }
+      } else this.done = true;
+    }
+    if (this.allT > this.dur * 3 && !this.done) { this.done = true; }
+  }
+  draw(ctx) {
+    const [lo, hi] = this.bandNow();
+    const gx = 712, gy = 70, gh = 360, gw = 26;
+    const Y = (v) => gy + (1 - v) * gh;
+    ctx.save();
+    ctx.fillStyle = 'rgba(42,41,35,.08)'; ctx.fillRect(gx, gy, gw, gh);
+    ctx.fillStyle = 'rgba(74,154,82,.5)'; ctx.fillRect(gx, Y(hi), gw, Y(lo) - Y(hi));
+    ctx.strokeStyle = '#2a2923'; ctx.lineWidth = 2; ctx.strokeRect(gx, gy, gw, gh);
+    if (this.started) { ctx.fillStyle = '#e8743b'; ctx.fillRect(gx - 8, Y(this.needle ?? this.f) - 3, gw + 16, 6); }
+    // "かかり" fill on top
+    ctx.fillStyle = 'rgba(31,127,134,.15)'; ctx.fillRect(gx - 6, gy - 30, gw + 12, 12);
+    ctx.fillStyle = '#1f7f86'; ctx.fillRect(gx - 6, gy - 30, (gw + 12) * this.progress, 12);
+    ctx.font = '700 15px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#5d5849'; ctx.textAlign = 'center';
+    ctx.fillText('力', gx + gw / 2, gy + gh + 22);
+    if (!this.started) { ctx.fillStyle = '#e8743b'; ctx.fillText('押して 持ち上げ、帯の 中で 保つ', 400, 96); }
+    else if (this.waitRelease) { ctx.fillStyle = '#1f7f86'; ctx.fillText('そっと はなす', 400, 96); }
+    ctx.restore();
+  }
+  hand(I) { return { x: 560, y: 200 + (1 - (this.f || 0)) * 160, pose: 'grip', rot: -0.2 }; }
+}
+
 // choose: K0 butchering — which comes next? (a wrong pick costs time, not quality: §25.4)
 class Choose extends Kind {
   constructor(step, hw) { super(step, hw); this.opts = step.options || []; this.msg = ''; this.msgT = 0; }
-  boxes() { return this.opts.map((o, i) => ({ ...o, x: 180 + i * 220, y: 440, w: 200, h: 46 })); }
+  // options as buttons along the bottom, or as spots on the picture (step.spots: [[x, y, r]] — e.g. the soft eye of a coconut)
+  boxes() { return this.opts.map((o, i) => (o.spot ? { ...o, x: o.spot[0], y: o.spot[1], w: (o.spot[2] || 26) * 2, h: (o.spot[2] || 26) * 2, round: true } : { ...o, x: (W - this.opts.length * 220) / 2 + 110 + i * 220, y: 440, w: 200, h: 46 })); }
   update(dt, I) {
     this.t += dt; this.msgT -= dt;
     let pick = -1;
-    if (I.pressed) this.boxes().forEach((b, i) => { if (Math.abs(I.x - b.x) < b.w / 2 && Math.abs(I.y - b.y) < b.h / 2) pick = i; });
-    ['Digit1', 'Digit2', 'Digit3'].forEach((k, i) => { if (I.hit.has(k)) pick = i; });
-    if (pick < 0) return;
-    if (this.opts[pick]?.ok) { this.record(1); this.hw.sfx('pick'); }
-    else { this.msg = '…ちがう 気が する'; this.msgT = 1.6; this.hw.extra.wrongChoices = (this.hw.extra.wrongChoices || 0) + 1; this.hw.sfx('drop'); }
+    if (I.pressed) this.boxes().forEach((b, i) => { if (b.round ? Math.hypot(I.x - b.x, I.y - b.y) < b.w / 2 * this.tol : Math.abs(I.x - b.x) < b.w / 2 && Math.abs(I.y - b.y) < b.h / 2) pick = i; });
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4'].forEach((k, i) => { if (I.hit.has(k)) pick = i; });
+    if (pick < 0 || !this.opts[pick]) return;
+    const o = this.opts[pick];
+    if (this.step.pick) { this.hw.extra[this.step.pick] = o.value ?? o.label; this.record(1); this.hw.sfx('pick'); return; } // a free choice (aim, lay type…)
+    if (o.ok) { this.record(this.wrong ? Math.max(0.4, 1 - 0.3 * this.wrong) : 1); this.hw.sfx('pick'); }
+    else { this.wrong = (this.wrong || 0) + 1; this.msg = this.step.wrongMsg || '…ちがう 気が する'; this.msgT = 1.6; this.hw.extra.wrongChoices = (this.hw.extra.wrongChoices || 0) + 1; this.hw.sfx('drop'); if (o.spot) this.hw.burst(o.spot[0], o.spot[1], 'dust', 3); }
   }
   autoFinish(s) { super.autoFinish(s); }
   draw(ctx) {
     ctx.save(); ctx.font = '700 17px "Zen Maru Gothic", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (const [i, b] of this.boxes().entries()) {
-      ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = '#2a2923'; ctx.lineWidth = 2.5;
+      if (b.round) { // a spot on the picture
+        ctx.strokeStyle = this.step.showAnswer && b.ok ? '#1f7f86' : '#e8743b'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]);
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.w / 2 + Math.sin(this.t * 4 + i) * 2, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#2a2923'; ctx.fillText(String(i + 1), b.x + b.w / 2 + 10, b.y - b.h / 2);
+        continue;
+      }
+      ctx.fillStyle = this.step.showAnswer && b.ok ? '#d3ecee' : '#fffaf0'; ctx.strokeStyle = '#2a2923'; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.roundRect?.(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 12); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#2a2923'; ctx.fillText(`${i + 1}. ${b.label}`, b.x, b.y);
     }
+    if (this.step.question) { ctx.font = '800 20px "Zen Maru Gothic", sans-serif'; ctx.fillStyle = '#2a2923'; ctx.fillText(this.step.question, 400, 400); }
     if (this.msgT > 0) { ctx.fillStyle = '#bf5424'; ctx.fillText(this.msg, 400, 60); }
     ctx.restore();
   }
 }
 
-const KINDS = { strike: Strike, rub: Rub, twist: Twist, trace: Trace, weave: Weave, stir: Stir, tend: Tend, place: Place, choose: Choose };
+const KINDS = { strike: Strike, rub: Rub, twist: Twist, trace: Trace, weave: Weave, stir: Stir, tend: Tend, place: Place, choose: Choose, hold: Hold };
 
 // ------------------------------------------------------------------ the runner + overlay
 export class Handwork {
@@ -684,6 +824,14 @@ export class Handwork {
     let mode = opts.mode || this.mode();
     let flow = (flowIn || []).map((s) => ({ ...s }));
     let quick = false;
+    // §26.10: at most 4 full hands-on tasks per game hour — after that "the same rhythm" (the last p of this task)
+    const now = this.game.clock?.total ?? 0;
+    this.recent = (this.recent || []).filter((t) => now - t < 60);
+    this.lastP = this.lastP || {};
+    if (mode === 'manual' && !opts.careful && this.recent.length >= 4) {
+      mode = 'auto'; opts = { ...opts, autoP: this.lastP[opts.key] ?? 0.55, sameRhythm: true };
+      this.game.bus?.emit('toast', { text: '同じ 調子で 続けた（手で やる 作業は 1 時間に 4 つまで）', kind: 'info' });
+    }
     if (mode !== 'auto' && opts.key && this.isMastered(opts.key) && !opts.careful && flow.length) {
       const last = flow[flow.length - 1];
       flow = [{ ...last, n: Math.min(2, last.n || 1) }];
@@ -693,6 +841,7 @@ export class Handwork {
     this.sc = { material: 'chert', chips: 0, depth: 0, wraps: 0, progress: 0, rows: 0, total: 12, mix: 0, shine: 0, taper: 0, notch: 0, straight: 0.4, layers: [], doneness: 0, bubbles: 0, steam: 0, coils: 0, smooth: 0, ...(opts.scene || {}) };
     this.tol = this.tolerance({ ...opts, mode });
     const res = await new Promise((resolve) => this.open(flow, { ...opts, mode, quick }, resolve));
+    if (!res.cancelled && mode === 'manual' && !quick) { this.recent.push(now); if (opts.key) this.lastP[opts.key] = res.p; }
     if (!res.cancelled && opts.key && mode === 'manual' && !quick) {
       const m = this.mastery[opts.key] || (this.mastery[opts.key] = { good: 0, sum: 0 });
       if (res.p >= 0.7) { m.good++; m.sum += res.p; if (m.good === 3) this.game.bus?.emit('toast', { text: `「${opts.title || opts.key}」は もう 手慣れた（次から ひと手で 仕上がる）`, kind: 'good' }); }
@@ -720,7 +869,7 @@ export class Handwork {
     cv.width = W * dpr; cv.height = H * dpr;
     const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const st = {
-      flow, opts, idx: 0, kind: null, results: [], root, cv, ctx, done: false, cancelled: false, last: performance.now(), autoT: 0, finishing: false, flashT: 0, flashS: 0, msgT: 0,
+      flow, opts, idx: 0, kind: null, results: [], root, cv, ctx, done: false, cancelled: false, last: performance.now(), autoT: 0, finishing: false, finishP: opts.autoP, flashT: 0, flashS: 0, msgT: 0,
       I: { x: 400, y: 260, down: false, pressed: false, released: false, wheel: 0, keys: new Set(), hit: new Set(), gest: [], hand: null, active: false, speed: 0, dragY: 0, sx: 0, sy: 0 },
     };
     this.active = st;
@@ -769,7 +918,7 @@ export class Handwork {
 
   nextStep() {
     const st = this.active;
-    if (st.kind) st.results.push({ kind: st.kind.step.kind, p: st.kind.p, n: st.kind.step.weight ?? st.kind.n, bstep: st.kind.step.bstep });
+    if (st.kind) st.results.push({ kind: st.kind.step.kind, p: st.kind.p, n: st.kind.step.weight ?? st.kind.n, bstep: st.kind.step.bstep, hid: st.kind.step.hid });
     // a gate can stop the flow after a step (e.g. the friction gave no ember → no blowing)
     if (st.kind && st.opts.gate && st.idx < st.flow.length && st.opts.gate(st.idx - 1, st.results) === false) { this.extra.stopped = true; return this.finish(); }
     if (st.idx >= st.flow.length) return this.finish();
@@ -794,7 +943,7 @@ export class Handwork {
     const how = this.game.hands?.ready ? ctl.gesture : this.game.setup?.control === 'touch' ? ctl.touch : ctl.mouse;
     st.root.querySelector('.hw-step').textContent = `${st.idx} / ${st.flow.length}　${step.label || KIND_NAMES[step.kind] || ''}`;
     st.root.querySelector('.hw-hint').textContent = step.hint ? `${step.hint}　（${how || ''}）` : hintsOn && seen < 3 ? `${(HINTS[step.kind] || [''])[0]}　（${how || ''}）` : hintsOn ? `（${how || ''}）` : '';
-    st.root.querySelector('.hw-badge').textContent = st.opts.quick ? '手慣れた：ひと手で 仕上げ' : st.opts.mode === 'assist' ? '半自動' : st.opts.mode === 'auto' ? 'おまかせ' : '';
+    st.root.querySelector('.hw-badge').textContent = st.opts.quick ? '手慣れた：ひと手で 仕上げ' : st.opts.sameRhythm ? '同じ 調子で 続ける' : st.opts.mode === 'assist' ? '半自動' : st.opts.mode === 'auto' ? 'おまかせ' : '';
     this.seen[step.kind] = seen + 1;
   }
 
@@ -812,6 +961,8 @@ export class Handwork {
       if (h) {
         const hx = h.x * W, hy = h.y * H, pinch = !!h.pinch;
         I.hand = { x: hx, y: hy, pinch };
+        I.handGrab = h.pose === 'fist' || h.pose === 'grab' || (I.handGrab && !I.gest.some((e) => e.type === 'release'));
+        if (I.gest.some((e) => e.type === 'grab')) I.handGrab = true;
         if (performance.now() - (I.lastMouse || 0) > 1500) { // the mouse / finger wins while it is being used
           if (pinch && !I.down) { I.pressed = true; I.sx = hx; I.sy = hy; I.dragY = 0; }
           if (!pinch && I.down) { I.released = true; I.dragY = hy - I.sy; }
@@ -921,6 +1072,12 @@ export class Handwork {
       case 'firelay': // the stone ring; the lay goes in bottom-up (tinder, kindling teepee, fuel)
         drawProp(ctx, 'fire', { x: 470, y: 380, scale: 1.1, t, power: 0 });
         break;
+      case 'trap': // §26: trap / fieldcraft diagrams
+        if (sc.trap) TA.drawTrapScene?.(ctx, sc.trap.id || sc.trap.type, { ...sc.trap, K: sc.trap.K, drift: t, bend: sc.bend ?? sc.trap.bend, rockLift: sc.rockLift ?? sc.trap.rockLift }, sc.trap.view || 'mild', { x: 40, y: 30, w: 720, h: 450 });
+        break;
+      case 'track':
+        if (sc.track) TA.drawTrackCard?.(ctx, sc.track.species, sc.track.kind, sc.track.age, { x: 220, y: 60, w: 360, h: 300 }, { K: sc.track.K });
+        break;
       case 'carcass': // §25: the paper diagram (normal / mild), never 3D gore
         if (sc.carcass) drawCarcass(ctx, sc.carcass.species, sc.carcass.view, sc.carcass, { x: 40, y: 30, w: 720, h: 450 });
         break;
@@ -979,7 +1136,7 @@ export class Handwork {
     st.done = true;
     const tot = st.results.reduce((a, r) => a + r.n, 0) || 1;
     let p = st.results.reduce((a, r) => a + r.p * r.n, 0) / tot;
-    if (st.opts.mode === 'auto') p = 0.55;
+    if (st.opts.mode === 'auto') p = st.opts.autoP ?? 0.55;
     p = clamp01(p);
     const feel = feelOf(p);
     // §24.5 failure per action kind when p < 0.25 (manual only)
@@ -992,7 +1149,7 @@ export class Handwork {
       if (kinds.has('tend')) this.failures.add('burnt');
     }
     // show the result for a moment
-    const r = { ok: true, p, feel, steps: st.results.map((x) => ({ kind: x.kind, p: x.p, bstep: x.bstep })), mode: st.opts.mode, quick: !!st.opts.quick, cancelled: false, failures: [...this.failures], extra: { ...this.extra } };
+    const r = { ok: true, p, feel, steps: st.results.map((x) => ({ kind: x.kind, p: x.p, bstep: x.bstep, hid: x.hid })), mode: st.opts.mode, quick: !!st.opts.quick, sameRhythm: !!st.opts.sameRhythm, cancelled: false, failures: [...this.failures], extra: { ...this.extra } };
     st.root.querySelector('.hw-hint').textContent = `${feel.label}（手仕事 ${feel.bonus >= 0 ? '＋' : '−'}${Math.abs(feel.bonus)}）`;
     st.root.classList.add('hw-done');
     if (this.sc.carcass) { for (const s2 of st.flow) if (s2.bstep) this.sc.carcass.done[s2.bstep] = true; this.sc.carcass.step = null; }

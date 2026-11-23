@@ -115,6 +115,20 @@ export async function installSystems(game, setup) {
   // ---------------- game-level helpers
   game.actions = makeActions(game);
   game.passTime = (minutes, o = {}) => passTime(game, minutes, o);
+  // §15.1 signals for the rescue rolls: finished SOS stones, a lit signal fire / a big fire (and how well they were made, §26.9)
+  game.signalState = () => {
+    const B = game.sys.building, T = game.world.terrain, out = {};
+    const sites = (B?.sites || []).filter((s) => s.stage === 'done');
+    const sos = sites.filter((s) => s.id === 'sos_sign');
+    if (sos.length) { out.sos = Math.min(2, sos.length); out.sosMul = Math.max(...sos.map((s) => (0.85 + 0.27 * (s.handP ?? 0.55)) * (s.colorOk === false ? 0.7 : 1))); }
+    for (const rec of game.sys.fires?.list || []) {
+      const f = rec.fire; if (!f?.lit) continue;
+      const p = f.group.position, zone = T.zoneAt(p.x, p.z), hill = zone === 'hill' || zone === 'rocks' || zone === 'cliff';
+      if (rec.site?.id === 'signal_fire' || f.kind === 'signal_fire') { out.smoke = hill ? 'hill' : zone === 'beach' ? 'beach' : 'other'; out.smokeMul = 0.85 + 0.27 * (rec.site?.handP ?? 0.55); }
+      if (f.fuel > 240) { out.bigFire = true; if (hill) out.bigFireHill = true; }
+    }
+    return out;
+  };
   game.end = (info) => endGame(game, info);
   game.save = () => saveGame(serializeGame(game));
   game.hasSave = () => !!loadGame();
@@ -162,6 +176,19 @@ function buildingAdapter(game) {
       return;
     }
     if (opt.id === 'work') {
+      // §26.9 signals by hand: SOS stones (colour + the first S) / the signal fire (a dry cone, green leaves set aside)
+      if (game.handwork && site.handP == null && (site.id === 'sos_sign' || site.id === 'signal_fire')) {
+        const K = game.sys.knowledge?.level?.('howto_signal') ?? 0;
+        import('../player/fieldflows.js').then((FF) => game.handwork.run(site.id === 'sos_sign' ? FF.sosFlow({ K }) : FF.signalFireFlow({ K }), { title: `${site.def.name}：手で 組む`, key: `signal:${site.id}`, scene: { trap: { id: site.id === 'sos_sign' ? 'sos' : 'signal', K, view: 'mild' } } })).then((r) => {
+          if (!r || r.cancelled) return;
+          site.handP = r.p; site.colorOk = !(r.extra.wrongChoices > 0 && site.id === 'sos_sign' && (r.steps.find((x) => x.hid === 'color')?.p ?? 1) < 1);
+          const lv = Math.max(K, 1) + ((game.sys.player.stats.signals = (game.sys.player.stats.signals || 0) + 1) >= 3 && K < 2 ? 1 : 0);
+          if (lv > K) game.sys.knowledge?.learn?.('howto_signal', Math.min(2, lv), 'やって 覚えた');
+          game.bus.emit('toast', { text: `${site.def.name}：${r.feel.label}（気づかれやすさ ×${(0.85 + 0.27 * r.p).toFixed(2)}${site.colorOk === false ? '・色が 砂に まぎれる' : ''}）`, kind: 'good' });
+          B.act(node, opt, interact);
+        });
+        return;
+      }
       // §24.7: the first stake and the first lashing of a frame are done by hand; the rest "in the same rhythm"
       if (game.handwork && site.handP == null && (site.def.minutes || 0) >= 20 && !/fire|sos|signal|pit|rain_catch/.test(site.id)) {
         import('../data/handwork.js').then(({ WORK_FLOW }) => game.handwork.run([...WORK_FLOW.stake(), ...WORK_FLOW.lash()], { title: `${site.def.name}：杭を 打って しばる`, key: 'build_frame' })).then((r) => {
@@ -366,6 +393,7 @@ function makeActions(game) {
       const p = P(), s = uid ? p.inv.get(uid) : null;
       if (!s) return false;
       const d = itemDef(s.id, s);
+      if ((s.id === 'coconut') && game.handwork && !this.__coconutHand) return this.openCoconut(uid);
       if (s.id === 'coconut' || s.id === 'coconut_open') {
         const st = d.food?.stage?.[s.stage || 'brown'];
         p.body.drink({ name: 'ヤシの 水', water: st?.water ?? 20, W: 0.005, coconut: true }, { day: game.clock.day });
@@ -421,6 +449,45 @@ function makeActions(game) {
       return ok;
     },
     treat(uid) { const s = P().inv.get(uid); const d = s && itemDef(s.id, s); return d?.med ? this.treatWith(d.med, s) : false; },
+    /** §26.9 ヤシの実を 割る・飲む: husk it on a stake (or knock the seams with a stone), open the soft eye, crack the equator */
+    async openCoconut(uid) {
+      const p = P(), s = p.inv.get(uid), d = s && itemDef(s.id, s);
+      if (!s) return false;
+      const FF = await import('../player/fieldflows.js');
+      const K = game.sys.knowledge?.level?.('howto_coconut') ?? 0;
+      const blade = p.inv.stacks.some((x) => (x.stats?.sharp ?? itemDef(x.id)?.tool?.sharp ?? 0) >= 4) || game.world.nodes?.pick ? true : false;
+      const r = await game.handwork.run(FF.coconutFlow({ K, blade }), { title: 'ヤシの実を 割る', key: 'coconut', scene: { trap: { id: 'coconut', K, view: 'mild' } } });
+      if (r.cancelled) return false;
+      const st = d.food?.stage?.[s.stage || 'brown'];
+      const water = Math.round((st?.water ?? 20) * (0.85 + 0.27 * r.p));
+      p.body.drink({ name: 'ヤシの 水', water, W: 0.005, coconut: true }, { day: game.clock.day });
+      p.inv.take(s.uid, 1);
+      const eq = r.steps.find((x) => x.hid === 'equator')?.p ?? r.p;
+      p.inv.add('coconut_shell', eq >= 0.7 ? 2 : 1); p.inv.add('coconut_meat', 1, { fresh: 100 });
+      p.validate(); game.sys.sfx?.play('drink'); p.stats.waterCups++;
+      game.passTime(Math.round(3 * (1.2 - 0.36 * r.p)));
+      const n = (p.stats.coconutsOpened = (p.stats.coconutsOpened || 0) + 1);
+      const lv = Math.max(K, 1, n >= 3 ? 2 : 0, K >= 2 && r.p >= 0.6 && n >= 6 ? 3 : 0);
+      if (lv > K) game.sys.knowledge?.learn?.('howto_coconut', lv, 'やって 覚えた');
+      toast(`ヤシの 水を 飲んだ（${r.feel.label}${r.extra.wrongChoices ? '・固い 目を 打って しまった' : ''}${eq >= 0.7 ? '・きれいに 半分に 割れた（器 2 つ）' : ''}）`, 'good');
+      return true;
+    },
+    /** §26.9 釣りの 結び: tie the hook to the line — a good knot loses fewer fish and hooks */
+    canTieHook(uid) { const s = P().inv.get(uid); return !!(s && /^(rod|rod_made)$/.test(s.id)); },
+    async tieHook(uid) {
+      const s = P().inv.get(uid); if (!s) return false;
+      const FF = await import('../player/fieldflows.js');
+      const K = game.sys.knowledge?.level?.('howto_fish_knot') ?? 0;
+      const r = await game.handwork.run(FF.knotFlow({ K }), { title: '針を 結ぶ', key: 'fish_knot', scene: { trap: { id: 'knot', K, view: 'mild' } } });
+      if (r.cancelled) return false;
+      s.knotP = r.p;
+      game.passTime(3);
+      const n = (P().stats.knots = (P().stats.knots || 0) + 1);
+      const lv = Math.max(K, 1, n >= 3 ? 2 : 0, K >= 2 && r.p >= 0.6 && n >= 6 ? 3 : 0);
+      if (lv > K) game.sys.knowledge?.learn?.('howto_fish_knot', lv, 'やって 覚えた');
+      toast(`針を 結んだ（${r.feel.label}：ばらす 率 ×${(1.33 - 0.6 * r.p).toFixed(2)}）`, 'good');
+      return true;
+    },
     /** §26 罠: set the trap in front of you by hand */
     canSetTrap(uid) { const s = P().inv.get(uid); return !!(s && game.sys.traps && ['snare', 'deadfall', 'fish_trap', 'crab_pot'].includes(s.id)); },
     async setTrap(uid) { const TW = await import('../player/trapwork.js'); game.screens?.hide?.(); return TW.setTrap(game, uid); },

@@ -25,18 +25,27 @@ export const CATCH_ITEMS = {
 };
 export const CATCH_NAMES = { junglefowl: '野鶏', seabird: '海鳥', rat: '大ネズミ', monitor_small: '小さな トカゲ', coconut_crab: 'ヤシガニ', crab: 'カニ', goby: 'ハゼ', eel: 'ウナギ', sardine: '小魚', wrasse: 'ベラ' };
 
-const BAIT_MUL = (stack) => {
-  if (!stack) return 1;
-  const d = itemDef(stack.id);
-  if (!d) return 1;
-  if (/fish|sardine|goby|organ|guts|bait_ball|meat/.test(stack.id) || d.attrs?.scent >= 7) return 1.6;
-  if (d.food) return 1.3;
-  return 1.1;
-};
-/** performance on the work table → catch multiplier (p 0.55 → 1.0) and empty-spring chance */
-export const handsMul = (p) => clamp(0.55 + 0.82 * p, 0.6, 1.35);
-export const emptyChance = (p) => clamp(0.32 - 0.36 * p, 0.02, 0.3);
-export const knowMul = (K) => [0.8, 0.95, 1.05, 1.2][clamp(K | 0, 0, 3)];
+// §26.4 bait: what suits which trap / target — best ×1.3, suits ×1.0, wrong ×0.8, none ×0.5 (required → ×0.1)
+const FISHY = /sardine|goby|wrasse|jack|eel|trevally|seabream|grouper|fish|shellfish|crab|organ_meat/;
+export function baitClass(type, aim, stack) {
+  if (!stack) return 'none';
+  const id = stack.id, d = itemDef(id);
+  if (id === 'bait_ball') return type === 'fish_trap' || type === 'crab_pot' ? 'ball' : 'ok';
+  if (type === 'snare' && aim === 'bird') return id === 'grub' || id === 'berry' || (FISHY.test(id) && stack.forSeabird) ? 'best' : FISHY.test(id) ? 'ok' : d?.food ? 'wrong' : 'wrong';
+  if (type === 'snare') return id === 'coconut_meat' ? 'best' : d?.food && !FISHY.test(id) ? 'ok' : 'wrong';
+  if (type === 'deadfall') return id === 'coconut_meat' ? 'best' : (d?.food && ((stack.fresh ?? 100) < 40 || /meat|organ/.test(id))) || FISHY.test(id) ? 'ok' : d?.food ? 'ok' : 'wrong';
+  if (type === 'fish_trap') return /shellfish|organ_meat/.test(id) || (FISHY.test(id) && (stack.gutted || (stack.fresh ?? 100) < 70)) ? 'best' : FISHY.test(id) ? 'ok' : id === 'seaweed' ? 'weed' : 'wrong';
+  if (type === 'crab_pot') return FISHY.test(id) && (stack.fresh ?? 100) < 60 ? 'best' : FISHY.test(id) || /meat/.test(id) ? 'ok' : 'wrong';
+  return 'ok';
+}
+export const BAIT_MUL = { best: 1.3, ok: 1.0, ball: 1.2, weed: 0.6, wrong: 0.8, none: 0.5 };
+/** §26.6: S (the set) = 0.70 + 0.6 p (0.55 → 1.03), Kc by knowledge, empty springs, breaks */
+export const handsMul = (p) => 0.70 + 0.6 * p;
+export const knowMul = (K) => [0.85, 1.0, 1.1, 1.2][clamp(K | 0, 0, 3)];
+const KE = [1.3, 1.0, 0.8, 0.6];
+export const emptyChance = (p, K = 1) => clamp(0.15 - 0.16 * p, 0.01, 0.15) * KE[clamp(K | 0, 0, 3)];
+export const MAX_TRAPS = 6;
+const BIRDS = new Set(['junglefowl', 'seabird']);
 
 export class Traps {
   constructor(game) {
@@ -74,22 +83,38 @@ export class Traps {
           if (!T.isLand(nx, nz) || T.zoneAt(nx, nz) !== zone) { a += Math.PI * 0.6; continue; }
           x = nx; z = nz; pts.push([x, z]);
         }
-        if (pts.length > 6) this.trails.push({ zone, pts });
+        if (pts.length > 6) {
+          // who uses it (§26.3) and 1–2 narrow points (bush, rocks, a fallen log)
+          const users = zone === 'grass' ? (k === 0 ? ['goat'] : ['junglefowl', 'rat']) : zone === 'jungle' ? (k < 2 ? ['boar'] : ['rat']) : zone === 'palm' ? ['rat', 'coconut_crab'] : ['seabird'];
+          const narrow = [pts[Math.floor(pts.length * (0.3 + rng.next() * 0.2))]];
+          if (rng.next() < 0.5) narrow.push(pts[Math.floor(pts.length * (0.65 + rng.next() * 0.2))]);
+          this.trails.push({ id: this.trails.length, zone, pts, users, narrow });
+        }
       }
     }
     this.buildTrailMarks();
   }
   /** distance to the nearest trail (m) */
-  trailDist(x, z) {
-    let best = Infinity;
+  trailDist(x, z) { return this.nearestTrail(x, z).d; }
+  nearestTrail(x, z) {
+    let best = Infinity, trail = null;
     for (const t of this.trails) for (let i = 1; i < t.pts.length; i++) {
       const [ax, az] = t.pts[i - 1], [bx, bz] = t.pts[i];
       const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1;
       const u = clamp(((x - ax) * dx + (z - az) * dz) / L, 0, 1);
-      best = Math.min(best, Math.hypot(x - (ax + u * dx), z - (az + u * dz)));
+      const d = Math.hypot(x - (ax + u * dx), z - (az + u * dz));
+      if (d < best) { best = d; trail = t; }
     }
-    return best;
+    return { d: best, trail };
   }
+  /** tracks / droppings along the trails, every ~20 m (§26.3) */
+  signs() {
+    if (this._signs) return this._signs;
+    const out = [];
+    for (const t of this.trails) for (let i = 2; i < t.pts.length; i += 6) out.push({ x: t.pts[i][0], z: t.pts[i][1], trail: t, kind: i % 12 === 2 ? 'scat' : 'track', species: t.users[i % t.users.length] });
+    return (this._signs = out);
+  }
+  signAt(pos, r = 1.6) { let best = null, bd = r; for (const s of this.signs()) { const d = Math.hypot(s.x - pos.x, s.z - pos.z); if (d < bd) { bd = d; best = s; } } return best; }
   /** trampled grass along the trails; clearer when you know traps or tracks (K of the snare how-to) */
   buildTrailMarks() {
     const T = this.game.world?.terrain;
@@ -101,11 +126,14 @@ export class Traps {
     const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, n));
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
     let i = 0;
+    this.marks = [];
     for (const t of this.trails) for (let k = 1; k < t.pts.length; k++) for (const f of [0.25, 0.75]) {
       const [ax, az] = t.pts[k - 1], [bx, bz] = t.pts[k];
       const x = ax + (bx - ax) * f, z = az + (bz - az) * f;
       q.setFromAxisAngle(up, -Math.atan2(bz - az, bx - ax) + Math.PI / 2);
-      m.compose(new THREE.Vector3(x, T.heightAt(x, z) + 0.03, z), q, s);
+      const pos = new THREE.Vector3(x, T.heightAt(x, z) + 0.03, z);
+      this.marks.push({ pos, q: q.clone(), trail: t.id });
+      m.compose(pos, q, s);
       mesh.setMatrixAt(i++, m);
     }
     mesh.count = i; mesh.frustumCulled = false;
@@ -113,10 +141,34 @@ export class Traps {
     this.group.add(mesh);
     this.updateTrailVisibility();
   }
-  updateTrailVisibility() {
-    if (!this.trailMesh) return;
-    const K = this.game.sys?.knowledge?.level?.('howto_trap_snare') ?? 0;
-    this.trailMesh.material.opacity = [0.12, 0.25, 0.42, 0.55][clamp(K, 0, 3)];
+  updateTrailVisibility() { this.updateTrailMarks(true); }
+  /** a partner pointed at a trail: show all of it brightly for 20 s (§26.3) */
+  flashTrail(trail) {
+    if (!this.marks) return;
+    this.flash = { id: trail.id, until: performance.now() + 20000 };
+    this.updateTrailMarks(true);
+  }
+  /** §26.3: you see trails within 8 m standing (35 %), 15 m crouching (60 %); reading tracks K2 20 m, K3 30 m; +1 m per hunting Lv; rain ×0.7, dark ×0.4 */
+  updateTrailMarks(force = false) {
+    if (!this.trailMesh || !this.marks) return;
+    const g = this.game, P = g.player?.pos;
+    if (!P) return;
+    const Kr = g.sys?.knowledge?.level?.('howto_read_tracks') ?? 0, Ks = g.sys?.knowledge?.level?.('howto_trap_snare') ?? 0;
+    const crouch = !!g.player?.crouch;
+    let R = Math.max(crouch ? 15 : 8, Kr >= 3 ? 30 : Kr >= 2 ? 20 : 0) + (g.sys?.player?.skills?.hunt ?? 0);
+    if ((g.sys?.weather?.rain ?? 0) > 0.3) R *= 0.7;
+    const h = g.clock?.hour ?? 12;
+    if ((h < 5.5 || h > 19) && !(g.sys?.player?.heldStack?.()?.lit > 0)) R *= 0.4;
+    this.trailMesh.material.opacity = Math.min(0.75, (crouch ? 0.6 : 0.35) + 0.05 * Math.max(Kr, Ks));
+    const m = new THREE.Matrix4(), one = new THREE.Vector3(1, 1, 1), zero = new THREE.Vector3(0, 0, 0);
+    let changed = force;
+    const fl = this.flash && performance.now() < this.flash.until ? this.flash.id : null;
+    if (fl != null) this.trailMesh.material.opacity = 0.8;
+    this.marks.forEach((mk, i) => {
+      const vis = Math.hypot(mk.pos.x - P.x, mk.pos.z - P.z) <= R || (fl != null && mk.trail === fl);
+      if (vis !== mk.vis) { mk.vis = vis; changed = true; m.compose(mk.pos, mk.q, vis ? one : zero); this.trailMesh.setMatrixAt(i, m); }
+    });
+    if (changed) this.trailMesh.instanceMatrix.needsUpdate = true;
   }
 
   // ---------------------------------------------------------------- placing
@@ -129,21 +181,27 @@ export class Traps {
       if (!water.type) return { ok: false, reason: '水の 中（川・池・浅い 磯）に 向かって 置く' };
       if (water.depth > 1.4) return { ok: false, reason: '深すぎる（浅い 所に）' };
       if (this.list.some((t) => Math.hypot(t.x - x, t.z - z) < 2)) return { ok: false, reason: 'すぐ そばに もう 仕掛けて ある' };
+      if (this.list.length >= MAX_TRAPS) return { ok: false, reason: `罠は ${MAX_TRAPS} つまで（見回りが 大変に なる）` };
       return { ok: true, water: water.type, zone: water.type, depth: water.depth, trail: Infinity };
     }
     if (water.type) return { ok: false, reason: '陸の 上に 仕掛ける' };
     const zone = T.zoneAt(x, z);
     if (!def.base[zone]) return { ok: false, reason: 'ここには 獲物が 来ない（草原・密林・ヤシ林・浜で）' };
     if (this.list.some((t) => Math.hypot(t.x - x, t.z - z) < 2)) return { ok: false, reason: 'すぐ そばに もう 仕掛けて ある' };
-    return { ok: true, zone, trail: this.trailDist(x, z) };
+    if (this.list.length >= MAX_TRAPS) return { ok: false, reason: `罠は ${MAX_TRAPS} つまで（見回りが 大変に なる）` };
+    const nt = this.nearestTrail(x, z);
+    const narrow = nt.trail?.narrow?.some((q) => Math.hypot(q[0] - x, q[1] - z) < 2) || false;
+    if (type === 'deadfall' && /beach/.test(zone)) return { ok: true, zone, trail: nt.d, trailRef: nt.trail, narrow, soft: true };
+    return { ok: true, zone, trail: nt.d, trailRef: nt.trail, narrow };
   }
 
   /** set a trap (after the work table): stack = the trap item (taken from the bag by the caller) */
-  add(type, x, z, { stack, p = 0.55, K = 0, bait = null, spot } = {}) {
+  add(type, x, z, { stack, p = 0.55, K = 0, bait = null, spot, aim = null, marks = {}, scent = 1 } = {}) {
     const g = this.game;
     spot = spot || this.spotFor(type, x, z);
     const t = {
-      uid: this.nextUid++, type, x, z, zone: spot.zone, water: spot.water || null, onTrail: spot.trail < 2.5,
+      uid: this.nextUid++, type, x, z, zone: spot.zone, water: spot.water || null, onTrail: spot.trail < 1.2, trailId: spot.trailRef?.id ?? null,
+      trailUsers: spot.trailRef?.users || [], narrow: !!spot.narrow, soft: !!spot.soft, aim, marks, scent,
       q: stack?.q ?? 50, item: stack ? { ...stack } : { id: type, n: 1, q: 50 }, p, K, bait: bait ? { ...bait } : null,
       setAt: g.clock.total, lastRoll: g.clock.total, state: 'set', catch: null, caughtAt: null, dur: stack?.dur ?? 10,
     };
@@ -164,11 +222,12 @@ export class Traps {
   }
   expire(t, now) {
     const g = this.game;
-    if (t.state === 'caught' && now - t.caughtAt > 12 * 60 && !t.lost) {
-      t.lost = true;
-      const r = g.rng.next();
-      if (r < 0.3) { t.state = 'sprung'; t.catch = null; t.note = 'escaped'; }
-      else if (r < 0.6) { t.state = 'sprung'; t.catch = null; t.note = 'eaten'; }
+    // §26.8 the 12-hour rule, repeated every 12 h (a shallow stake lets more escape)
+    while (t.state === 'caught' && now - t.caughtAt >= 12 * 60 * ((t.lostRolls || 0) + 1)) {
+      t.lostRolls = (t.lostRolls || 0) + 1;
+      const r = g.rng.next(), esc = 0.3 + (t.marks?.stakeShallow ? 0.15 : 0);
+      if (r < esc) { t.state = 'sprung'; t.catch = null; t.note = 'escaped'; }
+      else if (r < esc + 0.3) { t.state = 'sprung'; t.catch = null; t.note = 'eaten'; }
       this.refresh(t);
     }
   }
@@ -176,15 +235,32 @@ export class Traps {
     const g = this.game, now = at;
     {
       t.lastRoll = now;
-      const def = TRAP_TYPES[t.type];
-      const scent = now - t.setAt < 6 * 60 + 1 ? 0.6 : 1;
-      const baitOk = !def.baitNeeded || t.bait;
-      const P = (def.base[t.zone] || 0) * (0.5 + t.q / 100) * BAIT_MUL(t.bait) * (t.onTrail ? 1.5 : 1) * scent * handsMul(t.p) * knowMul(t.K) * (baitOk ? 1 : 0.25);
+      const def = TRAP_TYPES[t.type], M = t.marks || {};
+      // ① catch (§26.6)
+      let pool = def.catches[t.zone] || def.catches[Object.keys(def.catches)[0]];
+      let aimMul = 1;
+      if (t.type === 'snare' && t.aim) { const want = pool.filter((sp) => (t.aim === 'bird') === BIRDS.has(sp)); aimMul = want.length ? 1 : 0.3; if (want.length) pool = want; }
+      const trailOk = t.onTrail && (t.type !== 'snare' || !t.aim || t.trailUsers.some((u) => (t.aim === 'bird') === BIRDS.has(u)));
+      const bc = baitClass(t.type, t.aim, t.bait);
+      const bait = def.baitNeeded && bc === 'none' ? 0.1 : BAIT_MUL[bc];
+      const scent = (now - t.setAt < 6 * 60 ? 0.6 : 1) * (t.scent ?? 1) * (now < (t.disturbedUntil || 0) ? 0.8 : 1);
+      const crowd = Math.pow(0.8, this.list.filter((o) => o !== t && o.trailId != null && o.trailId === t.trailId && Math.hypot(o.x - t.x, o.z - t.z) < 20).length);
+      const mistakes = (M.loopOff ? 0.5 : 1) * (M.triggerDeep ? 0.7 : 1) * (M.tooTight ? 0.8 : 1) * (t.soft ? 0.6 : 1) * (M.mouthMul ?? 1);
+      const P = Math.min(0.45, (def.base[t.zone] || 0) * (0.5 + t.q / 100) * bait * (trailOk ? 1.5 : 1) * (t.narrow && trailOk ? 1.2 : 1) * scent * handsMul(t.p) * knowMul(t.K) * aimMul * crowd * mistakes);
+      const W = g.sys?.weather;
       if (g.rng.next() < P) {
-        const pool = def.catches[t.zone] || def.catches[Object.keys(def.catches)[0]];
-        t.state = 'caught'; t.catch = pool[Math.floor(g.rng.next() * pool.length)]; t.caughtAt = now; t.lost = false;
+        t.state = 'caught'; t.catch = pool[Math.floor(g.rng.next() * pool.length)]; t.caughtAt = now; t.lost = false; t.lostRolls = 0;
+        if (t.where === 'water' || def.where === 'water') t.count = Math.max(1, Math.round((1 + Math.floor(t.q / 40)) * handsMul(t.p) * knowMul(t.K) * (M.mouthMul ?? 1) * (0.5 + g.rng.next())));
         if (t.bait && g.rng.next() < 0.7) t.bait = null;
-      } else if (g.rng.next() < emptyChance(t.p)) { t.state = 'sprung'; t.note = 'empty'; if (t.bait && g.rng.next() < 0.5) t.bait = null; }
+      } else if (g.rng.next() < emptyChance(t.p, t.K) * (M.triggerShallow ? 2 : 1) * ((W?.windSpeed ?? 0) > 8 || /storm|typhoon/.test(W?.type || '') ? 2 : 1) * (t.type === 'deadfall' ? 1.2 : 1) * (M.assembleOff ? 1.5 : 1) && def.where !== 'water') {
+        // ② sprung empty
+        t.state = 'sprung'; t.note = (W?.windSpeed ?? 0) > 8 ? 'wind' : M.triggerShallow ? 'shallow' : 'empty';
+      } else if (t.bait && g.rng.next() < 0.1 * (M.triggerDeep ? 2 : 1) * (M.baitNearMouth ? 2 : 1)) {
+        // ③ only the bait is gone
+        t.bait = null; t.note = 'baitGone';
+      }
+      // a fish trap without enough stones may wash away (§26.5)
+      if (def.where === 'water' && M.stonesWeak && t.state !== 'broken' && g.rng.next() < 0.15 * 0.75) { t.state = 'broken'; t.note = 'flood'; t.catch = null; }
       this.refresh(t);
     }
   }
@@ -197,6 +273,7 @@ export class Traps {
   }
   optionsFor(t) {
     const def = TRAP_TYPES[t.type], ops = [];
+    if (t.state === 'set' && t.note === 'baitGone') ops.push({ id: 'trap_look', label: `${def.name}：エサだけ 取られて いる` });
     const mild = (this.game.settings?.butcherView || 'mild') !== 'normal';
     if (t.state === 'caught') ops.push({ id: 'trap_take', label: `${CATCH_NAMES[t.catch] || '獲物'}が かかって いる → ${mild ? '取り出す' : '取る'}` });
     if (t.state === 'sprung') ops.push({ id: 'trap_reset', label: `${def.name}を 仕掛け直す${t.note === 'escaped' ? '（逃げられた 跡）' : t.note === 'eaten' ? '（食べられた 跡）' : '（空で はじけて いた）'}` });
@@ -253,7 +330,14 @@ export class Traps {
 
   update(dt) {
     this.acc = (this.acc || 0) + dt;
-    if (this.acc > 1) { this.acc = 0; this.hourly(); }
+    if (this.acc > 1) {
+      this.acc = 0; this.hourly();
+      const P = this.game.player?.pos, now = this.game.clock.total;
+      if (P) for (const t of this.list) if (Math.hypot(t.x - P.x, t.z - P.z) < 2) t.disturbedUntil = now + 180;
+      this.updateTrailMarks();
+      // a hunter partner points at trails as you walk (§26.3)
+      if ((this.spotT = (this.spotT || 0) + 1) % 5 === 0 && this.game.sys.companion) import('../player/trapwork.js').then((m) => m.partnerSpotsTrail(this.game)).catch(() => {});
+    }
     const t = performance.now() / 1000;
     for (const tr of this.list) { const f = tr.mesh?.getObjectByName('flag'); if (f?.visible) f.rotation.y = Math.sin(t * 3) * 0.6; }
   }

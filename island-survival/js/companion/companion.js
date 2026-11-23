@@ -81,7 +81,11 @@ export class Companion {
     bus.on('weather', (e) => { if (['drizzle', 'rain'].includes(e.type)) this.say('rain_start'); });
     bus.on('typhoon:omen', () => this.say('storm_sign'));
     bus.on('condition', (c) => { if (c.isPlayer && this.near(25)) { this.say('player_sick'); this.memoryEvent(`あなたが ${c.name}に なった`); } });
-    bus.on('day', () => { this.say('morning', true); this.dayFlags = {}; this.dailyRelation(); });
+    bus.on('day', () => {
+      this.say('morning', true); this.dayFlags = {}; this.dailyRelation();
+      // §26.8: mornings are for checking traps
+      if (this.game.sys.traps?.list?.length && this.near(30)) import('../data/fieldcraft.js').then((F) => setTimeout(() => { if (F.TRAP_MORNING?.[this.id]) this.speak(F.TRAP_MORNING[this.id]); }, 6000)).catch(() => {});
+    });
     bus.on('hour', (h) => { if (Math.floor(h.hour) === 18 && this.near(30)) this.say('sunset'); if (this.game.sys.player.zone === 'jungle' && (h.hour >= 19 || h.hour < 5) && this.near(10)) this.say('night_jungle'); });
     bus.on('ship:pass', () => this.say('ship_seen', true));
     bus.on('eat', (e) => { if (e.isPlayer && e.p > 0.1 && this.id === 'touko' && this.near(10)) this.say('raw_eat_warn', true); });

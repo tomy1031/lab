@@ -11,6 +11,7 @@
 // when:       season or time hints, shown from K2, or null
 // icon:       one emoji for the sketch frame
 // color:      CSS colour used for the sketch
+import { HOWTO_MORE } from './fieldcraft.js';
 
 export const GUIDE_CATS = {
   plant: '🌿 植物',
@@ -511,3 +512,5 @@ export const GUIDE = {
     icon: '⚫', color: '#2a2a2a',
   },
 };
+// §26 how-to entries for the other knowledge-based acts (tracks, coconut, knots, signals, first aid, …)
+for (const [id, e] of Object.entries(HOWTO_MORE)) if (!GUIDE[id]) GUIDE[id] = e;
