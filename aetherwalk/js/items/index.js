@@ -289,6 +289,9 @@ export async function createItems(ctx) {
       return items.createInHand(itemId, hand, 'bag', null);
     },
     blockTest(shape, fromPos) { return shield.blockTest(shape, fromPos); },
+    /** tests: the next blocked attack meets a shield push 'perfect' | 'normal' | 'late' (DESIGN_V2 §5.3) */
+    debugParry(kind) { return shield.armDebug(kind); },
+    shieldBroken(hand) { return shield.isBroken(hand); },
     /** throwaway meshes that use every shader a held or world item can need (a held sword with its steel and
      *  gold, its glow / the swing trail, a world pool): drawn once in the warm-up frame so no first use hitches */
     warmObjects() {
@@ -451,7 +454,7 @@ export async function createItems(ctx) {
         flask.update(dt);
         fan.update(dt);
         bell.update(dt);
-        proj.update(dt);
+        proj.update(dt * (ctx.clock.slow ?? 1));           // projectiles follow the slow motion (DESIGN_V2 §4.2)
         // auto-collect shards / seeds / pearls; owned gear comes home (8 s or 25 m)
         const pp = ctx.player?.pos;
         const now = ctx.clock.time;

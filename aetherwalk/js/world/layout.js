@@ -96,6 +96,18 @@ export const TORCH_TARGET = { x: -420, z: 220 };
 
 export const WAYLIGHTS = ['camp_meadow', 'camp_forest', 'camp_canyon', 'camp_peaks', 'camp_coast'];
 
+// 人の立ち位置（DESIGN_V2 §1.2）。game の npcs.js は world.spawnPoints.npcs から読む（座標を書きこまない）
+// 旅人の野営地：焚き火 (-30, 470)。西に稽古の木人 dummy_camp とガンド爺、南の丸太のそばに双子、北東の風見の柱のそばにトワ。
+// 南の道（x ≈ -25）、剣の台座 (-26.5, 465.5)、道の燭台 (-25.4, 480.1) はあけておく
+export const NPC_SPOTS = {
+  gando: { x: -34.3, z: 468.4, yaw: 135, region: 'meadow', near: 'camp_meadow' },
+  mio: { x: -28.4, z: 473.6, yaw: 190, region: 'meadow', near: 'camp_meadow' },
+  sora: { x: -31.4, z: 474.3, yaw: 165, region: 'meadow', near: 'camp_meadow' },
+  towa: { x: -26.9, z: 467.4, yaw: 175, region: 'meadow', near: 'camp_meadow' },
+  zaji: { x: 0, z: 0, yaw: 0, region: 'canyon', near: 'climb_mesa' },      // 登り面の前（climb.js が確定して書く）
+};
+export const DUMMY_CAMP = { x: -35.6, z: 470.4, yaw: 90 };   // ガンド爺の稽古の木人（焚き火から 5.6 m、東＝焚き火の方を向く）
+
 // 宝箱 12（剣は台座）。hiddenBy はしかけの id
 export const CHESTS = [
   { id: 'chest_sword', x: -26.5, z: 465.5, yaw: 120, loot: [{ itemId: 'sword', count: 1 }], hiddenBy: null, pedestal: true },

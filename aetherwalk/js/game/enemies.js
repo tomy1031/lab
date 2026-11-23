@@ -1,7 +1,9 @@
 // js/game/enemies.js — Nagi creatures: spawning, AI (§5.4), telegraphed attacks and the player's defenses (§5.3) (OPUS-B)
 // Budget: ≤ 6 active, each ≤ 3 draw calls; shadows = 1 InstancedMesh, bolts = 1 InstancedMesh, ≤ 3 telegraph meshes visible.
 import * as THREE from 'three';
-import { ENEMY_DEFS, LINE_HALF, NOTICE_DAY, NOTICE_NIGHT, LEASH, ACTIVE_R, DESPAWN_R, MAX_ACTIVE, MAX_ATTACKERS } from './enemies.data.js';
+import { ENEMY_DEFS, LINE_HALF, NOTICE_DAY, NOTICE_NIGHT, LEASH, ACTIVE_R, DESPAWN_R, MAX_ACTIVE, MAX_ATTACKERS,
+  PARRY_PERFECT, PARRY_PERFECT_WIDE, BREAK_T, BREAK_T_LURKER, COUNTER_MUL, COUNTER_CAP, COUNTER_SPEED, JUST_DODGE, JUST_STAGGER,
+  GUARD_BREAK_T, SLOW_SCALE, SLOW_T } from './enemies.data.js';
 import { createModelKit, COLORS } from './enemyModels.js';
 import { createTelegraphs } from './telegraph.js';
 import { clamp, damp, yawTo, angDiff, heightAt, fx, flash, emit, spawnList, isNight, landmark, setting, DEG } from './util.js';
@@ -28,6 +30,21 @@ export function createEnemies(ctx, G) {
   const attackers = new Set();
   let nextId = 1, groupCheckT = 0, frame = 0;
   const pendingBlasts = [];
+
+  // ── the counter flow (DESIGN_V2 §4): shield pushes (until items' blockTest reports `perfect`, A2), the duck
+  //    and the player's recent path for 見切り, the slow moment, one shared gold glow (break target / "now" cue) ──
+  const rt = () => performance.now() / 1000;          // real time: input windows ignore the slow moment
+  const pushRT = { left: -10, right: -10 };
+  const HIST = 48, hist = [];
+  for (let i = 0; i < HIST; i++) hist.push({ t: -10, x: 0, z: 0 });
+  let histI = 0, duckRT = -10, guardBrokenRT = -10, slowT = 0;
+  const lastBlock = { result: '', perfect: false, pushAge: 99, heavy: false };
+  let gold = null;
+  try {
+    const art = ctx.art || (ctx.world && ctx.world.art);
+    if (art && typeof art.glow === 'function') { gold = art.glow({ color: 0xffd76a, size: 0.55, opacity: 0.95 }); gold.visible = false; gold.renderOrder = 12; root.add(gold); }
+  } catch (e) { gold = null; }
+  ctx.events?.on?.('player:duck', (p) => { if (p && p.down && rt() - duckRT > 0.6) duckRT = rt(); });
 
   // ── scratch (no per-frame allocation) ──
   const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _pp = new THREE.Vector3(), _head = new THREE.Vector3();
@@ -84,7 +101,7 @@ export function createEnemies(ctx, G) {
     spawn(type, x, z, opts = {}) { return spawnEnemy(type, x, z, opts); },
     clear() { for (const e of list.slice()) removeEnemy(e); for (const g of groups) { g.active = false; g.members.length = 0; } clearBolts(); },
     resetNear() { resetAll(); },
-    inCombat() { for (const e of list) if (e.state === 'chase' || e.state === 'windup' || e.state === 'attack' || e.state === 'recover' || e.state === 'notice') return true; return false; },
+    inCombat() { for (const e of list) if (e.state === 'chase' || e.state === 'windup' || e.state === 'attack' || e.state === 'recover' || e.state === 'notice' || e.state === 'break' || e.state === 'stagger') return true; return false; },
     nearestThreat(x, z, maxD = 10) {
       let best = null, bd = maxD;
       for (const e of list) {
@@ -100,6 +117,18 @@ export function createEnemies(ctx, G) {
     stagger: (e, sec) => stagger(e, sec),
     hitTestPlayer,
     telegraphShow, telegraphHide,
+    /** the slow moment after a perfect parry is running (game-local until ctx.slowmo exists) */
+    get slowNow() { return slowT > 0; },
+    /** how the last blocked blow went (the shield drill reads it): { result, perfect, pushAge, heavy } */
+    lastBlock,
+    breakEnemy: (e, sec) => breakEnemy(e, sec),
+    /** tests: the next blow on the player meets a shield push — 'perfect' | 'normal' | 'late' | 'guard' (held, no push) */
+    armParry(kind) { debugParry = kind || 'perfect'; return debugParry; },
+    /** real time (s) of the last outward shield push of that hand (the drill's はやい／おそい) */
+    pushTime(hand) { return pushRT[hand] ?? -10; },
+    now: () => rt(),
+    /** the drill borrows the gold glow: a target at pos (null = give it back) */
+    goldAt(pos) { goldOverride = pos ? (goldOverride || new THREE.Vector3()).copy(pos) : null; },
     /** living, non-boss enemies (the encounter director only starts one when this is 0) */
     get alive() { return aliveCount(); },
     MAX_ACTIVE,
@@ -262,11 +291,31 @@ export function createEnemies(ctx, G) {
       if (e.type === 'rimeguard') { e.meltT = 8; e.model.setMelt(true); }
       igniteEnemy(e);
     }
+    // 返し斬り: the first solid blow on a broken Nagi (×2.5; with tailwind II at most ×3 in all)
+    let counter = false;
+    if (e.state === 'break' && !e.countered && dmg > 0 && (hit.speed == null || hit.speed >= COUNTER_SPEED) && hit.type !== 'fire') {
+      const tail = G.vitals && G.vitals.damageMul > 1 ? G.vitals.damageMul : 1;
+      dmg *= Math.min(COUNTER_MUL, COUNTER_CAP / tail);
+      e.countered = true; counter = true;
+    }
     const point = hit.point || e.center;
     if (part === 'armor') fx(ctx, 'spark', point, { count: 10, color: 0xdff6ff, speed: 3 });
     else fx(ctx, 'spark', point, { count: 6, color: 0xfffbe8, speed: 2 });
     const killed = damageEnemy(e, dmg, hit.itemId || hit.type || 'player', hit);
     if (!killed && dmg > 0 && hit.speed != null && hit.speed >= STRONG_SPEED && !e.def.boss) e.hitStopT = HIT_STOP;
+    if (counter) {
+      fx(ctx, 'spark', point, { count: 26, color: 0xffd76a, speed: 4.5 });
+      fx(ctx, 'ring', point, { color: 0xffd76a, size: 0.8 });
+      fx(ctx, 'poof', e.center, FX_POOF);
+      try { if (hit.hand && ctx.input && ctx.input.haptic) ctx.input.haptic(hit.hand, 1.0, 90); } catch (err) { /* ignore */ }
+      if (!killed) {
+        e.hitStopT = HIT_STOP + 0.04;
+        const dx = hit.dir ? hit.dir.x : e.pos.x - _pp.x, dz = hit.dir ? hit.dir.z : e.pos.z - _pp.z, L = Math.hypot(dx, dz) || 1;
+        if (e.type !== 'lurker') { e.vel.x += dx / L * 5; e.vel.z += dz / L * 5; }
+        e.flipT = 0; e.staggerT = 0.8; setState(e, 'stagger');       // a big recoil ends the break
+      }
+      emit(ctx, 'counter', { id: e.id, type: e.type, damage: dmg, killed });
+    }
     return { applied: dmg, killed, blocked: part === 'armor' };
   }
 
@@ -284,7 +333,7 @@ export function createEnemies(ctx, G) {
       const hard = !!(hit && hit.speed != null && hit.speed >= STRONG_SPEED);
       const kb = (e.def.light ? 3 : 1.5) * (hard ? 1.6 : 1);
       if (hit && hit.dir && e.type !== 'lurker') { e.vel.x += hit.dir.x * kb; e.vel.z += hit.dir.z * kb; }
-      if (e.state !== 'windup' && e.state !== 'attack') stagger(e, (e.def.light ? 0.5 : 0.3) * (hard ? 1.4 : 1));
+      if (e.state !== 'windup' && e.state !== 'attack' && e.state !== 'break') stagger(e, (e.def.light ? 0.5 : 0.3) * (hard ? 1.4 : 1));
     }
     return false;
   }
@@ -336,7 +385,7 @@ export function createEnemies(ctx, G) {
     releaseToken(e);
     if (e.boltIdx >= 0) { const b = bolts[e.boltIdx]; if (b && b.charging) deactivateBolt(b); e.boltIdx = -1; }
     e.model.setDanger(false);
-    e.atk = null; e.leap = null; e.charge = null;
+    e.atk = null; e.leap = null; e.charge = null; e.chainNext = null; e.chainPlan = null; e.cued = true;
     e.atkCd = Math.max(e.atkCd, 1.0);
   }
 
@@ -411,33 +460,143 @@ export function createEnemies(ctx, G) {
     return false;
   }
 
-  /** returns 'dodge' | 'block' | 'parry' | 'hit' | 'none' */
+  /** returns 'dodge' | 'block' | 'parry' | 'guardbreak' | 'hit' | 'none' ('parry' also for a perfect one: see lastBlock) */
   function resolveAttack(src, shape, atk, fromPos, opts = {}) {
     const pl = ctx.player;
     if (!pl || !pl.pos || (G.vitals && G.vitals.dead)) return 'none';
     const inReach = opts.inReach !== false;
+    lastBlock.result = ''; lastBlock.perfect = false; lastBlock.pushAge = 99; lastBlock.heavy = !!atk.heavy;
     if (!inReach || (shape.kind === 'high' && pl.ducking) || !hitTestPlayer(shape)) {
       emit(ctx, 'player:dodge', { kind: shape.kind === 'high' ? 'duck' : 'side', enemyId: src.id, attack: atk.id });
+      // 見切り: the duck / the step began within the last 0.2 s
+      if (inReach && src && src.def && !src.ctrl && justDodged(shape)) justDodge(src, atk);
+      lastBlock.result = 'dodge';
       return 'dodge';
     }
+    shape.heavy = !!atk.heavy;                         // (items' blockTest decides guard breaks from this, A2)
     let b = null;
     const items = ctx.items;
-    if (items && typeof items.blockTest === 'function') {
+    if (debugParry) b = synthBlock(debugParry);         // tests: a shield push timed to this blow
+    else if (rt() - guardBrokenRT >= GUARD_BREAK_T && items && typeof items.blockTest === 'function') {
       try { b = items.blockTest(shape, fromPos); } catch (err) { b = null; }
     }
+    debugParry = null;
     if (b && b.blocked) {
-      emit(ctx, 'block', { itemId: b.itemId || 'shield', parry: !!b.parry, enemyId: src.id, attack: atk.id });
+      const perfect = !!b.parry && isPerfect(b);
+      const guardBreak = !b.parry && (typeof b.guardBreak === 'boolean' ? b.guardBreak : !!atk.heavy);
+      lastBlock.result = perfect ? 'perfect' : b.parry ? 'parry' : guardBreak ? 'guardbreak' : 'block';
+      lastBlock.perfect = perfect;
+      emit(ctx, 'block', { itemId: b.itemId || 'shield', parry: !!b.parry, perfect, enemyId: src.id, attack: atk.id });
       if (b.point) fx(ctx, 'spark', b.point, { count: b.parry ? 18 : 8, color: 0xffd76a, speed: 3 });
+      if (perfect) { perfectParry(src, atk, b, opts); return 'parry'; }
       if (b.parry && src.def && !src.ctrl) {
         if (src.type === 'lurker') flip(src); else stagger(src, 2.0);
       }
+      if (guardBreak) { guardBreakNow(src, atk, b, fromPos); return 'guardbreak'; }
       return b.parry ? 'parry' : 'block';
     }
+    lastBlock.result = 'hit';
     _dir.set(pl.pos.x - fromPos.x, 0, pl.pos.z - fromPos.z);
     if (_dir.lengthSq() < 1e-6) _dir.set(0, 0, 1);
     _dir.normalize();
-    if (G.vitals) G.vitals.damage(atk.damage, { source: 'enemy', type: atk.id, dir: _dir, enemyId: src.id });
+    if (G.vitals && !opts.noDamage) G.vitals.damage(atk.damage, { source: 'enemy', type: atk.id, dir: _dir, enemyId: src.id });
     return 'hit';
+  }
+
+  // ── tests (game.debug.parry): the next blow meets a synthetic shield push ──
+  let debugParry = null;
+  function synthBlock(kind) {
+    if (kind === 'late') return null;                 // pushed after the blow: it lands
+    const held = ctx.items && ctx.items.held;
+    const hand = held && held.right && held.right.def && held.right.def.block ? 'right' : 'left';
+    const pl = ctx.player, ch = (pl.body && pl.body.chestPos) || pl.pos;
+    const point = new THREE.Vector3().copy(ch);
+    if (ctx.camera) { ctx.camera.getWorldDirection(_v); _v.y = 0; if (_v.lengthSq() > 1e-6) point.addScaledVector(_v.normalize(), 0.35); }
+    return { blocked: true, parry: kind !== 'guard', perfect: kind === 'perfect', itemId: 'shield', hand, point };
+  }
+
+  // ── perfect parry → break → counter (DESIGN_V2 §4.1) ──
+  function isPerfect(b) {
+    if (typeof b.perfect === 'boolean') return b.perfect;          // items decides (A2)
+    const wide = setting(ctx, 'parryWindow', 'normal') === 'wide' || !!setting(ctx, 'seated', false);
+    const age = rt() - (pushRT[b.hand] ?? -10);
+    lastBlock.pushAge = age;
+    return age <= (wide ? PARRY_PERFECT_WIDE : PARRY_PERFECT);
+  }
+  function perfectParry(src, atk, b, opts) {
+    const pos = (b.point || src.center || _pp).clone();
+    emit(ctx, 'parry:perfect', { enemyId: src.id, attack: atk.id, pos, hand: b.hand });
+    fx(ctx, 'ring', pos, { color: 0xffd76a, size: 0.55 });
+    flash(ctx, pos, { color: 0xfff1c0, size: 1.8, life: 0.25 });
+    fx(ctx, 'spark', pos, { count: 26, color: 0xffd76a, speed: 4 });
+    const input = ctx.input;
+    if (input && input.haptic && b.hand) setTimeout(() => { try { input.haptic(b.hand, 0.6, 40); } catch (e) { /* ignore */ } }, 100);
+    if (G.vitals) G.vitals.addStamina(5);              // +10 from the parry itself → +15
+    startSlow();
+    // a shot comes back fast and breaks whoever it hits (boltsTick); anything else breaks now
+    if (!opts.bolt && src.def && !src.ctrl && src.state !== 'dead') breakEnemy(src, src.type === 'lurker' ? BREAK_T_LURKER : src.type === 'rimeguard' ? 3 : BREAK_T);
+  }
+  function startSlow() {
+    if (typeof ctx.slowmo === 'function') { try { ctx.slowmo(SLOW_SCALE, SLOW_T); slowT = SLOW_T; slowCore = true; return; } catch (e) { /* fall back */ } }
+    slowT = SLOW_T; slowCore = false;
+  }
+  let slowCore = false;
+  function breakEnemy(e, dur) {
+    if (!e || e.state === 'dead' || e.ctrl) return;
+    cancelAttack(e);
+    e.hop = 0;
+    if (e.type === 'lurker') { flip(e); e.flipT = dur; }   // belly up: the weak spot shows
+    e.breakT = dur; e.breakDur = dur; e.countered = false;
+    setState(e, 'break');
+    emit(ctx, 'enemy:break', { id: e.id, type: e.type, duration: dur });
+  }
+  function guardBreakNow(src, atk, b) {
+    guardBrokenRT = rt();
+    emit(ctx, 'guard:break', { enemyId: src.id, attack: atk.id, hand: b.hand });
+    try { ctx.input && ctx.input.haptic && b.hand && ctx.input.haptic(b.hand, 0.7, 200); } catch (e) { /* ignore */ }
+    const pl = ctx.player;
+    _dir.set(pl.pos.x - (src.pos ? src.pos.x : pl.pos.x), 0, pl.pos.z - (src.pos ? src.pos.z : pl.pos.z));
+    if (_dir.lengthSq() < 1e-6) _dir.set(0, 0, 1);
+    _dir.normalize();
+    if (G.vitals) G.vitals.damage(atk.damage * 0.5, { source: 'enemy', type: atk.id, dir: _dir, enemyId: src.id, guardBreak: true });
+  }
+  // ── 見切り: where the player was 0.2 s ago (a ring buffer of the last ~0.6 s, real time) ──
+  let headWasUp = true;
+  function histTick() {
+    const pl = ctx.player;
+    if (!pl || !pl.pos) return;
+    // the duck starts when the head begins to drop (player:duck only fires past the full threshold)
+    const stand = pl.standHeight || 1.6, hh = Number.isFinite(pl.headHeight) ? pl.headHeight : stand;
+    const up = hh >= stand * 0.93;
+    if (headWasUp && !up) duckRT = rt();
+    headWasUp = up;
+    const h = hist[histI]; h.t = rt(); h.x = pl.pos.x; h.z = pl.pos.z;
+    histI = (histI + 1) % HIST;
+  }
+  function histAt(t) {
+    let best = null, bd = 0.08;
+    for (const h of hist) { const d = Math.abs(h.t - t); if (d < bd) { bd = d; best = h; } }
+    return best;
+  }
+  function justDodged(shape) {
+    const now = rt();
+    if (shape.kind === 'high') return now - duckRT <= JUST_DODGE;
+    const h = histAt(now - JUST_DODGE);
+    if (!h) return false;
+    if (shape.kind === 'line') {
+      const dx = shape.x1 - shape.x0, dz = shape.z1 - shape.z0, L2 = dx * dx + dz * dz || 1;
+      const t = clamp(((h.x - shape.x0) * dx + (h.z - shape.z0) * dz) / L2, 0, 1);
+      return Math.hypot(h.x - (shape.x0 + dx * t), h.z - (shape.z0 + dz * t)) <= shape.halfWidth + 0.03;
+    }
+    if (shape.kind === 'sphere' && shape.center) return Math.hypot(shape.center.x - h.x, shape.center.z - h.z) <= (shape.radius || 0.2) + 0.25;
+    return false;
+  }
+  function justDodge(src, atk) {
+    emit(ctx, 'dodge:just', { enemyId: src.id, attack: atk.id });
+    if (G.vitals) G.vitals.addStamina(4);              // +8 from the dodge itself → +12
+    const pl = ctx.player, ch = (pl.body && pl.body.chestPos) || pl.pos;
+    fx(ctx, 'gust', ch, { count: 6, speed: 3 });
+    if (src.state !== 'dead' && !src.def.boss) { src.hop = 0; stagger(src, JUST_STAGGER); }
   }
 
   function flip(e) {
@@ -453,7 +612,7 @@ export function createEnemies(ctx, G) {
   function spawnBolt(owner, pos, r = 0.2) {
     for (const b of bolts) {
       if (b.active) continue;
-      b.active = true; b.owner = owner; b.reflected = false; b.dodged = false; b.charging = true; b.life = 0;
+      b.active = true; b.owner = owner; b.reflected = false; b.perfect = false; b.dodged = false; b.charging = true; b.life = 0;
       b.pos.copy(pos); b.vel.set(0, 0, 0); b.r = r; b.scale = 0.02; b.shape.radius = r;
       b.sphere.r = Math.max(0.3, r + 0.12);
       if (ctx.targets && typeof ctx.targets.add === 'function' && !b.target) {
@@ -525,6 +684,7 @@ export function createEnemies(ctx, G) {
             if (e.state === 'dead' || e.ctrl) continue;
             if (e.center.distanceTo(b.pos) < (e.def.radius || 0.4) + b.r + 0.1) {
               damageEnemy(e, 6, 'deflect', null);
+              if (b.perfect && e.state !== 'dead') breakEnemy(e, BREAK_T);     // a perfect return breaks it at once
               fx(ctx, 'spark', b.pos, { count: 14, color: 0xfffbe8, speed: 3 });
               deactivateBolt(b); break;
             }
@@ -538,8 +698,11 @@ export function createEnemies(ctx, G) {
             if (res) {
               // where it came from (a point back along its flight), so a raised shield faces it
               _from.copy(b.vel).normalize().multiplyScalar(-3).add(b.pos);
-              const r = resolveAttack(b.owner || { id: 'bolt' }, b.shape, ATK_BOLT, _from, {});
-              if (r === 'block' || r === 'parry') reflectBolt(b, false);   // resolveAttack already sent 'block'
+              const r = resolveAttack(b.owner || { id: 'bolt' }, b.shape, ATK_BOLT, _from, { bolt: true });
+              if (r === 'block' || r === 'parry') {
+                reflectBolt(b, false);   // resolveAttack already sent 'block'
+                if (lastBlock.perfect) { b.vel.multiplyScalar(2); b.perfect = true; }
+              }
               else { fx(ctx, 'spark', b.pos, { count: 8, color: 0xc23bff, speed: 2 }); deactivateBolt(b); }
               if (!b.active) continue;
             }
@@ -567,6 +730,13 @@ export function createEnemies(ctx, G) {
   function update(dt) {
     frame++;
     if (dt <= 0) return;
+    trackPushes();
+    histTick();
+    // the slow moment after a perfect parry: enemies, bolts and telegraphs at ×0.3 for 0.3 s of real time
+    if (slowT > 0) {
+      slowT -= (ctx.clock && ctx.clock.real > 0) ? Math.min(ctx.clock.real, 0.1) : dt;
+      if (!slowCore) dt *= SLOW_SCALE;
+    }
     const pl = ctx.player;
     playerPosInto(_pp);
     const px = _pp.x, pz = _pp.z;
@@ -620,6 +790,7 @@ export function createEnemies(ctx, G) {
     boltsTick(dt);
     teleTick(dt);
     shadowsTick();
+    goldTick();
   }
 
   // ── fire safe zones (safezones.js): world groups and encounters keep out; the boss and its wisps do not ──
@@ -643,6 +814,20 @@ export function createEnemies(ctx, G) {
     fx(ctx, 'poof', e.center, FX_POOF);
     emit(ctx, 'enemy:recoil', { id: e.id, type: e.type, pos: e.center, banished: true });
     removeEnemy(e);
+  }
+
+  /** the shield face pushed outward fast (the same rule as items/shield.js) — for the perfect window */
+  function trackPushes() {
+    const items = ctx.items, input = ctx.input;
+    if (!items || !items.held || !input || !input.hands) return;
+    for (const hand of ['left', 'right']) {
+      const inst = items.held[hand];
+      if (!inst || !inst.def || !inst.def.block || !inst.quat) continue;
+      const v = input.hands[hand] && input.hands[hand].vel;
+      if (!v) continue;
+      _v2.set(1, 0, 0).applyQuaternion(inst.quat);
+      if (v.dot(_v2) >= (inst.def.block.parrySpeed || 1.5)) pushRT[hand] = rt();
+    }
   }
 
   function tickStatus(e, dt) {
@@ -757,6 +942,13 @@ export function createEnemies(ctx, G) {
         break;
       case 'recover':
         if (e.type === 'wisp' || e.type === 'lurker') turnTo(e, yawToP, dt * 0.6);
+        // a chained blow (husk: sweep → 0.5 s → slam) follows if you are still in reach
+        if (e.chainNext && e.t >= e.chainGap) {
+          const nx = e.chainNext; e.chainNext = null;
+          if (d >= (nx.range ? nx.range[0] : 0) && d <= (nx.range ? nx.range[1] : 2) + 0.5 && !(safeAware(e) && playerSafe)) {
+            turnTo(e, yawToP, 1); startWindup(e, nx, d, dx, dz); break;
+          }
+        }
         if (e.t > (e.atk && e.atk.recover ? e.atk.recover : 0.8)) {
           releaseToken(e);
           e.model.setDanger(false);
@@ -767,6 +959,12 @@ export function createEnemies(ctx, G) {
       case 'stagger':
         e.staggerT -= dt;
         if (e.staggerT <= 0) { e.flipT = 0; setState(e, 'chase'); }
+        break;
+      case 'break':                                  // 崩れ: kneeling, open to a counter
+        e.breakT -= dt;
+        // off balance it lurches up to 0.5 m toward you as it goes down (keeps the counter in reach)
+        if (e.breakDur - e.breakT < 0.3 && d > 1.35 && e.type !== 'lurker' && e.type !== 'wisp') { turnTo(e, yawToP, dt); e.speedNow = Math.min(1.8, (d - 1.3) / 0.3); }
+        if (e.breakT <= 0) { e.flipT = 0; emit(ctx, 'enemy:break', { id: e.id, type: e.type, duration: 0 }); setState(e, 'chase'); }
         break;
     }
   }
@@ -789,6 +987,16 @@ export function createEnemies(ctx, G) {
     e.atk = atk;
     e.nextAtk = null;
     setState(e, 'windup');
+    e.wu = atk.windup;
+    e.cued = false;
+    // DESIGN_V2 §4.6: the first husk you meet after taking up the shield gives its first two blows 1.4 s
+    if (e.type === 'husk' && !e.ctrl) {
+      const F = G.quest ? G.quest.flags : null;
+      if (F && !F.mercyHusk && G.inventory && G.inventory.has('shield')) { F.mercyHusk = e.id; e.mercy = 2; }
+      if (e.mercy > 0) { e.wu = Math.max(e.wu, 1.4); e.mercy--; if (!e.mercy && F) F.mercyHusk = 'done'; e.mercyCue = true; } else e.mercyCue = false;
+    }
+    const chainDef = atk.chain ? e.def.attacks.find((a) => a.id === atk.chain) : null;
+    e.chainPlan = chainDef || null; e.chainGapPlan = atk.chainGap || 0.5;
     e.model.setDanger(true);
     const seated = !!setting(ctx, 'seated', false);
     const stand = (pl && pl.standHeight) || 1.6;
@@ -801,20 +1009,20 @@ export function createEnemies(ctx, G) {
       // the hit line sits just above the player's own duck threshold (0.78, or 0.86 for the shallow setting)
       const duckK = setting(ctx, 'duckDepth', 'normal') === 'shallow' ? 0.86 : 0.78;
       e.shapeHigh.y = gy + stand * (duckK + 0.02);
-      telegraphShow(e, 'high', { x: e.pos.x, y: e.shapeHigh.y, z: e.pos.z, yaw: e.aimYaw, reach: (atk.range ? atk.range[1] : 2.3) + 0.2, arc: (atk.arc || 80) + 24, dur: atk.windup });
+      telegraphShow(e, 'high', { x: e.pos.x, y: e.shapeHigh.y, z: e.pos.z, yaw: e.aimYaw, reach: (atk.range ? atk.range[1] : 2.3) + 0.2, arc: (atk.arc || 80) + 24, dur: e.wu });
     } else if (kind === 'line') {
       const len = atk.length || (d + (atk.extra || 2));
       const ux = Math.sin(e.aimYaw), uz = -Math.cos(e.aimYaw);
       const sx = e.pos.x + ux * (e.def.radius * 0.6), sz = e.pos.z + uz * (e.def.radius * 0.6);
       Object.assign(e.shapeLine, { x0: sx, z0: sz, x1: sx + ux * len, z1: sz + uz * len, halfWidth: LINE_HALF });
-      telegraphShow(e, 'line', { ...e.shapeLine, dur: atk.windup });
+      telegraphShow(e, 'line', { ...e.shapeLine, dur: e.wu });
       if (e.type === 'lurker') { e.burrowed = false; fx(ctx, 'dust', e.pos, { count: 18, color: 0xe8b27a, speed: 1.6 }); }
     } else if (kind === 'sphere') {
       const c = e.shapeSphere.center;
       if (e.type === 'thornling') {
         c.set(pl.pos.x, gy + 0.45, pl.pos.z);
         e.shapeSphere.radius = atk.hitR || 0.16;
-        telegraphShow(e, 'sphere', { x: c.x, z: c.z, radius: 0.55, dur: atk.windup });
+        telegraphShow(e, 'sphere', { x: c.x, z: c.z, radius: 0.55, dur: e.wu });
       } else if (e.type === 'wisp') {
         const b = spawnBolt(e, e.center, atk.hitR || 0.2);
         e.boltIdx = b ? b.i : -1;
@@ -822,10 +1030,10 @@ export function createEnemies(ctx, G) {
         // seated replacement of a high attack: a chest-height blow you block or lean away from
         if (pl.body && pl.body.chestPos) c.copy(pl.body.chestPos); else c.set(pl.pos.x, gy + stand * 0.7, pl.pos.z);
         e.shapeSphere.radius = 0.2;
-        telegraphShow(e, 'sphere', { x: c.x, z: c.z, radius: 0.5, dur: atk.windup });
+        telegraphShow(e, 'sphere', { x: c.x, z: c.z, radius: 0.5, dur: e.wu });
       }
     }
-    emit(ctx, 'enemy:telegraph', { id: e.id, type: e.type, attack: atk.id, kind, duration: atk.windup, pos: e.pos });
+    emit(ctx, 'enemy:telegraph', { id: e.id, type: e.type, attack: atk.id, kind, duration: e.wu, pos: e.pos, heavy: !!atk.heavy });
   }
 
   function windupTick(e, dt, d, dx, dz) {
@@ -834,7 +1042,12 @@ export function createEnemies(ctx, G) {
     if (safeAware(e) && playerSafe) { cancelAttack(e); setState(e, 'chase'); return; }   // no blows (or bolts) into a fire's reach
     // thornlings and wisps keep tracking a little; heavy blows are locked (fair dodges)
     if (e.type === 'wisp') turnTo(e, yawTo(dx, dz), dt);
-    if (e.t >= atk.windup) {
+    // the last 0.25 s: a small gold light at the striking arm and a high note — "push now"
+    if (!e.cued && e.t >= e.wu - 0.25) {
+      e.cued = true;
+      emit(ctx, 'enemy:cue', { id: e.id, type: e.type, attack: atk.id, pos: cuePos(e, _v), mercy: !!e.mercyCue });
+    }
+    if (e.t >= e.wu) {
       setState(e, 'attack');
       emit(ctx, 'enemy:attack', { id: e.id, type: e.type, attack: atk.id });
       beginAttack(e, d);
@@ -933,7 +1146,11 @@ export function createEnemies(ctx, G) {
       }
       return;
     }
-    if (e.t > 0.25) { e.atkCd = atk.cooldown; setState(e, 'recover'); }
+    if (e.t > 0.25) {
+      e.atkCd = atk.cooldown;
+      setState(e, 'recover');
+      if (e.chainPlan) { e.chainNext = e.chainPlan; e.chainGap = e.chainGapPlan; e.chainPlan = null; e.atkCd = Math.max(e.atkCd, 0); }
+    }
   }
 
   function turnTo(e, target, dt) {
@@ -1010,7 +1227,7 @@ export function createEnemies(ctx, G) {
     e.pos.y = ground;
     let y = ground;
     const r = m.root, spin = m.spin;
-    const windK = e.state === 'windup' && e.atk ? clamp(e.t / e.atk.windup, 0, 1) : 0;
+    const windK = e.state === 'windup' && e.atk ? clamp(e.t / (e.wu || e.atk.windup), 0, 1) : 0;
     switch (e.type) {
       case 'thornling': {
         // a springy bounce while rolling keeps it above the grass
@@ -1031,7 +1248,7 @@ export function createEnemies(ctx, G) {
         if (e.atk && (e.state === 'windup' || e.state === 'attack' || e.state === 'recover')) {
           const at = e.state === 'attack' ? clamp(e.t / 0.2, 0, 1) : e.state === 'recover' ? 1 : 0;
           const back = e.state === 'recover' ? 1 - clamp(e.t / 0.6, 0, 1) : 1;
-          if (e.atk.id === 'sweep') {
+          if (e.atk.kind === 'high') {
             ax = 1.5 * Math.min(1, windK * 2) * back + (e.state !== 'windup' ? 1.5 * back : 0);
             ax = Math.min(ax, 1.5);
             ay = e.state === 'windup' ? 0.9 * windK : (0.9 - 2.0 * at) * back;
@@ -1082,6 +1299,13 @@ export function createEnemies(ctx, G) {
         break;
       }
     }
+    if (e.state === 'break' && e.type !== 'lurker') {
+      // 崩れ: sinks to its knees and leans forward; arms hang
+      const k = clamp((e.breakDur - e.breakT) / 0.25, 0, 1);
+      if (e.type === 'wisp') y -= 0.9 * k;
+      else if (e.type === 'thornling') { spin.scale.set(1.25, 0.7, 1.25); }
+      else { y -= (e.type === 'rimeguard' ? 0.7 : 0.38) * k; spin.rotation.x = 0.32 * k; if (m.setArms) m.setArms(0.15); }
+    }
     r.position.set(e.pos.x, y, e.pos.z);
     r.rotation.y = -e.yaw;
     r.scale.setScalar(1);
@@ -1094,6 +1318,41 @@ export function createEnemies(ctx, G) {
       if (e.type === 'wisp') s.c.y = y;
     }
     e.center.set(e.pos.x, y + (e.type === 'wisp' ? 0 : def.center), e.pos.z);
+  }
+
+  /** the tip of the striking arm / horn (for the "now" light) */
+  function cuePos(e, out) {
+    const fx_ = Math.sin(e.yaw), fz = -Math.cos(e.yaw);
+    switch (e.type) {
+      case 'husk': return e.atk && e.atk.kind === 'high' ? out.set(e.pos.x + fx_ * 0.55 + fz * 0.45, e.pos.y + 1.5, e.pos.z + fz * 0.55 - fx_ * 0.45) : out.set(e.pos.x + fx_ * 0.3, e.pos.y + 2.35, e.pos.z + fz * 0.3);
+      case 'rimeguard': return out.set(e.pos.x + fx_ * 1.1, e.pos.y + 2.5, e.pos.z + fz * 1.1);
+      case 'lurker': return out.set(e.pos.x + fx_ * 1.0, e.pos.y + 0.5, e.pos.z + fz * 1.0);
+      case 'wisp': { const b = e.boltIdx >= 0 ? bolts[e.boltIdx] : null; return b && b.active ? out.copy(b.pos) : out.copy(e.center); }
+      default: return out.set(e.center.x + fx_ * 0.3, e.center.y + 0.2, e.center.z + fz * 0.3);
+    }
+  }
+  /** one gold glow: the target on a broken Nagi's core (pulsing faster as the break runs out), else the "now" light */
+  let goldOverride = null;
+  function goldTick() {
+    if (!gold) return;
+    if (goldOverride) { gold.position.copy(goldOverride); gold.scale.setScalar(0.5 * (1 + 0.2 * Math.sin(performance.now() / 1000 * 10))); gold.visible = true; return; }
+    let best = null, cue = null;
+    for (const e of list) {
+      if (e.state === 'break' && !e.countered && (!best || e.breakT > best.breakT)) best = e;
+      else if (!cue && e.state === 'windup' && e.cued) cue = e;
+    }
+    if (best) {
+      const k = clamp(best.breakT / (best.breakDur || BREAK_T), 0, 1);
+      const hz = 1.6 + (1 - k) * 4;
+      gold.position.copy(best.coreWorld || best.center);
+      if (best.type === 'lurker') gold.position.y += 0.35;
+      gold.scale.setScalar(0.55 * (1 + 0.25 * Math.sin(performance.now() / 1000 * Math.PI * 2 * hz)));
+      gold.visible = true;
+    } else if (cue) {
+      cuePos(cue, gold.position);
+      gold.scale.setScalar(0.3);
+      gold.visible = true;
+    } else gold.visible = false;
   }
 
   function shadowsTick() {

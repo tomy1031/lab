@@ -7,7 +7,7 @@ import { errMsg } from './util.js';
 
 const SHOWN = ['stepSensitivity', 'strideScale', 'moveDirection', 'turnMode', 'snapAngle', 'vignette', 'seated',
   'duckDepth', 'armAssist', 'armOnlyWalk', 'stickMove', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand',
-  'quality', 'weightKg', 'haptics', 'volMaster'];
+  'jumpView', 'climbAssist', 'parryWindow', 'quality', 'weightKg', 'haptics', 'volMaster'];
 
 export function setupLanding(ctx) {
   const $ = (id) => document.getElementById(id);

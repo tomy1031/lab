@@ -45,6 +45,10 @@ export function installDebug(ctx, loop) {
 
   Object.assign(d, {
     teleport(x, z, yawDeg = 0) { pl().teleport(+x, +z, +yawDeg || 0); return d.state(); },
+    /** DESIGN_V2 §5.3: jump now (true) or false (in the air it fires on landing within 0.1 s) */
+    jump() { return !!pl()?.jump?.(); },
+    /** DESIGN_V2 §5.3: the next attack the shield meets is met by a push: 'perfect' | 'normal' | 'late' */
+    parry(kind = 'perfect') { return !!ctx.items?.debugParry?.(kind); },
     setTime(hours) { ctx.world?.setTimeOfDay?.(+hours); },
     hud(visible = true) {
       try { ctx.ui?.setHudVisible?.(!!visible); } catch (e) { AW.errors.push('ui.setHudVisible: ' + e.message); }
@@ -68,6 +72,7 @@ export function installDebug(ctx, loop) {
         fps: loop.stats.fps, drawCalls: loop.stats.drawCalls, triangles: loop.stats.triangles,
         maxHp: v.maxHp ?? 0, maxStamina: v.maxStamina ?? 0,
         gait: p.gait || 'idle', grounded: !!p.grounded, gliding: !!p.gliding, ducking: !!p.ducking,
+        airborne: !!p.airborne, climbing: !!p.climbing, slow: (ctx.clock.slow ?? 1) < 1,
         held: { left: held.left ? held.left.id : null, right: held.right ? held.right.id : null },
         enemies,
         stage: ctx.game?.quest?.stage ?? 0,

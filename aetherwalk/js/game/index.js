@@ -302,6 +302,19 @@ export async function createGame(ctx) {
     startShrine: (id) => G.shrines.start(id),
     give: (id, n = 1) => G.inventory.add(id, n),
     today: () => ({ key: todayKey(), ...G.stats.today() }),
+    /** DESIGN_V2 §5.3: the next enemy blow meets a shield push ('perfect' | 'normal' | 'late' | 'guard');
+     *  attackId (optional) makes the nearest enemy choose that attack next */
+    parry: (kind = 'perfect', attackId = null) => {
+      if (attackId) {
+        const p = ctx.player && ctx.player.pos;
+        let best = null, bd = 1e9;
+        for (const e of G.enemies.list) { if (e.state === 'dead' || e.ctrl || !p) continue; const d = Math.hypot(e.pos.x - p.x, e.pos.z - p.z); if (d < bd) { bd = d; best = e; } }
+        const a = best && best.def.attacks.find((x) => x.id === attackId);
+        if (a) best.nextAtk = a;
+      }
+      return G.enemies.armParry(kind);
+    },
+    slow: () => G.enemies.slowNow,
   };
   Object.defineProperty(G, 'checkpointId', { get: () => G.checkpoint });
   return G;

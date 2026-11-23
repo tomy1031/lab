@@ -69,6 +69,10 @@ export function createLoop(ctx, report) {
     clock.frame++;
     const sim = ctx.paused ? 0 : dt;
     clock.sim = sim;
+    // DESIGN_V2 §5.3 slow motion: game, world (particles) and the items' projectiles run at clock.slow;
+    // the player, input, ui and audio stay in real time (your own hands move at full speed)
+    const slowK = !ctx.paused && now < slow.until ? slow.scale : 1;
+    clock.slow = slowK;
     // real elapsed time for systems tied to the body (stepping speed must follow real cadence even when the
     // frame rate collapses): 0 when paused, at most 0.5 s, callers sub-step it at ≤ 0.05 s
     clock.real = ctx.paused ? 0 : Math.min(raw, 0.5);
@@ -77,8 +81,8 @@ export function createLoop(ctx, report) {
     guard('input', () => { ctx.input.setFrame(xrFrame || null); ctx.input.update(dt); });
     guard('player', () => ctx.player?.update(sim));
     guard('items', () => ctx.items?.update(sim));
-    guard('game', () => ctx.game?.update(sim));
-    guard('world', () => ctx.world?.update(sim, ctx));
+    guard('game', () => ctx.game?.update(sim * slowK));
+    guard('world', () => ctx.world?.update(sim * slowK, ctx));
     guard('ui', () => ctx.ui?.update(dt));
     guard('audio', () => ctx.audio?.update(dt));
     for (let i = 0; i < extra.length; i++) { const x = extra[i]; guard(x.name, () => x.fn(dt, sim)); }
@@ -100,6 +104,19 @@ export function createLoop(ctx, report) {
   }
 
   const extra = [], pre = [];
+  /** ctx.slowmo(scale, seconds): everything but the player runs at `scale` for `seconds` of real time. Calls that
+   *  overlap keep the smaller scale and the later end; ignored while paused. → true if it took effect */
+  const slow = { scale: 1, until: 0 };
+  ctx.slowmo = (scale = 0.3, seconds = 0.3) => {
+    if (ctx.paused || !(seconds > 0)) return false;
+    scale = Math.min(1, Math.max(0.05, Number(scale) || 1));
+    const nowS = performance.now() / 1000;
+    if (slow.until > nowS) { slow.scale = Math.min(slow.scale, scale); slow.until = Math.max(slow.until, nowS + seconds); }
+    else { slow.scale = scale; slow.until = nowS + seconds; }
+    ctx.events.emit('slowmo', { scale: slow.scale, seconds });
+    return true;
+  };
+  ctx.clock.slow = 1;
   return {
     stats,
     firstFrame,

@@ -221,6 +221,7 @@ export function createDesktop(ctx, P, holsters) {
         V.setLean(e.code === 'KeyZ' ? -1 : 1);
         clearTimeout(leanTimer); leanTimer = setTimeout(() => V.setLean(0), 600); break;
       case 'KeyG': V.spreadArms(!V.state.spread); break;
+      case 'Space': V.press('a', 120); break;                      // jump (A)
       case 'KeyE': grabNearest('right'); break;
       case 'KeyQ': throwHeld('right'); break;
       case 'KeyF': useHeld(); break;

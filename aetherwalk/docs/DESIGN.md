@@ -1375,6 +1375,21 @@ window.AW = {
 - **音**：`audio.play(name, { pos, gain })` の名前は `step swing hit block deflect telegraph attack hurt dodge death respawn enemyDeath explosion bowDraw bowRelease bolt fireLit crackle eat drink heal waybell fan holsterIn holsterOut shard item lift towerBell bellSmall miss click tick beat` と `'sting:<region|vista|bell|shrine|seed|chest|dawn|quest|combatStart|combatEnd|ending|item>'`。
 - **自動プレイ**：開始時に stage 2 まで進め（チュートリアルを飛ばす）、盾を持たせ、`items.equip` で剣と盾を持つ。近い敵と戦い（予告には しゃがむ／横へ／3 回に 1 回は盾）、鐘塔では昇降台を足踏みで昇って鐘を打ち、頂上から滑空で降りる。
 
+### 10.20 v2 の契約・OPUS-A 分（DESIGN_V2 §5.3。実装済みのものから順に書く）
+
+- **ジャンプ**（A1）：`player.jump()` → boolean（いま跳んだ。空中・着地直後の押しは 0.1 秒覚えて着地と同時に跳ぶので false）。A ボタン（右）／PC は Space。初速 4.3 m/s（`vitals.tier === 2` で ×1.1）、頂点 0.95 m・滞空 0.88 s。踏み切りの横速度を保ち、空中は頭の向きへ ≤ 1.5 m/s² で曲がるだけ（止まって跳ぶと真上）。縁から落ちて 0.12 s 以内は跳べる。連続は着地後 0.25 s から。跳べないとき：`vitals.speedMul < 0.01`（昇降台・凪の領域）、`player.climbing`、`player.noJump = true`（会話のはい／いいえの間など、だれでも立ててよい）。落差 2 m 以上の着地で土ぼこりと両手の振動（ダメージなし）。`edgeGuard` は地面にいる間だけ（跳べば越えられる）。跳んだあとは高さを問わず風衣が開く（`abilities.glide` のとき）。
+- **状態**：`player.airborne`（地面にも壁にもいない）、`player.jumping`（ジャンプの空中）、`player.climbing`、`player.climb`（A3）。`player.body.hitTest` は跳んでいる間も今の頭と胸で判定する（跳んでも `line` はよけられない）。
+- **イベント**：`player:jump { vy }`、`player:land { fall }`（v1 のまま）。
+- **設定**：`jumpView`（`'full'`／`'soft'`＝目に見える上昇を半分。移動と当たりは同じ）、`gestureJump`、`climbAssist`、`parryWindow`（`'normal'` 0.12 s／`'wide'` 0.2 s。`seated` でも wide）、`dash`、`talkGesture`（`'wave+gaze'`／`'button'`）。
+- **ジャンプ中のビネット**：上昇・下降（|vy| > 1 m/s）の間は 0.6 以上、`vignette: 1` でも強の輪。
+- **盾の判定**（A2）：`items.blockTest(shape, fromPos)` → `{ blocked, parry, perfect, guardBreak, pushAgo, itemId, hand, point }`（使い回しの物。保持するならコピー）。
+  - `parry`：当たる前 0.25 s 以内に盾の面を 1.5 m/s 以上で攻撃の元へ押し出した（v1）。
+  - `perfect`：その押し出しが当たる前 `parryWindow` 以内（0.12／0.2 s）。items が盾の前に金の輪と十字の光と火花を出し、`ctx.slowmo(0.3, 0.3)` を呼び、盾の手を 1.0／60 ms → 0.6／40 ms で鳴らす。敵の崩れ・`parry:perfect`・`enemy:break` は game（B1）。
+  - `guardBreak`：`shape.heavy`（game が付ける）の攻撃を押し出さずに受けた。`blocked: true` のまま返す（ダメージ半分・`guard:break` は game）。その盾は 0.8 s 何も受けず（`items.shieldBroken(hand)`）、外へはじかれてくすむ。手は 0.7／200 ms。
+  - `pushAgo`：押し出しから当たりまでの秒（パリィのときだけ、ほかは −1）。
+- **`ctx.slowmo(scale, seconds)`**（`core/loop.js`）：実時間で `seconds` のあいだ、game・world（粒子）・items の飛び道具に渡す `dt` に `scale` を掛ける。player・input・ui・audio・手に持った物は実時間。重ねて呼ぶと小さい方の倍率・遅い方の終わり。一時停止中は無効（false）。いまの倍率は `ctx.clock.slow`（1 = ふつう）。呼ぶたび `slowmo { scale, seconds }` を出す。
+- **`AW.debug`**：`jump()`、`parry('perfect'|'normal'|'late')`（次に盾が受ける攻撃に合わせて押し出しを合成。向き・構えの判定は省く）、`state()` に `airborne climbing slow`。
+
 ## 11. 定義済みの決めごと（全員が守るチェックリスト）
 
 1. **座標**：Y 上、+X 東、−Z 北。ヨー 0＝北、時計回りが正。単位は m・秒。原点は島の中心。

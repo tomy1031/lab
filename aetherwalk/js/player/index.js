@@ -27,6 +27,7 @@ export async function createPlayer(ctx) {
     speed: 0, cadence: 0, steps: 0, stickSpeed: 0,
     gait: 'idle',
     moving: false, grounded: true, gliding: false, glideTired: false, glideBlend: 0, ducking: false, armsSpread: false,
+    airborne: false, jumping: false, climbing: false, climb: null, noJump: false,
     lean: 0,
     headHeight: DEFAULT_STAND_HEIGHT, standHeight: DEFAULT_STAND_HEIGHT, armSpan: DEFAULT_STAND_HEIGHT, armSpanSeen: 0,
     center: new THREE.Vector3(),               // play-space centre (rig-local, floor)
@@ -89,6 +90,8 @@ export async function createPlayer(ctx) {
     ctx.events.emit('player:teleport', { x, z, yaw: Number(yawDeg) || 0 });
   };
   P.addImpulse = (vx, vz) => body.addImpulse(vx, vz);
+  /** jump now → true; false when it can't (in the air it is remembered for 0.1 s, so it fires on landing) */
+  P.jump = () => body.jump();
   P.setEnabled = (b) => { P.enabled = !!b; };
   P.simulateSteps = (spm, seconds) => steps.simulate(spm, seconds);
 
@@ -96,6 +99,8 @@ export async function createPlayer(ctx) {
   P.update = (dt) => {
     // integrate real time (sub-stepped) so speed follows real cadence even at a low frame rate
     const edt = dt > 0 ? Math.max(dt, ctx.clock.real || dt) : 0;
+    // A (right controller) / Space: jump (DESIGN_V2 §3)
+    if (edt > 0 && P.enabled && input.justPressed('a')) body.jump();
     steps.update(edt);
     glide.update(edt);
     loco.update(edt);
@@ -113,6 +118,9 @@ export async function createPlayer(ctx) {
     P.ducking = P.headHeight < P.standHeight * duckK;
     if (P.ducking !== prevDuck) { prevDuck = P.ducking; ctx.events.emit('player:duck', { down: P.ducking }); }
     P.body.headPos.copy(head.pos);
+    P.body.headPos.y += body.B.viewDrop;               // (jumpView 'soft' only lowers what the eyes see)
+    P.airborne = !P.grounded && !P.climbing;
+    P.jumping = body.B.jumped && !P.grounded;
     // chest: 0.3 m under the eyes, a little behind (scaled when ducking)
     _q.setFromAxisAngle(_hw.set(0, 1, 0), -(P.bodyYawLocal + P.turnYaw));
     P.body.chestPos.set(0, -0.32 * (P.headHeight / Math.max(1, P.standHeight)), 0.06).applyQuaternion(_q).add(head.pos);

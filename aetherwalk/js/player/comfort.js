@@ -58,7 +58,9 @@ export function createComfort(ctx, P) {
     const moveK = clamp((P.speed - 0.4) / 5.0, 0, 1);
     const fallK = !P.grounded ? clamp(-P.vel.y / 8, 0, 1) : 0;
     const glideK = P.glideBlend || 0;
-    let want = Math.max(moveK * 0.85, turnKick * 0.6, fallK, glideK * 0.9);
+    // rising / falling in a jump (DESIGN_V2 §3.4): at least a medium ring, and one step stronger
+    const jumpK = P.jumping && Math.abs(P.vel.y) > 1 ? 0.6 : 0;
+    let want = Math.max(moveK * 0.85, turnKick * 0.6, fallK, glideK * 0.9, jumpK);
     if (setting === 0) want = 0;
     if (!ctx.flags.xr) want *= 0.5;          // flat screen: a lighter touch
     if (ctx.paused) want = 0;
@@ -67,7 +69,7 @@ export function createComfort(ctx, P) {
     else {
       vig.visible = true;
       // inner hole radius at z=-0.12: weak keeps most of the view, strong narrows to a tunnel
-      const strong = setting === 2;
+      const strong = setting === 2 || (setting === 1 && P.jumping);
       const minR = strong ? 0.055 : 0.085, maxR = 0.2;
       const r = maxR + (minR - maxR) * amount;
       vig.scale.set(r, r, 1);
