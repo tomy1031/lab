@@ -18,8 +18,8 @@ const OVER = { none: -1, cape: 0, apron: 1, scarf: 2, sash: 3 };
 export const FOLK_LOOKS = {
   towa: { coat: 0x5fc3d8, trim: 0xf4ecd8, skin: 0xf2c9a6, hair: 0x3b2a22, hatKind: 'hair', hat: 0x3b2a22, prop: 'staff', propOpt: 1, over: 'scarf', legs: 0x3f4d6b, boots: 0x6b4a2e, hem: 0.55, flare: 1.15, scale: 0.9 },
   gando: { coat: 0xb9aa8a, trim: 0x7a5232, skin: 0xe6b08c, hair: 0xf2f0ea, hatKind: 'beard', hat: 0xf2f0ea, prop: 'hammer', over: 'apron', legs: 0x5a4a3a, boots: 0x4a3426, hem: 0.45, flare: 1.0 },
-  mio: { coat: 0xffc8d6, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xff8fb3, prop: 'none', over: 'none', legs: 0xf4ecd8, boots: 0x8a5a3e, hem: 0.7, flare: 1.35 },
-  sora: { coat: 0xffe49a, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xffcf45, prop: 'none', over: 'none', legs: 0x6f8fb8, boots: 0x8a5a3e, hem: 0.55, flare: 1.2 },
+  mio: { ears: 1, coat: 0xffc8d6, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xff8fb3, prop: 'none', over: 'none', legs: 0xf4ecd8, boots: 0x8a5a3e, hem: 0.7, flare: 1.35 },
+  sora: { ears: 1, coat: 0xffe49a, trim: 0xf4ecd8, skin: 0xf6d2b4, hair: 0x5a3a2a, hatKind: 'hood', hat: 0xffcf45, prop: 'none', over: 'none', legs: 0x6f8fb8, boots: 0x8a5a3e, hem: 0.55, flare: 1.2 },
   ruka: { coat: 0xc9a86a, trim: 0x8a3f35, skin: 0xd9a07c, hair: 0x2a1d18, hatKind: 'brim', hat: 0x7a5a3a, prop: 'basket', over: 'sash', legs: 0x5e4a36, boots: 0x4a3426, hem: 1.5, flare: 1.15, brim: 2.1, crown: 0.75 },
   zaji: { coat: 0x7a4a32, trim: 0xf4ecd8, skin: 0xc98a62, hair: 0x1f1714, hatKind: 'hair', hat: 0x1f1714, prop: 'none', over: 'sash', legs: 0x4f4636, boots: 0x3a2a20, hem: 0.35, flare: 1.0, sleeves: 'skin', armTrim: 0xf4ecd8 },
   yukime: { coat: 0x4f6fa8, trim: 0xf4f8ff, skin: 0xf2d6c2, hair: 0x2a2a3a, hatKind: 'fur', hat: 0xf4f8ff, prop: 'staff', propOpt: 2, over: 'cape', legs: 0x3a4a6a, boots: 0xe8e8f0, hem: 1.55, flare: 1.2 },
@@ -34,9 +34,9 @@ export const FOLK_LOOKS = {
 };
 // 体つき（m）。腰の高さ、胴の倍率、頭の半径、腕と脚の長さ、肩・股の幅、背の丸み
 const BODY = {
-  adult: { hip: 0.84, torso: [1, 1, 1], head: 0.135, arm: 0.6, leg: 0.84, sh: 0.2, hp: 0.095, hunch: 0, armT: 0.11, legT: 0.092 },
-  child: { hip: 0.5, torso: [0.72, 0.62, 0.72], head: 0.125, arm: 0.38, leg: 0.5, sh: 0.145, hp: 0.07, hunch: 0, armT: 0.14, legT: 0.13 },
-  elder: { hip: 0.78, torso: [1.08, 0.94, 1.08], head: 0.132, arm: 0.57, leg: 0.78, sh: 0.2, hp: 0.1, hunch: 0.32, armT: 0.12, legT: 0.1 },
+  adult: { hip: 0.84, torso: [1, 1, 1], head: 0.145, arm: 0.6, leg: 0.84, sh: 0.2, hp: 0.095, hunch: 0, armT: 0.11, legT: 0.092 },
+  child: { hip: 0.5, torso: [0.74, 0.62, 0.74], head: 0.152, arm: 0.38, leg: 0.5, sh: 0.145, hp: 0.07, hunch: 0, armT: 0.14, legT: 0.13 },
+  elder: { hip: 0.78, torso: [1.08, 0.94, 1.08], head: 0.142, arm: 0.57, leg: 0.78, sh: 0.2, hp: 0.1, hunch: 0.32, armT: 0.12, legT: 0.1 },
 };
 
 // ── 形づくり（頂点：position normal color aF。aF = 色の種類 0 主 1 差し 2 そのまま／曲げ 0 1／形の番号 -1 共通／しるし）──
@@ -113,8 +113,8 @@ function headGeo() {
     return bake(disc, { m: [x * d, y * d, z, e.x, e.y, e.z, sx, sy, 1], mat, color, smooth: true });
   };
   for (const s of [-1, 1]) {
-    P.push(onFace(0.34 * s, 0.06, 0.11, 0.155, 2, 0x2a1d1a, 1.02));        // 目
-    P.push(onFace(0.34 * s + 0.035, 0.11, 0.035, 0.035, 2, 0xfff6ea, 1.045, 5));  // 目の光
+    P.push(onFace(0.33 * s, 0.04, 0.135, 0.19, 2, 0x231815, 1.02));        // 目
+    P.push(onFace(0.33 * s + 0.045, 0.1, 0.045, 0.045, 2, 0xfff6ea, 1.045, 5));  // 目の光
     P.push(onFace(0.5 * s, -0.2, 0.15, 0.1, 2, 0xf09a96, 1.015));            // ほほ
     P.push(bake(new THREE.BoxGeometry(0.22, 0.045, 0.06), { m: [0.33 * s, 0.3, -0.92, 0, 0, -0.12 * s], mat: 1 }));   // まゆ
   }
@@ -141,10 +141,12 @@ function hatGeo() {
   P.push(bake(shell(1.07, 0.42, -0.45, 0.35), { mat: 1, v: 0, ao: (x, y) => 0.8 + 0.2 * Math.min(1, Math.max(0, y)) }));
   P.push(bake(new THREE.ConeGeometry(0.16, 0.42, 5), { m: [0.25, 0.98, -0.2, -0.5, 0, -0.5], mat: 1, v: 0 }));
   // 頭巾：大きくやわらかい頭巾。うしろへ垂れる先と、先の房（差し色）
-  P.push(bake(shell(1.2, 0.5, -0.9, 0.7), { mat: 0, v: 1, ao: (x, y, z) => (z < -0.6 && y < 0.6 ? 0.7 : 0.88 + 0.12 * Math.max(0, y)) }));
-  P.push(bake(new THREE.ConeGeometry(0.5, 1.0, 8), { m: [0, 0.35, 1.15, -2.2, 0, 0], mat: 0, v: 1, tag: 1 }));
-  P.push(bake(new THREE.SphereGeometry(0.22, 6, 5), { m: [0, -0.05, 1.62], mat: 1, v: 1, tag: 1 }));
-  P.push(bake(new THREE.TorusGeometry(1.02, 0.12, 5, 14, Math.PI * 1.1), { m: [0, 0.06, -0.28, -0.32, 0, Math.PI * 0.95 / 2 + Math.PI / 2, 1, 1, 0.75], mat: 1, v: 1 }));
+  P.push(bake(shell(1.28, 0.55, -1.0, 0.8), { mat: 0, v: 1, ao: (x, y, z) => (z < -0.6 && y < 0.6 ? 0.7 : 0.88 + 0.12 * Math.max(0, y)) }));
+  P.push(bake(new THREE.ConeGeometry(0.55, 1.15, 8), { m: [0, 0.2, 1.3, -1.95, 0, 0], mat: 0, v: 1, tag: 1 }));
+  P.push(bake(new THREE.SphereGeometry(0.26, 7, 5), { m: [0, -0.32, 1.78], mat: 1, v: 1, tag: 1 }));
+  // 子どもの頭巾の耳（しるし 4、iA.z = 1 のときだけ）
+  for (const sx of [-1, 1]) P.push(bake(new THREE.SphereGeometry(0.34, 7, 5), { m: [0.68 * sx, 1.02, 0.05, 0, 0, -0.5 * sx, 0.75, 1, 0.5], mat: 0, v: 1, tag: 4 }));
+  P.push(bake(new THREE.TorusGeometry(1.08, 0.14, 5, 16, Math.PI * 1.15), { m: [0, 0.02, -0.32, -0.3, 0, Math.PI * 0.925 / 2 + Math.PI / 2, 1, 1, 0.78], mat: 1, v: 1 }));
   // つばのある帽子：山（主）、帯（差し色）、つば（主）。つばの半径と山の高さはシェーダー
   P.push(bake(lathe([[0.001, 1.55], [0.55, 1.5], [0.82, 1.3], [0.92, 0.75], [1.0, 0.55]], 12), { mat: 0, v: 2, tag: 2, ao: (x, y) => (y < 0.8 ? 0.85 : 1) }));
   P.push(bake(new THREE.CylinderGeometry(0.95, 0.99, 0.2, 12, 1, true), { m: [0, 0.7, 0], mat: 1, v: 2, tag: 2 }));
@@ -254,6 +256,7 @@ void main() {
     // 帽子のつば（しるし 3）と山（しるし 2）
     if (aF.w > 2.5 && aF.w < 3.5) p.xz *= mix(1.0, iA.z * 0.5, smoothstep(1.0, 2.0, length(p.xz)));
     if (aF.w > 1.5 && aF.w < 2.5 && p.y > 0.75) p.y = 0.75 + (p.y - 0.75) * iA.w;
+    if (aF.w > 3.5 && aF.w < 4.5) keep *= step(0.5, iA.z);
   } else if (uKind > 2.5 && uKind < 3.5) {
     // 杖の飾り：iA.z = 1 風車 2 鈴。風車は回る
     if (aF.w > 0.5 && aF.w < 1.5) { keep *= step(0.5, iA.z) * step(iA.z, 1.5); float a = uTime * 3.0; vec3 q = p - vec3(0.0, 1.13, -0.04); p = vec3(q.x * cos(a) - q.y * sin(a), q.x * sin(a) + q.y * cos(a), q.z) + vec3(0.0, 1.13, -0.04); }
@@ -330,9 +333,9 @@ const POSE = {
     setA(j.aR, 0.45 + 0.22 * S(t * 2.1 + r), 0.18, 0.2, 1.25 + 0.3 * S(t * 2.7)); setA(j.aL, 0.15 + 0.1 * S(t * 1.7), 0.12, 0, 0.5 + 0.2 * S(t * 2.3 + 1));
     j.hp = 0.06 * S(t * 4.6) * k; j.hr = 0.06 * S(t * 1.3 + r);
   },
-  wave(j, t, g, r) { POSE.idle(j, t, g, r); setA(j.aR, 0.35, 2.55, 0, 0.45 + 0.4 * S(t * 9)); j.hr = 0.1; j.sr = -0.05; },
+  wave(j, t, g, r) { POSE.idle(j, t, g, r); setA(j.aR, 0.25, 2.45 + 0.32 * S(t * 8.5), 0, 0.55); j.hr = 0.1; j.sr = -0.05; },
   nod(j, t, g, r) { POSE.idle(j, t, g, r); j.hp = 0.18 + 0.2 * S(t * 6); j.sp = 0.08 + 0.05 * S(t * 6); },
-  cheer(j, t) { const b = Math.abs(S(t * 6.5)); j.bob = b * 0.09; setA(j.aL, 2.6 + 0.2 * S(t * 6.5), 0.35, 0, 0.3); setA(j.aR, 2.6 + 0.2 * S(t * 6.5 + 1), 0.35, 0, 0.3); j.hp = -0.2; j.lL[2] = j.lR[2] = -0.3 * b; },
+  cheer(j, t) { const b = Math.abs(S(t * 6.5)); j.bob = b * 0.09; setA(j.aL, 2.3 + 0.2 * S(t * 6.5), 0.75, 0, 0.25); setA(j.aR, 2.3 + 0.2 * S(t * 6.5 + 1), 0.75, 0, 0.25); j.hp = -0.2; j.lL[2] = j.lR[2] = -0.3 * b; },
   cower(j, t) { j.hipY = -0.42; setA(j.lL, 0.95, 0.15, -1.6); setA(j.lR, 0.95, 0.15, -1.6); j.sp = 0.55; j.lean = 0.2; setA(j.aL, 2.2, 0.3, 0, 1.9); setA(j.aR, 2.2, 0.3, 0, 1.9); j.hp = 0.35; j.twist = 0.03 * S(t * 23); },
   climb(j, t) {
     const a = S(t * 2.2), b = S(t * 2.2 + Math.PI);
@@ -443,7 +446,7 @@ export function createFolk(env) {
   function remove(f) { const i = list.indexOf(f); if (i >= 0) list.splice(i, 1); }
 
   // ── 毎フレーム ──
-  const mA = new THREE.Matrix4(), mB = new THREE.Matrix4(), mT = new THREE.Matrix4(), mR = new THREE.Matrix4(), mS = new THREE.Matrix4(), mH = new THREE.Matrix4();
+  const mA = new THREE.Matrix4(), mB = new THREE.Matrix4(), mT = new THREE.Matrix4(), mR = new THREE.Matrix4(), mS = new THREE.Matrix4(), mH = new THREE.Matrix4(), hand = new THREE.Matrix4();
   const q = new THREE.Quaternion(), e = new THREE.Euler(0, 0, 0, 'YXZ'), v = new THREE.Vector3(), v2 = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1), sc = new THREE.Vector3();
   const rot = (m, x, y, z, order = 'YZX') => { e.set(x, y, z, order); return m.makeRotationFromEuler(e); };
   const drawP = [], drawB = [];
@@ -492,7 +495,10 @@ export function createFolk(env) {
     const s = (L.scale || 1) * (0.4 + 0.6 * f._s.appear) * (f.kind === 'adult' ? 1 : 1);
     const hipH = B.hip * s, yr = -f.yaw * Math.PI / 180;
     // 根もと：腰（座る・しゃがむと下がる）
-    const seat = j.hipY < 0 ? hipH + j.hipY * (hipH - 0.42 * s) * (j.hipY <= -1 ? 1 : 1) : hipH;
+    // 座る：腰かけの高さ f.seat（既定 0.42 m＝丸太・桟橋の縁）。0.25 m より低ければ地面に座り、ひざを立てる
+    const seatH = f.seat ?? 0.42;
+    if (j.hipY <= -1 && seatH < 0.25) { setA(j.lL, 1.15, 0.3, -2.2); setA(j.lR, 1.05, 0.22, -2.1); }
+    const seat = j.hipY < 0 ? hipH + j.hipY * (hipH - (j.hipY <= -1 ? Math.max(0.1, seatH) : 0.42) * s) : hipH;
     mA.makeTranslation(f.pos.x, f.pos.y + seat + j.bob * s, f.pos.z);
     mA.multiply(rot(mR, B.hunch * 0.2 + j.lean, yr + j.twist, j.roll));
     // 脚
@@ -513,22 +519,29 @@ export function createFolk(env) {
     mH.copy(mB).multiply(mT.makeTranslation(0, tH, 0)).multiply(rot(mR, j.hp + B.hunch * 0.4, j.hy, j.hr)).multiply(mT.makeTranslation(0, hr * 0.92, -hr * 0.08)).multiply(mS.makeScale(hr, hr, hr));
     M.head.setMatrixAt(ip, mH); col.set(L.skin); M.head.setColorAt(ip, col); setC2(M.head, ip, L.hair); setIA(M.head, ip, 0, -2, 0, 0);
     M.hat.setMatrixAt(ip, mH); col.set(L.hat); M.hat.setColorAt(ip, col); setC2(M.hat, ip, L.hatKind === 'hood' ? (L.trim ?? 0xf4ecd8) : (L.hatKind === 'brim' ? L.trim : L.hair));
-    setIA(M.hat, ip, 0, HATS[L.hatKind] ?? -1, L.brim ?? 2.0, L.crown ?? 0.6);
+    setIA(M.hat, ip, 0, HATS[L.hatKind] ?? -1, L.hatKind === 'hood' ? (L.ears ? 1 : 0) : (L.brim ?? 2.0), L.crown ?? 0.6);
     v.set(0, 0, 0).applyMatrix4(mH); f.headPos.copy(v);
     // 腕
-    let handM = null;
+    const pv = PROPS[L.prop] ?? -1, upright = pv === 0 || pv === 4, propSide = upright ? 0 : 1;
     for (let side = 0; side < 2; side++) {
       const ar = side ? j.aR : j.aL, sg = side ? 1 : -1;
       mH.copy(mB).multiply(mT.makeTranslation(sg * shX, shY, 0)).multiply(rot(mR, ar[0], sg * ar[2], sg * ar[1], 'YZX'));
       const li = ip * 4 + 2 + side;
-      if (side) { handM = mT.copy(mH).multiply(mS.makeTranslation(0, -0.5 * B.arm * s, 0)).multiply(rot(mR, ar[3], 0, 0)).multiply(mS.makeTranslation(0, -0.47 * B.arm * s, 0)); v2.set(0, 0, 0).applyMatrix4(handM); f.handPos.copy(v2); }
+      if (side === propSide || side) {
+        mT.copy(mH).multiply(mS.makeTranslation(0, -0.5 * B.arm * s, 0)).multiply(rot(mR, ar[3], 0, 0)).multiply(mS.makeTranslation(0, -0.47 * B.arm * s, 0));
+        if (side) { v2.set(0, 0, 0).applyMatrix4(mT); f.handPos.copy(v2); }
+        if (side === propSide) hand.copy(mT);
+      }
       mH.multiply(mS.makeScale(B.arm * s, B.arm * s, B.arm * s));
       M.limb.setMatrixAt(li, mH); col.set(L.sleeves === 'skin' ? L.skin : L.coat); M.limb.setColorAt(li, col); setC2(M.limb, li, L.sleeves === 'skin' ? (L.armTrim ?? L.skin) : L.skin); setIA(M.limb, li, ar[3], 0, B.armT, 0);
     }
     // 持ちもの
-    const pv = PROPS[L.prop] ?? -1;
     if (pv === 3) mH.copy(mB).multiply(mS.makeScale(s, s, s));
-    else if (handM) mH.copy(handM).multiply(mS.makeScale(s, s, s));
+    else if (upright) {
+      // 杖と灯籠は手の位置に、まっすぐ立てて持つ（体の向きだけ回す。歩くと少し前後にゆれる）
+      v2.set(0, 0, 0).applyMatrix4(hand);
+      mH.makeTranslation(v2.x, v2.y, v2.z).multiply(rot(mR, 0.08 * Math.sin(f._s.gait) * Math.min(1, f._s.speed), yr, -0.06)).multiply(mS.makeScale(s, s, s));
+    } else mH.copy(hand).multiply(mS.makeScale(s, s, s));
     M.prop.setMatrixAt(ip, mH); col.set(0xffffff); M.prop.setColorAt(ip, col); setIA(M.prop, ip, 0, pv, L.propOpt ?? 0, 0);
     // 影
     mH.makeTranslation(f.pos.x, f.pos.y + 0.03, f.pos.z).multiply(mS.makeScale(0.42 * s, 1, 0.42 * s));

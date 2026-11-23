@@ -104,9 +104,19 @@ export const NPC_SPOTS = {
   mio: { x: -28.4, z: 473.6, yaw: 190, region: 'meadow', near: 'camp_meadow' },
   sora: { x: -31.4, z: 474.3, yaw: 165, region: 'meadow', near: 'camp_meadow' },
   towa: { x: -26.9, z: 467.4, yaw: 175, region: 'meadow', near: 'camp_meadow' },
-  zaji: { x: 0, z: 0, yaw: 0, region: 'canyon', near: 'climb_mesa' },      // 登り面の前（climb.js が確定して書く）
+  zaji: { x: 399.8, z: -61.2, yaw: 90, region: 'canyon', near: 'climb_mesa' },   // つた壁のふもと、崩れ石の坂の上（壁を向く）
 };
-export const DUMMY_CAMP = { x: -35.6, z: 470.4, yaw: 90 };   // ガンド爺の稽古の木人（焚き火から 5.6 m、東＝焚き火の方を向く）
+export const DUMMY_CAMP = { x: -35.6, z: 470.4, yaw: 90 };
+
+// 登り面（DESIGN_V2 §2.5、MVP の 2 か所）。yaw は面の外向き（度、0 = 北、時計回り）
+// climb_mesa：茜の台地の西の崖（段丘 54 m の縁）。峡谷の灯 (330, 20) から見える西向きの壁で、アーチを回る西の坂道（約 310 m）を
+//   約 170 m に縮める近道。設計書の (500, -30) は台地の内側だったので、灯と鐘塔を結ぶ線上の実際の崖に置いた。
+//   ふもとに崩れ石の坂（30°）を盛って、壁の高さを 14.5 m にしている（heightfield.js の carveWalls）
+// climb_arch：風穴のアーチの北の脚の西面に寄りそう岩の柱（楔 34 本、棚 2）。上でアーチの背に出る。設計書の (372, 100) から約 8 m
+export const CLIMBS = [
+  { id: 'climb_mesa', kind: 'vine', x: 404.5, z: -58, yaw: 270, width: 10, height: 14.5, ledges: [7.2], carve: true, region: 'canyon' },
+  { id: 'climb_arch', kind: 'pegs', on: 'great_arch', lx: 13, lz: -6.0, width: 3.6, ledges: [7.0, 14.2], region: 'canyon' },
+];   // ガンド爺の稽古の木人（焚き火から 5.6 m、東＝焚き火の方を向く）
 
 // 宝箱 12（剣は台座）。hiddenBy はしかけの id
 export const CHESTS = [
@@ -122,6 +132,8 @@ export const CHESTS = [
   { id: 'chest_arrows_coast', x: 300, z: 520, yaw: 20, loot: [{ itemId: 'arrow', count: 10 }], hiddenBy: null },
   { id: 'chest_bombs_canyon', x: 352, z: -92, yaw: 180, loot: [{ itemId: 'bomb', count: 4 }], hiddenBy: 'crack_canyon' },
   { id: 'chest_bombs_meadow', x: 206, z: 404, yaw: 280, loot: [{ itemId: 'bomb', count: 3 }], hiddenBy: null },
+  // アーチの背（登って上がる）。y は spawns.js が climb.js の archTopY から決める
+  { id: 'chest_honey_arch', x: 0, z: 0, yaw: 0, loot: [{ itemId: 'honeycomb', count: 1 }], hiddenBy: null, onArch: { lx: -5.5, lz: 0.6, yaw: 198 } },
 ];
 
 // しかけ（ひび岩・いばら・氷塊）。chest を隠すものは宝箱の手前に置く

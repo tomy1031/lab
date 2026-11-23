@@ -231,7 +231,7 @@ export function createTutorial(ctx, S, ui) {
       // which card: the lesson (stage 0), the first main step (stage 1), nothing after
       const D = ctx.game && ctx.game.drill;
       const want = D && D.active ? 'guard' : Q.stage === 0 ? 'tutorial' : Q.stage === 1 ? 'main' : 'none';
-      if (mode === 'none' && want !== 'none' && !pendingMode) { mode = want; fadeTo = 1; sig = ''; drawT = 0; }
+      if (mode === 'none' && want !== 'none' && !pendingMode) { mode = want; fadeTo = 1; sig = ''; drawT = 0; if (want === 'guard') placed = placeByDummy(D); }
       else if (want !== mode && !pendingMode) setMode(want);
       if (!placed && want !== 'none') placed = place();
       // fades (switch card while invisible)
@@ -243,7 +243,6 @@ export function createTutorial(ctx, S, ui) {
         if (mode === 'guard') placed = placeByDummy(D);
         else if (was === 'guard' && mode !== 'none') placed = place();
       }
-      if (mode === 'none' && want === 'guard' && !pendingMode) { mode = 'guard'; placed = placeByDummy(D); }
       const pl = ctx.player && ctx.player.pos;
       const near = placed && pl ? Math.hypot(pl.x - root.position.x, pl.z - root.position.z) < 70 : false;
       root.visible = placed && near && mode !== 'none' && fade > 0.02 && S.hudVisible !== false;

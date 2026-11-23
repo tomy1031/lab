@@ -40,7 +40,7 @@ export function createEnemies(ctx, G) {
   let gold = null;
   try {
     const art = ctx.art || (ctx.world && ctx.world.art);
-    if (art && typeof art.glow === 'function') { gold = art.glow({ color: 0xffd76a, size: 0.55, opacity: 0.95 }); gold.visible = false; gold.renderOrder = 12; root.add(gold); }
+    if (art && typeof art.glow === 'function') { gold = art.glow({ color: 0xffd76a, size: 0.5, opacity: 0.8 }); gold.visible = false; gold.renderOrder = 12; root.add(gold); }
   } catch (e) { gold = null; }
   ctx.events?.on?.('player:duck', (p) => { if (p && p.down && rt() - duckRT > 0.6) duckRT = rt(); });
 
@@ -1221,6 +1221,7 @@ export function createEnemies(ctx, G) {
           }
         } else spin.rotation.x = 0;
         m.setArms(ax);
+        e.armAx = ax;
         spin.rotation.y = ay;
         if (e.state === 'stagger') spin.rotation.x = -0.25 * Math.sin(Math.min(1, e.t * 4) * Math.PI);
         if (m.glow) m.glow.scale.setScalar(m.glowSize * (1 + 0.15 * Math.sin(e.anim * Math.PI * 1.6)));
@@ -1287,7 +1288,12 @@ export function createEnemies(ctx, G) {
   function cuePos(e, out) {
     const fx_ = Math.sin(e.yaw), fz = -Math.cos(e.yaw);
     switch (e.type) {
-      case 'husk': return e.atk && e.atk.kind === 'high' ? out.set(e.pos.x + fx_ * 0.55 + fz * 0.45, e.pos.y + 1.5, e.pos.z + fz * 0.55 - fx_ * 0.45) : out.set(e.pos.x + fx_ * 0.3, e.pos.y + 2.35, e.pos.z + fz * 0.3);
+      case 'husk': {
+        // the right claw: (0.44, -1.04, 0) below the shoulder pivot (0, 1.42, 0), swung by the arm angle
+        const ax = e.armAx || 0, sp = e.model && e.model.spin;
+        if (sp) { sp.updateWorldMatrix(true, false); return sp.localToWorld(out.set(0.44, 1.42 - 1.04 * Math.cos(ax), -1.04 * Math.sin(ax))); }
+        return out.set(e.pos.x + fx_ * 0.6, e.pos.y + 1.5, e.pos.z + fz * 0.6);
+      }
       case 'rimeguard': return out.set(e.pos.x + fx_ * 1.1, e.pos.y + 2.5, e.pos.z + fz * 1.1);
       case 'lurker': return out.set(e.pos.x + fx_ * 1.0, e.pos.y + 0.5, e.pos.z + fz * 1.0);
       case 'wisp': { const b = e.boltIdx >= 0 ? bolts[e.boltIdx] : null; return b && b.active ? out.copy(b.pos) : out.copy(e.center); }
@@ -1309,11 +1315,11 @@ export function createEnemies(ctx, G) {
       const hz = 1.6 + (1 - k) * 4;
       gold.position.copy(best.coreWorld || best.center);
       if (best.type === 'lurker') gold.position.y += 0.35;
-      gold.scale.setScalar(0.55 * (1 + 0.25 * Math.sin(performance.now() / 1000 * Math.PI * 2 * hz)));
+      gold.scale.setScalar(0.42 * (1 + 0.25 * Math.sin(performance.now() / 1000 * Math.PI * 2 * hz)));
       gold.visible = true;
     } else if (cue) {
       cuePos(cue, gold.position);
-      gold.scale.setScalar(0.3);
+      gold.scale.setScalar(0.6);
       gold.visible = true;
     } else gold.visible = false;
   }
