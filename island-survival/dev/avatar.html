@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>avatar poses (dev)</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/","@pixiv/three-vrm":"https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.5.5/lib/three-vrm.module.js"}}</script>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#88a}canvas{display:block}</style></head>
+<body><canvas id="gl"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { Avatar, AVATAR_POSES } from '../js/companion/avatar.js';
+const q = new URLSearchParams(location.search);
+const model = q.get('m') || 'hana';
+const poses = (q.get('poses') || AVATAR_POSES.join(',')).split(',');
+const r = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true });
+r.setSize(innerWidth, innerHeight); r.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#9ab');
+scene.add(new THREE.HemisphereLight('#fff', '#664', 1.6)); const dl = new THREE.DirectionalLight('#fff', 2); dl.position.set(2, 4, 5); scene.add(dl);
+const g = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: '#cdb' })); g.rotation.x = -Math.PI / 2; scene.add(g);
+const cols = Math.ceil(Math.sqrt(poses.length));
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 100);
+const avs = [];
+for (let i = 0; i < poses.length; i++) {
+  const av = await Avatar.load(`../assets/companions/${model}.vrm`, scene);
+  const cx = (i % cols - (cols - 1) / 2) * 1.6, cz = -Math.floor(i / cols) * 2.2;
+  av.root.position.set(cx, 0, cz);
+  av.root.rotation.y = q.get('side') ? Math.PI / 2 : 0.35;
+  av.setPose(poses[i]); av.blend = 1; av.prevPose = poses[i];
+  av.setMood(poses[i] === 'cheer' ? { happy: 1 } : poses[i] === 'sick' ? { sad: 1 } : {});
+  avs.push(av);
+}
+const rows = Math.ceil(poses.length / cols);
+cam.position.set(0, 2.4 + rows * 0.8, 4 + rows * 2.6); cam.lookAt(0, 0.6, -(rows - 1) * 1.1);
+for (let k = 0; k < 60; k++) for (const av of avs) av.update(1 / 30, { speed: av.pose === 'run' ? 4.5 : av.pose === 'walk' ? 1.6 : 0, talkLevel: 0 });
+r.render(scene, cam);
+window.DONE = true;
+</script></body></html>
