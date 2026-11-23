@@ -14,6 +14,8 @@ import { CHARACTERS, charById, renderPortraits } from './race/characters.js';
 import { COURSES, CUPS, cupOf, TITLE_MUSIC } from './courses/index.js';
 import { Hud, fmtTime } from './ui/hud.js';
 import { Nav } from './ui/nav.js';
+import { Tuner } from './ui/tuner.js';
+import { TUNE, setTune, tuneText, applyTuneText, resetTune } from './race/tune.js';
 import { XRManager } from './vr/xr.js';
 import { VRInput } from './vr/vrinput.js';
 import { VRCockpit } from './vr/cockpit.js';
@@ -50,6 +52,7 @@ const nav = new Nav({ audio });
 const xr = new XRManager(renderer);
 const vrInput = new VRInput(renderer);
 let cockpit = null;
+let tuner = null; // the handling tuning panel (test drive / pause menu / ?tune)
 let portraits = new Map();
 const portraitImgs = new Map();
 let hud = null;
@@ -57,7 +60,7 @@ const inVR = () => xr.presenting;
 const vrWorldPos = new THREE.Vector3();
 
 const state = {
-  screen: 'loading', control: 'pad', inRace: false, paused: false, freeCam: null,
+  screen: 'loading', control: 'pad', inRace: false, paused: false, freeCam: null, testDrive: false,
   world: null, race: null, me: null, courseIdx: 0,
   gp: null, attractIdx: Number(params.get('attract') || 0), resultsTimer: 0, loadToken: 0, goingTitle: false,
   fps: 60, fpsAcc: 0, fpsN: 0, fpsT: 0, lowT: 0,
@@ -172,6 +175,13 @@ function act(a) {
     case 'again': audio.play('confirm'); startRace(state.courseIdx); break;
     case 'courses': audio.play('confirm'); buildCourseGrid(); go('s-course'); break;
     case 'gp-final': audio.play('confirm'); showGPFinal(); break;
+    case 'tune-drive': // test drive with the tuning panel: no CPUs, endless laps, straight onto the road
+      audio.play('confirm');
+      if (state.control === 'vr') state.control = 'pad';
+      state.testDrive = true; state.gp = null;
+      startRace(state.courseIdx || 0);
+      break;
+    case 'tune': pause(false, true); tuner?.open(state.courseIdx); break;
     default: break;
   }
 }
@@ -275,6 +285,7 @@ function goTitle() {
   if (inVR()) xr.exit();
   cockpit?.closeMenu();
   state.inRace = false; state.gp = null; state.paused = false; state.goingTitle = true;
+  state.testDrive = false; tuner?.close();
   hud?.show(false);
   $('touch').classList.remove('show');
   showScreen('s-loading');
@@ -304,7 +315,7 @@ function entrantsFor(courseIdx) {
     grid = state.gp.roster.map((id) => charById(id)).sort((a, b) => pts(a) - pts(b));
   } else {
     const rng = makeRng(raceSeed + courseIdx * 13);
-    const others = CHARACTERS.filter((c) => c.id !== me.id).sort(() => rng.next() - 0.5).slice(0, settings.cpu);
+    const others = CHARACTERS.filter((c) => c.id !== me.id).sort(() => rng.next() - 0.5).slice(0, state.testDrive ? 0 : settings.cpu);
     grid = [...others, me];
   }
   const seat = state.control === 'vr' && settings.vrView === 'first';
@@ -334,7 +345,7 @@ function startRace(idx, restart = false) {
     if (!restart) raceSeed++;
     const race = state.race = new Race({
       scene: state.world.scene, course, track: state.world.track, hazards: state.world.hazards, entrants,
-      cls: SPEED_CLASSES[settings.cls] || SPEED_CLASSES.normal, laps: settings.laps, seed: raceSeed,
+      cls: SPEED_CLASSES[settings.cls] || SPEED_CLASSES.normal, laps: state.testDrive ? 99 : settings.laps, seed: raceSeed,
       autoplay: params.has('autoplay'),
     });
     state.me = race.karts.find((k) => k.isHuman);
@@ -357,7 +368,8 @@ function startRace(idx, restart = false) {
     audio.setTempo(1);
     state.inRace = true; state.paused = false; state.resultsTimer = 0;
     showScreen(null);
-    if (params.has('skipintro')) race.skipIntro();
+    if (params.has('skipintro') || state.testDrive) race.skipIntro();
+    if (state.testDrive || params.has('tune')) tuner?.open(idx);
   });
 }
 
@@ -585,6 +597,7 @@ function tick(dt, raw = dt) {
     state.world.update(dt, elapsed, vr ? { position: camPos } : camera, focus);
     const sh = vr ? 1800 : renderer.r.getDrawingBufferSize(new THREE.Vector2()).y;
     race.parts.add.setScale(sh, vr ? 100 : camera.fov); race.parts.soft.setScale(sh, vr ? 100 : camera.fov);
+    if (me && state.inRace && !state.paused) tuner?.update(me, dt);
     if (me && state.inRace && !state.paused) {
       audio.engine(race.phase !== 'intro' && !me.finished, Math.max(0, me.speed) / me.maxSpeed, me.boost > 0, me.drift.active);
       if (!vr) hud.update(dt, race, me, state.control === 'hands' ? hands : null, audio);
@@ -632,6 +645,7 @@ async function boot() {
   await new Promise((r) => setTimeout(r, 20));
   portraits = renderPortraits(256);
   hud = new Hud(portraits);
+  tuner = new Tuner({ courses: COURSES, onCourse: (i) => startRace(i), onRestart: () => startRace(state.courseIdx, true) });
   buildCharGrid();
   refreshSetup();
   updatePadStatus(input.firstPad()?.id || '');
@@ -873,6 +887,7 @@ DD.debug = {
   hands, input, audio, renderer, xr, vrInput, get cockpit() { return cockpit; },
   get race() { return state.race; },
   get raceCam() { return raceCam; },
+  tune: { TUNE, setTune, tuneText, applyTuneText, resetTune, get panel() { return tuner; } },
   setControl(c) { state.control = c; },
 };
 

@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { clamp, damp, dampAngle, mod, lerp, smoothstep } from '../engine/util.js';
 import { INTRO_TIME } from './race.js';
+import { TUNE } from './tune.js';
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
 
@@ -75,9 +76,9 @@ export class RaceCamera {
         const slip = angleDiff(Math.atan2(k.vel.x, k.vel.z), k.heading);
         const w = 1 - smoothstep(0.5, 1.0, Math.abs(slip));
         // in a drift it follows where the kart is going more than where its nose points, and turns more softly
-        target = k.heading + (k.drift.active ? 0.7 : 0.35) * slip * w;
+        target = k.heading + (k.drift.active ? TUNE.camFollowDrift : 0.35) * slip * w;
       }
-      this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : k.drift.active ? 4.5 : 5.5, dt);
+      this.yaw = dampAngle(this.yaw, target, k.spin > 0 ? 1.5 : k.drift.active ? TUNE.camTurnDrift : TUNE.camTurn, dt);
       const dist = 6.6 + (k.boost > 0 ? 0.9 : 0) + clamp(k.speed / k.maxSpeed, 0, 1.3) * 0.5;
       this.chaseTarget(k, _v, _w, dist, 2.75);
       this.keepInside(tr, _v);
