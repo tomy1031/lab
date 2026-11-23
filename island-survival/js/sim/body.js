@@ -34,10 +34,10 @@ export function feltTemp(e) {
 }
 
 /** target body temperature for a felt temperature (§5.6) */
-export function targetBodyTemp(Tfeel, { working = false, starving = false, fever = 0 } = {}) {
+export function targetBodyTemp(Tfeel, { working = false, starving = false, fever = 0, coldLow = 20, hotHigh = 30 } = {}) {
   let t;
-  if (Tfeel < 20) t = 36.8 - (20 - Tfeel) * (starving ? 0.30 : 0.22);
-  else if (Tfeel > 30) t = 36.8 + (Tfeel - 30) * 0.25;
+  if (Tfeel < coldLow) t = 36.8 - (coldLow - Tfeel) * (starving ? 0.30 : 0.22);
+  else if (Tfeel > hotHigh) t = 36.8 + (Tfeel - hotHigh) * 0.25;
   else t = 36.8;
   if (working) t += 0.6;
   t += fever;
@@ -93,11 +93,13 @@ export function coldChance(s, D = 1, recentCold = false) {
 
 // ------------------------------------------------------------------ the body
 export class Body {
-  /** opts: { rng, diff (DIFFICULTY entry), drainMul (companion 0.8), name, bus, isPlayer } */
+  /** opts: { rng, diff (DIFFICULTY entry), drainMul (companion 0.8), name, bus, isPlayer, traits }
+   *  traits (a companion's sheet, §23.5): { coldLow, hotHigh, illness ×, regen ×, nightFear (/h), moraleDrain (/h), moraleJungleNight (/h) } */
   constructor(opts = {}) {
     this.rng = opts.rng;
-    this.diff = opts.diff || { drain: 1, illness: 1, worsen: 1, thermal: 0.35, needs: 1 };
+    this.baseDiff = opts.diff || { drain: 1, illness: 1, worsen: 1, thermal: 0.35, needs: 1 };
     this.drainMul = opts.drainMul ?? 1;
+    this.setTraits(opts.traits || null);
     this.name = opts.name || 'あなた';
     this.bus = opts.bus || null;
     this.isPlayer = opts.isPlayer ?? true;
@@ -115,6 +117,13 @@ export class Body {
     this.deathCause = null;
     this.log = [];
     this.heavyT = 0;           // seconds of heavy work recently (for 'working')
+  }
+
+  /** per-body modifiers (the companion's character sheet). null → the plain human of §4–§6 */
+  setTraits(t) {
+    this.traits = t || {};
+    const ill = this.traits.illness ?? 1;
+    this.diff = ill === 1 ? this.baseDiff : { ...this.baseDiff, illness: (this.baseDiff.illness ?? 1) * ill };
   }
 
   emit(name, arg) { this.bus?.emit(name, { who: this.name, isPlayer: this.isPlayer, ...arg }); }
@@ -240,7 +249,8 @@ export class Body {
     const fever = this.eff('temp');
     const clothes = env.clothes ?? (s.wet > 60 ? 0.3 : 1.0);
     this.feel = feltTemp({ Tair: env.Tair, sun: env.sun, shade: env.shade, hat: env.hat, windSpeed: env.windSpeed, windBlock: env.windBlock, wet: s.wet, fire: env.fire, clothes, shelterInsul: env.shelterInsul, huddle: env.huddle });
-    this.tTarget = targetBodyTemp(this.feel, { working: heavy, starving: s.food < 10, fever });
+    const T = this.traits;
+    this.tTarget = targetBodyTemp(this.feel, { working: heavy, starving: s.food < 10, fever, coldLow: T.coldLow ?? 20, hotHigh: T.hotHigh ?? 30 });
     // the design's rate is a per-hour step: 1 h moves 35 % of the gap (so dh-steps compound to the same)
     s.bodyTemp += (this.tTarget - s.bodyTemp) * (1 - Math.pow(1 - (D.thermal ?? 0.35), dh));
 
@@ -265,8 +275,9 @@ export class Body {
     s.rest = clamp(s.rest + (dRest > 0 ? dRest : dRest * drain) * dh, 0, 100);
 
     // ---------------- morale (§4.3)
-    let dM = -0.8;
-    if (env.night && env.outdoorsNoFire) dM -= 2;
+    let dM = T.moraleDrain ?? -0.8;
+    if (env.night && env.outdoorsNoFire) dM += T.nightFear ?? -2;
+    if (env.night && env.zone === 'jungle' && T.moraleJungleNight) dM += T.moraleJungleNight;
     if (s.wet > 50) dM -= 1.5;
     if (env.companionNear) dM += 0.6;
     if (env.night && env.fireNear) dM += 1.5;
@@ -281,7 +292,7 @@ export class Body {
     // ---------------- hp (§4.3, §4.5, §5.6, §6)
     let dHp = 0;
     const heavyCond = this.conditions.some((c) => c.t >= c.incubation && c.sev >= 2 && CONDITIONS[c.id]?.kind !== 'injury');
-    if (s.food > 40 && s.water > 40 && !heavyCond && s.bodyTemp >= 35 && s.bodyTemp < 38.5) dHp += sleeping ? 3.0 : 1.5;
+    if (s.food > 40 && s.water > 40 && !heavyCond && s.bodyTemp >= 35 && s.bodyTemp < 38.5) dHp += (sleeping ? 3.0 : 1.5) * (T.regen ?? 1);
     if (s.food <= 0) dHp -= 2.0;
     if (s.water <= 0) dHp -= 5.0;
     else if (s.water < 10) dHp -= 1.0;

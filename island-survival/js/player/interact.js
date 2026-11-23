@@ -159,6 +159,8 @@ export class Interact {
     const handKit = inv.stacks.find((s) => s.id === 'hand_drill_kit');
     if (handKit) out.push({ id: 'hand_drill', p: ignitionChance({ ...base, method: 'hand_drill', board: handKit.stats?.board ?? 1, notch: !handKit.stats?.noNotch, wetKit: handKit.wet > 60 ? 0.3 : 1 }), stack: handKit });
     if (inv.withTag?.('stone')?.length >= 0 && inv.count('flint') >= 2) out.push({ id: 'flint_flint', p: tinder.mul >= 1 ? ignitionChance({ ...base, method: 'flint_flint' }) : 0 });
+    // §23.3 ガイドの 段取り: a guide partner beside you adds +0.05 to the base chance
+    if (g.sys.companion?.perkNear?.('planner', 6)) for (const m of out) if (m.id !== 'ember' && m.p > 0) m.p = Math.min(0.99, m.p + 0.05);
     return out.filter((m) => m.p > 0).sort((a, b) => b.p - a.p);
   }
 
@@ -380,7 +382,9 @@ export class Interact {
       const fresh = clamp(100 - ageH * 4 * (node.data.gutted ? 1 : 1.5), 0, 100);
       const extra = { fresh, bled: !!node.data.bled, gutted: true, source: sp.name, rng: g.rng };
       const meatId = Object.keys(y).find((k) => /meat|small_game/.test(k));
-      let meat = Math.round(y[meatId] * B.meat) - (node.data.meatLoss || 0);
+      // §23.3 猟師の 読み: a hunter partner beside you gets ~10 % more meat out of the carcass
+      const huntPal = g.sys.companion?.perkNear?.('tracker', 8) ? 1.1 : 1;
+      let meat = Math.round(y[meatId] * B.meat * huntPal) - (node.data.meatLoss || 0);
       if (node.data.dirty) extra.q = 30;
       this.gain(meatId, Math.max(1, meat), extra);
       if (y.hide && B.hide) this.gain('hide', Math.max(1, Math.round(y.hide * B.hide)), { q: B.hideQ });

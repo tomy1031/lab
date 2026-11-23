@@ -153,7 +153,7 @@ function buildingAdapter(game) {
       return;
     }
     if (opt.id === 'work') {
-      const helpers = { axe: !!inv.find('axe'), hammer: !!inv.stacks.find((s) => /hammer/.test(s.id)), companion: game.sys.companion?.helping?.(site) ? (game.setup.companion === 'gen' ? 'gen' : true) : false };
+      const helpers = { axe: !!inv.find('axe'), hammer: !!inv.stacks.find((s) => /hammer/.test(s.id)), companion: game.sys.companion?.helping?.(site) ? (game.sys.companion.buildHelpMul?.() ?? true) : false };
       const total = Math.max(1, (site.def.minutes || 10) - (site.workDone || 0));
       interact.startActivity({ kind: 'hit', title: `${site.def.name}を 建てる`, params: { hits: Math.min(10, Math.max(2, Math.round(total / 15))), interval: 0.5, anyStroke: true } }, () => {
         const r = B.work(site, total, helpers);

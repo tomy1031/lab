@@ -79,7 +79,8 @@ export function biteModel(game, o) {
     const w = share * tm * tide * bm * hookMatch * guide;
     if (w > 0) { weights.push([id, w]); total += w; }
   }
-  const rate = density * weather * presence * line * total;
+  const pal = game.sys?.companion?.perkNear?.('fish_eye', 12) ? 1.2 : 1; // §23.3 漁師の 目利き: a fisher partner beside you
+  const rate = density * weather * presence * line * total * pal;
   return { meanSec: rate > 0 ? 60 / rate : Infinity, weights, factors: { pod, tide: tp, weather, presence, line, density } };
 }
 

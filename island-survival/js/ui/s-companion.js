@@ -43,8 +43,8 @@ export default function companion(ctx, data = {}) {
     let jobs = []; try { jobs = C?.jobs?.() || []; } catch { /* ignore */ }
     if (!jobs.length) pane.append(h('p', { class: 'muted pad' }, 'いまは 頼める 仕事が ありません。'));
     pane.append(h('div', { class: 'job-list' }, jobs.map((j) => h('button', { class: 'card job', disabled: j.available === false || null, onclick: async () => {
-      const r = await safe(() => C?.ask?.(j.id));
-      if (r) say(r); screens.hide();
+      await safe(() => C?.ask?.(j.id)); // the answer comes as the companion's own line (subtitle)
+      screens.hide();
     } }, h('span', { class: 'job-i' }, j.icon || '📌'), h('span', null, h('b', null, j.label || j.name), h('span', { class: 'muted small block' }, j.available === false ? (j.reason || '今は できません') : (j.desc || '')))))));
   }
   function stackBtn(s, onclick) {
@@ -56,7 +56,7 @@ export default function companion(ctx, data = {}) {
     const theirs = status().inv;
     pane.append(h('div', { class: 'swap' },
       h('div', null, h('h3', { class: 'col-h' }, 'あなたの 持ち物（渡す）'), h('div', { class: 'craft-list' }, mine.map((s) => stackBtn(s, async () => { await safe(() => game.actions?.giveToCompanion?.(s.uid, 1) ?? C?.give?.(s.uid, 1)); render(); })))),
-      h('div', null, h('h3', { class: 'col-h' }, `${nm}の 持ち物（もらう）`), h('div', { class: 'craft-list' }, theirs.length ? theirs.map((s) => stackBtn(s, async () => { await safe(() => C?.receive?.(s.uid, 1) ?? C?.take?.(s.uid, 1)); render(); })) : h('p', { class: 'muted pad' }, '何も 持っていません。')))));
+      h('div', null, h('h3', { class: 'col-h' }, `${nm}の 持ち物（もらう）`), h('div', { class: 'craft-list' }, theirs.length ? theirs.map((s) => stackBtn(s, async () => { await safe(() => C?.take?.(s.uid, 1)); render(); })) : h('p', { class: 'muted pad' }, '何も 持っていません。')))));
   }
   const meter = (n, max, on, off, blur) => h('span', { class: 'meter', style: blur ? { filter: `blur(${blur}px)` } : null }, Array.from({ length: max }, (_, i) => {
     const f = Math.max(0, Math.min(1, n - i)); return h('span', { class: 'm-unit', style: { '--f': `${f * 100}%` } }, f > 0.66 ? on : f > 0.33 ? on : off);
@@ -69,7 +69,7 @@ export default function companion(ctx, data = {}) {
     const stage = stageOf(st.affinity);
     const hearts = (n) => h('span', { class: 'hearts', role: 'img', 'aria-label': `${n} / 5` }, Array.from({ length: 5 }, (_, i) => h('i', { class: i < n ? 'on' : '' }, i < n ? '♥' : '♡')));
     let sheet = null; try { sheet = C?.sheet || game.sys?.companion?.sheet || null; } catch { /* ignore */ }
-    const affTxt = st.affinity < 20 ? 'ほどほどの 距離' : st.affinity < 60 ? 'だいぶ うちとけた' : 'とても なかよし';
+    const affTxt = ['まだ 遠慮が ある。頼まれた ことだけ やる', 'ふつうに 話せる。頼めば 分けて くれる', 'うちとけて きた。困って いると 自分から 助けて くれる', '仲が いい。先回りして 動いて くれる', 'かけがえの ない 相棒。自分が 空腹でも 半分 くれる'][stage - 1];
     pane.append(h('div', { class: 'look-grid' },
       h('div', { class: 'paper-inset pad' }, h('h3', null, `${nm}の 体調`), h('div', { class: 'mood' }, h('span', { class: 'mood-i' }, mi), h('b', null, ml)),
         bar('体力', 'hp', '#e5484d'), bar('満腹', 'food', '#f08a24'), bar('水分', 'water', '#3b9be6'), bar('睡眠', 'rest', '#8c6cd9'), bar('気力', 'morale', '#e3b82a'),

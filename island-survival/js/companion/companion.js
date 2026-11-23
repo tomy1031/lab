@@ -18,17 +18,21 @@ import { PERSONAS, systemPrompt, callYouFor } from '../data/personas.js';
 import { pickLine } from '../data/lines.js';
 import { itemDef } from '../data/items.js';
 import { getApiKey } from '../core/save.js';
+import { rollSheet, derived, stageOf, STAGES, acceptChance, jobMultiplier, bestJobs, selfAwareness } from '../sim/companion-sheet.js';
+import { PROFESSIONS } from '../data/professions.js';
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 export const AVAILABLE = { nagi: true, touko: true, gen: false };
 
+// abstract jobs (§13.4). Output per game hour is multiplied by the sheet's jobMultiplier (§23.5).
 const JOBS = {
-  gather_wood: { name: '薪あつめ', pose: 'gather', zones: ['jungle', 'grass'], perHour: [['branch', 5], ['twig', 4]], fav: 'gen' },
-  gather_food: { name: '食べ物さがし', pose: 'gather', zones: ['beach', 'grass', 'jungle'], perHour: [['coconut', 1], ['berry', 3], ['shellfish', 2]], fav: 'touko' },
+  gather_wood: { name: '薪あつめ', pose: 'gather', zones: ['jungle', 'grass'], perHour: [['branch', 5], ['twig', 4]] },
+  gather_food: { name: '食べ物さがし', pose: 'gather', zones: ['beach', 'grass', 'jungle'], perHour: [['coconut', 1], ['berry', 3], ['shellfish', 2]] },
   fetch_water: { name: '水くみ', pose: 'gather', zones: ['stream'], perHour: [], needsContainer: true },
-  fish: { name: '釣り・漁', pose: 'fish', zones: ['beach', 'rocks'], perHour: [['sardine', 1]], fav: 'nagi' },
-  tend_fire: { name: '火の 番', pose: 'sit', zones: [], perHour: [], fav: 'gen' },
+  fish: { name: '釣り・漁', pose: 'fish', zones: ['beach', 'rocks'], perHour: [['sardine', 1]], sea: true },
+  tend_fire: { name: '火の 番', pose: 'sit', zones: [], perHour: [] },
 };
+const SHEET_TRAITS = ['coldLow', 'hotHigh', 'illness', 'regen', 'nightFear', 'moraleDrain', 'moraleJungleNight'];
 
 export class Companion {
   constructor(game, id) {
@@ -39,8 +43,17 @@ export class Companion {
     this.body = null;      // CompanionBody (movement)
     this.vitals = new Body({ rng: game.rng, diff: game.diff, drainMul: 0.8, bus: game.bus, isPlayer: false, name: this.name });
     this.vitals.s.morale = 65;
-    this.inv = new Inventory(id === 'touko' ? 8 : 10);
+    this.inv = new Inventory(10);
     this.trust = 40; this.affinity = 20;
+    // §23: the character sheet rolled on the setup screen (or rolled now for quick starts / old saves)
+    const given = game.setup?.companionSheet;
+    this.setSheet(given && given.char === id ? JSON.parse(JSON.stringify(given)) : rollSheet(id, game.setup?.profession || 'auto', () => game.rng.next()));
+    if (Number.isFinite(game.setup?.companionAffinity)) this.affinity = clamp(game.setup.companionAffinity, 0, 100);
+    this.stage = stageOf(this.affinity);
+    this.refused = {};           // job id → game minute it was refused (asking again right away is pointless)
+    this.lastKindT = -999;       // last time the player gave food / a gift / treatment (§23.7 recentKindness)
+    this.lastShareT = -999;
+    this.idleSince = 0;
     this.mood = 'normal';
     this.order = 'follow';       // follow | wait | job | base
     this.job = null;             // { id, until (game min), acc }
@@ -71,6 +84,25 @@ export class Companion {
     bus.on('game:end', () => { this.talk?.stop(); });
   }
 
+  /** §23.5: the sheet's derived values drive the body, the bag, the legs and the chatter */
+  setSheet(sheet) {
+    this.sheet = sheet;
+    const d = this.derived = derived(sheet);
+    this.vitals.drainMul = d.appetite;                    // already includes the companion's ×0.8 and sex ×0.9
+    const t = {}; for (const k of SHEET_TRAITS) t[k] = d[k];
+    this.vitals.setTraits(t);
+    this.inv.capacity = Math.round(d.carry * 10) / 10;
+    this.speedMul = d.speed / 4.0;
+    if (this.body) this.body.speedMul = this.speedMul;
+    this.chatMul = d.chatMul;
+    this.profName = PROFESSIONS[sheet.profession]?.short || '';
+    this.noKill = !!(sheet.flaw?.noKill || (sheet.quirks || []).some((q) => q.noKill));
+    this.noSea = sheet.profession === 'farmer' || (sheet.quirks || []).some((q) => q.swimFixed === 0);
+  }
+  get stageInfo() { return STAGES[this.stage - 1]; }
+  /** the profession perk (§23.3) works when the partner stands near you, awake and well */
+  perkNear(id, r = 10) { return this.sheet?.perk?.id === id && this.ready && !this.dead && this.body?.mode !== 'sleep' && this.near(r); }
+
   /** load the avatar (lazy: after the setup screen, §17.4) */
   async load() {
     const g = this.game;
@@ -79,6 +111,7 @@ export class Companion {
       this.avatar = av;
       if (this.id === 'nagi') this.tint(av, '#3d78c9'); // ナギ: the blue parka colour on the shirt
       this.body = new CompanionBody(g, av);
+      this.body.speedMul = this.speedMul;
       const P = g.player.pos;
       this.body.place(P.x + 2, P.z + 1.5);
       this.ready = true;
@@ -101,6 +134,8 @@ export class Companion {
   near(r = 10) { return !!this.body && this.body.pos.distanceTo(this.game.player.pos) < r; }
   huddling() { return this.affinity >= 60 && this.body?.mode === 'sleep' && this.near(2.5); }
   helping() { return this.near(8) && this.trust >= 30; }
+  /** building time multiplier while helping (§23.5 建築の手伝い): 0.6 for an average helper, down to 0.4 for a master */
+  buildHelpMul() { const m = jobMultiplier(this.sheet, 'build_help', { stage: this.stage, morale: this.vitals.s.morale }); return clamp(0.6 / Math.max(0.1, m), 0.4, 0.9); }
   get liveAvailable() { return !!(this.game.apiKey || getApiKey()); }
 
   // ---------------------------------------------------------------- speech
@@ -128,8 +163,9 @@ export class Companion {
     const t = [{ id: 'chat', label: '雑談する', icon: '💬' }, { id: 'advice', label: 'サバイバルの 知恵を 聞く', icon: '💡' }, { id: 'weather', label: '天気は どうなりそう？', icon: '☁️' }];
     const next = [20, 40, 60, 80].findIndex((lv, i) => this.affinity >= lv && !this.memory.data[`story${i}`]);
     if (next >= 0) t.push({ id: `story${next}`, label: '身の上話を 聞く', icon: '📖' });
-    if (this.id === 'touko') t.push({ id: 'identify', label: '持っている 草や キノコを 見てもらう', icon: '🔍' });
-    if (this.id === 'nagi') t.push({ id: 'fishtip', label: '魚の ことを 聞く', icon: '🐟' });
+    const prof = this.sheet.profession;
+    if (prof === 'botanist' || (this.id === 'touko' && this.trust >= 50)) t.push({ id: 'identify', label: '持っている 草や キノコを 見てもらう', icon: '🔍' });
+    if (prof === 'fisher' || (this.id === 'nagi' && this.trust >= 50)) t.push({ id: 'fishtip', label: '魚の ことを 聞く', icon: '🐟' });
     return t;
   }
   talk(topic) {
@@ -153,18 +189,49 @@ export class Companion {
   ask(id) {
     if (id === 'follow') return this.follow();
     if (id === 'wait') return this.wait();
-    const r = this.doJob(id);
-    if (r === 'ok') this.speak(this.id === 'gen' ? '任せろ。' : this.id === 'touko' ? 'わかりました。行ってきます。' : 'りょうかい！ 行ってくる！');
+    const r = this.doJob(id, { asked: true });
+    if (r === 'ok') this.say('accept', true);
     return r;
   }
+
+  /** §23.7: what makes a request hard for this person right now */
+  requestFactors(id) {
+    const g = this.game, W = g.sys.weather, hour = g.clock.hour, s = this.vitals.s;
+    const storm = W.type === 'storm' || W.type === 'typhoon';
+    const night = hour < 5 || hour >= 19;
+    const j = JOBS[id] || {};
+    let danger = false, dislike = false;
+    if (storm && id !== 'tend_fire') danger = true;
+    else if (j.sea && W.rain > 0.5) danger = 0.15;
+    if (night && id !== 'tend_fire') dislike = true;
+    if (j.sea && (this.noSea || (this.noKill && this.trust < 70))) dislike = true;
+    if (this.sheet.profession === 'student') dislike = false;     // 伸びしろ：何でも 断らない
+    return { affinity: this.affinity, trust: this.trust, danger, dislike, morale: s.morale, sick: this.vitals.visible().some((c) => c.sev >= 2), recentKindness: g.clock.total - this.lastKindT < 120 };
+  }
+  acceptChanceFor(id) { return acceptChance(this.sheet, this.requestFactors(id)); }
   status() { return { s: this.vitals.s, trust: this.trust, affinity: this.affinity, mood: this.mood, conditions: this.vitals.visible(), inv: this.inv.stacks }; }
-  take(uid, n = 1) { const s = this.inv.get(uid); if (!s) return false; const part = this.inv.take(uid, n)[0]; this.game.sys.player.inv.addStack(part); return true; }
+  /** the player takes something from the companion's bag. Food follows §23.7 分け方 (stage 1 keeps its own food unless you are starving). */
+  take(uid, n = 1) {
+    const s = this.inv.get(uid); if (!s) return false;
+    const d = itemDef(s.id);
+    if (d?.food) {
+      const P = this.game.sys.player.body.s, st = this.stage;
+      const foodUnits = this.inv.stacks.filter((x) => itemDef(x.id)?.food).reduce((a, x) => a + x.n, 0);
+      const no = st === 1 ? P.food >= 15 : st === 2 ? foodUnits <= 1 && this.vitals.s.food < 50 : false;
+      if (no) {
+        this.speak(this.id === 'gen' ? '…それは わしの 分だ。自分で 取ってこい。' : this.id === 'touko' ? 'すみません、それは わたしの 分なので…。' : 'えっ… それ、あたしの ごはん なんだけど。');
+        this.adjust(-0.5, -0.5);
+        return false;
+      }
+    }
+    const part = this.inv.take(uid, n)[0]; this.game.sys.player.inv.addStack(part); return true;
+  }
   treat(uid) {
     const inv = this.game.sys.player.inv, s = inv.get(uid), d = s && itemDef(s.id, s);
     if (!d?.med) return false;
     const map = { burn: 'aloe', bleed: 'herb_stop_bleed', infection: 'poultice', cold: 'ginger', diarrhea: 'guava', poison: 'charcoal', fever: 'fever', venom: 'suction', wound: 'bandage', antibiotic: 'antibiotic' };
     const ok = this.vitals.treat(map[d.med.type] || d.med.type, d.med.power ?? 1);
-    if (ok) { inv.take(uid, 1); this.adjust(5, 3); this.speak(this.id === 'gen' ? '…すまねえ。' : 'ありがとう…楽に なった。'); }
+    if (ok) { inv.take(uid, 1); this.adjust(5, 3); this.kindness(); this.speak(this.id === 'gen' ? '…すまねえ。' : 'ありがとう…楽に なった。'); }
     return ok;
   }
   startMic() { return this.talkKey(); }
@@ -178,18 +245,35 @@ export class Companion {
   wait() { this.order = 'wait'; this.job = null; this.body?.wait(); return 'ok'; }
   jobs() {
     const icons = { gather_wood: '🪵', gather_food: '🥥', fetch_water: '💧', fish: '🎣', tend_fire: '🔥' };
+    const best = new Set(bestJobs(this.sheet, 3, { stage: this.stage }).map((b) => b.id));
+    const night = this.game.clock.hour < 5 || this.game.clock.hour >= 19;
     const list = Object.entries(JOBS).map(([id, j]) => {
       const noBox = j.needsContainer && !this.inv.stacks.some((s) => itemDef(s.id)?.container);
-      return { id, name: j.name, label: j.name, icon: icons[id], desc: j.fav === this.id ? '得意な 仕事' : '', fav: j.fav === this.id, available: !noBox, ok: !noBox, reason: noBox ? '入れ物を 渡して' : '' };
+      const sulk = this.game.clock.total - (this.refused[id] ?? -999) < 30;
+      const mult = jobMultiplier(this.sheet, id, { stage: this.stage, morale: this.vitals.s.morale, night });
+      const p = this.acceptChanceFor(id);
+      const chance = p >= 0.85 ? 'きっと やって くれる' : p >= 0.6 ? 'たぶん 引き受ける' : p >= 0.35 ? '五分五分' : p > 0 ? '断られそう' : '今は 無理';
+      const reason = noBox ? '入れ物を 渡して' : sulk ? 'さっき 断られた（少し 待って）' : p <= 0 ? '危ないので 嫌がる（信頼 60 から）' : '';
+      return { id, name: j.name, label: j.name, icon: icons[id], desc: `${best.has(id) ? '得意・' : ''}成果 ×${mult.toFixed(1)}・${chance}`, fav: best.has(id), mult, chance: p, available: !reason, ok: !reason, reason };
     });
     return [{ id: 'follow', label: 'ついてきて', name: 'ついてきて', icon: '👣', available: true }, { id: 'wait', label: 'ここで 待って', name: 'ここで 待って', icon: '✋', available: true }, ...list];
   }
-  doJob(id) {
+  doJob(id, { asked = true, self = false } = {}) {
     const j = JOBS[id];
     if (!j || !this.body) return 'unknown job';
-    if (this.trust < 20 && this.game.rng.next() < 0.5) { this.say('refuse', true); return 'refused'; }
-    if (this.id === 'touko' && id === 'fish' && this.trust < 70) { this.say('refuse', true); return 'refused'; }
-    if (j.needsContainer && !this.inv.stacks.some((s) => itemDef(s.id)?.container)) { this.speak('入れ物が ないと 水を 運べないよ'); return 'needs a container'; }
+    if (j.needsContainer && !this.inv.stacks.some((s) => itemDef(s.id)?.container)) { this.speak(this.id === 'gen' ? '入れ物が ねえと 水は 運べん。' : this.id === 'touko' ? '入れ物が ないと、水は 運べません。' : '入れ物が ないと 水を 運べないよ'); return 'needs a container'; }
+    if (asked && !self) {
+      // §23.7 協力度: affinity, trust, danger, dislikes, morale, sickness, a recent kindness
+      const now = this.game.clock.total;
+      if (now - (this.refused[id] ?? -999) < 30) { this.say('refuse', true); return 'refused (asked again too soon)'; }
+      const p = this.acceptChanceFor(id);
+      if (this.game.rng.next() >= p) {
+        this.refused[id] = now;
+        this.say('refuse_reason', true);
+        this.adjust(-0.5, 0);
+        return p <= 0 ? 'refused: too dangerous now' : 'refused';
+      }
+    }
     this.order = 'job';
     this.job = { id, acc: 0, start: this.game.clock.total };
     if (id === 'tend_fire') {
@@ -215,11 +299,12 @@ export class Companion {
     if (d?.food && this.vitals.s.food < 60) {
       this.vitals.eat({ name: d.name, food: d.food.food, water: d.food.water, B: d.food.B, parasite: d.food.parasite, fresh: part.fresh, done: part.done, poison: d.food.poison ? { ...d.food.poison, cookable: !!d.food.poison.heatKills } : null });
       if (this.vitals.s.food < 50) this.adjust(2, 1); else this.adjust(0, 1);
+      this.kindness();
       this.speak(this.id === 'gen' ? '…助かる。' : this.id === 'touko' ? 'ありがとうございます。いただきます。' : 'やった！ ありがと！');
     } else {
       this.inv.addStack(part);
       const liked = (this.p.likes || []).includes(part.id);
-      if (liked && !this.dayFlags.gift) { this.adjust(1, 4); this.say('gift', true, { item: d?.name }); this.dayFlags.gift = true; }
+      if (liked && !this.dayFlags.gift) { this.adjust(1, 4); this.kindness(); this.say('gift', true, { item: d?.name }); this.dayFlags.gift = true; }
       else this.say('item_react', true, { item: d?.name });
     }
     this.memoryEvent(`${d?.name}を もらった`);
@@ -233,11 +318,26 @@ export class Companion {
     this.game.bus.emit('toast', { text: `${this.name}から ${itemDef(part.id)?.name}を もらった`, kind: 'good' });
     return 'given';
   }
-  adjust(trust, aff) { this.trust = clamp(this.trust + trust, 0, 100); this.affinity = clamp(this.affinity + aff, 0, 100); this.memory.adjust(trust, aff); }
+  adjust(trust, aff) {
+    this.trust = clamp(this.trust + trust, 0, 100); this.affinity = clamp(this.affinity + aff, 0, 100); this.memory.adjust(trust, aff);
+    if (aff > 0) this.gainedToday = true;
+    const st = stageOf(this.affinity);
+    if (st !== this.stage) {
+      const up = st > this.stage;
+      this.stage = st;
+      const info = STAGES[st - 1];
+      this.game.bus.emit('companion:stage', { stage: st, name: info.name, up });
+      this.game.bus.emit('toast', { text: `${this.name}との 関係：${info.name}${up ? ' ♥' : ''}`, kind: up ? 'good' : 'info' });
+      if (up) { this.say('stage_up', true); this.memoryEvent(`${callYouFor(this.p, this.affinity)}との 距離が 縮まった（${info.name}）`); }
+      else this.memoryEvent(`${callYouFor(this.p, this.affinity)}との 間に 少し 距離が できた`);
+    }
+  }
+  kindness() { this.lastKindT = this.game.clock.total; }
   nightTogether() { this.adjust(1, 1); }
-  dailyRelation() { if (this.affinity < 60) this.affinity = Math.max(0, this.affinity - 0.5); }
+  /** §13.3 自然減: −0.5 only after a day in which nothing brought you closer (none at 60+) */
+  dailyRelation() { const gained = this.gainedToday; this.gainedToday = false; if (!gained && this.affinity < 60) this.adjust(0, -0.5); }
 
-  hudInfo() { return { name: this.name, mood: this.mood, hp: Math.round(this.vitals.s.hp), near: this.near(12), order: this.order, job: this.job ? JOBS[this.job.id].name : null, trust: this.trust, affinity: this.affinity, talking: this.talk?.state === 'live' }; }
+  hudInfo() { return { name: this.name, mood: this.mood, hp: Math.round(this.vitals.s.hp), near: this.near(12), order: this.order, job: this.job ? JOBS[this.job.id].name : null, trust: this.trust, affinity: this.affinity, stage: this.stage, stageName: this.stageInfo.name, profession: this.profName, talking: this.talk?.state === 'live' }; }
 
   // ---------------------------------------------------------------- Gemini Live
   async talkKey() {
@@ -245,7 +345,7 @@ export class Companion {
     if (!key) { this.game.screens?.show('companion'); return; }
     if (this.talk?.state === 'live' || this.talk?.state === 'connecting') { this.talk.stop(); this.game.bus.emit('toast', { text: `${this.name}との 会話を 終えた`, kind: 'info' }); return; }
     this.talk = new CompanionTalk({
-      apiKey: key, persona: systemPrompt(this.p, { playerName: this.game.setup.playerName, trust: this.trust, affinity: this.affinity, mood: this.mood }),
+      apiKey: key, persona: systemPrompt(this.p, { playerName: this.game.setup.playerName, trust: this.trust, affinity: this.affinity, mood: this.mood, profession: this.sheet.profession, selfAwareness: selfAwareness(this.sheet, this.p).join('\n') }),
       voiceName: this.p.voice, memory: this.memory, voice: this.voice, mic: this.mic,
       places: Object.values(this.game.world.layout).map((p) => p.name).filter(Boolean),
       resources: ['wood', 'food', 'water', 'fish', 'vines', 'stones', 'leaves'],
@@ -296,6 +396,7 @@ export class Companion {
       Tair: W.airTemp(hour, { y: pos.y, zone: g.world.terrain.zoneAt(pos.x, pos.z), day: g.clock.day }), sun: day ? W.sun * 0.9 : 0, shade: sh.rain >= 0.3,
       windSpeed: W.windSpeed, windBlock: sh.wind, rainWet: W.wetPerH * (1 - sh.rain), dry: fire > 0 ? 40 : W.rain > 0.05 ? 0 : 12, fire, clothes: 1, shelterInsul: (sh.insul || 0) + (sleeping && this.inv.find('sleeping_bag') ? 7 : 0),
       companionNear: this.near(10), fireNear, night: hour < 5.5 || hour >= 19, outdoorsNoFire: !fireNear && sh.rain < 0.5, sleepQuality: 0.7, hour, day: g.clock.day,
+      zone: g.world.terrain.zoneAt(pos.x, pos.z),
     };
   }
 
@@ -348,19 +449,72 @@ export class Companion {
     if (this.body.mode === 'sleep' && (s.rest >= 95 || (hour >= 6 && hour < 20))) this.body.follow();
     // low trust: wander off sometimes
     if (this.trust < 5 && !this.dayFlags.low_trust) this.say('low_trust', true);
-    // 7 leisure chatter
-    if (this.order === 'follow' && this.near(6) && g.rng.next() < 0.02) this.say(g.rng.pick(['item_react', 'praise_craft', 'morning']).replace('morning', 'sunset') === 'sunset' && hour > 17 ? 'sunset' : 'item_react');
+    // 5 food sharing and initiative by affinity stage (§23.7)
+    this.shareFood();
+    this.initiative();
+    // 7 leisure chatter: talks more as you get closer (stage chatPerHour × the hunter's quiet ×0.7)
+    const now = g.clock.total, dh = Math.max(0, now - (this.lastBrainT ?? now)) / 60;
+    this.lastBrainT = now;
+    if (this.order === 'follow' && this.near(6) && g.rng.next() < this.stageInfo.chatPerHour * this.chatMul * dh) {
+      delete this.dayFlags.stage_talk;
+      this.say(hour > 17 && hour < 19 && !this.dayFlags.sunset ? 'sunset' : 'stage_talk');
+    }
     // affinity stories
     for (const [i, lv] of [20, 40, 60, 80].entries()) if (this.affinity >= lv && !this.memory.data[`story${i}`] && this.near(6) && hour >= 18) { this.memory.data[`story${i}`] = true; this.say(`story_${i + 1}`, true); g.stats.storiesHeard = (g.stats.storiesHeard || 0) + 1; break; }
+  }
+
+  /** §23.7 分け方: stage 1 gives only when you are nearly starving, stage 3+ hands food over unasked, stage 5 even when hungry itself */
+  shareFood() {
+    const g = this.game, P = g.sys.player.body.s, C = this.vitals.s, now = g.clock.total;
+    if (!this.near(5) || now - this.lastShareT < 180 || this.talk?.state === 'live') return;
+    const st = this.stage;
+    const needFood = st <= 2 ? P.food < 15 : P.food < 40 || P.water < 40;
+    if (!needFood) return;
+    if (C.food < 30 && st < 5) return;   // keeps its own share unless 親友
+    const foods = this.inv.stacks.filter((x) => itemDef(x.id)?.food && !itemDef(x.id)?.food?.poison && (x.fresh ?? 100) >= 40);
+    if (!foods.length) return;
+    // stage 4+: the better one goes to you
+    foods.sort((a, b) => (st >= 4 ? 1 : -1) * ((itemDef(b.id).food.food ?? 0) - (itemDef(a.id).food.food ?? 0)));
+    const s = foods[0];
+    const n = st >= 5 ? Math.max(1, Math.ceil(s.n / 2)) : 1;
+    const part = this.inv.take(s.uid, n)[0];
+    if (!part) return;
+    g.sys.player.inv.addStack(part);
+    this.lastShareT = now;
+    this.say('share', true, { item: itemDef(part.id)?.name });
+    g.bus.emit('toast', { text: `${this.name}から ${itemDef(part.id)?.name}${n > 1 ? `×${n}` : ''}を もらった`, kind: 'good' });
+    g.sys.player.body.moraleOnce('shared', 3, g.clock.day, 2);
+  }
+
+  /** §23.7 自分から: stage 2+ with enough trust starts useful work without being asked */
+  initiative() {
+    const g = this.game, now = g.clock.total;
+    if (this.order !== 'follow' || this.job || this.body.mode === 'sleep') { this.idleSince = now; return; }
+    const st = this.stage, T = this.trust;
+    const wait = st >= 5 ? 0 : st === 4 && T >= 40 ? 0 : st === 3 && T >= 50 ? 10 : st === 2 && T >= 60 ? 30 : Infinity;
+    if (now - this.idleSince < wait || now - (this.lastInitT ?? -999) < 120) return;
+    const P = g.sys.player.body.s, hour = g.clock.hour;
+    const fire = g.sys.fires?.nearest(g.player.pos, 15);
+    let job = null;
+    if (fire?.fire?.lit && fire.fire.fuel < 40 && (hour >= 18 || hour < 6 || g.sys.weather.rain > 0.2)) job = 'tend_fire';
+    else if (hour >= 7 && hour < 17 && st >= 4 && P.food < 45 && !this.inv.stacks.some((x) => itemDef(x.id)?.food)) job = 'gather_food';
+    else if (hour >= 7 && hour < 16 && st >= 3 && fire && !g.sys.player.inv.stacks.some((x) => /branch|firewood|driftwood/.test(x.id))) job = 'gather_wood';
+    if (!job) return;
+    this.lastInitT = now;
+    if (this.doJob(job, { self: true }) === 'ok') {
+      this.speak(job === 'tend_fire' ? (this.id === 'gen' ? '火は わしが 見とく。' : this.id === 'touko' ? '火は わたしが 見ておきますね。' : '火、見とくね！') :
+        job === 'gather_food' ? (this.id === 'gen' ? '食い物、探してくる。' : this.id === 'touko' ? '食べられる 物、探してきます。' : 'ごはん 探してくる！ 待ってて！') :
+        (this.id === 'gen' ? '薪が 足りん。取ってくる。' : this.id === 'touko' ? '薪を 集めて きますね。' : '薪、取ってくるね！'));
+    }
   }
 
   /** abstract job output per game hour (§13.4), handed over when near the player */
   workTick(gm) {
     if (!this.job || this.body?.mode !== 'work' && this.job.id !== 'tend_fire') return;
     const j = JOBS[this.job.id];
-    const skill = j.fav === this.id ? 1.8 : 1;
-    const morale = this.vitals.s.morale < 30 ? 0.7 : 1;
-    this.job.acc += (gm / 60) * skill * morale;
+    const night = this.game.clock.hour < 5 || this.game.clock.hour >= 19;
+    const mult = jobMultiplier(this.sheet, this.job.id, { stage: this.stage, morale: this.vitals.s.morale, night, toolAxe: !!this.inv.find?.('axe') });
+    this.job.acc += (gm / 60) * mult;
     if (this.job.id === 'tend_fire') {
       const rec = this.game.sys.fires?.nearest(this.body.pos, 4);
       if (rec && rec.fire.lit && rec.fire.fuel < 90) { const fuel = this.game.sys.player.inv.stacks.find((s) => /branch|twig|firewood|driftwood/.test(s.id)) || this.inv.stacks.find((s) => /branch|twig/.test(s.id)); if (fuel) { const inv = this.game.sys.player.inv.get(fuel.uid) ? this.game.sys.player.inv : this.inv; this.game.sys.fires.addFuel(rec, inv.take(fuel.uid, 1)[0]); } }
@@ -382,7 +536,7 @@ export class Companion {
     const deliver = () => {
       if (!this.near(5)) { setTimeout(deliver, 2000); return; }
       for (const s of items) { const part = this.inv.removeStack(s.uid); if (part) g.sys.player.inv.addStack(part); }
-      this.speak(this.id === 'gen' ? '取ってきた。使え。' : this.id === 'touko' ? '集めてきました。確認してくださいね。' : 'ただいま！ いっぱい 取れたよ！');
+      this.say('job_done', true);
       this.adjust(0.5, 0.5);
     };
     deliver();
@@ -397,7 +551,14 @@ export class Companion {
     this.avatar.setPose('sleep');
   }
 
-  serialize() { return { trust: this.trust, affinity: this.affinity, vitals: this.vitals.serialize(), inv: this.inv.serialize(), pos: this.body ? [this.body.pos.x, this.body.pos.z] : null }; }
-  deserialize(d) { this.trust = d.trust; this.affinity = d.affinity; this.vitals.deserialize(d.vitals); this.inv.deserialize(d.inv); if (d.pos && this.body) this.body.place(d.pos[0], d.pos[1]); }
-  debug() { return { ready: this.ready, order: this.order, mode: this.body?.mode, trust: this.trust, affinity: this.affinity, food: Math.round(this.vitals.s.food), water: Math.round(this.vitals.s.water) }; }
+  serialize() { return { trust: this.trust, affinity: this.affinity, sheet: this.sheet, vitals: this.vitals.serialize(), inv: this.inv.serialize(), pos: this.body ? [this.body.pos.x, this.body.pos.z] : null }; }
+  deserialize(d) {
+    this.trust = d.trust; this.affinity = d.affinity;
+    if (d.sheet?.abilities) this.setSheet(d.sheet);
+    this.stage = stageOf(this.affinity);
+    this.vitals.deserialize(d.vitals); this.inv.deserialize(d.inv);
+    this.inv.capacity = Math.round(this.derived.carry * 10) / 10;
+    if (d.pos && this.body) this.body.place(d.pos[0], d.pos[1]);
+  }
+  debug() { return { ready: this.ready, order: this.order, mode: this.body?.mode, trust: this.trust, affinity: this.affinity, stage: this.stage, profession: this.sheet.profession, carry: this.inv.capacity, food: Math.round(this.vitals.s.food), water: Math.round(this.vitals.s.water) }; }
 }

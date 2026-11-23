@@ -24,6 +24,7 @@
 //   lastMeal {name, raw (bool), p (illness probability 0–1), cookedP (p if cooked)}, deathInfo {…optional details}.
 //
 // @typedef {{label:string, value:number}} Part
+import { PROFESSIONS } from '../data/professions.js';
 
 export const RANKS = [
   { min: 300, id: 'S', name: '島の 主' },
@@ -79,7 +80,11 @@ export function computeScore(stats = {}, setup = {}, diffEntry = null) {
   mults.push({ label: '難易度', value: diff });
   mults.push({ label: '持ち物', value: carryMultiplier(setup, stats) });
   const am = ammoMultiplier(setup); if (am !== 1) mults.push({ label: '弾', value: am });
-  if (setup.companion && setup.companion !== 'none') mults.push({ label: '仲間あり', value: 0.9 });
+  if (setup.companion && setup.companion !== 'none') {
+    // §23.6: a stronger partner sheet makes the run easier → a smaller multiplier (0.81–0.99; no sheet → 0.9)
+    const m = Number(setup.companionSheet?.scoreMul) || 0.9;
+    mults.push({ label: setup.companionSheet ? `仲間（${setup.companionSheet.short || ''}・${PROFESSIONS[setup.companionSheet.profession]?.short || ''}）` : '仲間あり', value: m });
+  }
   if (num(stats.retries) > 0) mults.push({ label: 'やり直し', value: Math.pow(0.9, stats.retries) });
   if (stats.result === 'retired' || stats.result === 'broken') mults.push({ label: 'リタイア', value: 0.3 });
   if (stats.result === 'drift') mults.push({ label: '漂流', value: 0.6 });

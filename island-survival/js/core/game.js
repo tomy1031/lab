@@ -65,6 +65,7 @@ export class Game {
       count: p.get('count') === 'all' ? 'all' : p.has('count') ? Number(p.get('count')) : (p.get('starter') === 'none' ? 0 : 1),
       starters: (p.get('starter') || 'knife').split(',').filter((x) => x && x !== 'none'), ammo: p.get('ammo') === 'inf' ? 'inf' : Number(p.get('ammo')) || 12, companion: p.get('companion') || 'none',
       control: p.has('gesture') ? 'gesture' : 'mouse', season: 'dry', seed: Number(p.get('seed')) || 7, playerName: 'あなた',
+      profession: p.get('prof') || 'auto', companionAffinity: p.has('aff') ? Number(p.get('aff')) : undefined,
     };
   }
 

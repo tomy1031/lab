@@ -96,7 +96,8 @@ export function workMultiplier(h = {}) {
   let m = 1;
   if (h.axe) m *= 0.6;
   if (h.hammer) m *= 0.85;
-  if (h.gen || h.companion === 'gen') m *= 0.45; else if (h.companion) m *= 0.6;
+  if (typeof h.companion === 'number') m *= h.companion; // the helper's own multiplier (§23.5 建築の手伝い)
+  else if (h.gen || h.companion === 'gen') m *= 0.45; else if (h.companion) m *= 0.6;
   return m;
 }
 /** point in site-local coordinates (u across, v front) */

@@ -72,7 +72,7 @@ export class CompanionBody {
         const L = Math.hypot(dirx, dirz) || 1; dirx /= L; dirz /= L;
         const water = t.waterAt(this.pos.x, this.pos.z, g.player.seaLevel);
         const swimming = water.type && water.depth > 1.2;
-        speed = swimming ? 1.5 : run ? 5.2 : Math.min(3.0, 1.2 + d * 0.5);
+        speed = (swimming ? 1.5 : run ? 5.2 : Math.min(3.0, 1.2 + d * 0.5)) * (this.speedMul || 1); // §23.5 legs (agility)
         if (this.condition === 'sick' || this.condition === 'tired') speed *= 0.7;
         const nx = this.pos.x + dirx * speed * dt, nz = this.pos.z + dirz * speed * dt;
         // do not walk up cliffs
