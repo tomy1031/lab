@@ -2,7 +2,8 @@
 //   menus → VR card → race starts in an XR session → right trigger accelerates → gripping both controllers
 //   and tilting them steers (the wheel sits in your hands and turns with them) → left trigger brakes →
 //   left stick press pauses → the laser presses "つづける" on the VR panel →
-//   the race finishes → results panel in VR → hand tracking drives (hands seen = accelerate).
+//   the race finishes → results panel in VR → もう一度 loads the next race inside the headset → hand tracking
+//   drives (hands seen = accelerate) → taking the headset off while a race loads returns to the title.
 //   npm install && node tests/xr.cjs [outDir]
 const { chromium } = require('playwright');
 const serve = require('./serve.cjs');
@@ -32,12 +33,20 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
     window.__xrd = d;
     const xr = navigator.xr, rs = xr.requestSession.bind(xr);
     window.__xrFrames = 0;
+    // like the Quest browser: while an immersive session runs, the page's own animation frames stop (only the
+    // headset's frames run). The game's requests wait until the session ends; the emulator's and three.js's
+    // frame loops are left alone
+    const pageRaf = window.requestAnimationFrame.bind(window), held = [];
+    window.requestAnimationFrame = (cb) => {
+      if (window.__xrSession && /\/js\/[\w/.-]+\.js/.test(new Error().stack || '')) { held.push(cb); window.__heldFrames = (window.__heldFrames || 0) + 1; return 0; }
+      return pageRaf(cb);
+    };
     xr.requestSession = async (...a) => {
       const s = await rs(...a);
       window.__xrSession = s;
       const tick = () => { if (window.__xrSession !== s) return; window.__xrFrames++; s.requestAnimationFrame(tick); };
       s.requestAnimationFrame(tick);
-      s.addEventListener('end', () => { window.__xrSession = null; });
+      s.addEventListener('end', () => { window.__xrSession = null; held.splice(0).forEach((cb) => pageRaf(cb)); });
       return s;
     };
   });
@@ -164,9 +173,14 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   check(res && res.rows === 4 && res.buttons.includes('again'), `results panel in VR ${JSON.stringify(res)}`);
   await page.screenshot({ path: path.join(out, 'vr-results.png'), timeout: 120000 });
 
-  // hand tracking: again, with hands instead of controllers
+  // もう一度 on the results panel loads the next race inside the headset (it used to wait for page frames,
+  // which a Quest pauses during VR, so it only loaded once you took the headset off)
   await page.evaluate(() => { window.DD.debug.cockpit.onPick('again'); });
-  await page.waitForFunction(() => window.DD.debug.state().screen === 'race', null, { timeout: 120000 });
+  await page.waitForFunction(() => window.DD.debug.state().screen === 'race', null, { timeout: 120000 }).catch(() => {});
+  const again = await page.evaluate(() => ({ screen: window.DD.debug.state().screen, vr: !!window.__xrSession, held: window.__heldFrames || 0 }));
+  check(again.screen === 'race' && again.vr, `もう一度 starts the next race while still in VR (${JSON.stringify(again)})`);
+
+  // hand tracking: again, with hands instead of controllers
   await page.evaluate(() => { window.__xrd.primaryInputMode = 'hand'; window.DD.debug.skipIntro(); });
   await page.waitForFunction(() => window.DD.debug.state().phase === 'race', null, { timeout: 120000 });
   const h0 = await page.evaluate(() => window.DD.debug.state().me.raceDist);
@@ -178,6 +192,21 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   await page.evaluate(() => window.DD.debug.act('quit'));
   await page.waitForFunction(() => !window.__xrSession, null, { timeout: 30000 }).catch(() => {});
   check(await page.evaluate(() => !window.__xrSession && !window.DD.debug.xr.presenting), 'おわる ends the VR session');
+
+  // taking the headset off while the next race is loading goes back to the title (the race used to start
+  // anyway, in the flat page, with nothing to drive it)
+  await page.waitForFunction(() => window.DD.debug.state().screen === 's-title', null, { timeout: 120000 });
+  await page.click('[data-act="start"]');
+  await page.click('[data-act="ctl-vr"]');
+  await page.click('[data-act="setup-ok"]');
+  await page.click('[data-act="char-ok"]');
+  await page.click('[data-course="1"]', { noWaitAfter: true, timeout: 120000 });
+  await page.waitForFunction(() => window.DD.debug.state().screen === 'race' && window.__xrSession && window.__xrFrames > 5, null, { timeout: 180000 });
+  await page.evaluate(() => { window.DD.debug.act('again'); window.__xrSession.end(); });
+  await page.waitForFunction(() => !window.__xrSession && window.DD.debug.state().screen === 's-title', null, { timeout: 120000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const off = await page.evaluate(() => ({ screen: window.DD.debug.state().screen, vr: !!window.__xrSession }));
+  check(off.screen === 's-title' && !off.vr, `headset off while a race loads → back to the title (${JSON.stringify(off)})`);
   const errs = [...errors, ...(await page.evaluate(() => window.DD.errors.slice()))];
   check(errs.length === 0, `no errors ${errs.join(' | ')}`);
   await browser.close();
