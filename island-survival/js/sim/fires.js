@@ -21,6 +21,7 @@ export const FIRE_TYPES = {
 /** ignition methods (§10.1) */
 export const METHODS = {
   firesteel: { name: '火打ち石（ファイヤースターター）', base: 0.85, kind: 'spark', minutes: 2, stamina: 2 },
+  lighter: { name: 'ライター', base: 0.95, kind: 'spark', minutes: 1, stamina: 0 },
   flint_steel: { name: '火打ち石と 鋼', base: 0.55, kind: 'spark', minutes: 3, stamina: 3, fineTinder: true },
   flint_flint: { name: '石と 石', base: 0.10, kind: 'spark', minutes: 3, stamina: 4, fineTinder: true },
   hand_drill: { name: 'きりもみ', base: 0.12, kind: 'friction', minutes: 10, stamina: 15 },
@@ -58,6 +59,7 @@ export function ignitionChance(c) {
   if (M.fineTinder && tinder < 0.9) tinder *= 0.3; // low-temperature sparks need fine tinder
   let damp = c.damp ?? 1;
   if (c.method === 'firesteel') damp = Math.pow(damp, 0.5);
+  if (c.method === 'lighter') damp = Math.pow(damp, 0.8);
   const ws = c.windSpeed ?? 0;
   let wind = ws < 3 ? 1 : ws < 6 ? 0.9 : ws < 10 ? 0.7 : 0.4;
   wind = 1 - (1 - wind) * (1 - (c.windBlock ?? 0));

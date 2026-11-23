@@ -102,6 +102,11 @@ mat('cloth', '布切れ', '🧣', 'fiber5 absorb6 insul4 burn6 tinder3 flex6', 0
 mat('rope_scrap', 'ロープ片', '🪢', 'fiber8 long6 flex5', 0.2, 'P0', ['fiber', 'cloth'], { q: Q_DRIFT, desc: '漂着したロープの切れ端。' });
 mat('net_scrap', '網の切れ端', '🕸️', 'fiber7 flex6', 0.3, 'P1', ['fiber'], { q: Q_DRIFT, desc: '網の破片。つなげば漁具になる。' });
 mat('tarp', 'ブルーシート', '🟦', 'waterproof10 fiber4 flex6 insul2', 0.8, 'P1', ['plastic', 'cloth'], { q: Q_DRIFT, desc: 'めったに漂着しない防水シート。' });
+// rare drift finds (events: the washed-up crate)
+mat('float', 'ブイの 浮き', '🛟', 'float8 shine3', 0.2, 'P1', ['plastic'], { q: Q_DRIFT, desc: '漂着した 浮き。ウキや いかだに。' });
+add('lighter', { name: '使い捨てライター', icon: '🔥', cat: 'tool', weight: 0.02, tags: ['plastic', 'metal'], q: [60, 80], stack: 1, p: 'P1', attrs: { spark: 6 }, tool: { kind: 'fire', durability: 50, view: 'flint' }, perk: { fireBase: 0.95, wetResist: 0.2 }, desc: '漂着した ライター。濡れると つきにくい。' });
+add('blanket', { name: '毛布', icon: '🧣', cat: 'clothing', weight: 1.0, tags: ['cloth'], q: [50, 80], stack: 1, p: 'P1', attrs: { insul: 7, fiber: 4, absorb: 5, burn: 5 }, wear: { slot: 'bed', insul: 4, rain: 0, sun: 0, days: 60 }, desc: '漂着した 毛布。寝る ときに 暖かい。' });
+food('canned_food', '缶詰', '🥫', { food: 30, water: 6, B: 0.0, decay: 0, w: 0.4, thick: 1.0, flesh: false }, 'P1', { desc: '漂着した 缶詰。開ければ 安全に 食べられる。', tags: ['food', 'metal'] });
 mat('sandal', 'ビーチサンダル', '🩴', 'float5 insul3 flex4', 0.15, 'P2', ['plastic'], { q: Q_DRIFT, wear: { slot: 'feet', insul: 0, rain: 0, sun: 0, days: 10 }, desc: '片方だけのサンダル。足を守る。' });
 // wreck finds (50-85)
 mat('metal_scrap', '金属片', '🔩', 'hard9 sharp5 heavy5 heatproof9 shine5 spark3', 0.5, 'P1', ['metal', 'steel'], { q: Q_WRECK, desc: '難破船の金属片。刃や鋼になる。' });

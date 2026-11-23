@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 const M = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0, ...o });
 const MAT = {
-  skin: M('#e9b48f', { roughness: 0.7 }), wood: M('#8a5a32'), darkWood: M('#5d3b20'), metal: M('#b9c0c7', { metalness: 0.8, roughness: 0.35 }),
+  skin: M('#d9a07a', { roughness: 0.65 }), wood: M('#8a5a32'), darkWood: M('#5d3b20'), metal: M('#b9c0c7', { metalness: 0.8, roughness: 0.35 }),
   dark: M('#2b2d31', { metalness: 0.6, roughness: 0.4 }), stone: M('#6d6a64', { flatShading: true }), flint: M('#3b3f46', { flatShading: true, roughness: 0.3 }),
   rope: M('#c9ad7a'), net: M('#d7c79a', { wireframe: true }), leaf: M('#4f7a2b'), red: M('#b03a2e'), cloth: M('#6e8a9a'), line: new THREE.LineBasicMaterial({ color: '#f4f4f4' }),
   fire: new THREE.MeshBasicMaterial({ color: '#ffb347' }), glass: M('#9fd6e8', { transparent: true, opacity: 0.55, roughness: 0.1 }),
@@ -15,12 +15,14 @@ function box(w, h, d, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(new T
 function cyl(r1, r2, h, mat, seg = 8) { return new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), mat); }
 
 function hand(side = 1) {
+  // a rounded, slightly tanned hand + forearm in a rolled-up sleeve (capsules instead of boxes)
   const g = new THREE.Group();
-  const palm = box(0.085, 0.03, 0.1, MAT.skin); g.add(palm);
-  for (let i = 0; i < 4; i++) { const f = box(0.018, 0.022, 0.065, MAT.skin, -0.03 + i * 0.02, 0.012, -0.075); f.rotation.x = -0.9; f.position.y = -0.012; g.add(f); }
-  const th = box(0.022, 0.022, 0.05, MAT.skin, 0.05 * side, 0, -0.02); th.rotation.y = -0.6 * side; g.add(th);
-  const arm = box(0.07, 0.065, 0.32, MAT.skin, 0, -0.005, 0.21); g.add(arm);
-  const sleeve = box(0.085, 0.08, 0.14, MAT.cloth, 0, -0.005, 0.37); g.add(sleeve);
+  const cap = (r, l, x, y, z, rx = 0, ry = 0) => { const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, l, 4, 8), MAT.skin); m.position.set(x, y, z); m.rotation.set(rx, ry, 0); return m; };
+  const palm = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), MAT.skin); palm.scale.set(1.0, 0.45, 1.15); g.add(palm);
+  for (let i = 0; i < 4; i++) g.add(cap(0.0105, 0.045 - Math.abs(i - 1.5) * 0.006, -0.03 + i * 0.02, -0.008, -0.075, -1.25, 0));
+  g.add(cap(0.012, 0.035, 0.048 * side, 0.002, -0.025, -1.0, -0.7 * side));
+  const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.034, 0.26, 4, 10), MAT.skin); arm.rotation.x = Math.PI / 2; arm.position.set(0, -0.004, 0.19); g.add(arm);
+  const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.05, 0.13, 12), MAT.cloth); sleeve.rotation.x = Math.PI / 2; sleeve.position.set(0, -0.004, 0.37); g.add(sleeve);
   return g;
 }
 
@@ -74,7 +76,7 @@ const TOOLS = {
 // rest poses for the right hand per tool family (position relative to the camera, rotation)
 const HOLD = {
   default: { p: [0.27, -0.3, -0.45], r: [0.15, 0, 0] },
-  long: { p: [0.3, -0.36, -0.42], r: [0.4, 0.15, 0] },       // axe, club, torch, stick, shovel, hammer (blade up)
+  long: { p: [0.33, -0.4, -0.46], r: [0.55, 0.25, 0] },       // axe, club, torch, stick, shovel, hammer (blade up)
   spear: { p: [0.26, -0.32, -0.3], r: [0, 0.04, 0] },
   bow: { p: [-0.18, -0.12, -0.55], r: [0, 0, 0.12] },        // bow held in the LEFT hand
   rod: { p: [0.28, -0.38, -0.4], r: [0.15, 0.05, 0] },
@@ -117,7 +119,7 @@ export class ViewModel {
     this.family = FAMILY[name] || 'default';
     const hold = HOLD[this.family];
     if (this.family === 'bow') { this.left.add(this.tool); this.tool.position.set(0, 0.02, -0.02); }
-    else { this.right.add(this.tool); this.tool.position.set(0, 0.02, -0.04); }
+    else { this.right.add(this.tool); this.tool.position.set(0, 0.02, -0.04); if (this.family === 'long') this.tool.scale.setScalar(0.72); }
     this.tool.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.renderOrder = 10; } });
     this.hold = hold;
     this.leftVisible = ['bow', 'rifle', 'rod'].includes(this.family) || name === 'flint' || name === 'net';

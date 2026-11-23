@@ -101,7 +101,7 @@ export class Companion {
   near(r = 10) { return !!this.body && this.body.pos.distanceTo(this.game.player.pos) < r; }
   huddling() { return this.affinity >= 60 && this.body?.mode === 'sleep' && this.near(2.5); }
   helping() { return this.near(8) && this.trust >= 30; }
-  get liveAvailable() { return !!getApiKey(); }
+  get liveAvailable() { return !!(this.game.apiKey || getApiKey()); }
 
   // ---------------------------------------------------------------- speech
   say(trigger, force = false, vars = {}) {
@@ -123,11 +123,67 @@ export class Companion {
   }
   memoryEvent(text) { if (text) this.memory.add('event', text, { day: this.game.clock.day, hour: Math.floor(this.game.clock.hour) }); }
 
+  // ---------------------------------------------------------------- the companion menu (js/ui/s-companion.js)
+  topics() {
+    const t = [{ id: 'chat', label: '雑談する', icon: '💬' }, { id: 'advice', label: 'サバイバルの 知恵を 聞く', icon: '💡' }, { id: 'weather', label: '天気は どうなりそう？', icon: '☁️' }];
+    const next = [20, 40, 60, 80].findIndex((lv, i) => this.affinity >= lv && !this.memory.data[`story${i}`]);
+    if (next >= 0) t.push({ id: `story${next}`, label: '身の上話を 聞く', icon: '📖' });
+    if (this.id === 'touko') t.push({ id: 'identify', label: '持っている 草や キノコを 見てもらう', icon: '🔍' });
+    if (this.id === 'nagi') t.push({ id: 'fishtip', label: '魚の ことを 聞く', icon: '🐟' });
+    return t;
+  }
+  talk(topic) {
+    const g = this.game;
+    if (!this.dayFlags.talkCount) this.dayFlags.talkCount = 0;
+    if (this.dayFlags.talkCount++ < 8) this.adjust(0, 0.5);
+    g.sys.player.body.moraleOnce('talk', 2, g.clock.day, 6);
+    if (topic?.startsWith('story')) { const i = Number(topic.slice(5)); this.memory.data[`story${i}`] = true; this.say(`story_${i + 1}`, true); g.stats.storiesHeard = (g.stats.storiesHeard || 0) + 1; return; }
+    if (topic === 'weather') { const W = g.sys.weather; const next = W.forced?.length ? 'storm' : W.type; this.speak(next === 'storm' || W.type === 'storm' ? (this.id === 'gen' ? 'ひざが 痛む。荒れるぞ。' : '空が あやしいよ。早めに 屋根を 作ろう！') : W.rain > 0.2 ? '今は 雨だね。止むまで 屋根の 下に いよう。' : '今日は もちそう。でも 夕方は 分からないよ。'); return; }
+    if (topic === 'identify') {
+      const plants = g.sys.player.inv.stacks.filter((s) => itemDef(s.id)?.guide && g.sys.knowledge && g.sys.knowledge.level(itemDef(s.id).guide) < 3 && ['food', 'herb'].includes(itemDef(s.id).cat));
+      if (!plants.length) { this.speak('今は 見せてもらう 物が ないみたいですね。'); return; }
+      for (const s of plants.slice(0, 3)) g.sys.knowledge.learn(itemDef(s.id).guide, 3, 'トウコに 聞いた');
+      this.speak(`${plants.slice(0, 3).map((s) => itemDef(s.id).name).join('、')}… 見分け方を お教えしますね。図鑑に 書いておいてください。`);
+      return;
+    }
+    if (topic === 'fishtip') { this.say('fish_freshness', true); return; }
+    if (topic === 'advice') { this.say(this.game.rng.pick(['raw_eat_warn', 'cold', 'rain_start', 'hungry']), true); return; }
+    this.say(this.game.rng.pick(['item_react', 'morning', 'sunset', 'praise_craft']), true);
+  }
+  ask(id) {
+    if (id === 'follow') return this.follow();
+    if (id === 'wait') return this.wait();
+    const r = this.doJob(id);
+    if (r === 'ok') this.speak(this.id === 'gen' ? '任せろ。' : this.id === 'touko' ? 'わかりました。行ってきます。' : 'りょうかい！ 行ってくる！');
+    return r;
+  }
+  status() { return { s: this.vitals.s, trust: this.trust, affinity: this.affinity, mood: this.mood, conditions: this.vitals.visible(), inv: this.inv.stacks }; }
+  take(uid, n = 1) { const s = this.inv.get(uid); if (!s) return false; const part = this.inv.take(uid, n)[0]; this.game.sys.player.inv.addStack(part); return true; }
+  treat(uid) {
+    const inv = this.game.sys.player.inv, s = inv.get(uid), d = s && itemDef(s.id, s);
+    if (!d?.med) return false;
+    const map = { burn: 'aloe', bleed: 'herb_stop_bleed', infection: 'poultice', cold: 'ginger', diarrhea: 'guava', poison: 'charcoal', fever: 'fever', venom: 'suction', wound: 'bandage', antibiotic: 'antibiotic' };
+    const ok = this.vitals.treat(map[d.med.type] || d.med.type, d.med.power ?? 1);
+    if (ok) { inv.take(uid, 1); this.adjust(5, 3); this.speak(this.id === 'gen' ? '…すまねえ。' : 'ありがとう…楽に なった。'); }
+    return ok;
+  }
+  startMic() { return this.talkKey(); }
+  stopMic() { this.talk?.stop(); }
+  startLive() { return this.talkKey(); }
+  stopLive() { this.talk?.stop(); }
+
   // ---------------------------------------------------------------- orders / menu
   call() { if (!this.body) return; this.order = 'follow'; this.job = null; this.body.follow(); this.body.gesture('wave', 1.5); this.game.bus.emit('toast', { text: `${this.name}を 呼んだ`, kind: 'info' }); }
   follow() { this.order = 'follow'; this.job = null; this.body?.follow(); return 'ok'; }
   wait() { this.order = 'wait'; this.job = null; this.body?.wait(); return 'ok'; }
-  jobs() { return Object.entries(JOBS).map(([id, j]) => ({ id, name: j.name, fav: j.fav === this.id, ok: !(j.needsContainer && !this.inv.stacks.some((s) => itemDef(s.id)?.container)) })); }
+  jobs() {
+    const icons = { gather_wood: '🪵', gather_food: '🥥', fetch_water: '💧', fish: '🎣', tend_fire: '🔥' };
+    const list = Object.entries(JOBS).map(([id, j]) => {
+      const noBox = j.needsContainer && !this.inv.stacks.some((s) => itemDef(s.id)?.container);
+      return { id, name: j.name, label: j.name, icon: icons[id], desc: j.fav === this.id ? '得意な 仕事' : '', fav: j.fav === this.id, available: !noBox, ok: !noBox, reason: noBox ? '入れ物を 渡して' : '' };
+    });
+    return [{ id: 'follow', label: 'ついてきて', name: 'ついてきて', icon: '👣', available: true }, { id: 'wait', label: 'ここで 待って', name: 'ここで 待って', icon: '✋', available: true }, ...list];
+  }
   doJob(id) {
     const j = JOBS[id];
     if (!j || !this.body) return 'unknown job';
@@ -185,7 +241,7 @@ export class Companion {
 
   // ---------------------------------------------------------------- Gemini Live
   async talkKey() {
-    const key = getApiKey();
+    const key = this.game.apiKey || getApiKey();
     if (!key) { this.game.screens?.show('companion'); return; }
     if (this.talk?.state === 'live' || this.talk?.state === 'connecting') { this.talk.stop(); this.game.bus.emit('toast', { text: `${this.name}との 会話を 終えた`, kind: 'info' }); return; }
     this.talk = new CompanionTalk({
@@ -220,7 +276,7 @@ export class Companion {
   }
 
   async compressMemory(why) {
-    const key = getApiKey();
+    const key = this.game.apiKey || getApiKey();
     const r = await this.memory.compress({ apiKey: key, day: this.game.clock.day, persona: `The character is ${this.p.name}.` });
     if (r.ok && this.talk?.state === 'live' && why !== 'bedtime') this.talk.refreshMemory();
   }

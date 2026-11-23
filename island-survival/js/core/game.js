@@ -94,6 +94,11 @@ export class Game {
     this.bus.emit('game:start', setup);
   }
 
+  /** back to the title: a fresh page (simplest way to drop every system) */
+  toTitle() { location.href = location.pathname; }
+  /** もう一度: the same setup, a fresh page */
+  restartGame() { try { sessionStorage.setItem('isle.restart', JSON.stringify({ ...this.setup, restoring: false })); } catch { /* ignore */ } location.href = location.pathname; }
+
   hasSave() { return !!this.savedData(); }
   savedData() { try { return JSON.parse(localStorage.getItem('isle.save') || 'null'); } catch { return null; } }
 

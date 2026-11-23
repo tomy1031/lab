@@ -151,6 +151,7 @@ export class Interact {
     const steelish = inv.stacks.find((s) => /knife|axe|metal_scrap|nail|can/.test(s.id) || itemDef(s.id)?.tags?.includes('steel'));
     if (g.fires.find((f) => f === rec.fire) && g.sys.fires.isEmber(rec)) out.push({ id: 'ember', p: 1 });
     if (has('firesteel')) out.push({ id: 'firesteel', p: ignitionChance({ ...base, method: 'firesteel' }) + (g.sys.player.inv.find('guide') ? 0.1 : 0) });
+    if (has('lighter')) out.push({ id: 'lighter', p: ignitionChance({ ...base, method: 'lighter' }) });
     if (has('ammo') || (g.setup?.ammo === 'inf' && has('rifle'))) out.push({ id: 'gunpowder', p: ignitionChance({ ...base, method: 'gunpowder' }) });
     if (has('flint') && steelish) out.push({ id: 'flint_steel', p: ignitionChance({ ...base, method: 'flint_steel', base: inv.find('char_cloth') ? 0.75 : steelish.id === 'can' || steelish.id === 'nail' ? 0.25 : 0.55 }) });
     const bowKit = inv.stacks.find((s) => s.id === 'bow_drill_kit');
@@ -337,6 +338,7 @@ export class Interact {
       if (m.stack) { m.stack.dur = (m.stack.dur ?? 15) - 1; if (m.stack.dur <= 0) { P.inv.removeStack(m.stack.uid); g.bus.emit('toast', { text: 'セットが すり減って 使えなく なった', kind: 'bad' }); } }
       if (m.id === 'gunpowder' && g.setup?.ammo !== 'inf') P.inv.take('ammo', 1);
       if (m.id === 'firesteel') { const fs = P.inv.find('firesteel'); if (fs) fs.dur = (fs.dur ?? 3000) - 1; }
+      if (m.id === 'lighter') { const lt = P.inv.find('lighter'); if (lt) { lt.dur = (lt.dur ?? 50) - 1; if (lt.dur <= 0) { P.inv.removeStack(lt.uid); g.bus.emit('toast', { text: 'ライターの ガスが 切れた', kind: 'bad' }); } } }
       if (!ok) { g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花は 散ったが 火口に つかなかった', kind: 'warn' }); return; }
       if (tinder.stack && M.kind !== 'blow') P.inv.take(tinder.stack.uid, 1);
       g.sys.fires.light(rec, m.id);

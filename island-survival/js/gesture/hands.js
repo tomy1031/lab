@@ -67,6 +67,9 @@ export class HandTracker {
     this.hands = [];
   }
 
+  /** alias used by the gesture practice screen */
+  update() { return this.poll(); }
+
   /** call every animation frame; returns the recogniser state (events are only fresh on frames with a new camera image) */
   poll() {
     this.events = [];

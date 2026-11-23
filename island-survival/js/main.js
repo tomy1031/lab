@@ -19,7 +19,11 @@ async function boot() {
   const screens = new Screens(game);
   game.screens = screens;
   ISLE.debug.state = () => game.debugState();
-  if (params.has('quick')) {
+  let restart = null;
+  try { restart = JSON.parse(sessionStorage.getItem('isle.restart') || 'null'); sessionStorage.removeItem('isle.restart'); } catch { /* ignore */ }
+  if (restart) {
+    await game.newGame(restart);
+  } else if (params.has('quick')) {
     await game.newGame(game.quickSetup(params));
   } else {
     screens.show('title');

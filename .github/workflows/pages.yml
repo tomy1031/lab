@@ -41,6 +41,12 @@ on:
       - 'rally-court/index.html'
       - 'rally-court/js/**'
       - 'rally-court/docs/preview.jpg'
+      - 'island-survival/index.html'
+      - 'island-survival/js/**'
+      - 'island-survival/css/**'
+      - 'island-survival/img/**'
+      - 'island-survival/assets/**'
+      - 'island-survival/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

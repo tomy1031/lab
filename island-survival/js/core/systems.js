@@ -63,6 +63,19 @@ export async function installSystems(game, setup) {
     const items = await import('../data/items.js');
     const c = new cr.Crafting({ itemDef: items.itemDef, attrsOf: items.attrsOf, inventory: player.inv, rng: game.rng, getContext: () => craftContext(game) });
     game.add('crafting', c);
+    // crafting takes game time and is news for the rest of the game (goals, stats, the companion)
+    const craft = c.craft.bind(c);
+    const after = (r) => {
+      if (!r) return r;
+      if (r.ok) {
+        game.bus.emit('craft:done', { stack: r.stack, recipe: r.recipe, first: !!r.first, kind: r.kind });
+        game.sys.sfx?.play(r.first ? 'craft_new' : 'craft_ok');
+        game.passTime(Math.max(1, r.minutes || r.recipe?.minutes || 5), { heavy: false });
+      } else game.sys.sfx?.play('craft_fail');
+      player.validate();
+      return r;
+    };
+    c.craft = (method, uids, o = {}) => { const r = craft(method, uids, { score: 0.55, ...o }); return r && typeof r.then === 'function' ? r.then(after) : after(r); };
   }
   // building
   const bd = await optional('../sim/building.js');
@@ -99,6 +112,7 @@ export async function installSystems(game, setup) {
   game.rec = (k) => { game.stats[k] = (game.stats[k] || 0) + 1; };
   setupEvents(game);
   setupHands(game, setup);
+  uiAdapters(game, setup);
   game.bus.emit('log', { text: '浜で 目を 覚ました。持ってきた 物を 確かめよう', kind: 'info' });
   return game;
 }
@@ -163,6 +177,27 @@ function buildingAdapter(game) {
       return;
     }
     if (opt.id === 'sleep') { game.screens?.show('sleep'); }
+  };
+}
+
+/** small shape adapters between the systems and the UI screens (js/ui/*) */
+function uiAdapters(game, setup) {
+  const B = game.sys.building;
+  if (B?.defs && !B._uiWrapped) {
+    const orig = B.defs.bind(B);
+    B.defs = () => orig().map((d) => ({ ...d, effect: d.effect ?? d.effectText, materials: d.materials ?? d.slotsText, locked: d.available === false }));
+    B._uiWrapped = true;
+  }
+  const P = game.sys.player;
+  P.setHotbar = (i, uid) => { P.hotbar = P.hotbar.map((u) => (u === uid ? null : u)); P.hotbar[i] = uid; };
+  game.sys.journal.stats = () => ({ '歩いた 距離': `${Math.round(P.stats.distance)} m`, '作った 物': P.stats.crafted, '釣った 魚': P.stats.fishCaught, 'しとめた 動物': P.stats.animalsHunted, '火を おこした': P.stats.firesLit, '病気・ケガ': P.stats.illnesses, '飲んだ 水': `${P.stats.waterCups} 杯` });
+  game.stopGestures = () => { game.hands?.stop(); document.getElementById('cam-preview')?.classList.add('hidden'); };
+  if (setup.apiKey) game.apiKey = setup.apiKey;
+  game.applySettings = (st) => {
+    if (st.sens) game.input.sensitivity = st.sens;
+    if (st.quality && st.quality !== game.renderer.qname) game.renderer.setQuality(st.quality);
+    if (st.camPreview !== undefined) document.getElementById('cam-preview')?.classList.toggle('hidden', !st.camPreview || !game.hands?.ready);
+    game.reduceShake = !!st.reduceShake;
   };
 }
 
@@ -382,7 +417,11 @@ function makeActions(game) {
       if (game.sys.fauna?.animals?.some((a) => a.alive && a.sp.charger && a.pos.distanceTo(game.player.pos) < 20)) reasons.push('近くに 動物が いる');
       return { ok: reasons.length === 0, reasons };
     },
-    sleep(untilOrHours = 'morning') { startSleep(game, untilOrHours); },
+    sleep(arg = 'morning') {
+      game.screens?.hide?.();
+      if (arg && typeof arg === 'object') arg = arg.hours ? Number(arg.hours) : 'morning';
+      startSleep(game, arg);
+    },
     fillContainer(uid) { const t = game.sys.interact.target; if (t?.type === 'water') { const prev = P().held; P().equip(uid); game.sys.interact.run(t, { id: 'fill' }); P().equip(prev); return true; } toast('水辺で くむ', 'info'); return false; },
     addToPot(potUid, uid) {
       const pot = P().inv.get(potUid), s = P().inv.get(uid);
@@ -529,13 +568,21 @@ function endGame(game, info) {
   game.ended = true;
   const P = game.sys.player;
   const st = { ...P.stats, ...game.stats, result: info.result, daysSurvived: game.clock.day - 1 + game.clock.hour / 24, hp: P.body.s.hp, food: P.body.s.food, water: P.body.s.water, morale: P.body.s.morale, guideK3: game.sys.knowledge?.entries?.().filter((e) => e.level >= 3).length || 0 };
-  import('../sim/score.js').then((S) => {
+  Promise.all([import('../sim/score.js'), import('../data/achievements.js').catch(() => null)]).then(([S, A]) => {
     const score = S.computeScore ? S.computeScore(st, game.setup, game.diff) : { total: 0, rank: '-', parts: [] };
     const review = info.result === 'dead' && S.deathReview ? S.deathReview(info.cause, st) : [];
+    const ach = A?.newlyUnlocked ? A.newlyUnlocked(st, game, []) : [];
+    const type = info.result === 'dead' ? 'died' : ['rescued', 'raft', 'drift', 'stay'].includes(info.result) ? 'rescued' : 'retired';
+    const head = { rescued: info.how === 'promised' ? '迎えの 船が 来た！' : '救助された！', raft: 'いかだで 島を 出た', drift: '漂流の 末に 助かった', stay: '島で 暮らす ことに した', retired: 'リタイアした', broken: '心が 折れた', dead: '力尽きた…' }[info.result] || '終わり';
+    const days = Math.floor(st.daysSurvived * 10) / 10;
     game.pause(true);
-    game.screens?.show('result', { ...info, stats: st, score, review });
+    game.screens?.show('result', {
+      type, result: info.result, headline: head, sub: info.result === 'dead' ? `死因：${S.DEATH_NAMES?.[info.cause] || info.cause}` : `${days} 日間 生きのびた`, days, seed: game.setup.seed,
+      review, score, achievements: (ach || []).map((x) => ({ name: x.name, desc: x.desc, icon: x.icon })), stats: st, canRetry: info.result === 'dead' && (game.diff.retries ?? 0) > 0,
+      records: [{ label: '釣った 魚', value: P.stats.fishCaught }, { label: 'しとめた 動物', value: P.stats.animalsHunted }, { label: '作った 物', value: P.stats.crafted }, { label: '火を おこした', value: P.stats.firesLit }, { label: '歩いた 距離', value: `${Math.round(P.stats.distance)} m` }],
+    });
     S.saveRecord?.({ ...info, score: score.total, rank: score.rank, days: st.daysSurvived, setup: game.setup });
-  }).catch(() => game.screens?.show('result', { ...info, stats: st, score: { total: 0, rank: '-', parts: [] }, review: [] }));
+  }).catch((e) => { console.error(e); game.screens?.show('result', { type: 'retired', headline: '終わり', review: [], score: { total: 0, rank: '-', parts: [] }, achievements: [], records: [] }); });
   game.bus.emit('game:end', info);
 }
 

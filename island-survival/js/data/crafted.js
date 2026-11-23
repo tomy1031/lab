@@ -241,7 +241,7 @@ C('scent_ball', 'におい玉', '🟤', 'misc', 0.1, 'scent6', [], 'P0', {
 C('mud_ball', '泥だんご', '🟤', 'misc', 0.5, 'heavy4 sticky2', [], 'P0', {
   generic: true, desc: '投げると 音で 動物の 気を そらす。仲間が 笑う。' });
 C('shard', '破片', '🔹', 'material', 0.05, 'sharp6 hard6', ['stone'], 'P0', {
-  generic: true, stack: 20, tool: T('blade', 'stone', { sharp: 6, chop: 1, melee: 2, carve: -15, butcher: 0.65 }),
+  generic: true, stack: 20, tool: T('blade', 'stone', { sharp: 6, chop: 1, melee: 2, butcher: 0.65 }),
   desc: '割った 破片。刃・矢じり・針に（§11.4 の sharp）。' });
 C('crushed', 'つぶれた もの', '🫓', 'material', 0.1, 'fiber4', ['plant'], 'P0', {
   generic: true, stack: 20, perInstance: 'attrs, name（つぶれた ◯◯）, stats.tinder',

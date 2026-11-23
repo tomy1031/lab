@@ -181,7 +181,12 @@ export class PlayerState {
     this.inv.tick(gm, { tAir: env.Tair, wetRate, dryRate: env.fire > 0 ? 0.6 : W.rain > 0.05 ? 0.02 : 0.15, place: 1.2 });
     // map cells visited (20 m grid)
     const P = g.player.pos;
-    this.visited.add(`${Math.floor((P.x + 300) / 20)},${Math.floor((P.z + 300) / 20)}`);
+    // you see about 40 m around you: reveal the map cells (20 m grid, key "i,j" = floor(x / 20), floor(z / 20))
+    const ci = Math.floor(P.x / 20), cj = Math.floor(P.z / 20);
+    if (ci !== this.lastCell?.[0] || cj !== this.lastCell?.[1]) {
+      this.lastCell = [ci, cj];
+      for (let di = -2; di <= 2; di++) for (let dj = -2; dj <= 2; dj++) if (di * di + dj * dj <= 5) this.visited.add(`${ci + di},${cj + dj}`);
+    }
     this.stats.distance += g.player.moveInfo.dist;
     // movement limits from the body
     g.player.speedMul = this.body.speedMul * this.weightMul();
@@ -190,13 +195,13 @@ export class PlayerState {
 
   /** over the carrying limit: −5 % speed per kg, immobile at 1.5× (§4.9) */
   weightMul() {
-    const cap = this.capacity();
+    const cap = this.capacity;
     const w = this.inv.weight();
     if (w <= cap) return 1;
     if (w >= cap * 1.5) return 0.15;
     return Math.max(0.2, 1 - (w - cap) * 0.05);
   }
-  capacity() {
+  get capacity() {
     let cap = 15;
     for (const s of this.inv.stacks) { const d = itemDef(s.id, s); if (d?.carry) cap += s.stats?.carry ?? d.carry; }
     return cap;
