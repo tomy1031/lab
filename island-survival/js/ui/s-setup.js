@@ -1,9 +1,45 @@
 // ui/s-setup.js — game setup (DESIGN §2, §21.1): take-along items, companion, days, difficulty … + live severity / score multiplier.
-import { h } from './dom.js';
+import { h, clear } from './dom.js';
 import { getStarters, calcSetup, stars, prefs, head, toast } from './common.js';
 import { loadSettings, getApiKey, setApiKey } from '../core/save.js';
+import { rollSheet, sheetSummary, stageOf, STAGES } from '../sim/companion-sheet.js';
+import { PROFESSIONS, PROFESSION_IDS, CHAR_INFO } from '../data/professions.js';
+
+// ------------------------------------------------------------------ character sheet panel (DESIGN §23.6) — shared with the companion menu
+const reducedMotion = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
+const mulTxt = (v) => v.toFixed(2).replace(/0$/, '');
+
+/** Read-only sheet view. `sum` = sheetSummary(sheet). Numbers carry data-final so the roll animation can restore them. */
+export function sheetPanel(sum, { titleExtra = null, controls = null } = {}) {
+  const abil = sum.abilities.map((a) => h('div', { class: `cs-abil ${a.tier}`, 'data-id': a.id },
+    h('span', { class: 'cs-an' }, a.name),
+    h('b', { class: 'cs-val', 'data-final': a.value }, a.value),
+    h('span', { class: 'cs-bar', 'aria-hidden': 'true' }, h('i', { style: { width: `${Math.round(a.pct * 100)}%` } })),
+    h('span', { class: 'cs-brk' }, a.breakdown ? `＝ ${a.breakdown}` : '')));
+  const skill = sum.skills.map((k) => h('div', { class: `cs-skill ${k.lv >= 4 ? 'good' : ''}` },
+    h('span', { class: 'cs-sn' }, k.name),
+    h('span', { class: 'cs-dots', role: 'img', 'aria-label': `Lv ${k.lv}` }, Array.from({ length: 10 }, (_, i) => h('i', { class: i < k.lv ? 'on' : '' }))),
+    h('b', { class: 'cs-sl' }, k.lv)));
+  return h('div', { class: 'csheet' },
+    h('div', { class: 'cs-head' }, h('div', { class: 'cs-title' }, sum.title), titleExtra),
+    controls,
+    h('div', { class: 'cs-cols' },
+      h('div', { class: 'cs-col' }, h('h4', { class: 'cs-h' }, '能力値'), h('div', { class: 'cs-abils' }, abil)),
+      h('div', { class: 'cs-col' }, h('h4', { class: 'cs-h' }, '技能'), h('div', { class: 'cs-skills' }, skill))),
+    h('div', { class: 'cs-notes' },
+      h('p', { class: 'cs-note perk' }, h('b', null, '特技'), sum.perk),
+      h('p', { class: 'cs-note flaw' }, h('b', null, '苦手'), sum.flaw),
+      sum.quirks.map((q) => h('p', { class: 'cs-note quirk' }, h('b', null, '癖'), q))),
+    h('h4', { class: 'cs-h' }, '暮らしの 目安'),
+    h('div', { class: 'cs-life' }, sum.life.map((l) => h('div', { class: 'cs-l' }, h('span', null, l.label), h('b', null, l.text)))),
+    h('h4', { class: 'cs-h' }, '得意な 仕事'),
+    h('div', { class: 'cs-best' }, sum.best.map((b, i) => h('span', { class: 'cs-job' }, h('em', null, i + 1), b.label, h('b', null, `×${b.mult.toFixed(1)}`)))),
+    h('p', { class: 'cs-one' }, `「${sum.oneLiner}」`),
+    h('div', { class: 'cs-mul' }, h('span', null, `能力値の 合計 ${sum.total}`), h('span', null, 'スコア倍率（仲間）'), h('b', null, `×${mulTxt(sum.scoreMul)}`)));
+}
 
 let remembered = null; // survives opening the gesture practice screen and coming back
+let sheetMem = { cur: null, prev: null, prof: 'auto' }; // current / previous sheet (rolled with Math.random, never the island seed)
 
 const COUNTS = [[0, '0 個', '裸一貫'], [1, '1 個', 'ひとつだけ'], [2, '2 個', 'ふたつ'], [3, '3 個', 'みっつ'], ['all', '全部', 'お試し']];
 const DAYS = [[3, '3 日', 'おためし'], [7, '7 日', ''], [14, '14 日', ''], [30, '30 日', ''], [60, '60 日', ''], [100, '100 日', ''], [0, '無制限', '遭難']];
@@ -24,6 +60,7 @@ export default function setup(ctx, data = {}) {
   };
   if (!st.apiKey) { try { st.apiKey = getApiKey(); if (st.apiKey) st.saveKey = true; } catch { /* ignore */ } }
   remembered = st;
+  const sm = sheetMem;
   const upd = []; // refresh functions
   const refresh = () => { upd.forEach((f) => f()); try { const { apiKey, ...rest } = st; prefs.set({ setup: rest }); } catch { /* ignore */ } };
 
@@ -81,6 +118,56 @@ export default function setup(ctx, data = {}) {
   const compAvail = (id) => id === 'none' || game.companionAvailable?.(id) !== false;
   const compSeg = seg('companion', COMPS.map(([v, l, s]) => [v, l, compAvail(v) ? s : '準備中', !compAvail(v)]));
 
+  // ---- companion character sheet (§23.6)
+  const sheetBox = h('section', { class: 'field cs-field' });
+  let rollTimer = null;
+  const companionId = () => (CHAR_INFO[st.companion] ? st.companion : null);
+  function ensureSheet() {
+    const id = companionId();
+    if (!id) return null;
+    if (!sm.cur || sm.cur.char !== id) { sm.cur = rollSheet(id, sm.prof || 'auto', Math.random); sm.prev = null; sm.anim = true; }
+    return sm.cur;
+  }
+  const roll = (profession, why) => {
+    const id = companionId();
+    if (!id) return;
+    sm.prev = sm.cur;
+    sm.cur = rollSheet(id, profession, Math.random);
+    sm.anim = true;
+    refresh();
+  };
+  function playRoll(panel) {
+    clearInterval(rollTimer);
+    if (reducedMotion()) return;
+    const vals = [...panel.querySelectorAll('.cs-val')];
+    panel.classList.add('rolling');
+    const t0 = performance.now();
+    const done = () => { clearInterval(rollTimer); panel.classList.remove('rolling'); vals.forEach((v) => { v.textContent = v.dataset.final; }); };
+    rollTimer = setInterval(() => {
+      if (!panel.isConnected || performance.now() - t0 > 600) { done(); return; }
+      vals.forEach((v) => { v.textContent = 3 + Math.floor(Math.random() * 16); });
+    }, 55);
+    panel.addEventListener('pointerdown', done, { once: true }); // tap to skip
+  }
+  upd.push(() => {
+    const sheet = ensureSheet();
+    clear(sheetBox);
+    sheetBox.classList.toggle('hidden', !sheet);
+    if (!sheet) return;
+    const sum = sheetSummary(sheet);
+    const sel = h('select', { class: 'inp cs-sel', 'aria-label': '職業', onchange: (e) => { sm.prof = e.target.value; roll(sm.prof); } },
+      h('option', { value: 'auto' }, '職業：おまかせ'), PROFESSION_IDS.map((id) => h('option', { value: id }, PROFESSIONS[id].name)));
+    sel.value = sm.prof || 'auto';
+    const ctrl = h('div', { class: 'cs-ctrl' }, sel,
+      h('button', { type: 'button', class: 'btn teal small', onclick: () => roll(sm.prof || 'auto') }, '🎲 振り直す'),
+      h('button', { type: 'button', class: 'btn small', onclick: () => roll(sheet.profession) }, '職業は そのまま 振り直す'),
+      h('button', { type: 'button', class: 'btn small ghost', disabled: !sm.prev || null, onclick: () => { const c = sm.cur; sm.cur = sm.prev; sm.prev = c; sm.anim = false; refresh(); } }, 'ひとつ 前に 戻す'));
+    const panel = sheetPanel(sum, { controls: ctrl });
+    sheetBox.append(h('h3', { class: 'field-h' }, `${CHAR_INFO[sheet.char].short}の キャラクターシート`), panel,
+      h('p', { class: 'muted small' }, '何回でも 無料で 振り直せます。出目が 強い ほど、スコア倍率は 少し 下がります。'));
+    if (sm.anim) { sm.anim = false; playRoll(panel); }
+  });
+
   // ---- seed
   const seedIn = h('input', { type: 'text', inputmode: 'numeric', maxlength: '8', placeholder: '数字 8 桁', class: 'inp', value: st.seedText || '',
     oninput: (e) => { st.seedText = e.target.value.replace(/\D/g, '').slice(0, 8); e.target.value = st.seedText; st.seedMode = st.seedText ? 'num' : 'auto'; refresh(); } });
@@ -110,6 +197,7 @@ export default function setup(ctx, data = {}) {
     field('持ち物', h('div', { class: 'item-grid' }, cards.map(([, c]) => c)), hint),
     field('弾の数（猟銃）', seg('ammo', AMMOS)),
     field('仲間', compSeg),
+    sheetBox,
     field('日数', seg('days', DAYS, { cls: 'wrap' })),
     field('1 日の 長さ（現実の 時間）', seg('dayMinutes', DAYLEN)),
     field('難易度', seg('difficulty', DIFFS, { cls: 'wrap' })),
@@ -136,6 +224,10 @@ export default function setup(ctx, data = {}) {
   upd.push(() => {
     const starterList = starters;
     const r = calcSetup(st, starterList);
+    if (st.companion !== 'none' && sm.cur) { // the flat ×0.9 for having a companion → the sheet's own multiplier
+      const part = r.parts.find((p) => p.label === '仲間あり');
+      if (part) { r.mult = r.mult / part.v * sm.cur.scoreMul; part.v = sm.cur.scoreMul; part.label = `仲間（${sm.cur.short}・${PROFESSIONS[sm.cur.profession].short}）`; }
+    }
     sumStars.textContent = '';
     sumStars.append(h('span', { class: 'stars big' }, stars(r.stars)), h('span', { class: 'sum-stars-l' }, ['', 'らくちん', 'おだやか', 'ふつう', 'きびしい', 'いのちがけ'][r.stars]));
     sumMult.textContent = `×${r.mult.toFixed(2)}`;
@@ -160,13 +252,14 @@ export default function setup(ctx, data = {}) {
       days: st.days, dayMinutes: st.dayMinutes, difficulty: st.difficulty, season: st.season, seed, control: st.control,
       subtitles: !!st.subtitles, micMode: st.micMode, quality: s.quality || game.renderer?.quality, playerName: 'あなた',
     };
+    if (st.companion !== 'none' && sm.cur && sm.cur.char === st.companion) out.companionSheet = JSON.parse(JSON.stringify(sm.cur));
     if (st.apiKey) out.apiKey = st.apiKey;
     try { setApiKey(st.saveKey ? st.apiKey : ''); } catch { /* ignore */ }
     screens.show('loading', { text: '島に 向かっています…', progress: null });
     try {
       if (st.control === 'gesture') { try { await game.startGestures?.(); } catch (e) { console.warn(e); toast(game, 'カメラが 使えません。マウス・キーボードに きりかえます。', 'warn'); out.control = 'mouse'; } }
       await game.newGame(out);
-      remembered = null;
+      remembered = null; sheetMem = { cur: null, prev: null, prof: 'auto' };
       if (screens.current === 'loading') screens.hide();
     } catch (e) {
       console.error(e);

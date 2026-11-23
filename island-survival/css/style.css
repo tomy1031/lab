@@ -447,3 +447,42 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 .sheet-foot { flex: none; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 10px 16px 14px 52px; border-top: 2px dashed rgba(90, 70, 30, .22); }
 .field > .chk { display: flex; }
 @media (max-width: 640px) { .sheet-foot { padding-left: 34px; padding-right: 10px; } }
+
+/* ------------------------------------------------------------------ companion character sheet (DESIGN §23.6) */
+.cs-field .field-h { margin-bottom: 6px; }
+.csheet { background: #fffdf2; border: 2px solid var(--ink); border-radius: 16px; padding: 12px 14px 14px; box-shadow: 3px 4px 0 rgba(42, 41, 35, .6); color: var(--ink); }
+.cs-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; } .cs-title { font-size: 1.12rem; font-weight: 900; color: var(--teal-d); }
+.cs-ctrl { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; align-items: center; } .cs-sel { width: auto; min-width: 12em; max-width: 100%; flex: 0 1 15em; font-weight: 700; padding-right: 8px; }
+.cs-ctrl .btn { padding: 4px 12px; }
+.cs-cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 4px 22px; margin-top: 4px; } .cs-col { min-width: 0; }
+.cs-h { margin: 12px 0 4px; font-size: .86rem; color: var(--ink-soft); border-bottom: 1px dotted var(--paper-line); padding-bottom: 2px; }
+.cs-cols .cs-h { margin-top: 8px; }
+.cs-abil { display: grid; grid-template-columns: 3em 2.2em minmax(60px, 1fr); grid-template-areas: "n v b" ". brk brk"; align-items: center; column-gap: 8px; padding: 3px 0 4px; border-bottom: 1px dotted var(--paper-line); }
+.cs-an { grid-area: n; font-weight: 700; } .cs-val { grid-area: v; font-size: 1.35rem; font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.cs-bar { grid-area: b; height: 10px; border-radius: 99px; background: rgba(42, 41, 35, .16); overflow: hidden; } .cs-bar i { display: block; height: 100%; background: var(--teal); border-radius: 99px; transition: width .35s ease-out; }
+.cs-brk { grid-area: brk; font-size: .72rem; color: var(--ink-soft); line-height: 1.3; font-variant-numeric: tabular-nums; }
+.cs-abil.high .cs-val { color: var(--gold); text-shadow: 0 0 8px rgba(242, 184, 75, .55); } .cs-abil.high .cs-bar i { background: linear-gradient(90deg, #e3b82a, #f2a52b); }
+.cs-abil.low .cs-val { color: var(--blue); } .cs-abil.low .cs-bar i { background: var(--blue); }
+.cs-skills { display: grid; gap: 1px; } .cs-skill { display: grid; grid-template-columns: 5.2em 1fr 1.4em; gap: 6px; align-items: center; min-height: 26px; font-size: .86rem; color: var(--ink-soft); }
+.cs-skill.good { color: var(--ink); font-weight: 700; } .cs-sl { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-dots { display: flex; gap: 2px; } .cs-dots i { flex: 1; max-width: 12px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(42, 41, 35, .35); } .cs-dots i.on { background: var(--teal); border-color: var(--teal-d); }
+.cs-skill.good .cs-dots i.on { background: var(--orange); border-color: var(--orange-d); }
+.cs-notes { margin-top: 8px; display: grid; gap: 3px; } .cs-note { margin: 0; font-size: .86rem; display: grid; grid-template-columns: 3em 1fr; gap: 6px; } .cs-note b { font-size: .72rem; align-self: start; margin-top: .25em; text-align: center; border-radius: 99px; padding: 0 4px; background: var(--teal-l); color: var(--teal-d); }
+.cs-note.flaw b { background: #f6d9d6; color: #7b211a; } .cs-note.quirk b { background: #ece3c6; color: #6b5a2a; }
+.cs-life { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 2px 18px; } .cs-l { display: flex; justify-content: space-between; gap: 8px; font-size: .86rem; padding: 2px 0; border-bottom: 1px dotted var(--paper-line); } .cs-l span { color: var(--ink-soft); } .cs-l b { text-align: right; }
+.cs-best { display: flex; flex-wrap: wrap; gap: 6px; } .cs-job { display: inline-flex; align-items: center; gap: 6px; background: var(--teal-l); border: 1px solid rgba(31, 127, 134, .35); border-radius: 99px; padding: 2px 10px 2px 4px; font-weight: 700; font-size: .88rem; color: var(--teal-d); }
+.cs-job em { font-style: normal; background: var(--teal); color: #fff; width: 1.4em; height: 1.4em; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .75rem; } .cs-job b { color: var(--orange-d); }
+.cs-one { margin: 10px 0 4px; font-weight: 700; font-size: 1.02rem; color: var(--ink); }
+.cs-mul { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 6px; padding-top: 6px; border-top: 2px dashed rgba(90, 70, 30, .25); font-size: .84rem; color: var(--ink-soft); } .cs-mul span:nth-child(2) { margin-left: auto; } .cs-mul b { font-size: 1.5rem; color: var(--teal-d); line-height: 1; }
+.csheet.rolling .cs-val { color: var(--ink-faint); animation: cs-shake .12s linear infinite; } .csheet.rolling .cs-bar i { transition: none; opacity: .5; } .csheet.rolling .cs-head::after { content: "🎲"; display: inline-block; animation: cs-spin .6s linear; }
+@keyframes cs-shake { 0% { transform: translateY(-1px) rotate(-3deg); } 50% { transform: translateY(1px) rotate(3deg); } 100% { transform: translateY(-1px) rotate(-3deg); } }
+@keyframes cs-spin { to { transform: rotate(540deg); } }
+.hearts { display: inline-flex; gap: 3px; font-size: 1.35rem; line-height: 1; } .hearts i { font-style: normal; color: rgba(42, 41, 35, .25); } .hearts i.on { color: var(--red); }
+.stage-name { font-weight: 900; color: var(--orange-d); margin-left: 8px; }
+.cs-wrap { grid-column: 1 / -1; }
+@media (max-width: 640px) {
+  .cs-cols { grid-template-columns: 1fr; } .cs-ctrl .cs-sel, .cs-ctrl .btn.teal { flex: 1 1 100%; } .cs-ctrl .btn { padding: 4px 8px; flex: 1 1 calc(50% - 4px); font-size: .82rem; }
+  .cs-life { grid-template-columns: 1fr 1fr; } .csheet { padding: 10px 10px 12px; } .cs-skill { grid-template-columns: 5em 1fr 1.4em; }
+}
+@media (prefers-reduced-motion: reduce) { .csheet.rolling .cs-val, .csheet.rolling .cs-head::after { animation: none; } .cs-bar i { transition: none; } }
+.cs-wrap .csheet { border: 0; box-shadow: none; background: none; padding: 0; } .cs-wrap > h3 { margin: 0 0 6px; }

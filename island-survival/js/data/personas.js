@@ -5,8 +5,20 @@
 //          `{name}` is replaced with the player's name.
 // backstory: four chapters, unlocked at affinity STORY_UNLOCK[i] (why they joined → family → regret → future).
 // likes / dislikes: item ids (gifts). skills: level or flag per job. strengths / weaknesses: plain text for the prompt.
+// sex / defaultProfession: §23.3 (the job a companion starts with; PROFESSION_INTRO gives the self-introduction per job).
 
 export const STORY_UNLOCK = [20, 40, 60, 80];
+
+// Affinity stages (§23.7): 1 よそよそしい / 2 ふつう / 3 打ち解けた / 4 仲良し / 5 親友・特別.
+export const STAGE_NAMES = ['よそよそしい', 'ふつう', '打ち解けた', '仲良し', '親友・特別'];
+export function stageOf(affinity = 0) {
+  const a = Number(affinity) || 0;
+  if (a < 20) return 1;
+  if (a < 40) return 2;
+  if (a < 60) return 3;
+  if (a < 80) return 4;
+  return 5;
+}
 
 export const PERSONAS = {
   nagi: {
@@ -15,6 +27,8 @@ export const PERSONAS = {
     short: 'ナギ',
     kana: 'しおみ なぎ',
     age: 19,
+    sex: 'F',
+    defaultProfession: 'fisher',
     model: 'hana',
     voice: 'Aoede',
     pitch: 1.25,
@@ -51,6 +65,8 @@ export const PERSONAS = {
     short: 'トウコ',
     kana: 'ひいらぎ とうこ',
     age: 24,
+    sex: 'F',
+    defaultProfession: 'botanist',
     model: 'seed-san',
     voice: 'Kore',
     pitch: 1.05,
@@ -88,6 +104,8 @@ export const PERSONAS = {
     short: 'ゲン',
     kana: 'いわきり げん',
     age: 58,
+    sex: 'M',
+    defaultProfession: 'carpenter',
     model: 'procedural',
     voice: 'Charon',
     pitch: 0.7,
@@ -120,6 +138,46 @@ export const PERSONAS = {
   },
 };
 
+// §23.3 職業 × キャラ：自己紹介の 1 行（職業の 言葉だけ 差し替え。身の上話の 骨組みは 同じ）。
+export const PROFESSION_INTRO = {
+  nagi: {
+    fisher: '漁師見習いの ナギ！ 海と 潮なら まかせて。',
+    botanist: '植物学の 院生って ことに なってるけど、草より 魚が 好き。',
+    carpenter: '大工の 見習い、って 言っても 三日坊主。ほんとは 釣りの ほうが 得意だよ。',
+    nurse: '看護学校の 1 年。じいちゃんは 漁師 だけどね。',
+    cook: '料理人！ …って 言うと 大げさだけど、焼き魚なら 任せて！',
+    hunter: '猟師の 見習い！ 山の 獲物は 正直 苦手。じいちゃんは 漁師 だけどね。',
+    guide: 'アウトドアガイドの 卵だよ。道は…まあ、海沿いなら 任せて。',
+    farmer: '農家の 手伝い、してた！ イモ掘りなら 得意。じいちゃんは 漁師 だけどね。',
+    office: '会社員！ …って 言っても、ついこの前まで 夏休みだったんだけどね。',
+    student: '学生だよ！ 何でも やってみる 派。じいちゃんは 漁師 だけどね。',
+  },
+  touko: {
+    fisher: '漁師の 見習いを して いた 時期が あります。根拠は まだ 浅いですが。',
+    botanist: '植物学者、院生です。草の 分類を 研究して いました。根拠は 野帳です。',
+    carpenter: '大工の 見習いです。手先の 器用さには 自信が ない 方ですが、建築の 理屈は 知って います。',
+    nurse: '看護師です。手当てなら、根拠の ある 方法を お教え できます。',
+    cook: '料理人です。火加減の 根拠なら、いくらでも 話せますよ。',
+    hunter: '猟師です。足跡の 新しさから 獲物の 動きを 読みます。根拠は 経験です。',
+    guide: 'アウトドアガイドです。天気の 崩れは 6 時間前に 言える と 思います。根拠は 気圧計です。',
+    farmer: '農家です。土と 作物の 理屈なら 得意です。根拠は 畑の 記録です。',
+    office: '会社員でした。計画を 立てる 仕事を して いました。水が あと 半日ぶん、と 言えます。',
+    student: '学生です。まだ 専門が 定まって いないので、何でも 学びたい 立場です。',
+  },
+  gen: {
+    fisher: '漁師だ。…見習い だがな。潮なら わかる。',
+    botanist: '植物学者だと。草の 名前は 知ってる。毒は 知らん。',
+    carpenter: '大工だ。岩切 源。建てるのは 任せろ。',
+    nurse: '看護師だ。…手当ては 慣れてる。顔色で わかる。',
+    cook: '料理人だ。焦がすな、と 言われ 続けた。',
+    hunter: '猟師だ。足跡で 獲物が 見える。',
+    guide: 'アウトドアガイドだ。道は 外さねえ。',
+    farmer: '農家だ。土は 嘘を つかねえ。',
+    office: '会社員だった。書類は 得意だ、火は 苦手だ。',
+    student: '学生だと。…ただの 若造が 何を 言う。',
+  },
+};
+
 // The speech/call level for `affinity`: the highest callYou key that the affinity has reached.
 export function callYouFor(persona, affinity = 0, playerName = 'あなた') {
   const keys = Object.keys(persona.callYou).map(Number).sort((a, b) => a - b);
@@ -127,6 +185,15 @@ export function callYouFor(persona, affinity = 0, playerName = 'あなた') {
   for (const k of keys) if (affinity >= k) key = k;
   return persona.callYou[key].replace(/\{name\}/g, playerName);
 }
+
+// §23.7 の 段階ごとの 指示文（system prompt の 「今の 関係」の 先頭に 1 つ）。c = その段階の 呼び方。
+const STAGE_INSTRUCTION = [
+  (c) => `あなたは まだ この人を 信用して いない。返事は 短く、自分の 話は しない。頼まれた こと 以外は 申し出ない。呼び方は「${c}」。`,
+  (c) => `あなたは この人を 仲間として ふつうに 受け入れて いる。必要な ことは 話すが、身の上の 話は 聞かれても 浅く 答える。呼び方は「${c}」。`,
+  (c) => `あなたは この人に 打ち解けて いる。冗談や 自分の 好みを 話して よい。相手の 体調を 気に かける。呼び方は「${c}」。身の上話は 2 話目まで。`,
+  (c) => `あなたは この人と 仲が 良い。自分から 手伝いを 申し出て、先の 予定を いっしょに 考える。心配な ときは はっきり 止める。呼び方は「${c}」。身の上話は 3 話目まで。`,
+  (c) => `あなたは この人を 心から 信頼する 親友だと 思って いる。素直な 気持ちや 弱音を 言って よい。帰った 後の 話を して よい。呼び方は「${c}」。身の上話は 全部。ただし 口調の 基本（人物設定）は 変えない。`,
+];
 
 const TRUST_WORD = (t) => (t < 20 ? '低い。まだ 警戒して いる' : t < 60 ? 'ふつう' : '高い。頼りに して いる');
 const AFFINITY_WORD = (a) =>
@@ -137,13 +204,26 @@ const MOOD_WORD = {
 };
 
 // The Gemini Live system instruction for one companion (Japanese). Numbers are passed as words only.
-export function systemPrompt(persona, { playerName = 'あなた', trust = 40, affinity = 20, mood = 'normal' } = {}) {
+// selfAwareness: 1–2 lines the caller builds from the player's sheet (e.g. 「あなたの 職業は 漁師見習い…」).
+// profession: a §23.3 job id; defaults to the persona's own job.
+export function systemPrompt(persona, {
+  playerName = 'あなた', trust = 40, affinity = 20, mood = 'normal',
+  profession = persona.defaultProfession, selfAwareness = '',
+} = {}) {
   const unlocked = persona.backstory
     .map((chapter, i) => (affinity >= STORY_UNLOCK[i] ? chapter : null))
     .filter(Boolean);
   const story = unlocked.length
     ? unlocked.join('\n')
     : '（まだ 身の上話は しない。聞かれても はぐらかす）';
+  const call = callYouFor(persona, affinity, playerName);
+  const intro = PROFESSION_INTRO[persona.id]?.[profession] ?? '';
+  const relation = [
+    STAGE_INSTRUCTION[stageOf(affinity) - 1](call),
+    `信頼：${TRUST_WORD(trust)}。親密：${AFFINITY_WORD(affinity)}。今の 気分：${MOOD_WORD[mood] ?? 'ふつう'}。`,
+    selfAwareness,
+    intro ? `自己紹介（職業）：「${intro}」` : '',
+  ].filter(Boolean);
   return [
     `あなたは 無人島サバイバルゲーム「ひとつだけ島」に 出て くる 仲間キャラクター「${persona.name}」（${persona.short}・${persona.age}歳）を 演じます。`,
     `舞台は ヒトツ島。プレイヤーは「無人島 ◯ 日間 チャレンジ」の 参加者で、${persona.short}は 同じ チャレンジの 仲間です。`,
@@ -159,7 +239,7 @@ export function systemPrompt(persona, { playerName = 'あなた', trust = 40, af
     '',
     '【話し方】',
     `一人称は「${persona.firstPerson}」。${persona.speech.style}`,
-    `プレイヤーの 呼び方：「${callYouFor(persona, affinity, playerName)}」`,
+    `プレイヤーの 呼び方：「${call}」`,
     `話し方の 例：${persona.speech.examples.join(' ／ ')}`,
     '',
     '【得意と 苦手（島の 知識は この 範囲で 話す）】',
@@ -167,7 +247,7 @@ export function systemPrompt(persona, { playerName = 'あなた', trust = 40, af
     `苦手：${persona.weaknesses.join('、')}。`,
     '',
     '【今の 関係】',
-    `信頼：${TRUST_WORD(trust)}。親密：${AFFINITY_WORD(affinity)}。今の 気分：${MOOD_WORD[mood] ?? 'ふつう'}。`,
+    ...relation,
     '',
     '【身の上話（この 範囲だけ 話して よい）】',
     story,

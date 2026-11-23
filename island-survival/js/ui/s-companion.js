@@ -1,6 +1,8 @@
 // ui/s-companion.js — companion menu (E on the companion; DESIGN §13.5): talk / ask / give-receive / condition / treat.
 import { h, clear } from './dom.js';
 import { defOf, nameOf, rankOf, head, toast } from './common.js';
+import { sheetPanel } from './s-setup.js';
+import { sheetSummary, stageOf, STAGES } from '../sim/companion-sheet.js';
 
 const MOOD = { happy: ['😊', 'うれしそう'], normal: ['🙂', 'ふつう'], tired: ['😪', 'つかれている'], scared: ['😨', 'おびえている'], angry: ['😠', 'おこっている'], sad: ['😢', 'しずんでいる'], sick: ['🤒', '具合が わるい'] };
 const TABS = [['talk', '💬 話す'], ['ask', '📋 頼む'], ['swap', '🤝 渡す・もらう'], ['look', '👀 様子'], ['treat', '🩹 手当て']];
@@ -64,15 +66,19 @@ export default function companion(ctx, data = {}) {
     const [mi, ml] = MOOD[st.mood] || MOOD.normal;
     const bar = (l, k, c) => h('div', { class: 'stat-row' }, h('span', null, l), h('div', { class: 'bar', style: { '--c': c } }, h('i', { style: { width: `${Math.max(0, Math.min(100, st.s[k] ?? 0))}%` } })));
     const trustTxt = st.trust < 20 ? 'まだ 心を 開いていない' : st.trust < 60 ? '少しずつ 信じて くれている' : 'しっかり 信じて くれている';
+    const stage = stageOf(st.affinity);
+    const hearts = (n) => h('span', { class: 'hearts', role: 'img', 'aria-label': `${n} / 5` }, Array.from({ length: 5 }, (_, i) => h('i', { class: i < n ? 'on' : '' }, i < n ? '♥' : '♡')));
+    let sheet = null; try { sheet = C?.sheet || game.sys?.companion?.sheet || null; } catch { /* ignore */ }
     const affTxt = st.affinity < 20 ? 'ほどほどの 距離' : st.affinity < 60 ? 'だいぶ うちとけた' : 'とても なかよし';
     pane.append(h('div', { class: 'look-grid' },
       h('div', { class: 'paper-inset pad' }, h('h3', null, `${nm}の 体調`), h('div', { class: 'mood' }, h('span', { class: 'mood-i' }, mi), h('b', null, ml)),
         bar('体力', 'hp', '#e5484d'), bar('満腹', 'food', '#f08a24'), bar('水分', 'water', '#3b9be6'), bar('睡眠', 'rest', '#8c6cd9'), bar('気力', 'morale', '#e3b82a'),
         st.conditions.length ? h('div', { class: 'tags' }, st.conditions.map((c) => h('span', { class: 'tag' }, `${c.icon || ''} ${c.name}`))) : h('p', { class: 'muted small' }, '特に 悪い ところは なさそう。')),
       h('div', { class: 'paper-inset pad' }, h('h3', null, '気もち'),
-        h('div', { class: 'stat-row' }, h('span', null, '親密'), meter(st.affinity / 20, 5, '♥', '♡', 1.4)), h('p', { class: 'muted small' }, affTxt),
+        h('div', { class: 'stat-row' }, h('span', null, '親密'), hearts(stage), h('span', { class: 'stage-name' }, STAGES[stage - 1].name)), h('p', { class: 'muted small' }, affTxt),
         h('div', { class: 'stat-row' }, h('span', null, '信頼'), meter(st.trust / 20, 5, '🛡', '▫', 1.4)), h('p', { class: 'muted small' }, trustTxt),
-        h('p', { class: 'muted small' }, '※ はっきりした 数字は 見えません。'))));
+        h('p', { class: 'muted small' }, '※ はっきりした 数字は 見えません。')),
+      sheet ? h('div', { class: 'paper-inset pad cs-wrap' }, h('h3', null, `${nm}の キャラクターシート`), sheetPanel(sheetSummary(sheet))) : null));
   }
   function renderTreat() {
     const meds = (game.sys?.player?.inv?.stacks || []).filter((s) => { const d = defOf(s.id, s); return d.med || d.cat === 'medicine'; });

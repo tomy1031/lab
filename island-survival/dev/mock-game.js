@@ -1,4 +1,5 @@
 // dev/mock-game.js — a mock `game` implementing the docs/dev-contracts.md API with plausible data, for dev/ui.html.
+import { rollSheet } from '../js/sim/companion-sheet.js';
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 // ------------------------------------------------------------------ items
@@ -148,7 +149,7 @@ export function createMockGame(opts = {}) {
   };
   const compState = { trust: 52, affinity: 38, mood: 'happy', inv: [mk('oyster', 3, { fresh: 40 }), mk('berry', 4, { fresh: 60 })] };
   const companion = {
-    name: 'ナギ', liveAvailable: true, present: true, pos: { x: 135, z: 85 },
+    name: 'ナギ', sheet: rollSheet('nagi', 'fisher', Math.random), liveAvailable: true, present: true, pos: { x: 135, z: 85 },
     hudInfo: () => ({ name: 'ナギ', mood: compState.mood, hp: 88, near: true }),
     status: () => ({ s: { hp: 88, food: 62, water: 55, rest: 40, morale: 75 }, trust: compState.trust, affinity: compState.affinity, mood: compState.mood, conditions: [{ name: '日焼け', icon: '☀️' }], inv: compState.inv }),
     topics: () => [{ id: 'hello', label: 'こんにちは' }, { id: 'weather', label: '天気の はなし' }, { id: 'island', label: 'この島の こと' }, { id: 'family', label: 'ふるさとの はなし' }],
@@ -185,7 +186,7 @@ export function createMockGame(opts = {}) {
     renderer: { quality: 'mid', setQuality(q) { this.quality = q; } },
     pause(v) { this.paused = v; }, hasSave: () => true, save: () => true, retire() { console.log('retire'); },
     async newGame(setup) { console.log('newGame', JSON.stringify(setup)); await new Promise((r) => setTimeout(r, 500)); game.setup = setup; }, startAmbientPreview() {},
-    companionAvailable: (id) => id === 'nagi' || id === 'none', testApiKey: async (k) => (k.length > 6 ? { ok: true, model: 'gemini-live' } : { ok: false, reason: 'キーが 短すぎます' }),
+    companionAvailable: (id) => id !== 'gen', testApiKey: async (k) => (k.length > 6 ? { ok: true, model: 'gemini-live' } : { ok: false, reason: 'キーが 短すぎます' }),
     prompt: { key: 'E', text: 'ヤシの実を 落とす', sub: '竹｜硬い 6・長い 9・しなる 5・容器 5' },
     activity: null, goals: [{ text: '水を さがす（ヤシの実 か 川）', done: true }, { text: '性質タグを 見て 何か 1 つ 作る', done: false }, { text: '火を おこす', done: false }, { text: '食べ物を 1 つ 焼く', done: false }],
     startGestures: async () => { game.hands = game.hands || makeHands(); game.hands.status = 'ready'; game.hands.ready = true; }, stopGestures: async () => { if (game.hands) { game.hands.status = 'off'; game.hands.ready = false; } },

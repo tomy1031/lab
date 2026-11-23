@@ -122,7 +122,10 @@ export default function craft(ctx) {
       return;
     }
     const s = res.stack || {}; const d = defOf(s.id, s); const rk = rankOf(s.q ?? 40);
-    const stats = Object.entries(s.stats || {}).map(([k, v]) => h('span', { class: 'tag' }, { sharp: '鋭さ', melee: '近接', chop: '伐採', power: '威力', range: '射程', liters: '容量' }[k] || k, h('b', null, v)));
+    const LABEL = { sharp: '鋭さ', melee: '近接', chop: '伐採力', power: '威力', range: '射程', liters: '容量 L', durability: '耐久', butcher: '解体の 収量', carve: '削りの 補正', warmth: '保温 ℃', rain: '雨よけ', line: '糸の 強さ', fiber: '紐の 強さ', filterQ: 'ろ過の 品質', tinder: '火口の 力', board: '火きり板', base: '着火の 基本率', radius: '網の 広がり m', mesh: '網の 目 cm', hook: '針の 大きさ', carry: '持てる 重さ ＋kg', size: '大きさ', heatproof: '火に かけられる', bait: 'エサの 力', signal: '合図', speed: '速さ', capacity: '入る 数' };
+    const SKIP = new Set(['heavy', 'kind', 'noNotch', 'notch', 'weight', 'dried', 'tip', 'noFletch', 'fine', 'view']);
+    const fmt = (v) => (typeof v === 'number' ? (Number.isInteger(v) ? v : (Math.abs(v) < 1 ? `×${v.toFixed(2)}` : v.toFixed(1))) : v === true ? '○' : String(v));
+    const stats = Object.entries(s.stats || {}).filter(([k, v]) => !SKIP.has(k) && v !== false && v !== null && typeof v !== 'object').map(([k, v]) => h('span', { class: 'tag' }, LABEL[k] || k, h('b', null, fmt(v))));
     resultEl.append(h('div', { class: `res-card ${rk.cls}` },
       res.first ? h('div', { class: 'first-ribbon' }, '初めて 作った！') : null,
       h('div', { class: 'res-icon' }, d.icon || '✨'),

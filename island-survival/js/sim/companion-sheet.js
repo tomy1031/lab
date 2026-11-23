@@ -192,7 +192,7 @@ export function bestJobs(sheet, n = 3, opts = {}) {
 }
 
 // ------------------------------------------------------------------ text
-const HIGH_TXT = { str: '力持ち', con: '丈夫で ねばりづよい', dex: '手先が 器用', agi: '身軽', int: '物知り', pow: '肝が すわって いる' };
+const HIGH_TXT = { str: '力持ち', con: '丈夫', dex: '手先が 器用', agi: '身軽', int: '物知り', pow: '肝が すわって いる' };
 const LOW_TXT = { str: '力仕事は ちょっと 苦手', con: '体が 弱め', dex: '細かい 作業は 不器用', agi: '動きは のんびり', int: 'あまり 物を 知らない', pow: '夜は ちょっと 苦手' };
 
 /** one natural-Japanese sentence from the highest and lowest ability */
@@ -202,7 +202,7 @@ export function oneLiner(sheet) {
   for (const id of ABIL_IDS) { if (A[id] > A[hi]) hi = id; if (A[id] < A[lo]) lo = id; }
   const hiOk = A[hi] >= 12, loOk = A[lo] <= 8;
   const best = bestJobs(sheet, 1)[0];
-  if (hiOk && loOk) return `${HIGH_TXT[hi]}だけど、${LOW_TXT[lo]}。`;
+  if (hiOk && loOk) return `${HIGH_TXT[hi]} だけど、${LOW_TXT[lo]}。`;
   if (hiOk) return `${HIGH_TXT[hi]}。${best.label}が 向いて いる。`;
   if (loOk) return `${LOW_TXT[lo]}。そのぶん ${best.label}を まかせたい。`;
   return `目立つ ところは ないけど、${best.label}なら まかせられる。`;

@@ -4,8 +4,14 @@
 //               {item} = an item name (gift, catch, held item), {n} = a number (day count, etc.).
 // A line that needs {item} or {n} is only chosen when that var is given; other lines are used otherwise.
 // Lines for the same trigger are never repeated back to back.
+//
+// Affinity stages (DESIGN §23.7): a line is either a plain string (all stages) or { text, stage } where
+// stage is a stage number or an array of them (1–5). pickLine(…, { affinity }) uses stageOf(affinity):
+// it picks from the lines for that stage plus the untagged lines; if none match it falls back to all lines.
+// Staged triggers use the groups [1, 2] / [3, 4] / [5] unless a line is for one stage only (stage_talk, stage_up).
 
-import { PERSONAS, callYouFor } from './personas.js';
+import { PERSONAS, callYouFor, stageOf } from './personas.js';
+export { stageOf };
 
 export const LINES = {
   nagi: {
@@ -20,14 +26,20 @@ export const LINES = {
       '何 持ってきたの？ 見せて見せて！',
     ],
     morning: [
-      'おはよ！ 今日は 朝のうち 潮が 引くよ。貝、取りに 行こ！',
-      'おはよー。…ねえ、寝ぐせ すごいよ。',
-      'ふわぁ、おはよ。今日の 風は 東寄りだから、海は おだやかだね。',
+      { text: '…おはよ。今日は 朝のうち 潮が 引くって。', stage: [1, 2] },
+      { text: 'おはよー。潮が 引くから、貝、取りに 行けるね。', stage: [1, 2] },
+      { text: '{you}、おはよ！ 今日は 潮が 引くよ。貝、取りに 行こ！', stage: [3, 4] },
+      { text: 'おはよー。ねえ {you}、寝ぐせ すごいよ。', stage: [3, 4] },
+      { text: 'おはよ。…ねえ、ちゃんと 眠れた？ あたし 夢 見たよ、みんなで 帰る 夢。', stage: [5] },
+      { text: '{you}、おはよ！ 今日も いっしょに いられて うれしい。', stage: [5] },
     ],
     hungry: [
-      'おなか すいたぁ…。魚、焼かない？ 焦がさないように 見ててね！',
-      'ぐぅぅ…。ねえ、なんか 食べよ？ あたし もう 限界。',
-      'もう むり、おなか 鳴りすぎて 恥ずかしい…。なにか ちょうだい！',
+      { text: 'おなか すいた…。ねえ、魚、焼かない？ 焦がさないように 見ててね。', stage: [1, 2] },
+      { text: 'ぐぅぅ…。ねえ、なんか 食べよ？ あたし もう 限界。', stage: [1, 2] },
+      { text: '{you}、おなか すいたぁ…。魚、焼こ？ 焦がさないように 見ててね！', stage: [3, 4] },
+      { text: 'もう むり、おなか 鳴りすぎて 恥ずかしい…。ねえ、なにか ちょうだい！', stage: [3, 4] },
+      { text: '{you}、おなか すいたね。…あたしの 分、半分 あげる。ちゃんと 食べて。', stage: [5] },
+      { text: '{you}…ぐぅぅ。でも 先に 食べて。あたしは まだ 平気だから。', stage: [5] },
     ],
     thirsty: [
       'のど かわいた。水 ある？ 川の 水は、ちゃんと 沸かしてからね！',
@@ -75,9 +87,12 @@ export const LINES = {
       'お刺身 好きだけど、それは 火 通そ？ 約束！',
     ],
     player_sick: [
-      '顔 まっさおだよ。座って。水 持ってくる！',
-      '{you}、むり しないで！ 横に なって、ほら。',
-      '生の 魚 食べたから？ もう、言ったのに…。ゆっくり 寝てて。',
+      { text: '顔 まっさお。…座って。水、持ってくる。', stage: [1, 2] },
+      { text: '…大丈夫？ 横に なって。水 いる？', stage: [1, 2] },
+      { text: '{you}、顔 まっさおだよ。座って。水 持ってくる！', stage: [3, 4] },
+      { text: '生の 魚 食べたから？ もう、言ったのに…。ゆっくり 寝てて。', stage: [3, 4] },
+      { text: '{you}、むり しないで！ 横に なって、ほら。あたしが ずっと 見てるから。', stage: [5] },
+      { text: '{you}が 寝てる 間、火は あたしが 番する。安心して 寝てて。', stage: [5] },
     ],
     night_jungle: [
       '…ねえ、もどろ？ ここ、やだ。',
@@ -90,14 +105,20 @@ export const LINES = {
       'わ、見て見て！ 海が ぜんぶ オレンジ！',
     ],
     gift: [
-      '{item}！ わぁ、ありがとう！ 宝物にする！',
-      'え、いいの！？ やったぁ！',
-      'えへへ、すっごく うれしい！ {you}、わかってる〜！',
+      { text: '{item}…。ありがと。', stage: [1, 2] },
+      { text: '{item}、くれるの？ …ありがと。', stage: [1, 2] },
+      { text: '{item}！ わぁ、ありがとう！ {you}、わかってる じゃん！', stage: [3, 4] },
+      { text: 'えへへ、ありがとう！ 次は 何 くれる？', stage: [3, 4] },
+      { text: '{item}…。大事に する。', stage: [5] },
+      { text: '{you}、ありがと。…ねえ、帰っても 持ってて いい？', stage: [5] },
     ],
     refuse: [
-      'それは むり！ 虫は むり！',
-      'えー、それは ごめん！ 今は むりだってば。',
-      '{item}は むり！ ほかの ことなら 手伝うから。',
+      { text: 'それは むり。…ごめん。', stage: [1, 2] },
+      { text: 'えー、それは ごめん。今は むりだってば。', stage: [1, 2] },
+      { text: 'それは むり！ 虫は ほんと むり。ほかの ことなら 手伝うから、ね？', stage: [3, 4] },
+      { text: '{you}、ごめん！ それだけは 勘弁して。代わりに 魚 焼くから。', stage: [3, 4] },
+      { text: 'ねえ、それは だめ。{you}が 危ない 目に あうの、あたし 見たくない。', stage: [5] },
+      { text: 'それは ほんと むり。…お願い、{you}、ほかの 方法 考えよ？', stage: [5] },
     ],
     praise_craft: [
       'それ 自分で 作ったの？ 天才じゃん！',
@@ -144,6 +165,54 @@ export const LINES = {
       'ねえ、聞こえる！？ 息して、ゆっくり！',
       'やだ、死なないで！ 今 手当て するから！',
     ],
+
+    // §23.7 口調の 変化（段階 1・2 は 各 2 行、段階 3・4・5 も 各 2 行）
+    stage_talk: [
+      { text: '…うん、わかった。', stage: [1] },
+      { text: 'それ、あたしが やるの？', stage: [1] },
+      { text: 'いいよー、やっとく！', stage: [2] },
+      { text: 'おなか すいたね。なんか 取りに 行こ。', stage: [2] },
+      { text: '{you}、今日は 大漁だよ！ ほめて！', stage: [3] },
+      { text: 'また 生で 食べようと してる。こら。', stage: [3] },
+      { text: 'ねえ {you}、明日 いっしょに 岩山 行こ？ 朝日 見たい。', stage: [4] },
+      { text: 'むり しないで。あたしが 行くから 座ってて。', stage: [4] },
+      { text: '帰っても さ、会えるよね？ …約束だよ。', stage: [5] },
+      { text: 'あたし、{you}と だから ここまで 来れたんだ。', stage: [5] },
+    ],
+    accept: [
+      { text: '…うん、わかった。やっとく。', stage: [1, 2] },
+      { text: 'いいよー、やっとく！', stage: [1, 2] },
+      { text: 'いいよ、{you}！ 任せて！', stage: [3, 4] },
+      { text: '{you}の 頼みなら いいよ、やっとくね！', stage: [3, 4] },
+      { text: 'いいよ、{you}。任せて。あたし、{you}の 頼みなら 何でも 聞くから。', stage: [5] },
+      { text: 'わかった。{you}が 言うなら、ぜったい やる。', stage: [5] },
+    ],
+    refuse_reason: [
+      { text: 'それ、あたし むり。ごめん。', stage: [1, 2] },
+      { text: '…今は やらない。', stage: [1, 2] },
+      { text: 'ごめん、今は 体が しんどいの。代わりに 貝を 取って くるね。', stage: [3, 4] },
+      { text: 'それは 虫が ちょっと…。代わりに 魚 焼くから、それで いい？', stage: [3, 4] },
+      { text: 'ねえ、やめて。{you}が 心配なの。今日は 休もうよ。', stage: [5] },
+      { text: 'それ、だめ。…あたし、{you}が いなく なるの いやだから。', stage: [5] },
+    ],
+    stage_up: [
+      { text: 'えっと…まあ、仲良く なれて きたかも。', stage: [2] },
+      { text: 'なんか、ちょっと 近く なった…かな。', stage: [2] },
+      { text: 'もう、なに 見てんの！ …照れる じゃん。', stage: [3] },
+      { text: 'えへ、なんか 照れる。{you}、ありがと。', stage: [3] },
+      { text: 'わ、なんか 急に 仲良く なった 気が する…。へへ。', stage: [4] },
+      { text: '{you}、あのさ。…これからも よろしくね。', stage: [4] },
+      { text: '…あたし、ちょっと 泣きそう。へへ、言わないで。', stage: [5] },
+      { text: '{you}って、ほんと ずるい。…ずっと 友だちだよ。', stage: [5] },
+    ],
+    job_done: [
+      { text: '…終わったよ。', stage: [1, 2] },
+      { text: 'できた。見てくれる？', stage: [1, 2] },
+      { text: '終わったー！ ねえ、見て見て、ほめて！', stage: [3, 4] },
+      { text: '{you}、おわったよ！ 次 なに やる？', stage: [3, 4] },
+      { text: '{you}、終わったよ！ …ねえ、一緒に 休も？', stage: [5] },
+      { text: 'やった、{you}と 一緒に できた！', stage: [5] },
+    ],
   },
 
   touko: {
@@ -158,14 +227,20 @@ export const LINES = {
       'ちょっと 見せて いただけますか？ 状態を 確認して おきたいので。',
     ],
     morning: [
-      'おはようございます。今日は 干潮が 早めですね。岩場の 貝が 取りやすいと 思います。',
-      'おはようございます、{you}。昨夜は 冷えましたね。体調は いかがですか？',
-      'おはようございます。雲の 流れが 速いので、午後は 雨の 可能性が ありますね。',
+      { text: 'おはようございます。今日は 干潮が 早めですね。', stage: [1, 2] },
+      { text: 'おはようございます。雲の 流れが 速いので、午後は 雨の 可能性が ありますね。', stage: [1, 2] },
+      { text: 'おはようございます、{you}。昨夜は 冷えましたね。体調は いかがですか？', stage: [3, 4] },
+      { text: 'おはようございます、{you}。…よく 眠れましたか。わたしは 少し 寝ぼけて います。', stage: [3, 4] },
+      { text: 'おはよう、{you}。…よく 寝られた？ わたし、まだ 夢の 続きを 見てた 気が する。', stage: [5] },
+      { text: 'おはよ、{you}。今日は 一日、ずっと そばに いるね。', stage: [5] },
     ],
     hungry: [
-      'おなかが 空きましたね。生の 魚は 避けて、よく 火を 通しましょうね。',
-      '食料の 残りが 少し 心もとない ですね。採集に 行きましょうか。',
-      '正直に 申し上げると、わたしも 限界です。何か 温かい 物を 作りませんか？',
+      { text: '食料の 残りが 少し 心もとない ですね。採集に 行きましょうか。', stage: [1, 2] },
+      { text: '空腹は 判断力を 落とします。生の 魚は 避けて、火を 通しましょう。', stage: [1, 2] },
+      { text: '{you}、おなかが 空きましたね。…わたしも 限界です。温かい 物を 作りませんか？', stage: [3, 4] },
+      { text: '{you}、食料が 少し 心もとない ですね。明日、採集に 一緒に 行きませんか。', stage: [3, 4] },
+      { text: '{you}、おなか 空いて ませんか？ …わたしの 分 半分 どうぞ。ちゃんと 食べて ください。', stage: [5] },
+      { text: '{you}、もう 限界です。…何か 温かい 物、一緒に 作りましょう。', stage: [5] },
     ],
     thirsty: [
       'のどが 渇きましたね。水は 必ず 沸かしてから 飲みましょう。根拠は 病原菌です。',
@@ -213,9 +288,12 @@ export const LINES = {
       'お刺身は 魅力的ですが、今は 加熱を お願いします。…わたしも 我慢します。',
     ],
     player_sick: [
-      '顔色が 悪いですね。横に なって ください。水を 少しずつ 飲んで…。',
-      '症状は 嘔吐と 腹痛 ですか？ 食べた 物を 思い出して ください。薬草を 探します。',
-      '無理は しないで ください、{you}。今は 休む ことが 一番の 薬です。',
+      { text: '顔色が 悪いですね。横に なって ください。水を 少しずつ 飲んで…。', stage: [1, 2] },
+      { text: '症状は 嘔吐と 腹痛 ですか？ 食べた 物を 思い出して ください。', stage: [1, 2] },
+      { text: '{you}、顔色が 気に なります。横に なって ください。薬草、探して きますね。', stage: [3, 4] },
+      { text: '無理は しないで ください、{you}。今は 休む ことが 一番の 薬です。', stage: [3, 4] },
+      { text: '{you}、だめ、横に なって。…看病は わたしが します。水くみも 火の 番も。', stage: [5] },
+      { text: '{you}が 寝込むと、わたし 落ち着かないの。…そばに いるから、眠って。', stage: [5] },
     ],
     night_jungle: [
       '…ここは 暗すぎます。もどりませんか？ 足元が 見えません。',
@@ -228,14 +306,20 @@ export const LINES = {
       '夕焼けを 見ると、研究室の 窓を 思い出します。少し 懐かしいです。',
     ],
     gift: [
-      '{item}、ありがとうございます。大切に 使いますね。',
-      'わたしに…？ ありがとうございます、{you}。',
-      'めずらしい 物ですね！ 野帳に 記録して おきます。',
+      { text: '{item}ですか。…ありがとうございます。', stage: [1, 2] },
+      { text: '…ありがとう ございます。使わせて いただきます。', stage: [1, 2] },
+      { text: '{item}、ありがとうございます、{you}。大切に 使いますね。', stage: [3, 4] },
+      { text: 'わたしに…？ 嬉しいです。実は 少し 欲しかったんです。', stage: [3, 4] },
+      { text: '{item}……ありがとう、{you}。ほんと うれしい。', stage: [5] },
+      { text: '{you}からの 贈り物、野帳に 挟んで おくね。', stage: [5] },
     ],
     refuse: [
-      'それは 遠慮 させて ください。わたしには 危険だと 判断します。',
-      '申し訳ありませんが、今は お手伝いできません。体が 持ちそうに ないので。',
-      '根拠の ない 作業は お断りします。…別の 方法を 一緒に 考えませんか？',
+      { text: 'それは 遠慮 させて ください。わたしには 危険だと 判断します。', stage: [1, 2] },
+      { text: '申し訳ありませんが、今は お手伝いできません。体が 持ちそうに ないので。', stage: [1, 2] },
+      { text: '{you}、それは 遠慮 させて ください。…体が 持ちそうに ないので。', stage: [3, 4] },
+      { text: '申し訳ありません、今は 無理です。代わりに 別の 方法を 一緒に 考えませんか？', stage: [3, 4] },
+      { text: '{you}、それは 本当に やめて。…心配なの。わたし、あなたが 無事で いて ほしい。', stage: [5] },
+      { text: '{you}、それだけは 聞けない。…お願い、わたしの 言う ことを 聞いて。', stage: [5] },
     ],
     praise_craft: [
       'とても 丁寧な 仕事ですね。強度も 十分 そうです。お見事です。',
@@ -282,6 +366,54 @@ export const LINES = {
       '呼吸は できて いますか？ ゆっくり 息を 吐いて…。',
       'だめです、まだ 終わらせません。今 手当てを します！',
     ],
+
+    // §23.7 口調の 変化（段階ごとに 2 行）
+    stage_talk: [
+      { text: '承知しました。', stage: [1] },
+      { text: '必要なら やりますが、理由を 聞かせて ください。', stage: [1] },
+      { text: '分かりました。30 分ほどで 戻ります。', stage: [2] },
+      { text: 'その 実は まだ 調べて いません。待って ください。', stage: [2] },
+      { text: '{you}、少し 休みませんか。顔色が 気に なります。', stage: [3] },
+      { text: '実は わたし、火を 見るのが 好きなんです。', stage: [3] },
+      { text: 'もう、また 無茶を して… いえ、怒って ません。少しだけです。', stage: [4] },
+      { text: 'それ、わたしの ぶんも 取って おいて くれたんですか。…うれしい。', stage: [4] },
+      { text: '{you}、こっち 来て。見せたい 物が あるの。', stage: [5] },
+      { text: '{you}が いなかったら、わたし 3 日目で 帰ってました。', stage: [5] },
+    ],
+    accept: [
+      { text: '承知しました。やります。', stage: [1, 2] },
+      { text: '分かりました。やっておきます。', stage: [1, 2] },
+      { text: '{you}、分かりました。任せて ください。', stage: [3, 4] },
+      { text: 'いいですよ。わたしで 良ければ、すぐ やりますね。', stage: [3, 4] },
+      { text: '{you}の 頼みなら、喜んで。…無理は しないで ね。', stage: [5] },
+      { text: 'わかった。{you}、任せて。あなたの 力に なりたいの。', stage: [5] },
+    ],
+    refuse_reason: [
+      { text: '承知しました。それは お断り します。', stage: [1, 2] },
+      { text: 'その 件は 受けられません。', stage: [1, 2] },
+      { text: '体が 持ちそうに ないので、今は 遠慮 させて ください。代わりに 草を 摘んで おきますね。', stage: [3, 4] },
+      { text: '危険が 大きいので、お断り します。代わりに 別の 方法を 一緒に 考えませんか？', stage: [3, 4] },
+      { text: '{you}、それは 止めさせて ください。あなたに 何か あったら、わたし 耐えられません。', stage: [5] },
+      { text: '心配だから やめましょう。…お願い、今日は 休んで。', stage: [5] },
+    ],
+    stage_up: [
+      { text: 'あの…少し、話しやすく なった 気が します。', stage: [2] },
+      { text: '根拠は ありませんが、少し 安心しました。', stage: [2] },
+      { text: 'えっと…{you}、わたしの ことも 少し 話しても いいですか。', stage: [3] },
+      { text: 'なんだか 照れて しまいますね。', stage: [3] },
+      { text: 'わたし、今 少し うれしいです。…それ、言わないで ください。', stage: [4] },
+      { text: '{you}と いると、つい 話しすぎて しまいますね。', stage: [4] },
+      { text: '…{you}、なんだか 胸が いっぱいに なりました。', stage: [5] },
+      { text: '{you}、こんなに 誰かと 近く なれるなんて、思いませんでした。', stage: [5] },
+    ],
+    job_done: [
+      { text: '終わりました。確認して ください。', stage: [1, 2] },
+      { text: '作業は 完了 しました。問題は ないと 思います。', stage: [1, 2] },
+      { text: '{you}、終わりました。思った より 早く 済みました。', stage: [3, 4] },
+      { text: 'できましたよ。ちょっと 得意げに なって いいですか？', stage: [3, 4] },
+      { text: '{you}、終わったよ。…見て、うまく いったでしょ？', stage: [5] },
+      { text: '終わった…。{you}、本当に ありがとう。', stage: [5] },
+    ],
   },
 
   gen: {
@@ -296,14 +428,20 @@ export const LINES = {
       '見せてみろ。…ふん、何に 使うんだ、それ。',
     ],
     morning: [
-      '起きたか。今日は 風が 西だ。昼前に 屋根を 締めとけ。',
-      'おはよう。…ひざが 静かだ。今日は 荒れねえ。',
-      '朝一で 薪を 割る。手伝え。',
+      { text: '…起きたか。今日は 風が 西だ。昼前に 屋根を 締めとけ。', stage: [1, 2] },
+      { text: '…ひざが 静かだ。今日は 荒れねえ。', stage: [1, 2] },
+      { text: '若いの、起きたか。朝一で 薪を 割る。手伝え。', stage: [3, 4] },
+      { text: '若いの、おはよう。ひざが 静かだ。今日は 荒れねえぞ。', stage: [3, 4] },
+      { text: '{you}、おはよう。…よく 眠れたか。朝一で 薪を 割る。手伝え。', stage: [5] },
+      { text: '{you}、起きたか。今日も いい 天気に なりそうだ。', stage: [5] },
     ],
     hungry: [
-      '腹が 減った。…なにか 焼け。',
-      '食い物 まだか。腹の 虫が うるせえ。',
-      '食わねえと 力が 出ねえ。干し肉でも 炙れ。',
+      { text: '腹が 減った。…なにか 焼け。', stage: [1, 2] },
+      { text: '食い物 まだか。腹の 虫が うるせえ。', stage: [1, 2] },
+      { text: '若いの、腹が 減った。干し肉でも 炙れ。', stage: [3, 4] },
+      { text: '食わねえと 力が 出ねえ。…若いの、一緒に 食うぞ。', stage: [3, 4] },
+      { text: '{you}、腹 減ったな。…おれの 干し肉 半分 やる。食え。', stage: [5] },
+      { text: '…{you}。飯は 一緒に 食おう。その ほうが うまい。', stage: [5] },
     ],
     thirsty: [
       '喉が 渇いた。水は 沸いてるか。',
@@ -351,9 +489,12 @@ export const LINES = {
       '生は だめだ。…ちゃんと 焼け。',
     ],
     player_sick: [
-      '顔色 悪いぞ。横に なれ。水は 少しずつ 飲め。',
-      '…ふん、無理しすぎだ。寝てろ。',
-      '食ったもんが 悪かったな。落ち着いて 寝ろ。',
+      { text: '顔色 悪いぞ。横に なれ。水は 少しずつ 飲め。', stage: [1, 2] },
+      { text: '…ふん、無理しすぎだ。寝てろ。', stage: [1, 2] },
+      { text: '若いの、顔色 悪いな。横に なれ。水は おれが 汲んで くる。', stage: [3, 4] },
+      { text: '食ったもんが 悪かったな。落ち着いて 寝ろ。火は おれが 見る。', stage: [3, 4] },
+      { text: '{you}、横に なれ。…水は おれが 汲む。火の 番も 全部 やる。', stage: [5] },
+      { text: '…{you}。おまえが 寝てる 間は、この 小屋は おれが 守る。安心しろ。', stage: [5] },
     ],
     night_jungle: [
       '…夜の 密林は 無理だ。戻るぞ。',
@@ -366,14 +507,20 @@ export const LINES = {
       '夕日か。日が 沈むと 仕事も 終わりだな。',
     ],
     gift: [
-      '{item}か。…ありがとよ。',
-      '悪くねえな、{item}。大事に 使わせて もらう。',
-      '…ふん、気が 利くじゃねえか。',
+      { text: '{item}か。…ありがとよ。', stage: [1, 2] },
+      { text: '…まあ、もらっとく。', stage: [1, 2] },
+      { text: '{item}か。…悪くねえ。若いの、気が 利くじゃねえか。', stage: [3, 4] },
+      { text: '…ありがとよ。若いの、気が 利くじゃねえか。', stage: [3, 4] },
+      { text: '{you}、{item}か。…ありがとう。大事に する。', stage: [5] },
+      { text: '…いい 物 くれたな。{you}。一生 使う。', stage: [5] },
     ],
     refuse: [
-      'それは 無理だ。',
-      'やめとけ。危ねえ。',
-      'やらねえ。自分で やれ。',
+      { text: 'それは 無理だ。', stage: [1, 2] },
+      { text: 'やらねえ。自分で やれ。', stage: [1, 2] },
+      { text: '若いの、それは やめとけ。危ねえ。', stage: [3, 4] },
+      { text: 'それは 無理だ。…別の やり方を 考えろ。おれも 手伝う。', stage: [3, 4] },
+      { text: '{you}。それは やめろ。…おまえに 何か あったら、おれが 困る。', stage: [5] },
+      { text: '…{you}、それだけは 頼む。やめてくれ。', stage: [5] },
     ],
     praise_craft: [
       '悪くねえ。いい 仕事だ。',
@@ -420,24 +567,83 @@ export const LINES = {
       '息しろ。ゆっくりで いい。死ぬな。',
       '…馬鹿野郎、まだ 終わるんじゃねえ！',
     ],
+
+    // §23.7 口調の 変化（段階ごとに 2 行）
+    stage_talk: [
+      { text: '…ああ。', stage: [1] },
+      { text: '自分で やれ。', stage: [1] },
+      { text: '薪が 足りん。拾って くる。', stage: [2] },
+      { text: '屋根は そこじゃ ねえ、風上だ。', stage: [2] },
+      { text: '若いの、その 結び方は 悪くねえ。', stage: [3] },
+      { text: '貸して みろ。こう やるんだ。', stage: [3] },
+      { text: '昔 な、弟子に 同じ ことを 言った。…まあ いい。', stage: [4] },
+      { text: '火の 番は おれが やる。寝ろ。', stage: [4] },
+      { text: '{you}。…いい 小屋に なったな。', stage: [5] },
+      { text: '帰ったら 一杯 おごれ。おれも おごる。', stage: [5] },
+    ],
+    accept: [
+      { text: '…わかった。やっとく。', stage: [1, 2] },
+      { text: 'ふん、やる。', stage: [1, 2] },
+      { text: '若いの、任せとけ。', stage: [3, 4] },
+      { text: '分かった。おれが やる。見てろ。', stage: [3, 4] },
+      { text: '{you}、任せろ。…おまえの 頼みなら 聞く。', stage: [5] },
+      { text: 'わかった。{you}、今日は 任せて 座ってろ。', stage: [5] },
+    ],
+    refuse_reason: [
+      { text: 'やらねえ。', stage: [1, 2] },
+      { text: '…それは だめだ。', stage: [1, 2] },
+      { text: 'それは 危ねえ。代わりに 屋根の 補強を 先に やれ。', stage: [3, 4] },
+      { text: 'やめとけ、夜は 足元が 見えねえ。明るい うちに 代わりに 薪を 割れ。', stage: [3, 4] },
+      { text: '{you}、それは やめろ。…心配だ。今日は 休め。', stage: [5] },
+      { text: 'やめとけ。おまえに 何か あったら、おれが 寝られねえ。', stage: [5] },
+    ],
+    stage_up: [
+      { text: '…ふん。少しは 使える 奴に なったな。', stage: [2] },
+      { text: 'まあ、いい。少し 認めて やる。', stage: [2] },
+      { text: '…ふん。若いの、その 調子で 頼む。', stage: [3] },
+      { text: '…照れくせえ。もう 寝ろ。', stage: [3] },
+      { text: 'おれも 年を 忘れて 楽しいぞ。', stage: [4] },
+      { text: '……悪い 気は しねえ。', stage: [4] },
+      { text: '{you}。…言わねえが、おまえは 大事な 仲間だ。', stage: [5] },
+      { text: '…{you}。帰っても、またな。', stage: [5] },
+    ],
+    job_done: [
+      { text: '終わった。…まあ、こんな もんだ。', stage: [1, 2] },
+      { text: 'できた。確認しろ。', stage: [1, 2] },
+      { text: '若いの、終わったぞ。…悪くねえ 出来だ。', stage: [3, 4] },
+      { text: 'できた。手伝い、助かった。', stage: [3, 4] },
+      { text: '{you}、終わったぞ。…いい 出来だろ。', stage: [5] },
+      { text: '{you}の 手伝いが あったから、早く 済んだ。礼を 言う。', stage: [5] },
+    ],
   },
 };
+
+const textOf = (l) => (typeof l === 'string' ? l : l.text);
+const stagesOf = (l) => (typeof l === 'string' || l.stage == null ? null : [].concat(l.stage));
 
 const last = new Map();
 
 // Pick one line for `trigger` spoken by `charId`, fill its placeholders, and remember it so the next
 // pick for the same trigger differs. `rng` returns a number in [0, 1). `vars`: { you?, item?, n?, affinity?, playerName? }.
+// `affinity` (default 0) selects the stage (§23.7): stage-tagged lines for that stage plus untagged lines are
+// candidates; if none match, all lines are candidates.
 // Returns '' for an unknown character/trigger.
 export function pickLine(charId, trigger, rng = Math.random, vars = {}) {
   const table = LINES[charId]?.[trigger];
   if (!table || table.length === 0) return '';
-  const needs = (l) => (l.includes('{item}') && !vars.item) || (l.includes('{n}') && (vars.n == null || vars.n === ''));
-  let pool = table.filter((l) => !needs(l));
-  if (pool.length === 0) pool = table;
+  const needs = (t) => (t.includes('{item}') && !vars.item) || (t.includes('{n}') && (vars.n == null || vars.n === ''));
+  const usable = table.filter((l) => !needs(textOf(l)));
+  const base = usable.length ? usable : table;
+  const stage = stageOf(vars.affinity ?? 0);
+  let pool = base.filter((l) => {
+    const s = stagesOf(l);
+    return !s || s.includes(stage);
+  });
+  if (pool.length === 0) pool = base;
   const key = `${charId}:${trigger}`;
   const prev = last.get(key);
-  const fresh = pool.length > 1 ? pool.filter((l) => l !== prev) : pool;
-  const raw = fresh[Math.min(fresh.length - 1, Math.floor(rng() * fresh.length))];
+  const fresh = pool.length > 1 ? pool.filter((l) => textOf(l) !== prev) : pool;
+  const raw = textOf(fresh[Math.min(fresh.length - 1, Math.floor(rng() * fresh.length))]);
   last.set(key, raw);
   const you = vars.you ?? callYouFor(PERSONAS[charId], vars.affinity ?? 0, vars.playerName ?? 'あなた');
   return raw
