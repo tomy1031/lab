@@ -528,7 +528,7 @@ export class Crafting {
 
   _poison(m) {
     const p = m.def?.food?.poison;
-    if ((m.attrs.toxic || 0) >= 3) return { id: p?.id || 'plant_poison', chance: p?.chance ?? 0.7, sev: Math.max(1, Math.round(m.attrs.toxic / 3)) };
+    if ((m.attrs.toxic || 0) >= 3) return { id: p?.id || 'plant_poison', chance: p?.chance ?? 0.7, sev: Math.max(1, Math.round(m.attrs.toxic / 3)), heatKills: false };
     if (p) return { id: p.id, chance: p.chance ?? 0.7, sev: Math.max(1, (p.sev || [1])[0]), heatKills: !!p.heatKills };
     return null;
   }
@@ -1070,7 +1070,7 @@ export class Crafting {
         const attrs = tieAttrs(longs);
         attrs.hard = Math.max(0, Math.min(...longs.map((i) => a(i, 'hard'))) - 1);   // §11.8 ③: hard ＝ 最小 −1
         const dur = knot(Q);
-        return { stacks: [this._stack('joined_pole', 1, { q: Q, attrs: tidy(attrs), stats: { durability: dur }, dur, parts: parted(used, (i) => (i === cord ? 0.8 : 0.8)) })] };
+        return { stacks: [this._stack('joined_pole', 1, { q: Q, attrs: tidy(attrs), stats: { durability: dur }, dur, parts: parted(used, () => 0.8) })] };
       } });
     }
     const heavy = parts.filter((i) => a(i, 'heavy') >= 4).sort((x, y) => a(y, 'heavy') - a(x, 'heavy'))[0];
@@ -1157,7 +1157,7 @@ export class Crafting {
       const water = r2(foods.reduce((s, i) => s + (E[i].def.food.water || 0), 0));
       const B = Math.max(0, ...foods.map((i) => E[i].def.food.B || 0));
       const pz = poisonUnits.map((i) => this._poison(E[i])).sort((x, y) => y.chance - x.chance)[0] || null;
-      return { ids: [...new Set(U.map((i) => E[i].id))], food, water, B, p: pz ? pz.chance : 0, poison: pz ? { id: pz.id, chance: pz.chance, sev: [pz.sev, pz.sev] } : null };
+      return { ids: [...new Set(U.map((i) => E[i].id))], food, water, B, p: pz ? pz.chance : 0, poison: pz ? { id: pz.id, chance: pz.chance, sev: [pz.sev, pz.sev], heatKills: !!pz.heatKills } : null };
     };
     const fresh = () => { const f = U.map((i) => E[i].stack.fresh).filter((v) => v != null); return f.length ? Math.min(...f) : null; };
     const make = (id, o = {}) => this._gp(id, U, { minutes: 5, ...o, build: (Q) => {
