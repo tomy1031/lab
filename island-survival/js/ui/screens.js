@@ -22,6 +22,7 @@ const REG = { title, setup, loading, pause, settings, inventory, eat, craft, bui
 // screens that do not pause the game (the world is still a menu backdrop, or the game has not started)
 const NO_PAUSE = new Set(['title', 'setup', 'loading', 'credits', 'records']);
 // in-game menus that can be toggled / switched with their key
+const NO_HUD = new Set(['title', 'setup', 'loading', 'credits', 'records', 'result']);
 const IN_GAME = new Set(['inventory', 'craft', 'build', 'guide', 'map', 'journal', 'companion', 'sleep', 'eat']);
 const TOGGLE = { KeyI: 'inventory', Tab: 'inventory', KeyC: 'craft', KeyB: 'build', KeyK: 'guide', KeyM: 'map', KeyJ: 'journal', KeyN: 'journal' };
 const DEFAULT_BACK = { setup: 'title', records: 'title', credits: 'title', settings: 'pause', gesture: 'settings' };
@@ -76,6 +77,7 @@ export class Screens {
     else if (!needPause && this.paused) { this.paused = false; this.game.pause?.(false); }
     if (this.game.input) { this.game.input.enabled = false; try { this.game.input.exitLock?.(); } catch { /* ignore */ } }
     document.body.classList.add('menu-open');
+    document.body.classList.toggle('no-hud', NO_HUD.has(name) || ['title', 'setup'].includes(data?.from));
     const f = wrap.querySelector('[data-autofocus]') || wrap.querySelector('.sheet') || wrap;
     if (!f.hasAttribute('tabindex')) f.tabIndex = -1;
     try { f.focus({ preventScroll: true }); } catch { /* ignore */ }
@@ -93,7 +95,7 @@ export class Screens {
     this.teardown();
     if (this.paused) { this.paused = false; this.game.pause?.(false); }
     if (this.game.input) this.game.input.enabled = true;
-    document.body.classList.remove('menu-open');
+    document.body.classList.remove('menu-open', 'no-hud');
     this.handEl?.classList.add('hidden');
     this.game.bus?.emit('screen', { name: null });
   }

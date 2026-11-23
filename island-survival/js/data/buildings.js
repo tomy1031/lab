@@ -90,7 +90,7 @@ export const BUILDINGS = {
   bamboo_hut: {
     name: '竹の 高床小屋', icon: '🎋', p: 'P1', minutes: 300, size: [3.0, 3.4], hp: 260, weakness: 0.4, place: 'ground', height: 2.4, leafRoof: true, floorH: 0.42,
     slots: [slot('bamboo', S.bamboo, 24), slot('roof', S.roof, 20), slot('cord', S.cord, 16), slot('floor', S.plank, 8, { label: '板／竹（床）' })],
-    effects: { rain: 0.97, wind: 0.85, insul: 2.0, sleep: 0.1, fireInside: false, people: 3, storage: 0.7, bugs: 0.5, flood: true },
+    effects: { rain: 0.97, wind: 0.85, insul: 2.0, sleep: 0.1, fireInside: false, people: 3, storage: 0.7, bugs: 0.5 },
     walls: [[-1.5, -1.7, 1.5, -1.7], [-1.5, -1.7, -1.5, 1.7], [1.5, -1.7, 1.5, 1.7], [-1.5, 1.7, -0.5, 1.7], [0.5, 1.7, 1.5, 1.7]], cr: 0.3,
     desc: '浸水・ムカデ・蚊（×0.5）を 防ぐ。床下が 貯蔵庫。睡眠の 質 ＋0.1。',
   },

@@ -62,7 +62,8 @@ export class Weather {
   }
 
   /** call every frame with the game clock */
-  update(dt, gm, clock) {
+  update(dt, gm, clockOrGame) {
+    const clock = clockOrGame?.clock || clockOrGame;
     const totalH = clock.total / 60;
     const block = Math.floor(totalH / 6);
     if (block !== this.block) {

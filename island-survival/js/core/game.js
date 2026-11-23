@@ -62,8 +62,9 @@ export class Game {
   quickSetup(p) {
     return {
       days: Number(p.get('days')) || 30, dayMinutes: Number(p.get('daymin')) || 20, difficulty: p.get('difficulty') || 'normal',
-      starter: p.get('starter') || 'knife', ammo: p.get('ammo') || 'limited', companion: p.get('companion') || 'none',
-      gesture: p.has('gesture'), seed: Number(p.get('seed')) || 7, playerName: 'あなた',
+      count: p.get('count') === 'all' ? 'all' : p.has('count') ? Number(p.get('count')) : (p.get('starter') === 'none' ? 0 : 1),
+      starters: (p.get('starter') || 'knife').split(',').filter((x) => x && x !== 'none'), ammo: p.get('ammo') === 'inf' ? 'inf' : Number(p.get('ammo')) || 12, companion: p.get('companion') || 'none',
+      control: p.has('gesture') ? 'gesture' : 'mouse', season: 'dry', seed: Number(p.get('seed')) || 7, playerName: 'あなた',
     };
   }
 
@@ -74,16 +75,54 @@ export class Game {
     this.ended = false;
     this.rng = new RNG(setup.seed * 977 + 13);
     this.ensureWorld(setup.seed || 7);
-    this.clock = new Clock(setup.dayMinutes || 20, 7 * 60);
+    this.clock = new Clock(setup.dayMinutes || 24, 8 * 60);
     this.bus.emit('game:new', setup);
     // systems are created by the game module that knows the content (js/core/systems.js)
+    this.screens?.show?.('loading', { text: '島を 準備しています…', progress: 0.5 });
+    // place the player first: systems (the companion, day-1 drops) are placed around them
+    const s0 = this.world.terrain.shorePoint(Math.atan2(this.world.layout.start.z, this.world.layout.start.x), 1.5);
+    this.player.place(s0.x, s0.z, Math.atan2(s0.x, s0.z));
     const { installSystems } = await import('./systems.js');
     await installSystems(this, setup);
+    this.bindKeys();
+    this.screens?.hide?.();
+    document.getElementById('hud')?.classList.remove('hidden');
     const s = this.world.terrain.shorePoint(Math.atan2(this.world.layout.start.z, this.world.layout.start.x), 1.5);
     this.player.place(s.x, s.z, Math.atan2(s.x, s.z));
     this.running = true;
     this.paused = false;
     this.bus.emit('game:start', setup);
+  }
+
+  /** which companions can be chosen (ゲン has no model yet) */
+  companionAvailable(id) { return id !== 'gen'; }
+
+  /** setup screen: does this Gemini key open a Live session? → { ok, model?, reason? } */
+  async testApiKey(key) {
+    const { connectLive } = await import('../companion/live.js');
+    const r = await connectLive({ apiKey: key, setup: { generationConfig: { responseModalities: ['AUDIO'] } } });
+    if (r.ok) { r.session.close(); return { ok: true, model: r.model }; }
+    return { ok: false, reason: r.reason };
+  }
+
+  /** menu / hotbar keys (once per game) */
+  bindKeys() {
+    if (this.keysBound) return;
+    this.keysBound = true;
+    const inp = this.input, open = (name) => { if (!this.running || this.ended) return; if (this.screens?.current === name) this.screens.hide(); else if (!this.screens?.current || this.screens.current === 'hud') this.screens?.show(name); };
+    for (let i = 1; i <= 6; i++) inp.on(`slot${i}`, () => { const u = this.sys.player?.hotbar[i - 1]; if (u && !this.screens?.current) this.sys.player.equip(this.sys.player.held === u ? null : u); });
+    inp.on('inventory', () => open('inventory'));
+    inp.on('craft', () => open('craft'));
+    inp.on('build', () => open('build'));
+    inp.on('map', () => open('map'));
+    inp.on('journal', () => open('journal'));
+    inp.on('guide', () => open('guide'));
+    inp.on('sleep', () => open('sleep'));
+    inp.on('use', () => { const s = this.sys.player?.heldStack(); if (s && !this.screens?.current) { const d = this.sys.player.heldDef(); if (d?.food || s.stew) this.screens?.show('inventory', { focus: s.uid, eat: true }); else this.actions.use(s.uid); } });
+    inp.on('menu', () => { if (this.sys.interact?.activity) { this.sys.interact.cancelActivity(); return; } if (this.placement?.active) { this.placement.cancel(); return; } if (this.screens?.current) return; open('pause'); });
+    inp.on('talk', () => this.sys.companion?.talkKey?.());
+    inp.on('companion', () => this.sys.companion?.call?.());
+    inp.on('gesture', () => { if (!this.screens?.current) this.screens?.show('gesture'); });
   }
 
   pause(on = true) {
@@ -130,8 +169,46 @@ export class Game {
       for (const name of this.order) this.sys[name].updatePaused?.(dt, this);
     }
     const weather = this.sys.weather?.visual?.() || { cloud: 0.25, rain: 0, fog: 0, wind: 0.3, storm: 0 };
-    this.world.update(dt, { hours: this.clock.hour, weather, tide: this.clock.tide(), time: this.clock.total * 60 / this.clock.rate / 60 }, this.player.pos, cam);
+    this.animT = (this.animT || 0) + dt;
+    const surge = (this.sys.weather?.type === 'storm' || this.sys.weather?.type === 'typhoon') ? 0.6 : 0;
+    const env = this.world.update(dt, { hours: this.clock.hour, weather, tide: this.clock.tide() + surge, time: this.animT }, this.player.pos, cam);
     for (const name of this.order) this.sys[name].lateUpdate?.(dt, this);
+    this.lateFrame(dt, env, weather);
+  }
+
+  /** per-frame glue: sleep / ticks, hands, view model, rain, ambience, HUD */
+  lateFrame(dt, env, weather) {
+    const P = this.sys.player;
+    if (!P) return;
+    if (!this.paused) this.onTick?.();
+    this.placement?.update();
+    // hands: poll the camera and draw the preview
+    if (this.hands?.ready) {
+      this.hands.poll();
+      const cv = document.getElementById('cam-preview');
+      if (cv && !cv.classList.contains('hidden')) this.hands.drawPreview(cv, this.hands.events?.[0]?.type || '');
+    }
+    // torch burning
+    const held = P.heldStack();
+    if (held?.lit > 0 && !this.paused) { held.lit -= dt * this.clock.rate * this.clock.scale; if (held.lit <= 0 || (weather.rain > 0.5 && Math.random() < dt * 0.8 / 60 * this.clock.rate)) { held.lit = 0; this.bus.emit('toast', { text: 'たいまつが 消えた', kind: 'info' }); } }
+    P.torchLit = !!(held?.lit > 0);
+    this.viewmodel?.update(dt, { moving: this.player.moveInfo.moving, running: this.player.moveInfo.running, swimming: this.player.swimming });
+    if (this.viewmodel) this.viewmodel.root.visible = !P.sleeping;
+    const covered = (P.shelter?.rain ?? 0) >= 0.7;
+    this.rain?.update(dt, covered ? weather.rain * 0.25 : weather.rain, weather.wind, this.renderer.camera, env?.night ?? 0);
+    // ambience
+    this.ambT = (this.ambT || 0) + dt;
+    if (this.sys.sfx && this.ambT > 0.1) {
+      this.ambT = 0;
+      const t = this.world.terrain, p = this.player.pos;
+      let shore = 0;
+      for (let a = 0; a < 8; a++) { const d = 25; if (t.heightAt(p.x + Math.cos(a) * d, p.z + Math.sin(a) * d) < 0.2) shore += 1 / 8; }
+      const zone = P.zone;
+      this.sys.sfx.setAmbience({ rain: weather.rain, wind: weather.wind, storm: weather.storm, night: env?.night ?? 0, shore: Math.min(1, shore * 1.6 + (zone === 'beach' ? 0.3 : 0)), jungle: zone === 'jungle' ? 1 : zone === 'grass' ? 0.4 : 0.15, underwater: this.player.swimming && this.renderer.camera.position.y < this.player.seaLevel, indoor: covered ? 1 : 0, fire: P.nearFire !== null ? Math.max(0, 1 - P.nearFire / 6) : 0 });
+      // footsteps
+      if (this.player.moveInfo.moving && this.player.onGround) { this.stepAcc = (this.stepAcc || 0) + this.player.moveInfo.dist; if (this.stepAcc > (this.player.moveInfo.running ? 1.6 : 1.1)) { this.stepAcc = 0; this.sys.sfx.footstep(this.player.moveInfo.inWater ? 'water' : zone, { volume: this.player.crouch ? 0.3 : 0.7 }); } }
+    }
+    this.hud?.update(dt);
   }
 
   serialize() {

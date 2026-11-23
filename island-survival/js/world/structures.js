@@ -254,7 +254,7 @@ B.sos_sign = (P, o) => {
   const k = cnt(order.length, o.p);
   for (let i = 0; i < k; i++) {
     const [x, z] = order[i];
-    P.rock(x + P.rng.float(-0.03, 0.03), 0.07, z + P.rng.float(-0.03, 0.03), 0.2, 0.1, 0.19, P.jit(COL.stoneW, 0.1), P.rng.float(0, 3), 0.25);
+    P.rock(x + P.rng.float(-0.03, 0.03), 0.07, z + P.rng.float(-0.03, 0.03), 0.23, 0.11, 0.21, P.jit(COL.stoneW, 0.1), P.rng.float(0, 3), 0.25);
   }
 };
 

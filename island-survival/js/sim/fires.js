@@ -94,7 +94,7 @@ export class Fires {
     this.sync();
     return rec;
   }
-  sync() { this.game.fires = this.list.map((r) => r.fire); }
+  sync() { this.list = this.list.filter((r) => !r.removed && !(r.site && !r.site.fire)); this.game.fires = this.list.map((r) => r.fire); }
 
   /** an unlit fire for a building (called when a campfire / ring is completed) */
   make(type, x, y, z, { lit = false, site = null } = {}) {
@@ -179,6 +179,7 @@ export class Fires {
   /** real-time cooking and the hourly burn */
   update(dt, gm) {
     const g = this.game, W = g.sys.weather;
+    if (this.list.some((r) => r.site && !r.site.fire)) this.sync();
     const rain = W?.rain ?? 0, wind = W?.windSpeed ?? 2, type = W?.type || 'clear';
     for (const rec of this.list) {
       const f = rec.fire, T = FIRE_TYPES[rec.type] || FIRE_TYPES.campfire;
