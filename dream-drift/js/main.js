@@ -11,7 +11,7 @@ import { Race, POINTS } from './race/race.js';
 import { RaceCamera } from './race/camera.js';
 import { SPEED_CLASSES } from './race/kart.js';
 import { CHARACTERS, charById, renderPortraits } from './race/characters.js';
-import { COURSES, TITLE_MUSIC } from './courses/index.js';
+import { COURSES, CUPS, cupOf, TITLE_MUSIC } from './courses/index.js';
 import { Hud, fmtTime } from './ui/hud.js';
 import { Nav } from './ui/nav.js';
 import { XRManager } from './vr/xr.js';
@@ -25,7 +25,7 @@ const $ = (id) => document.getElementById(id);
 // ---------------------------------------------------------------------------------------------
 // settings
 const SETTINGS_KEY = 'dreamdrift.settings.v1';
-const settings = { music: 0.6, sfx: 0.85, quality: 'high', sens: 1, mode: 'gp', cls: 'normal', cpu: 7, laps: 3, char: 'luna', vrView: 'first', vrVignette: 'on' };
+const settings = { music: 0.6, sfx: 0.85, quality: 'high', sens: 1, mode: 'gp', cup: 'dream', cls: 'normal', cpu: 7, laps: 3, char: 'luna', vrView: 'first', vrVignette: 'on' };
 try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (e) { /* private mode */ }
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* ignore */ } };
 if (params.get('quality')) settings.quality = params.get('quality');
@@ -121,6 +121,7 @@ document.addEventListener('click', (e) => {
     if (grp === 'laps') settings.laps = Number(el.dataset.val);
     else if (grp === 'quality') { settings.quality = el.dataset.val; renderer.setQuality(settings.quality); }
     else settings[grp] = el.dataset.val;
+    if (grp === 'mode') refreshSetup();
     saveSettings();
     audio.play('select');
     return;
@@ -210,9 +211,11 @@ function updateHandSetup() {
 // ---------------------------------------------------------------------------------------------
 // setup / character / course screens
 function refreshSetup() {
-  for (const grp of ['mode', 'cls', 'laps']) {
+  if (!CUPS.some((c) => c.id === settings.cup)) settings.cup = CUPS[0].id;
+  for (const grp of ['mode', 'cup', 'cls', 'laps']) {
     for (const b of document.querySelectorAll(`[data-group="${grp}"] [data-val]`)) b.classList.toggle('on', String(settings[grp]) === b.dataset.val);
   }
+  $('opt-cup').hidden = settings.mode !== 'gp';
   $('cpu-num').textContent = settings.cpu;
   $('cpu-dots').innerHTML = '<i style="background:#ffd93b"></i>' + Array.from({ length: settings.cpu }, () => '<i style="background:#8a5cff"></i>').join('');
 }
@@ -228,9 +231,17 @@ function refreshChar() {
     <div class="stat">スピード ${bar(c.speed)}</div><div class="stat">加速 ${bar(c.accel)}</div><div class="stat">ハンドル ${bar(c.handling)}</div><div class="stat">重さ ${bar(Math.round(1 + (c.weight - 0.8) / 0.15))}</div>`;
 }
 function buildCourseGrid() {
-  $('coursegrid').innerHTML = COURSES.map((c, i) => `<button class="course" data-nav data-course="${i}">
+  $('coursegrid').innerHTML = CUPS.map((cup) => `<h3 class="cuphead outline">${cup.name}</h3>` + cup.courses.map((i, n) => {
+    const c = COURSES[i];
+    return `<button class="course" data-nav data-course="${i}">
     <div class="img" style="background-image:url(img/course-${c.id}.jpg), linear-gradient(135deg, ${c.theme.sky.top}, ${c.theme.sky.horizon})"></div>
-    <div class="tx"><div class="no">COURSE ${i + 1}</div><h3>${c.name}</h3><p>${c.tagline}</p></div></button>`).join('');
+    <div class="tx"><div class="no">${cup.short} ${n + 1}</div><h3>${c.name}</h3><p>${c.tagline}</p></div></button>`;
+  }).join('')).join('');
+}
+// "ドリームカップ 2/4" in a Grand Prix, "カンボジアカップ COURSE 3" otherwise
+function courseLabel(idx) {
+  const cup = cupOf(idx), n = cup.courses.indexOf(idx) + 1;
+  return state.gp ? `グランプリ ${cup.name} ${n}/${cup.courses.length}` : `${cup.name} COURSE ${n}`;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -273,7 +284,7 @@ function goTitle() {
     const course = loadCourse(idx);
     const rng = makeRng(raceSeed++);
     const chars = [...CHARACTERS].sort(() => rng.next() - 0.5);
-    state.race = new Race({ scene: state.world.scene, course, track: state.world.track, entrants: chars.map((c) => ({ char: c })), cls: SPEED_CLASSES.normal, laps: 99, seed: raceSeed, attract: true });
+    state.race = new Race({ scene: state.world.scene, course, track: state.world.track, hazards: state.world.hazards, entrants: chars.map((c) => ({ char: c })), cls: SPEED_CLASSES.normal, laps: 99, seed: raceSeed, attract: true });
     state.me = null;
     raceCam.cut.t = 0;
     audio.playMusic(TITLE_MUSIC);
@@ -322,7 +333,7 @@ function startRace(idx, restart = false) {
     if (state.gp && !state.gp.roster) state.gp.roster = entrants.map((e) => e.char.id);
     if (!restart) raceSeed++;
     const race = state.race = new Race({
-      scene: state.world.scene, course, track: state.world.track, entrants,
+      scene: state.world.scene, course, track: state.world.track, hazards: state.world.hazards, entrants,
       cls: SPEED_CLASSES[settings.cls] || SPEED_CLASSES.normal, laps: settings.laps, seed: raceSeed,
       autoplay: params.has('autoplay'),
     });
@@ -331,13 +342,13 @@ function startRace(idx, restart = false) {
     raceCam.snap(state.me);
     raceCam.t = 0;
     hud.setup(race, state.me, course, state.control === 'hands' && hands.ready);
-    hud.showBanner(`${state.gp ? `グランプリ ${state.gp.index + 1}/4 ・ ` : ''}COURSE ${idx + 1}`, course.name, true);
+    hud.showBanner(courseLabel(idx), course.name, true);
     hud.show(state.control !== 'vr');
     if (state.control === 'vr') {
       cockpit.attach(state.world.scene);
       cockpit.setKart(state.me, settings.vrView);
       cockpit.vignetteOn = settings.vrVignette !== 'off';
-      cockpit.message(course.name, { sub: `${state.gp ? `グランプリ ${state.gp.index + 1}/4 ・ ` : ''}COURSE ${idx + 1}`, size: 110, dur: 3.4 });
+      cockpit.message(course.name, { sub: courseLabel(idx), size: 110, dur: 3.4 });
       if (inVR()) cockpit.needCenter = 3;
     }
     $('touch').classList.toggle('show', state.control === 'pad' && matchMedia('(pointer: coarse)').matches);
@@ -351,13 +362,14 @@ function startRace(idx, restart = false) {
 }
 
 function startGP() {
-  state.gp = { index: 0, totals: new Map(), results: [], roster: null };
-  startRace(0);
+  const cup = CUPS.find((c) => c.id === settings.cup) || CUPS[0];
+  state.gp = { cup, index: 0, totals: new Map(), results: [], roster: null };
+  startRace(cup.courses[0]);
 }
 function nextGPRace() {
   state.gp.index++;
-  if (state.gp.index >= COURSES.length) { showGPFinal(); return; }
-  startRace(state.gp.index);
+  if (state.gp.index >= state.gp.cup.courses.length) { showGPFinal(); return; }
+  startRace(state.gp.cup.courses[state.gp.index]);
 }
 
 function pause(on, silent = false) {
@@ -416,6 +428,8 @@ function onRaceEvent(type, d) {
         audio.play('bump', j); raceCam.addShake(0.3 + 0.6 * j); input.rumble(0.45 + 0.55 * j, 90 + 80 * j);
       }
       break;
+    case 'trainbell': audio.play('bell', d.vol); break;
+    case 'trainhorn': audio.play('horn', d.vol); break;
     case 'pad': if (mine) audio.play('pad'); break;
     case 'jump': if (mine) audio.play('jump'); break;
     default:
@@ -477,7 +491,7 @@ function showResults() {
     <span class="tm">${k.estimated ? '— —' : fmtTime(k.finishTime)}</span>
     <span class="pt">${gp ? `+${POINTS[i] || 0}　計 ${gp.totals.get(k.char.id)}` : ''}</span></div>`).join('');
   const btns = gp
-    ? (gp.index < COURSES.length - 1 ? '<button class="btn primary big" data-nav data-act="next">つぎの レースへ</button>' : '<button class="btn primary big" data-nav data-act="gp-final">総合結果へ</button>') + '<button class="btn" data-nav data-act="quit">タイトルへ</button>'
+    ? (gp.index < gp.cup.courses.length - 1 ? '<button class="btn primary big" data-nav data-act="next">つぎの レースへ</button>' : '<button class="btn primary big" data-nav data-act="gp-final">総合結果へ</button>') + '<button class="btn" data-nav data-act="quit">タイトルへ</button>'
     : '<button class="btn primary big" data-nav data-act="again">もう一度</button><button class="btn" data-nav data-act="courses">コースを えらぶ</button><button class="btn" data-nav data-act="quit">タイトルへ</button>';
   $('res-btns').innerHTML = btns;
   showScreen('s-results');
@@ -486,7 +500,7 @@ function showResults() {
       title: `${me.place}位 ${me.place === 1 ? '— 優勝！' : me.place <= 3 ? '— 表彰台！' : ''}`,
       rows: order.map((k, i) => ({ text: `${i + 1}  ${k.char.name}`, right: (k.estimated ? '— —' : fmtTime(k.finishTime)) + (gp ? `　+${POINTS[i] || 0}（計 ${gp.totals.get(k.char.id)}）` : ''), me: k === me, img: portraitImgs.get(k.char.id) })),
       buttons: gp
-        ? [gp.index < COURSES.length - 1 ? { id: 'next', label: 'つぎの レースへ', primary: true } : { id: 'gp-final', label: '総合結果へ', primary: true }, { id: 'quit', label: 'おわる' }]
+        ? [gp.index < gp.cup.courses.length - 1 ? { id: 'next', label: 'つぎの レースへ', primary: true } : { id: 'gp-final', label: '総合結果へ', primary: true }, { id: 'quit', label: 'おわる' }]
         : [{ id: 'again', label: 'もう一度', primary: true }, { id: 'quit', label: 'おわる' }],
     }, (id) => act(id));
   }
@@ -497,7 +511,7 @@ function showGPFinal() {
   const ids = [...gp.totals.keys()].sort((a, b) => gp.totals.get(b) - gp.totals.get(a));
   const myId = settings.char;
   const myPlace = ids.indexOf(myId) + 1;
-  $('gp-title').textContent = myPlace === 1 ? 'グランプリ 優勝！ おめでとう！' : `グランプリ 総合 ${myPlace}位`;
+  $('gp-title').textContent = myPlace === 1 ? `${gp.cup.name} 優勝！ おめでとう！` : `${gp.cup.name} 総合 ${myPlace}位`;
   const pod = [ids[1], ids[0], ids[2]].map((id, j) => {
     if (!id) return '<div></div>';
     const pl = [2, 1, 3][j], h = [90, 130, 64][j], col = ['#c9d2ff', '#ffd93b', '#ffb070'][j];
@@ -509,7 +523,7 @@ function showGPFinal() {
   showScreen('s-gp');
   if (inVR()) {
     cockpit.openMenu({
-      title: myPlace === 1 ? 'グランプリ 優勝！' : `グランプリ 総合 ${myPlace}位`,
+      title: myPlace === 1 ? `${gp.cup.name} 優勝！` : `${gp.cup.name} 総合 ${myPlace}位`,
       rows: ids.map((id, i) => ({ text: `${i + 1}  ${charById(id).name}`, right: `${gp.totals.get(id)} pt`, me: id === myId, img: portraitImgs.get(id) })),
       buttons: [{ id: 'quit', label: 'おわる', primary: true }],
     }, (id) => act(id));
@@ -662,7 +676,7 @@ async function boot() {
   renderer.r.setAnimationLoop(frame);
 
   if (params.has('course')) {
-    // test / direct link: ?course=1..4 starts a free race at once
+    // test / direct link: ?course=1..8 starts a free race at once
     settings.mode = 'free';
     startRace(Math.max(0, Math.min(COURSES.length - 1, Number(params.get('course')) - 1)));
     DD.ready = true;

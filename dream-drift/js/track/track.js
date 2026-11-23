@@ -164,7 +164,7 @@ export class Track {
   // meshes
   // strip(dA(k), dB(k), hA, hB): a ribbon between two lateral offsets (functions of sample k) at heights
   // above the surface (world up). u runs 0→1 across, v = distance / vScale.
-  strip(dA, dB, hA = 0, hB = 0, vScale = 10, { flipNormal = false } = {}) {
+  strip(dA, dB, hA = 0, hB = 0, vScale = 10, { flipNormal = false, skip = null } = {}) {
     const N = this.N;
     const pos = new Float32Array((N + 1) * 2 * 3), uv = new Float32Array((N + 1) * 2 * 2);
     const v = this._v;
@@ -181,6 +181,7 @@ export class Track {
     }
     const idx = [];
     for (let k = 0; k < N; k++) {
+      if (skip && skip(k)) continue;
       const a = k * 2, b = k * 2 + 1, c = k * 2 + 2, d = k * 2 + 3;
       // (a,b,c): with dA < dB the face points up
       if (!flipNormal) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d);
@@ -239,6 +240,9 @@ export class Track {
     const wall = style.wall || {};
     const wh = wall.height ?? 1.1, wt = wall.thickness ?? 0.5;
     const outer = (k) => hw(k) + cb + sh;
+    // openings in the walls (e.g. where a railway crosses): [lap fraction, half length in m]
+    const gaps = (wall.gaps || []).map(([f, half]) => [f * this.N, half / this.step]);
+    const inGap = gaps.length ? (k) => gaps.some(([c, h]) => { let d = Math.abs(k + 0.5 - c); if (d > this.N / 2) d = this.N - d; return d < h; }) : null;
     const wallMat = new THREE.MeshStandardMaterial({
       color: wall.color || '#ffffff', roughness: wall.roughness ?? 0.5, metalness: wall.metalness ?? 0,
       ...(wall.emissive ? { emissive: new THREE.Color(wall.emissive), emissiveIntensity: wall.emissiveIntensity ?? 1 } : {}),
@@ -246,13 +250,14 @@ export class Track {
       side: THREE.DoubleSide,
     });
     if (wall.map) { wallMat.map = canvasTexture(128, wall.map); }
+    const o = { skip: inGap };
     const parts = [
-      this.strip((k) => -outer(k), (k) => -outer(k), 0, wh, 6),               // left inner face
-      this.strip(outer, outer, wh, 0, 6),                                        // right inner face
-      this.strip((k) => -outer(k) - wt, (k) => -outer(k), wh, wh, 6),          // left top
-      this.strip(outer, (k) => outer(k) + wt, wh, wh, 6),                       // right top
-      this.strip((k) => -outer(k) - wt, (k) => -outer(k) - wt, wh, -0.2, 6),   // left outer face
-      this.strip((k) => outer(k) + wt, (k) => outer(k) + wt, -0.2, wh, 6),     // right outer face
+      this.strip((k) => -outer(k), (k) => -outer(k), 0, wh, 6, o),               // left inner face
+      this.strip(outer, outer, wh, 0, 6, o),                                        // right inner face
+      this.strip((k) => -outer(k) - wt, (k) => -outer(k), wh, wh, 6, o),          // left top
+      this.strip(outer, (k) => outer(k) + wt, wh, wh, 6, o),                       // right top
+      this.strip((k) => -outer(k) - wt, (k) => -outer(k) - wt, wh, -0.2, 6, o),   // left outer face
+      this.strip((k) => outer(k) + wt, (k) => outer(k) + wt, -0.2, wh, 6, o),     // right outer face
     ];
     if (!wall.none) {
       for (const g of parts) {
@@ -264,8 +269,8 @@ export class Track {
     // glowing line on top of the walls
     if (wall.glow) {
       const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(wall.glow).multiplyScalar(wall.glowIntensity ?? 2.5), toneMapped: false });
-      const gl = new THREE.Mesh(this.strip((k) => -outer(k) - wt * 0.7, (k) => -outer(k) - wt * 0.3, wh + 0.02, wh + 0.02, 6), glowMat);
-      const gr = new THREE.Mesh(this.strip((k) => outer(k) + wt * 0.3, (k) => outer(k) + wt * 0.7, wh + 0.02, wh + 0.02, 6), glowMat);
+      const gl = new THREE.Mesh(this.strip((k) => -outer(k) - wt * 0.7, (k) => -outer(k) - wt * 0.3, wh + 0.02, wh + 0.02, 6, { skip: inGap }), glowMat);
+      const gr = new THREE.Mesh(this.strip((k) => outer(k) + wt * 0.3, (k) => outer(k) + wt * 0.7, wh + 0.02, wh + 0.02, 6, { skip: inGap }), glowMat);
       group.add(gl, gr);
     }
 

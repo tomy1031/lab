@@ -13,8 +13,9 @@ const IDLE = { steer: 0, throttle: 0, brake: 0, drift: false, item: false };
 
 export class Race {
   // entrants: [{ char, human }] in grid order (index 0 starts at the front)
-  constructor({ scene, course, track, entrants, cls = SPEED_CLASSES.normal, laps = 3, seed = 1, attract = false, autoplay = false }) {
+  constructor({ scene, course, track, hazards = [], entrants, cls = SPEED_CLASSES.normal, laps = 3, seed = 1, attract = false, autoplay = false }) {
     this.scene = scene; this.course = course; this.track = track; this.cls = cls;
+    this.hazards = hazards;
     this.laps = laps; this.attract = attract; this.autoplay = autoplay;
     this.rng = makeRng(seed);
     this.rnd = () => this.rng.next();
@@ -122,6 +123,7 @@ export class Race {
   step(dt, humanCtl) {
     this.t += dt; this.phaseT += dt;
     const tr = this.track, N = tr.N;
+    for (const h of this.hazards) h.step(dt, this);
     if (this.phase === 'intro') {
       if (this.phaseT >= INTRO_TIME) { this.phase = 'countdown'; this.phaseT = 0; this.emit('count', { n: 3 }); }
       for (const k of this.karts) k.step(0, IDLE, this);
@@ -175,8 +177,11 @@ export class Race {
       k.itemLatch = !!c.item && k.isHuman;
       this.checkPads(k);
       this.checkLap(k);
-      // stuck → respawn
-      if (!k.finished || this.attract) {
+      for (const h of this.hazards) h.collide?.(k, this);
+      // stuck → respawn (not while waiting at a closed level crossing, or queued behind karts that are)
+      k.waiting = this.hazards.length > 0 && Math.abs(k.speed) < 5 && !!this.crossingAhead(k, 45);
+      if (k.waiting) { k.stuckRef = k.raceDist; k.stuckT = 0; k.stuckCount = 0; }
+      else if (!k.finished || this.attract) {
         k.stuckT += dt;
         if (k.stuckT > 1) {
           const moved = k.raceDist - k.stuckRef;
@@ -198,6 +203,21 @@ export class Race {
       const allDone = this.karts.every((k) => k.finished);
       if (allDone || this.doneT > 14) this.finishRace();
     }
+  }
+
+  // the nearest closed level crossing ahead of kart k within maxM metres: { dist (m to the crossing's centre) }
+  crossingAhead(k, maxM = 70) {
+    const N = this.track.N, step = this.track.step;
+    let best = null;
+    for (const h of this.hazards) {
+      for (const c of h.crossings || []) {
+        if (!c.closed) continue;
+        let ds = c.prog - k.prog; if (ds < -N / 2) ds += N; else if (ds > N / 2) ds -= N;
+        const m = ds * step;
+        if (m > -2 && m < maxM && (!best || m < best.dist)) best = { dist: m, c };
+      }
+    }
+    return best;
   }
 
   finishAI(k) {
