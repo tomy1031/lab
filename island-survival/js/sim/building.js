@@ -93,7 +93,7 @@ export function damagePerHour(def, ctx, site = {}) {
 }
 /** helpers → time multiplier (§12.1 step 3) */
 export function workMultiplier(h = {}) {
-  let m = 1;
+  let m = h.handMul ?? 1; // §24.7 the frame you staked and lashed by hand
   if (h.axe) m *= 0.6;
   if (h.hammer) m *= 0.85;
   if (typeof h.companion === 'number') m *= h.companion; // the helper's own multiplier (§23.5 建築の手伝い)

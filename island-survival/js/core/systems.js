@@ -57,6 +57,9 @@ export async function installSystems(game, setup) {
     const base = k.nameOf.bind(k);
     k.nameOf = (itemId) => { const d = itemDef(itemId); const gid = d?.guide || itemId; const n = base(gid); return !n || n === gid ? d?.name || itemId : n; };
   }
+  // hand-work overlay (§24): crafting, sharpening, building, cooking … done with your own hands
+  const hwm = await optional('../player/handwork.js');
+  if (hwm?.Handwork) game.handwork = game.add('handwork', new hwm.Handwork(game));
   // crafting
   const cr = await optional('../sim/crafting.js');
   if (cr?.Crafting) {
@@ -65,17 +68,18 @@ export async function installSystems(game, setup) {
     game.add('crafting', c);
     // crafting takes game time and is news for the rest of the game (goals, stats, the companion)
     const craft = c.craft.bind(c);
-    const after = (r) => {
+    const after = (r, o = {}) => {
       if (!r) return r;
       if (r.ok) {
+        applyHandworkFailures(r, o.failures || []);
         game.bus.emit('craft:done', { stack: r.stack, recipe: r.recipe, first: !!r.first, kind: r.kind });
         game.sys.sfx?.play(r.first ? 'craft_new' : 'craft_ok');
-        game.passTime(Math.max(1, r.minutes || r.recipe?.minutes || 5), { heavy: false });
+        game.passTime(Math.max(1, Math.round((r.minutes || r.recipe?.minutes || 5) * (o.timeMul || 1))), { heavy: false });
       } else game.sys.sfx?.play('craft_fail');
       player.validate();
       return r;
     };
-    c.craft = (method, uids, o = {}) => { const r = craft(method, uids, { score: 0.55, ...o }); return r && typeof r.then === 'function' ? r.then(after) : after(r); };
+    c.craft = (method, uids, o = {}) => { const r = craft(method, uids, { score: 0.55, ...o }); return r && typeof r.then === 'function' ? r.then((x) => after(x, o)) : after(r, o); };
   }
   // building
   const bd = await optional('../sim/building.js');
@@ -153,7 +157,18 @@ function buildingAdapter(game) {
       return;
     }
     if (opt.id === 'work') {
-      const helpers = { axe: !!inv.find('axe'), hammer: !!inv.stacks.find((s) => /hammer/.test(s.id)), companion: game.sys.companion?.helping?.(site) ? (game.sys.companion.buildHelpMul?.() ?? true) : false };
+      // §24.7: the first stake and the first lashing of a frame are done by hand; the rest "in the same rhythm"
+      if (game.handwork && site.handP == null && (site.def.minutes || 0) >= 20 && !/fire|sos|signal|pit|rain_catch/.test(site.id)) {
+        import('../data/handwork.js').then(({ WORK_FLOW }) => game.handwork.run([...WORK_FLOW.stake(), ...WORK_FLOW.lash()], { title: `${site.def.name}：杭を 打って しばる`, key: 'build_frame' })).then((r) => {
+          if (!r || r.cancelled) return;
+          site.handP = r.p;
+          site.q = Math.max(1, Math.min(100, Math.round((site.q ?? 50) + (r.p - 0.55) * 20)));
+          game.bus.emit('toast', { text: `骨組み：${r.feel.label}（建てる 時間 ×${(1.15 - 0.3 * r.p).toFixed(2)}）`, kind: r.p >= 0.5 ? 'good' : 'info' });
+          B.act(node, opt, interact);
+        });
+        return;
+      }
+      const helpers = { axe: !!inv.find('axe'), hammer: !!inv.stacks.find((s) => /hammer/.test(s.id)), companion: game.sys.companion?.helping?.(site) ? (game.sys.companion.buildHelpMul?.() ?? true) : false, handMul: site.handP != null ? 1.15 - 0.3 * site.handP : 1 };
       const total = Math.max(1, (site.def.minutes || 10) - (site.workDone || 0));
       interact.startActivity({ kind: 'hit', title: `${site.def.name}を 建てる`, params: { hits: Math.min(10, Math.max(2, Math.round(total / 15))), interval: 0.5, anyStroke: true } }, () => {
         const r = B.work(site, total, helpers);
@@ -382,16 +397,52 @@ function makeActions(game) {
       if (s.water?.cups || s.id === 'coconut') return this.drink(uid);
       return this.equip(uid);
     },
-    treatWith(med, stack) {
+    async treatWith(med, stack) {
       const b = P().body;
       const map = { burn: 'aloe', bleed: 'herb_stop_bleed', infection: 'poultice', cold: 'ginger', diarrhea: 'guava', poison: 'charcoal', insect: 'aloe', fever: 'fever', venom: 'suction', wound: 'bandage', antibiotic: 'antibiotic', stomach: 'charcoal' };
       const kind = map[med.type] || med.type;
-      const ok = b.treat(kind, med.power ?? 1);
+      let power = med.power ?? 1;
+      // §24.7 包帯を 巻く: wrap it with your own hands (too loose or too tight changes how well it works)
+      if (game.handwork && (kind === 'bandage' || /bandage|cloth|splint/.test(stack?.id || '')) && b.visible().some((c) => /cut|wound|bleed|sprain|fracture|burn/.test(c.id))) {
+        const { WORK_FLOW } = await import('../data/handwork.js');
+        const r = await game.handwork.run(WORK_FLOW.bandage(), { title: '包帯を 巻く', key: 'bandage', scene: { wraps: 0 } });
+        if (r.cancelled) return false;
+        power *= 0.85 + 0.3 * r.p;
+        if (r.p < 0.25) toast('ゆるく 巻いて しまった。すぐ ほどけそう', 'warn');
+      }
+      const ok = b.treat(kind, power);
       if (stack && !med.reusable) { P().inv.take(stack.uid, 1); P().validate(); }
       toast(ok ? '手当てを した' : 'いまは 効く ところが ない', ok ? 'good' : 'info');
       return ok;
     },
     treat(uid) { const s = P().inv.get(uid); const d = s && itemDef(s.id, s); return d?.med ? this.treatWith(d.med, s) : false; },
+    /** §24.3 研ぐ: a blade + a flat stone (and a little water) → durability back, maybe +1 sharpness */
+    canSharpen(uid) {
+      const s = P().inv.get(uid), d = s && itemDef(s.id, s);
+      if (!s || !d) return false;
+      const sharp = s.stats?.sharp ?? d.tool?.sharp ?? 0;
+      return sharp >= 3 && !/glass|thorn|obsidian/.test(s.id) && (s.dur != null);
+    },
+    async sharpen(uid) {
+      const inv = P().inv, s = inv.get(uid), d = s && itemDef(s.id, s);
+      if (!this.canSharpen(uid)) { toast('研げる 刃物では ない', 'warn'); return false; }
+      const whet = inv.stacks.find((x) => x.uid !== uid && /^(stone|flat_stone|sandstone|whetstone|river_stone)$/.test(x.id));
+      if (!whet) { toast('砥石に なる 平たい 石（丸石・川の 石）が 要る', 'warn'); return false; }
+      const kind = /axe/.test(s.id) ? 'axe' : /bone|needle|hook/.test(s.id) ? 'bone' : /shell/.test(s.id) ? 'shell' : /flake|shard|stone|spear_tip/.test(s.id) ? 'stone' : 'knife';
+      const { WORK_FLOW } = await import('../data/handwork.js');
+      const r = await game.handwork.run(WORK_FLOW.sharpen(kind), { title: `${d.name}を 研ぐ`, key: 'sharpen', scene: { blade: kind } });
+      if (r.cancelled) return false;
+      const max = d.tool?.durability ?? d.durability ?? Math.max(100, s.dur);
+      const before = s.dur;
+      s.dur = Math.min(max, Math.round((s.dur ?? max) + max * 0.3 * (0.5 + r.p)));
+      const base = s.baseSharp ?? s.stats?.sharp ?? d.tool?.sharp ?? 0;
+      s.baseSharp = base;
+      let up = '';
+      if (r.p >= 0.7) { s.stats = { ...(s.stats || {}), sharp: Math.min(base + 1, (s.stats?.sharp ?? base) + 1) }; if (s.stats.sharp > base) up = '・切れ味 ＋1'; }
+      game.passTime(15);
+      toast(`${d.name}を 研いだ（${r.feel.label}：耐久 ${Math.round((before / max) * 100)}% → ${Math.round((s.dur / max) * 100)}%${up}）`, 'good');
+      return true;
+    },
     inspect(uid) {
       const s = P().inv.get(uid), d = s && itemDef(s.id, s);
       if (!d) return null;
@@ -584,6 +635,23 @@ function endGame(game, info) {
     S.saveRecord?.({ ...info, score: score.total, rank: score.rank, days: st.daysSurvived, setup: game.setup });
   }).catch((e) => { console.error(e); game.screens?.show('result', { type: 'retired', headline: '終わり', review: [], score: { total: 0, rank: '-', parts: [] }, achievements: [], records: [] }); });
   game.bus.emit('game:end', info);
+}
+
+/** §24.5: what a botched hand-work does to the thing made (small, recoverable losses) */
+function applyHandworkFailures(r, failures) {
+  const s = r.stack;
+  if (!s || !failures.length) return;
+  const st = s.stats || (s.stats = {});
+  const notes = [];
+  for (const f of failures) {
+    if (f === 'unravel' && st.fiber != null) { st.fiber = Math.max(1, st.fiber - 2); notes.push('よりが 戻って 弱く なった'); }
+    if (f === 'loose_blade') { s.dur = Math.round((s.dur ?? 100) * 0.6); notes.push('刃が ぐらつく（耐久 ×0.6）'); }
+    if (f === 'snapped') { if (st.sharp != null) st.sharp = Math.max(1, st.sharp - 1); s.dur = Math.round((s.dur ?? 100) * 0.6); notes.push('途中で 折れて 小さく なった'); }
+    if (f === 'skipped') { if (st.capacity != null) st.capacity = Math.max(1, st.capacity - 2); if (st.rain != null) st.rain = Math.max(0, +(st.rain - 0.1).toFixed(2)); notes.push('目が とんで ゆるい'); }
+    if (f === 'order' && st.filterQ != null) { st.filterQ = +(st.filterQ * 0.8).toFixed(2); notes.push('層の 順が ちがう（ろ過 ×0.8）'); }
+    if (f === 'burnt') notes.push('少し 焦がした');
+  }
+  r.handworkNotes = notes;
 }
 
 export function serializeGame(game) {

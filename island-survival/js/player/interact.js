@@ -127,7 +127,10 @@ export class Interact {
       for (const m of ms.slice(0, 3)) ops.push({ id: `light:${m.id}`, label: `火を おこす（${FIRE_METHODS[m.id].name}・成功率 ${Math.round(m.p * 100)}%）`, method: m });
       if (!ms.length) ops.push({ id: 'nomethod', label: '火を おこす 道具が ない', ok: false, reason: '弓ぎりセット・きりもみ・火打ち石を 作ろう' });
     } else {
-      if (held && hd?.food && hd.food.cookable !== false) ops.push({ id: 'cook', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 焼く` });
+      if (held && hd?.food && hd.food.cookable !== false) {
+        ops.push({ id: 'cook', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 火の そばに 置いて 焼く` });
+        if (g.handwork) ops.push({ id: 'skewer', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 串で 焼く（自分で 返す）` });
+      }
       const fuel = inv.stacks.find((s) => (itemDef(s.id, s)?.fuel ?? 0) > 0 && !itemDef(s.id, s)?.food && s.id !== 'log');
       if (fuel) ops.push({ id: 'fuel', label: `${itemDef(fuel.id).name}を くべる（残り ${(rec.fire.fuel / 60).toFixed(1)} 時間）`, stack: fuel });
       if (held && (hd?.container?.heatproof || held.stats?.heatproof) && held.water?.cups) ops.push({ id: 'boil', label: `${hd.name}を 火に かける（煮沸・煮込み）` });
@@ -322,6 +325,7 @@ export class Interact {
     const g = this.game, P = g.sys.player, rec = t.fire, fires = g.sys.fires;
     if (opt.id.startsWith('light:')) return this.lightFire(rec, opt.method);
     if (opt.id === 'fuel') { const s = opt.stack; const part = P.inv.take(s.uid, 1)[0]; const h = fires.addFuel(rec, part); if (h < 0) { P.inv.addStack(part); g.bus.emit('toast', { text: '丸太は 大きな 火でないと 燃えない。先に 枝を くべよう', kind: 'warn' }); } else g.sys.sfx?.play('drop'); return; }
+    if (opt.id === 'skewer') { this.skewerCook(); return; }
     if (opt.id === 'cook') { const held = P.heldStack(); const one = P.inv.take(held.uid, 1)[0]; fires.cook(rec, one); P.validate(); g.bus.emit('toast', { text: '焼いている… 色と 音で 取り出す 時機を 決めよう', kind: 'info' }); return; }
     if (opt.id.startsWith('take:')) { const s = fires.takeOff(rec, +opt.id.split(':')[1]); if (s) { if (s.ash) { s.q = Math.max(1, s.q - 10); g.bus.emit('toast', { text: '串なしで 焼いたので 灰まみれ…', kind: 'warn' }); } g.bus.emit('toast', { text: `${itemDef(s.id).name}：${cookStageName(s.done)}`, kind: 'info' }); } return; }
     if (opt.id === 'boil') { const held = P.heldStack(); const r = fires.boil(rec, held); if (r === 'ok') { P.inv.removeStack(held.uid); P.validate(); g.bus.emit('toast', { text: '火に かけた。10 分 沸かすと 安全に なる', kind: 'info' }); } return; }
@@ -330,18 +334,38 @@ export class Interact {
     if (opt.id === 'sit') { P.resting = !P.resting; g.bus.emit('toast', { text: P.resting ? '火の そばで 休んでいる（動くと やめる）' : '立ち上がった', kind: 'info' }); return; }
   }
 
+  /** §24.7 串焼き: hold it over the fire, turn it twice, take it off when it looks right (your eye decides the doneness) */
+  async skewerCook() {
+    const g = this.game, P = g.sys.player, held = P.heldStack();
+    if (!held) return;
+    const one = P.inv.take(held.uid, 1)[0]; P.validate();
+    const food = /sardine|jack|seabream|grouper|wrasse|goby|eel|trevally|fish|puffer|mackerel|snapper/.test(one.id) ? 'fish' : /crab|lobster|shrimp/.test(one.id) ? 'crab' : /meat|fowl|game|organ|liver/.test(one.id) ? 'meat' : 'root';
+    const { WORK_FLOW } = await import('../data/handwork.js');
+    const r = await g.handwork.run(WORK_FLOW.skewer(food), { title: `${itemDef(one.id)?.name}を 串で 焼く`, key: 'skewer' });
+    if (r.cancelled) { P.inv.addStack(one); P.validate(); return; }
+    const d = r.extra.doneness ?? 0.9;
+    // both faces matter: an underdone face keeps part of it half-raw (§7.3)
+    one.done = Math.round(Math.max(0, Math.min(140, (d / 0.9) * 85)));
+    if (r.p < 0.3 && d < 0.75) one.done = Math.min(one.done, 55);
+    if (r.p >= 0.8) { one.q = Math.min(100, (one.q ?? 50) + 5); g.sys.player.body.addMorale?.(1, 'crispy'); }
+    P.inv.addStack(one); P.validate();
+    g.passTime(8);
+    g.sys.sfx?.play('sizzle');
+    g.bus.emit('toast', { text: `${itemDef(one.id)?.name}：${cookStageName(one.done)}${r.p >= 0.8 ? '（こんがり！）' : ''}`, kind: r.p >= 0.5 ? 'good' : 'info' });
+  }
+
   lightFire(rec, m) {
     const g = this.game, P = g.sys.player, M = FIRE_METHODS[m.id];
     const tinder = bestTinder(P.inv);
     if (M.kind !== 'blow' && !tinder.stack) { g.bus.emit('toast', { text: '火口（枯れ草・ヤシの 繊維・木くず）が 要る', kind: 'warn' }); return; }
-    const done = (ok, s) => {
+    const done = (ok, s, quiet = false) => {
       P.body.s.stamina = Math.max(0, P.body.s.stamina - M.stamina);
       g.passTime(M.minutes, { heavy: M.kind === 'friction' });
       if (m.stack) { m.stack.dur = (m.stack.dur ?? 15) - 1; if (m.stack.dur <= 0) { P.inv.removeStack(m.stack.uid); g.bus.emit('toast', { text: 'セットが すり減って 使えなく なった', kind: 'bad' }); } }
       if (m.id === 'gunpowder' && g.setup?.ammo !== 'inf') P.inv.take('ammo', 1);
       if (m.id === 'firesteel') { const fs = P.inv.find('firesteel'); if (fs) fs.dur = (fs.dur ?? 3000) - 1; }
       if (m.id === 'lighter') { const lt = P.inv.find('lighter'); if (lt) { lt.dur = (lt.dur ?? 50) - 1; if (lt.dur <= 0) { P.inv.removeStack(lt.uid); g.bus.emit('toast', { text: 'ライターの ガスが 切れた', kind: 'bad' }); } } }
-      if (!ok) { g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花は 散ったが 火口に つかなかった', kind: 'warn' }); return; }
+      if (!ok) { if (!quiet) g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花は 散ったが 火口に つかなかった', kind: 'warn' }); return; }
       if (tinder.stack && M.kind !== 'blow') P.inv.take(tinder.stack.uid, 1);
       g.sys.fires.light(rec, m.id);
       P.stats.firesLit++;
@@ -351,6 +375,21 @@ export class Interact {
       else g.bus.emit('toast', { text: '火が ついた', kind: 'good' });
       g.rec?.('fire');
     };
+    if (g.handwork && M.kind !== 'blow') {
+      // §24: on the work table — make the ember with your hands (p raises or lowers the chance), carry it, blow it alive
+      import('../data/handwork.js').then(({ WORK_FLOW }) => {
+        const flow = M.kind === 'spark' ? WORK_FLOW.spark() : WORK_FLOW.friction(m.id === 'bow_drill');
+        let ember = false;
+        const gate = (i, res) => { if (i !== 0) return true; ember = g.rng.next() < Math.min(0.98, m.p * (0.45 + res[0].p)); if (!ember) g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花が 火口に 落ちなかった…', kind: 'warn' }); return ember; };
+        g.handwork.run(flow, { title: `${M.name}で 火を おこす`, key: `fire:${m.id}`, scene: { heat: 0 }, gate }).then((r) => {
+          if (r.cancelled) return;
+          if (!ember) { done(false, null, true); return; }
+          if (!r.extra.flame) g.bus.emit('toast', { text: '火種が 消えて しまった…（一定の 間で 吹く）', kind: 'warn' });
+          done(!!r.extra.flame, null, !r.extra.flame);
+        });
+      });
+      return;
+    }
     if (M.kind === 'spark') {
       // §10.2: 3–5 strikes, each with p1 = 1 − (1 − P)^(1/5)
       const p1 = 1 - Math.pow(1 - m.p, 1 / 5);

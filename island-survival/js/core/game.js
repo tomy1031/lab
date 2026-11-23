@@ -161,6 +161,7 @@ export class Game {
     this.last = t;
     this.fps = this.fps * 0.95 + (1 / Math.max(dt, 1e-3)) * 0.05;
     if (!this.world) return;
+    if (this.freezeRender) return; // a full-screen overlay (hand-work) is open: keep the last 3D frame
     try {
       this.update(dt);
     } catch (e) {

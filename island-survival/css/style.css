@@ -506,3 +506,18 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 #hud-choice kbd { font: inherit; font-size: .78rem; padding: 0 5px; border-radius: 5px; background: rgba(255, 255, 255, .18); }
 @media (max-width: 640px) { #hud-choice { bottom: calc(200px + var(--safe-b)); } }
 .consult-answers { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; } .consult-answers:empty { display: none; }
+
+/* hand-work overlay (§24) */
+#handwork { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; background: rgba(8, 24, 28, .55); padding: max(10px, var(--safe-t)) 10px max(10px, var(--safe-b)); }
+.hw-panel { width: min(880px, 100%); max-height: 100%; display: flex; flex-direction: column; gap: 6px; background: var(--paper); border-radius: 18px; box-shadow: var(--shadow); padding: 10px 14px 12px; }
+.hw-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hw-title { font-size: 1.15rem; } .hw-step { color: var(--ink-soft); font-size: .92rem; } .hw-badge { margin-left: auto; font-size: .8rem; color: var(--teal-d); }
+.hw-cv { width: 100%; height: auto; aspect-ratio: 8 / 5; max-height: calc(100vh - 170px); object-fit: contain; border-radius: 12px; background: #f7f0dd; touch-action: none; cursor: crosshair; user-select: none; }
+.hw-hint { min-height: 1.4em; text-align: center; font-weight: 700; color: var(--ink); }
+.hw-done .hw-hint { color: var(--teal-d); font-size: 1.1rem; }
+.hw-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hw-dots { flex: 1 1 140px; height: 8px; border-radius: 4px; background: var(--paper-3); position: relative; overflow: hidden; }
+.hw-dots::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--teal); transition: width .15s; }
+.hw-sp { font-size: .85rem; color: var(--ink-soft); min-width: 9em; }
+.hw-foot kbd { font: inherit; font-size: .75rem; padding: 0 4px; border-radius: 4px; background: var(--paper-3); }
+@media (max-width: 640px) { .hw-panel { padding: 8px; } .hw-foot .btn { flex: 1 1 auto; } }

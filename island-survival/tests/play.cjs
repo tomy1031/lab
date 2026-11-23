@@ -95,15 +95,22 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   check(b.stage === 'done' && b.fire && b.fires >= 1, 'campfire built and has a fire');
 
   // 3. light it with the fire steel
-  const f = await page.evaluate(() => {
+  const f = await page.evaluate(async () => {
     const g = T.g, it = g.sys.interact, rec = g.sys.fires.list[0];
     if (!rec) return { err: 'no fire' };
     g.sys.player.inv.add('dry_grass', 3, { q: 60 });
     const fp = rec.fire.group.position;
     g.player.place(fp.x + 1.4, fp.z, 0); g.player.yaw = Math.PI / 2; g.player.updateCamera(0);
     const ms = it.fireMethods(rec);
+    // the work table (§24) in おまかせ mode: a short animation with p 0.55
+    g.settings = { ...(g.settings || {}), handwork: 'auto' };
+    const wait = (ms2) => new Promise((r) => setTimeout(r, ms2));
     let tries = 0;
-    while (!rec.fire.lit && tries < 8) { tries++; it.lightFire(rec, ms[0]); T.finishActivity('click'); }
+    while (!rec.fire.lit && tries < 8) {
+      tries++; it.lightFire(rec, ms[0]); T.finishActivity('click');
+      await wait(150);
+      for (let i = 0; i < 100 && g.handwork?.active; i++) await wait(100);
+    }
     return { methods: ms.map((m) => `${m.id}:${m.p.toFixed(2)}`), lit: rec.fire.lit, tries };
   });
   log(JSON.stringify(f));

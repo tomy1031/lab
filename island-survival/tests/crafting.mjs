@@ -152,7 +152,7 @@ section('§11.7 quality');
 check(fitOf(7, 5) === 1 && near(fitOf(4, 3), 0.8) && near(fitOf(6, 3), 1.2) && near(fitOf(9, 5), 1.2) && fitOf(5, [1, 6]) === 1, 'fit: ideal = min + 2, clamp 0.5–1.2, ranges are gates');
 const ex = qualityOf({ slots: [{ fit: 1.0, m: 0.8 }, { fit: 0.8, m: 0.75 }, { fit: 1.2, m: 0.75 }], score: null, noise: 0 });
 check(near(ex.base, 53.67, 0.01) && ex.q === 58, `worked example: base 53.7, Q 58 (got ${ex.base}, ${ex.q})`);
-check(qualityOf({ slots: [{ fit: 1, m: 1 }], score: 1 }).q === 78 && qualityOf({ slots: [{ fit: 1, m: 1 }], score: 0 }).q === 70, 'minigame 0..+8');
+check(qualityOf({ slots: [{ fit: 1, m: 1 }], score: 1 }).q === 82 && qualityOf({ slots: [{ fit: 1, m: 1 }], score: 0 }).q === 64 && qualityOf({ slots: [{ fit: 1, m: 1 }], score: 0.55 }).q === 74, 'hand-work −6..+12 (§24.4; p 0.55 = +4)');
 check(qualityOf({ slots: [{ fit: 1, m: 1 }], extra: 9 }).over === 12, 'over-count bonus capped at +12');
 check(rankOf(24) === 0 && rankOf(25) === 1 && rankOf(58) === 2 && rankOf(75) === 3 && rankOf(90) === 4, 'rank table');
 check(flakeSharp(5, 0) === 7 && flakeSharp(5, 1) === 9 && flakeSharp(0, 0.5) === 5 && flakeSharp(9, 1) === 10, 'flake sharpness: chert 7–9, round stone 4–6, obsidian 10');
