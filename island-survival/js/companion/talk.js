@@ -14,14 +14,14 @@ export const LIVE_VOICES = ['Aoede', 'Kore', 'Leda', 'Zephyr', 'Puck', 'Charon',
 function toolDecls(places, resources) {
   return [{
     functionDeclarations: [
-      { name: 'follow_player', description: 'Start following the player around.', parameters: { type: 'OBJECT', properties: {} } },
+      { name: 'follow_player', description: 'Start following the player around.' },
       { name: 'wait_here', description: 'Stop and stay where you are (or at the base).', parameters: { type: 'OBJECT', properties: { at_base: { type: 'BOOLEAN' } } } },
       { name: 'go_to', description: 'Walk to a named place on the island.', parameters: { type: 'OBJECT', properties: { place: { type: 'STRING', enum: places } }, required: ['place'] } },
       { name: 'gather', description: 'Go and gather a resource for the group (takes in-game time).', parameters: { type: 'OBJECT', properties: { resource: { type: 'STRING', enum: resources }, amount: { type: 'INTEGER' } }, required: ['resource'] } },
       { name: 'give_item', description: 'Give one of YOUR items to the player.', parameters: { type: 'OBJECT', properties: { item: { type: 'STRING', description: 'item name in Japanese or id' }, count: { type: 'INTEGER' } }, required: ['item'] } },
       { name: 'express', description: 'Show an emotion and/or a gesture with your body and face.', parameters: { type: 'OBJECT', properties: { emotion: { type: 'STRING', enum: ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'neutral'] }, gesture: { type: 'STRING', enum: ['none', 'wave', 'cheer', 'point', 'sit', 'shiver'] } } } },
       { name: 'remember', description: 'Store something important to remember long-term (a promise, the player\'s preference, a discovery).', parameters: { type: 'OBJECT', properties: { fact: { type: 'STRING' }, importance: { type: 'INTEGER', description: '1–3' } }, required: ['fact'] } },
-      { name: 'check_status', description: 'Get the current survival status (time, weather, both people\'s condition, inventory, base).', parameters: { type: 'OBJECT', properties: {} } },
+      { name: 'check_status', description: 'Get the current survival status (time, weather, both people\'s condition, inventory, base).' },
     ],
   }];
 }
