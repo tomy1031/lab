@@ -164,6 +164,28 @@ NEXT MAKE の ロボット **ネクマックス** が 案内役です（モデ�
 調査メモ（出典つき）は `docs/research/`、台本の 書き方は `docs/SCENARIO_SPEC.md`（みんなの日本語編）と
 `docs/BUSINESS_SPEC.md`（ITビジネス編・話の 流れと 共通の 事実）、場面の 作り方は `docs/SCENE_BUILDING.md`。
 
+## オフライン
+
+公開版（https://tomy1031.github.io/lab/kotoba-town/ ）は、一度 開けば 次からは **ネットなしでも 開けます**（PWA。Quest の ブラウザでも 同じ。アプリとして 追加も できます）。
+ネットが ない ときは Gemini Live に つながらないので、場面は **オフライン練習**（例文を 声に 出して 読み、カードを 押して すすむ）に なります。
+フリートーク・ほんばん・Gemini の 判定と ふりかえりは ネットが 必要です。
+
+- まち・場面・台本・プログラム（約 5 MB）は、最初に 開いた ときに ぜんぶ 保存されます。three.js は `js/vendor/three/` に 同梱しています。
+  保存できると、最初の 画面に「✓ オフラインでも れんしゅう できます」と 出ます
+- まちの 人の 作り置きの 声（1,554 行・約 36 MB）は、**聞いた ものから 自動で 保存**されます。ぜんぶ 先に 保存する ときは
+  **せってい → 「こえも ぜんぶ ほぞん」**。保存して いない 声は、オフラインでは ブラウザの 音声合成（あれば）か 字幕だけに なります
+- 声は `audio/voice/<行>.mp3?v=<録音の ハッシュ>` で 読むので、声を 作り直すと 新しい 声が 読まれ、使われなく なった 古い 声は 次の 版で 消えます
+- VR の コントローラーの 模型（Quest 2 / 3 / Pro）は、VR が 使える ブラウザで 開くと 保存されます。文字（M PLUS Rounded 1c）は 一度 表示した 分が 保存されます
+- 新しい 版が 出ると、最初の 画面に「新しい バージョンに 更新」が 出ます
+- 開発用の サーバー（`node tests/serve.mjs`）では サービスワーカーは 動きません。公開用の コピーは `npm run build`（`node tools/bundle.mjs dist`）で 作ります
+
+| ファイル | 内容 |
+|---|---|
+| `sw.js` | サービスワーカー（公開時に 版の 番号と 保存する ファイルの 一覧が 入る）。声は 版を こえて 残す |
+| `js/pwa.js` | 登録・「オフラインでも れんしゅう できます」の 表示・更新ボタン・声の 一括保存 |
+| `manifest.webmanifest`・`img/` | アプリとしての 名前と アイコン（`node tools/icons.mjs` で `img/icon.svg` から 描く） |
+| `tools/bundle.mjs` | 公開用の コピーを 作る（lab の サイトの ビルドも これを 使う） |
+
 ## 開発
 
 ```bash
@@ -172,6 +194,7 @@ node tests/serve.mjs 8090          # http://127.0.0.1:8090/ （?play=l01a で �
 node tools/validate.mjs            # 台本の 検査（30 場面）
 node tests/unit.mjs                # 判定・ローマ字・Live の やりとり（にせの Live サーバー）
 node tests/smoke.mjs --all         # 全 30 場面を オフライン練習で 最後まで 通す（Playwright）
+node tests/offline.mjs             # 公開用の コピーで：保存 → 声を ぜんぶ 保存 → 新しい 版に 更新 → ネットと サーバーを 切って 場面を 最後まで
 node tools/shot.mjs <dir> "scene=office&view=spawn"   # 場面の 確認用 スクリーンショット（dev/scene.html）
 ```
 

@@ -7,15 +7,20 @@
 <meta name="description" content="VRの まちで 日本語を 話して 練習しよう。みんなの日本語 第1課〜第10課の 場面で、Gemini Live の 相手と 会話します。">
 <meta name="theme-color" content="#7cc5a0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%237cc5a0'/%3E%3Cpath d='M14 20h36a6 6 0 0 1 6 6v12a6 6 0 0 1-6 6H30l-10 8v-8h-6a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z' fill='%23fffaf0'/%3E%3Ctext x='32' y='38' font-size='15' text-anchor='middle' fill='%233f9a73' font-weight='800'%3Eあ%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ことばタウン">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet" crossorigin>
 <script>window.KT = window.KT || { ready: false, errors: [], log: [] }; window.addEventListener('error', (e) => window.KT.errors.push(String(e.message)));</script>
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    "three": "./js/vendor/three/build/three.module.js",
+    "three/addons/": "./js/vendor/three/examples/jsm/"
   }
 }
 </script>
@@ -53,6 +58,10 @@
   .pill { display: inline-block; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 800; }
   .pill.ok { background: #e3f4ea; color: var(--leaf-d); }
   .pill.off { background: #fdf0e2; color: #a3622a; }
+  .pwa { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .pwa .btn { padding: 8px 18px; font-size: 14px; }
+  .pwa .hidden, .offline-set.hidden, #voice-save.hidden { display: none; }
+  .offline-set { display: grid; gap: 8px; justify-items: start; background: #fff; border-radius: 18px; padding: 12px 14px; }
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 20px; }
   .step { background: #fff; border-radius: 24px; padding: 16px 18px; font-size: 14px; line-height: 1.7; }
   .step h3 { margin: 0 0 4px; font-size: 16px; color: var(--leaf-d); }
@@ -108,6 +117,7 @@
       <span id="key-state" class="pill off">…</span>
       <span id="loading">よみこみ中… loading the town</span>
       <div id="boot-error"></div>
+      <div class="pwa"><span id="offline-state" class="pill off hidden"></span><button id="update-btn" type="button" class="btn sun hidden">新しい バージョンに 更新 · Update</button></div>
       <div class="steps">
         <div class="step"><h3><span class="n">1</span>えらぶ · Choose</h3>Pick a course on the town board — <b>みんなの日本語編</b> (lessons 1–20) or <b>ITビジネス編</b> (IT work and job interviews) — then a situation, and <b>れんしゅう</b> (with examples) or <b>ほんばん</b> (no help). Or open <b>フリートーク</b>: pick a partner, a place and a topic — or 🎲 おまかせ — and talk with no script.</div>
         <div class="step"><h3><span class="n">2</span>はなす · Talk</h3>The mic turns on when you start. When the card says <b>あなたの ばん</b>, just answer in Japanese.</div>
@@ -143,10 +153,12 @@
     <label class="row"><input id="set-music" type="checkbox"> Town square music</label>
     <label class="row"><input id="set-navi" type="checkbox"> ネクマックスの あんない · Nexmax the guide (tips and cheers)</label>
     <label>Gemini Live model <select id="set-model"></select></label>
+    <div class="offline-set hidden" id="offline-set"><span id="voice-offline-text" class="hint"></span><button id="voice-save" type="button" class="btn sub hidden" style="padding:8px 18px;font-size:14px">こえも ぜんぶ ほぞん · Save all voices (36 MB)</button></div>
     <div class="dlg-actions"><button id="set-cancel" class="btn sub">キャンセル</button><button id="set-save" class="btn">ほぞん · Save</button></div>
   </form>
 </dialog>
 
 <script type="module" src="js/main.js"></script>
+<script type="module" src="js/pwa.js"></script>
 </body>
 </html>
