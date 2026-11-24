@@ -13,7 +13,9 @@ const ISLE = window.ISLE;
 async function boot() {
   const canvas = document.getElementById('gl');
   const settings = loadSettings();
-  const quality = params.get('quality') || settings.quality || (matchMedia('(pointer: coarse)').matches ? 'low' : 'mid');
+  // Meta Quest and phones start light (the island is heavy for them); the settings can raise it
+  const light = matchMedia('(pointer: coarse)').matches || /OculusBrowser|Quest|Pico|Android|iPhone|iPad/i.test(navigator.userAgent);
+  const quality = params.get('quality') || settings.quality || (light ? 'low' : 'mid');
   const renderer = new Renderer(canvas, quality);
   const game = new Game(renderer, { params });
   ISLE.game = game;
@@ -33,6 +35,10 @@ async function boot() {
       b.id = 'vr-enter'; b.type = 'button'; b.className = 'btn teal small'; b.textContent = '🥽 VR'; b.title = 'VR で 遊ぶ（ヘッドセット）';
       b.onclick = () => game.enterVR();
       document.getElementById('hud')?.appendChild(b);
+      // on the title: how to get into the headset
+      const foot = document.querySelector('.title-foot');
+      if (foot && !foot.querySelector('.vr-how')) { const s = document.createElement('div'); s.className = 'vr-how'; s.textContent = '🥽 VR：「はじめる」→ ゲームが 始まったら 右下の「🥽 VR」を 押す'; foot.appendChild(s); }
+      game.ctlGuide?.render?.();
     }).catch((e) => console.warn('xr', e));
   }
   let restart = null;

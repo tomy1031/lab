@@ -21,6 +21,7 @@ export class PlayerController {
     this.eye = EYE;
     this.bob = 0;
     this.speedMul = 1;     // set by the survival sim (exhaustion, injuries, carrying weight)
+    this.userSpeed = 1;    // 設定「歩く 速さ」: ×1 / ×1.3 / ×1.6
     this.canRun = true;    // stamina
     this.frozen = false;   // during sleep / cut-scenes
     this.seaLevel = 0;
@@ -42,7 +43,17 @@ export class PlayerController {
     this.pitch = clamp(this.pitch - dy * 0.0022, -1.45, 1.45);
   }
 
+  /** a slow frame is cut into short steps, so walking keeps its real speed (and collisions hold) at a low frame rate */
   update(dt, ax) {
+    const n = Math.max(1, Math.ceil(dt / 0.05));
+    if (n === 1) return this.step(dt, ax);
+    const mi = this.moveInfo;
+    let dist = 0, jumped = false, running = false;
+    for (let i = 0; i < n; i++) { this.step(dt / n, ax); dist += mi.dist; jumped ||= mi.jumped; running ||= mi.running; }
+    mi.dist = dist; mi.jumped = jumped; mi.running = running && dist > 0.01; mi.moving = dist > dt * 0.4;
+  }
+
+  step(dt, ax) {
     const mi = this.moveInfo;
     mi.dist = 0; mi.jumped = false;
     const t = this.terrain;
@@ -59,7 +70,7 @@ export class PlayerController {
     if (len > 1) { mx /= len; mz /= len; }
     this.crouch = !!ax.crouch && !this.swimming;
     const running = !!ax.run && this.canRun && !this.crouch && len > 0.1 && !this.swimming;
-    let speed = this.swimming ? 1.7 : running ? 6.2 : this.crouch ? 1.6 : 3.6;
+    let speed = this.swimming ? 1.7 : (running ? 6.2 : this.crouch ? 1.6 : 3.6) * this.userSpeed;
     if (mi.inWater && !this.swimming) speed *= 1 - clamp(water.depth / 1.25) * 0.55; // wading
     speed *= this.speedMul;
     const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);

@@ -103,6 +103,9 @@ export async function installSystems(game, setup) {
   // HUD
   const hudMod = await optional('../ui/hud.js');
   if (hudMod?.Hud) game.hud = new hudMod.Hud(game);
+  // the controls guide on the screen (H / 「？ 操作」 / settings, §27.6)
+  const cg = await optional('../ui/ctlguide.js');
+  if (cg?.ControlsGuide && !game.ctlGuide) game.ctlGuide = new cg.ControlsGuide(game);
 
   // journal
   game.sys.journal = { days: [] };

@@ -1,10 +1,13 @@
 // tests/xr.cjs — VR (WebXR) end to end with Meta's WebXR emulator (IWER, Quest 3 profile):
 //   the HUD offers 🥽 VR → the session starts and the headset drives the frames (the page's own frames stop, as on a
 //   Quest) → the camera sits at the player's eyes → left stick walks, the headset origin follows → right stick turns
-//   30° → stepping in the room moves the body → pointing at a bush shows its options, the trigger gathers →
+//   30° → stepping in the room moves the body → the controls guide floats above both controllers and lights the
+//   pressed button → 足踏み (head bob) and 腕振り (controllers swung in turn) walk, the arm swing is no chop →
+//   pointing at a bush shows its options, the trigger gathers →
 //   B opens the VR menu (game paused) → the laser presses tabs and buttons: 作る → put stones on the bench → 割る →
 //   作る opens the hand-work table as a panel → the trigger works on it, おまかせ finishes it → the item is made →
-//   swinging the controller down gives a swing gesture → 設定 → 「VR を 出る」 ends the session and the page loop resumes.
+//   swinging the controller down gives a swing gesture → 「ガイドを 消す／出す」 in the menu → 設定 → 「VR を 出る」 ends
+//   the session and the page loop resumes.
 //   IWER_PATH=…/iwer/build/iwer.min.js node tests/xr.cjs [outDir]     (or npm i -D iwer)
 const { chromium } = require('playwright');
 const serve = require('./serve.cjs');
@@ -133,6 +136,72 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   });
   check(Math.abs(r0 - 0.6) < 0.15, `a step in the room moves the body (${r0.toFixed(2)} m)`);
 
+  // the controls guide above the hands (§27.6): on by default, a pressed button lights its row
+  const gd0 = await page.evaluate(async () => {
+    const { xr, d } = window.X, G = xr.guide.cards;
+    d.controllers.right.updateButtonValue('trigger', 1); await window.X.frames(3);
+    const lit = G.right.pressed?.includes('trigger');
+    d.controllers.right.updateButtonValue('trigger', 0); await window.X.frames(3);
+    return { on: xr.guide.on, left: G.left.mesh.visible, right: G.right.mesh.visible, titles: [G.left.title, G.right.title], lit };
+  });
+  check(gd0.on && gd0.left && gd0.right && gd0.lit, `the controls guide shows above both controllers and lights the pressed button (${JSON.stringify(gd0)})`);
+  await page.screenshot({ path: path.join(out, 'xr-guide.png') });
+
+  // 足踏み (§27.5): bobbing the head in rhythm walks forward with the stick at rest
+  const st0 = await page.evaluate(async () => {
+    const { g, d, xr } = window.X;
+    xr.move = 'step'; xr.steps.reset();
+    const p0 = g.player.pos.clone(), y0 = d.position.y, yaw = xr.yaw;
+    // the head bobs 1.7 times a second (±3 cm), driven by the game's own frame time
+    let tt = 0, seen = '';
+    const upd = xr.update.bind(xr);
+    xr.update = (dt) => { tt += dt; d.position.set(d.position.x, y0 + 0.03 * Math.sin(2 * Math.PI * 1.7 * tt), d.position.z); upd(dt); if (xr.body.by) seen = xr.body.by; };
+    while (tt < 4.5) await window.X.frames(1);
+    xr.update = upd;
+    const p1 = g.player.pos.clone(), walking = xr.body.walking, by = seen;
+    d.position.set(d.position.x, y0, d.position.z);
+    for (let i = 0; i < 15; i++) await window.X.frames(1); // walking ends within ~1.2 s of the last step
+    const pS = g.player.pos.clone();
+    for (let i = 0; i < 10; i++) await window.X.frames(1);
+    const p2 = g.player.pos.clone();
+    const fwd = -((p1.x - p0.x) * Math.sin(yaw) + (p1.z - p0.z) * Math.cos(yaw));
+    return { moved: Math.hypot(p1.x - p0.x, p1.z - p0.z), fwd, walking, by, after: Math.hypot(p2.x - pS.x, p2.z - pS.z) };
+  });
+  check(st0.moved > 1 && st0.fwd > 0.8 && st0.by === '足踏み', `足踏み walks forward (${st0.moved.toFixed(2)} m, by ${st0.by})`);
+  check(st0.after < 0.2, `standing still stops the steps (${st0.after.toFixed(2)} m once stopped)`);
+
+  // 腕振り: swinging the two controllers in turn walks, and is not taken for a chop
+  const ar0 = await page.evaluate(async () => {
+    const { g, d, xr } = window.X;
+    xr.move = 'arms'; xr.arms.reset(); xr.room = null;
+    const h = d.position;
+    const pose = (s) => {
+      d.controllers.left.position.set(h.x - 0.25, h.y - 0.6 + 0.1 * s, h.z - 0.15 - 0.15 * s);
+      d.controllers.right.position.set(h.x + 0.25, h.y - 0.6 - 0.1 * s, h.z - 0.15 + 0.15 * s);
+    };
+    pose(0); await window.X.frames(8); // hands down at the sides first
+    const it = g.sys.interact, seen = [], orig = it.gestureActions.bind(it);
+    it.gestureActions = (ev) => { if (ev.length) seen.push(...ev.map((e) => e.type)); return orig(ev); };
+    const p0 = g.player.pos.clone();
+    // the arms swing 1.6 times a second in turn, driven by the game's own frame time
+    let tt = 0, by = '';
+    const upd = xr.update.bind(xr);
+    xr.update = (dt) => { tt += dt; pose(Math.sin(2 * Math.PI * 1.6 * tt)); upd(dt); if (xr.body.by) by = xr.body.by; };
+    while (tt < 4.5) await window.X.frames(1);
+    xr.update = upd;
+    const p1 = g.player.pos.clone();
+    for (let i = 0; i < 15; i++) await window.X.frames(1);
+    const pS = g.player.pos.clone();
+    for (let i = 0; i < 10; i++) await window.X.frames(1);
+    const p2 = g.player.pos.clone();
+    it.gestureActions = orig;
+    xr.move = 'stick';
+    return { moved: Math.hypot(p1.x - p0.x, p1.z - p0.z), by, after: Math.hypot(p2.x - pS.x, p2.z - pS.z), gestures: seen };
+  });
+  check(ar0.moved > 1 && ar0.by === '腕振り', `腕振り walks (${ar0.moved.toFixed(2)} m, by ${ar0.by})`);
+  check(ar0.after < 0.2, `resting the arms stops walking (${ar0.after.toFixed(2)} m once stopped)`);
+  check(!ar0.gestures.some((x) => x === 'swing'), `swinging the arms to walk is not a swing gesture (${ar0.gestures.join(', ') || 'none'})`);
+
   // point at a bush / plant in reach: its options show; the trigger does the chosen one
   const aimRes = await page.evaluate(async () => {
     const { g, xr } = window.X, P = g.player, it = g.sys.interact;
@@ -235,21 +304,34 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
     const c = d.controllers.right; const seen = [];
     const it = g.sys.interact; const orig = it.gestureActions.bind(it);
     it.gestureActions = (ev) => { if (ev.length) seen.push(...ev.map((e) => `${e.type}:${e.dir || ''}`)); return orig(ev); };
-    // raise the arm slowly (no gesture), then bring it down fast (the emulator's frames are slow: big steps)
-    const y0 = c.position.y;
-    for (let i = 1; i <= 12; i++) { c.position.set(d.position.x + 0.2, y0 + (d.position.y + 0.3 - y0) * (i / 12), d.position.z - 0.3); await window.X.frames(2); }
-    await window.X.frames(8);
-    for (let i = 1; i <= 3; i++) { c.position.set(d.position.x + 0.2, d.position.y + 0.3 - i * 0.45, d.position.z - 0.3); await window.X.frames(1); }
-    await window.X.frames(3);
+    // raise the arm slowly (0.4 m/s: no gesture), rest, then bring it down at 4 m/s — in the game's own frame time
+    const y0 = c.position.y, top = d.position.y + 0.3;
+    let tt = 0, y = y0;
+    const upd = xr.update.bind(xr);
+    xr.update = (dt) => { tt += dt; y = tt < 2 ? Math.min(top, y + 0.4 * dt) : tt < 2.6 ? top : Math.max(top - 0.9, y - 4 * dt); c.position.set(d.position.x + 0.2, y, d.position.z - 0.3); upd(dt); };
+    while (tt < 3.6) await window.X.frames(1);
+    xr.update = upd;
     it.gestureActions = orig;
     return seen;
   });
   check(sw.includes('swing:down'), `swinging the controller down is a swing gesture (${sw.join(', ')})`);
 
   // settings → 「VR を 出る」 ends the session; the page's own loop resumes
+  // the menu's 「ガイドを 消す」 hides the cards (and keeps it); pressing again brings them back
+  const gd1 = await page.evaluate(async () => {
+    const { xr } = window.X, G = xr.guide.cards;
+    await window.X.press('b-button');
+    await window.X.menu('guide'); await window.X.frames(3);
+    const off = { on: xr.guide.on, vis: G.left.mesh.visible || G.right.mesh.visible, saved: JSON.parse(localStorage.getItem('isle.settings') || '{}').vrGuide };
+    await window.X.menu('guide'); await window.X.frames(3);
+    const menuTitle = G.right.title;
+    return { off, on: xr.guide.on, vis: G.right.mesh.visible, menuTitle };
+  });
+  check(!gd1.off.on && !gd1.off.vis && gd1.off.saved === false && gd1.on && gd1.vis && /メニュー/.test(gd1.menuTitle), `「ガイドを 消す／出す」 in the VR menu hides and shows the guide (${JSON.stringify(gd1)})`);
+
   const ex = await page.evaluate(async () => {
     const { g, xr } = window.X;
-    await window.X.press('b-button');
+    if (!xr.menuOpen) await window.X.press('b-button');
     await window.X.menu('tab:settings');
     const hasExit = window.X.menuIds().includes('exit');
     await window.X.menu('exit');
