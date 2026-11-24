@@ -47,6 +47,13 @@ on:
       - 'island-survival/img/**'
       - 'island-survival/assets/**'
       - 'island-survival/docs/preview.jpg'
+      - 'anakata/index.html'
+      - 'anakata/manifest.webmanifest'
+      - 'anakata/sw.js'
+      - 'anakata/js/**'
+      - 'anakata/img/**'
+      - 'anakata/docs/preview.jpg'
+      - 'anakata/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

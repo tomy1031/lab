@@ -1,0 +1,18 @@
+{
+  "name": "ANAKATA — 5次元を体でわかる",
+  "short_name": "ANAKATA",
+  "description": "インターステラーの 5次元（空間4＋時間1）を、次元の類推・切り口・影・重力・時間で体感する VR（オフライン対応）",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070917",
+  "theme_color": "#070917",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
