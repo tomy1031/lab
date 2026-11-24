@@ -5,9 +5,10 @@ const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css',
   '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2',
   '.webmanifest': 'application/manifest+json', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg',
-  '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.webp': 'image/webp',
+  '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.webp': 'image/webp', '.mjs': 'text/javascript; charset=utf-8',
+  '.wasm': 'application/wasm',
 };
-// serve(port, root): root defaults to the game folder; tests/pwa.cjs serves a built dist folder instead
+// serve(port, root): root defaults to the game folder; tests/offline.cjs serves a built copy (tools/bundle.mjs) instead
 module.exports = function serve(port = 0, root = defaultRoot) {
   return new Promise((resolve) => {
     const srv = http.createServer((req, res) => {

@@ -7,9 +7,14 @@
 <meta name="description" content="幻想的な 4 コースを 8 台で 走る カートレース。ゲームパッド・キーボード・タッチ、または カメラの ハンドジェスチャーで あそべる（three.js / MediaPipe）">
 <meta name="theme-color" content="#2a1b5e">
 <link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DREAM DRIFT">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet" crossorigin>
 <script>
   // window.DD exists before any module runs, so even an import failure is reported
   window.DD = window.DD || { ready: false, errors: [], debug: {} };
@@ -19,8 +24,8 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
   }
 }
 </script>
@@ -73,6 +78,10 @@
   @keyframes blink { 50% { opacity: 0.45; } }
   .corner { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; display: flex; gap: 8px; }
   .credit { position: absolute; bottom: 10px; left: 14px; font-size: 12px; opacity: 0.7; }
+  .offline { position: absolute; bottom: 8px; right: 14px; display: flex; gap: 8px; align-items: center; font-size: 12px; font-weight: 800; }
+  .offline span { opacity: 0.85; }
+  .offline.hidden, #update-btn.hidden, .offline-set.hidden, #hands-save.hidden { display: none; }
+  .offline-set { display: grid; gap: 8px; justify-items: start; width: min(560px, 100%); background: var(--panel); border: 2px solid var(--line); border-radius: 18px; padding: 12px 16px; font-weight: 800; font-size: 14px; }
 
   /* control choice */
   .cards { display: grid; gap: 18px; width: min(1000px, 100%); }
@@ -278,6 +287,7 @@
     <div class="press outline">Enter / Aボタン / タップ / 手で ピンチ</div>
     <div class="corner"><button class="btn small" data-nav data-act="settings">設定</button></div>
     <div class="credit outline">8台で 走る 幻想カートレース ・ コントローラでも ハンドジェスチャーでも</div>
+    <div class="offline outline hidden" id="offline"><span id="offline-text"></span><button class="btn small hidden" data-nav id="update-btn">新しい バージョンに 更新</button></div>
   </section>
 
   <section class="screen dim" id="s-control">
@@ -424,6 +434,7 @@
       <label>VR の 視点 <span class="seg" data-group="vrView"><button data-nav data-val="first">運転席</button><button data-nav data-val="third">後ろから</button></span></label>
       <label>VR 酔いどめ <span class="seg" data-group="vrVignette"><button data-nav data-val="on">ON</button><button data-nav data-val="off">OFF</button></span></label>
     </div>
+    <div class="offline-set hidden" id="offline-set"><span id="hands-offline-text"></span><button class="btn small hidden" data-nav id="hands-save">ハンドジェスチャーも オフライン用に 保存（約 19 MB）</button></div>
     <div class="row"><button class="btn" data-nav data-act="tune-drive">ドリフト調整・テスト走行</button><button class="btn primary" data-nav data-act="back">もどる</button></div>
   </section>
 </div>
@@ -433,5 +444,6 @@
 <div id="fatal"></div>
 
 <script type="module" src="js/main.js"></script>
+<script type="module" src="js/pwa.js"></script>
 </body>
 </html>
