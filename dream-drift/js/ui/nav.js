@@ -32,7 +32,7 @@ export class Nav {
     this.setFocus(remembered && list.includes(remembered) ? remembered : pre || list[0] || null, false);
   }
 
-  setFocus(el, sound = true) {
+  setFocus(el, sound = true, pick = sound) {
     if (el === this.focus) return;
     if (this.focus) this.focus.classList.remove('focus');
     this.focus = el;
@@ -40,6 +40,7 @@ export class Nav {
       el.classList.add('focus');
       el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       if (sound) this.audio.play('select');
+      if (pick) this.onFocus?.(el); // moved there with arrows / d-pad (not a pointer passing over)
     }
   }
 
@@ -81,7 +82,7 @@ export class Nav {
     if (valid !== this.hoverEl) {
       this.hoverEl?.classList.remove('hover');
       this.hoverEl = valid; this.dwell = 0;
-      if (valid) { valid.classList.add('hover'); this.setFocus(valid); }
+      if (valid) { valid.classList.add('hover'); this.setFocus(valid, true, false); }
     }
     if (valid) {
       this.dwell += dt;

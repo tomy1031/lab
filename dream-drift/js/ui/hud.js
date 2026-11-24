@@ -1,5 +1,6 @@
-// ui/hud.js — the race overlay: item slot + roulette, lap and time, rank, the side ranking list,
-// minimap, centre messages, wrong-way warning and the hand-camera preview.
+// ui/hud.js — the race overlay. Item slot + roulette (top left) with the ranking under it, time, pause and
+// minimap (top right), lap (bottom left), place (bottom right); centre messages, the wrong-way warning and the
+// hand-camera preview. The middle of the screen stays clear for the road.
 import { ITEM_ICONS, ITEM_IDS, ITEMS } from '../race/items.js';
 
 const $ = (id) => document.getElementById(id);
@@ -8,14 +9,13 @@ export const fmtTime = (t) => {
   const m = Math.floor(t / 60), s = t - m * 60;
   return `${m}:${s < 10 ? '0' : ''}${s.toFixed(2)}`;
 };
-const RANK_COLORS = ['#ffd93b', '#e6ecff', '#ffb070', '#7fdcff', '#7fdcff', '#7fdcff', '#7fdcff', '#7fdcff'];
 
 export class Hud {
   constructor(portraits) {
     this.portraits = portraits;
     this.el = $('hud');
     this.item = $('h-item'); this.itemUse = $('h-itemuse');
-    this.lapEl = $('h-lap'); this.timeEl = $('h-time');
+    this.lapEl = $('h-lap'); this.lapBox = $('h-lapbox'); this.timeEl = $('h-time');
     this.pos = $('h-pos'); this.posN = this.pos.querySelector('.n'); this.posU = this.pos.querySelector('.u');
     this.rank = $('h-rank');
     this.msg = $('h-msg');
@@ -56,12 +56,14 @@ export class Hud {
     this.rows = new Map();
     race.karts.forEach((k) => {
       const d = document.createElement('div');
-      d.innerHTML = `<span class="p"></span><img alt="" src="${this.portraits.get(k.char.id) || ''}"><span>${k.char.name}</span>`;
+      d.innerHTML = `<span class="p"></span><img alt="${k.char.name}" title="${k.char.name}" src="${this.portraits.get(k.char.id) || ''}" style="--c:${k.char.kart}">`;
       if (k === me) d.classList.add('me');
       this.rank.appendChild(d);
       this.rows.set(k, d);
     });
     this.cam.classList.toggle('on', !!handMode);
+    this.el.classList.toggle('cam', !!handMode);
+    this.lastId = null;
     this.setItem(null, 0, false);
     this.warn.classList.remove('on');
   }
@@ -71,8 +73,16 @@ export class Hud {
     if (key === this.last.item) return;
     this.last.item = key;
     const svg = id ? ITEM_ICONS[id] : '';
-    this.item.innerHTML = svg + (count > 1 ? `<span class="cnt">×${count}</span>` : '') + `<span class="use outline">${id && !spinning ? ITEMS[id].name : ''}</span>`;
-    this.item.classList.toggle('spin', !!spinning);
+    this.item.innerHTML = svg + (count > 1 ? `<span class="cnt">×${count}</span>` : '') + `<span class="use">${id && !spinning ? ITEMS[id].name : ''}</span>`;
+    const it = this.item.classList;
+    it.toggle('spin', !!spinning);
+    it.toggle('empty', !id);
+    // a pop when the roulette starts and when it lands; the name shows for a moment under the box
+    const now = spinning ? 'spin' : id;
+    if (now && now !== this.lastId) { it.remove('got'); void this.item.offsetWidth; it.add('got'); }
+    if (id && !spinning && now !== this.lastId) { it.add('named'); clearTimeout(this.nameT); this.nameT = setTimeout(() => it.remove('named'), 1800); }
+    if (!id) it.remove('named');
+    this.lastId = now;
   }
 
   flash(text, cls = '', dur = 1.2) {
@@ -102,8 +112,12 @@ export class Hud {
       }
     } else this.setItem(me.item, me.itemCount, false);
 
-    const lap = `LAP ${Math.min(race.laps, me.lap)}/${race.laps}`;
-    if (lap !== this.last.lap) { this.lapEl.textContent = lap; this.last.lap = lap; }
+    const lap = `${Math.min(race.laps, me.lap)}/${race.laps}`;
+    if (lap !== this.last.lap) {
+      this.lapEl.textContent = lap; this.last.lap = lap;
+      this.lapBox.classList.toggle('final', race.laps > 1 && me.lap >= race.laps);
+      if (me.lap > 1) this.lapBox.animate([{ transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 350, easing: 'cubic-bezier(.2,1.4,.4,1)' });
+    }
     const t = me.finished && !me.estimated ? me.finishTime : race.started ? race.raceTime : 0;
     this.timeEl.textContent = fmtTime(t);
     // a place must hold for a moment before the big number changes, so a close battle doesn't make it flicker
@@ -113,7 +127,7 @@ export class Hud {
     if (showPlace !== this.last.place) {
       this.last.place = showPlace;
       this.posN.textContent = showPlace;
-      this.pos.style.color = RANK_COLORS[showPlace - 1] || '#fff';
+      this.pos.className = 'h-pos' + (showPlace <= 3 ? ' p' + showPlace : '');
       this.pos.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(.2,1.4,.4,1)' });
     }
     // ranking list order (only when it changes)

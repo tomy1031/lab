@@ -114,6 +114,22 @@ const check = (cond, msg) => { log(cond ? 'ok  ' : 'FAIL', msg); if (!cond) fail
   check(fits.every((f) => f.centre < 0.02 && f.rim < 0.02 && Math.abs(f.turn) < 0.02),
     `the wheel sits in your hands and turns with them (${JSON.stringify(fits)})`);
   check(steer.stays < 0.005, `let go: the wheel stays where you held it (moved ${steer.stays} m)`);
+
+  // an item you pick up shows in its own panel (up left, clear of the wheel), icon included
+  const item = await page.evaluate(async () => {
+    const me = window.DD.debug.state && window.DD.debug.race.karts.find((k) => k.vrSeat);
+    me.item = 'bubble'; me.itemCount = 1; me.roulette = 0;
+    await new Promise((r) => setTimeout(r, 1200));
+    const c = window.DD.debug.cockpit, pod = c.itemPod, cv = pod.cv, x = cv.getContext('2d');
+    // the icon's pixels: the centre of the panel is not the plain frame colour
+    const d = x.getImageData(cv.width / 2 - 40, 150, 80, 160).data;
+    let bright = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 1] > 170 && d[i + 2] > 200 && d[i] < 190) bright++; // the cyan bubble, not the violet frame
+    const V = c.rig.position.constructor, p = pod.mesh.getWorldPosition(new V()), cam = window.DD.debug.renderer.r.xr.getCamera().getWorldPosition(new V());
+    const w = c.wheel.getWorldPosition(new V());
+    return { visible: pod.mesh.visible, loaded: c.icons.bubble.naturalWidth > 0, bright, above: +(p.y - w.y).toFixed(2), dist: +p.distanceTo(cam).toFixed(2) };
+  });
+  check(item.visible && item.loaded && item.bright > 200, `VR: the item you hold is drawn in the item panel (${JSON.stringify(item)})`);
+  check(item.above > 0.25, `VR: the item panel sits above the wheel (${item.above} m higher)`);
   await page.screenshot({ path: path.join(out, 'vr-race.png'), timeout: 120000 });
 
   // left trigger brakes (right released)
