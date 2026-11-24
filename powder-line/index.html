@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POWDER LINE — 体で滑る VR スノーボード</title>
+<meta name="description" content="体を傾けて曲がり、しゃがんで加速、伸び上がってジャンプ、空中で体ごと回ってスピン。体の動きと画面の動きが一致する、Meta Quest 向けのアーケード VR スノーボード（PC・スマホでも遊べます・オフライン対応）。">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1a3a">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="POWDER LINE">
+<script type="importmap">
+{ "imports": { "three": "./js/vendor/three.module.min.js" } }
+</script>
+<style>
+  :root {
+    --bg: #0b1a3a; --sheet: rgba(9, 18, 42, 0.9); --ink: #f1f5ff; --muted: #a9b8dc; --line: rgba(160, 190, 255, 0.22);
+    --chip: rgba(255, 255, 255, 0.07); --chip-hover: rgba(255, 255, 255, 0.15); --accent: #ffd23f; --ice: #9fe6ff; --hot: #ff6a3d; --ok: #5fd8c8;
+    --font: "Noto Sans JP", "Noto Sans CJK JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+  body { overflow: hidden; }
+  #stage, #stage canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  a { color: var(--accent); }
+
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 50; font-weight: 900; letter-spacing: .12em; }
+  #fade { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 9; }
+
+  #start { position: fixed; top: 0; bottom: 0; left: 0; width: min(560px, 100%); overflow-y: auto; z-index: 10; background: var(--sheet); border-right: 1px solid var(--line);
+    padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) 32px max(18px, env(safe-area-inset-left)); backdrop-filter: blur(6px); }
+  .brand h1 { margin: 2px 0 0; font-size: clamp(42px, 10vw, 60px); line-height: 1; font-weight: 900; letter-spacing: .03em; font-style: italic; }
+  .brand h1 b { background: linear-gradient(90deg, var(--ice), #ffffff 45%, var(--accent) 75%, var(--hot)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .brand .sub { margin: 10px 0 0; font-weight: 800; color: var(--accent); letter-spacing: .06em; font-size: 18px; }
+  .lead { margin: 12px 0 0; font-size: 15px; line-height: 1.85; }
+  .lead em { font-style: normal; color: var(--ice); font-weight: 800; }
+  .play { display: grid; gap: 8px; margin-top: 16px; }
+  .play .vr { font-size: 20px; padding: 16px; background: var(--accent); color: #0b1230; border: 0; border-radius: 14px; font-weight: 900; }
+  .play .vr:disabled { background: var(--chip); color: var(--muted); cursor: default; }
+  .play .sec { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 16px; }
+  .play .sec:hover, .course:hover { background: var(--chip-hover); }
+  #vr-note { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  h2 { font-size: 13px; letter-spacing: .14em; color: var(--muted); margin: 22px 0 8px; font-weight: 800; }
+  #courses { display: grid; gap: 6px; }
+  .course { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); }
+  .course.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: rgba(255, 210, 63, 0.09); }
+  .course b { font-size: 17px; }
+  .course small { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+  .course em { grid-column: 1 / -1; font-style: normal; color: var(--accent); font-size: 12.5px; }
+  .course em:empty { display: none; }
+  .lv { font-size: 11.5px; font-weight: 900; border-radius: 999px; padding: 2px 9px; color: #0b1230; }
+  .lv0 { background: #cfe0ff; } .lv1 { background: #7be08f; } .lv2 { background: #6fd0ff; } .lv3 { background: #c79bff; }
+  #settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  #settings label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+  #settings select { padding: 7px 8px; border-radius: 9px; border: 1px solid var(--line); background: #13224a; font-size: 14px; }
+  #settings label.tog { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--ink); }
+  .small { font-size: 13px; color: var(--muted); line-height: 1.75; margin: 8px 0; }
+  ol.how, ul.how { padding-left: 1.2em; margin: 8px 0; font-size: 14px; line-height: 1.8; }
+  table.keys { border-collapse: collapse; font-size: 13px; width: 100%; }
+  table.keys td, table.keys th { border-bottom: 1px solid var(--line); padding: 5px 4px; text-align: left; vertical-align: top; line-height: 1.55; }
+  table.keys th { color: var(--muted); font-weight: 700; white-space: nowrap; }
+  kbd { font-family: inherit; font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--chip); }
+  details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 800; color: var(--muted); letter-spacing: .06em; }
+  footer { margin-top: 22px; font-size: 12.5px; color: var(--muted); line-height: 1.8; }
+  #offline { display: inline-flex; gap: 6px; align-items: center; }
+  #offline i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  #offline.ok i { background: var(--ok); }
+
+  /* riding (PC / phone) */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 12; }
+  #runbar { position: absolute; top: max(12px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); display: grid; gap: 2px; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+  #h-course { font-size: 13px; color: var(--muted); font-weight: 800; letter-spacing: .08em; }
+  #h-time { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  #h-score { position: absolute; top: max(12px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); font-size: 38px; font-weight: 900; color: var(--accent); text-shadow: 0 2px 6px rgba(0,0,0,.6); font-variant-numeric: tabular-nums; margin-top: 40px; }
+  #h-speed { font-size: 20px; font-weight: 800; color: var(--ice); }
+  #h-crystals { font-size: 16px; font-weight: 800; }
+  #pops { position: absolute; left: 50%; top: 24%; transform: translateX(-50%); display: grid; gap: 4px; justify-items: center; }
+  .pop { font-size: 34px; font-weight: 900; text-shadow: 0 2px 0 #0b1230, 0 0 14px rgba(0,0,0,.5); animation: rise 1.6s ease-out forwards; text-align: center; }
+  .pop small { display: block; font-size: 22px; color: #fff; }
+  @keyframes rise { 0% { transform: translateY(14px) scale(.8); opacity: 0; } 12% { transform: none; opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-28px); opacity: 0; } }
+  #big { position: fixed; left: 50%; top: 38%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; z-index: 13; opacity: 0; transition: opacity .2s; }
+  #big.show { opacity: 1; }
+  #big b { display: block; font-size: clamp(60px, 14vw, 130px); font-weight: 900; color: var(--accent); text-shadow: 0 4px 0 #0b1230, 0 0 30px rgba(0,0,0,.4); font-style: italic; }
+  #big small { display: block; font-size: 22px; font-weight: 800; text-shadow: 0 2px 6px #000; }
+  #topbar { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 8px; z-index: 14; }
+  #topbar button { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: rgba(9,18,42,.75); font-weight: 800; font-size: 14px; }
+  #keyhint { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: max(14px, env(safe-area-inset-left)); font-size: 12.5px; color: var(--muted); text-shadow: 0 1px 4px #000; line-height: 1.7; }
+  #touch { position: fixed; inset: auto 0 0 0; z-index: 15; display: flex; justify-content: space-between; padding: 0 12px max(14px, env(safe-area-inset-bottom)); pointer-events: none; }
+  #touch .grp { display: flex; gap: 10px; pointer-events: auto; }
+  #touch button { width: 74px; height: 74px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); background: rgba(9,18,42,.55); font-weight: 900; font-size: 15px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #touch button.j { width: 92px; height: 92px; background: rgba(255,210,63,.35); }
+
+  .sheet { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow-y: auto; z-index: 20; background: var(--sheet); border: 1px solid var(--line); border-radius: 20px; padding: 22px; backdrop-filter: blur(6px); }
+  .sheet h3 { margin: 0; font-size: 24px; font-weight: 900; }
+  #r-rank { font-size: 88px; font-weight: 900; line-height: 1; color: var(--accent); font-style: italic; float: right; margin: -6px 4px 0 10px; }
+  #r-score { margin: 6px 0 12px; font-size: 20px; font-weight: 800; color: var(--ice); }
+  #r-stats { width: 100%; border-collapse: collapse; font-size: 14px; clear: both; }
+  #r-stats th, #r-stats td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; }
+  #r-stats th { color: var(--muted); white-space: nowrap; font-weight: 700; }
+  .row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .row button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; min-width: 130px; }
+  .row button.primary { background: var(--accent); color: #0b1230; border: 0; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: rgba(9,18,42,.95); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; z-index: 40; font-size: 14px; max-width: calc(100% - 32px); }
+  #toast button { margin-left: 10px; padding: 4px 10px; border-radius: 8px; border: 0; background: var(--accent); color: #0b1230; font-weight: 800; }
+  @media (max-width: 700px) {
+    #start { width: 100%; border-right: 0; }
+    #keyhint { display: none; }
+    #h-time { font-size: 26px; }
+    #h-score { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="fade"></div>
+<div id="loading"><span>POWDER LINE</span></div>
+
+<section id="start" class="hidden" aria-label="はじめる">
+  <div class="brand">
+    <h1><b>POWDER LINE</b></h1>
+    <p class="sub">体で 滑る VR スノーボード</p>
+  </div>
+  <p class="lead">体を <em>傾けて 曲がり</em>、<em>しゃがんで 加速</em>、<em>伸び上がって ジャンプ</em>、空中で <em>体ごと 回って スピン</em>。体の 動きと 画面の 動きが 一致する ように、曲がり方・跳び方・回り方を 物理で つないだ アーケード スノーボードです。クリスタルと リングを 集め、キッカーで 技を きめ、分かれ道を えらんで ゴールへ。</p>
+  <div class="play">
+    <button class="vr" id="btn-vr" disabled>VR で すべる</button>
+    <p id="vr-note">VR が 使えるか 確かめています…</p>
+    <button class="sec" id="btn-pc">PC・スマホで すべる（えらんだ コース）</button>
+  </div>
+
+  <h2>コース</h2>
+  <div id="courses"></div>
+
+  <h2>設定</h2>
+  <div id="settings"></div>
+  <p class="small">「視点の 向き」は 酔いにくさと リアルさの えらび。<b>斜面に 固定</b>（おすすめ）は 景色が 回らず、体の 前は いつも 斜面の 下。<b>進行方向に 回る</b>は 本物の ように 板と 一緒に 景色が 回ります（視野しぼり つき）。</p>
+
+  <details open>
+    <summary>VR での 遊び方（Meta Quest）</summary>
+    <ol class="how">
+      <li>まわりに 半径 1 m ほどの 空間を あけ、<b>スノーボードの ように 立ちます</b>（横向き・正面向き どちらでも。座って 遊ぶなら 設定の「操作」を スティックに）</li>
+      <li>「VR で すべる」→ 浮かぶ 板で コースを えらび、レーザーで「スタート」</li>
+      <li><b>斜面の 下を 見て 少し じっと</b> すると、立ち位置・身長・向きを 測ります（足もとに 輪が 出ます）</li>
+      <li>3・2・1 で 滑りだします。B / Y で ひと休み（立ち位置の 合わせ直しも）</li>
+    </ol>
+    <table class="keys">
+      <tr><th>曲がる</th><td>体ごと 左右へ 傾く（頭を 足の 上から ずらす）。傾けるほど 鋭く 曲がる</td></tr>
+      <tr><th>加速</th><td>ひざを 曲げて 低く かまえる（タック）</td></tr>
+      <tr><th>減速</th><td>体を 山側（後ろ）へ 引く</td></tr>
+      <tr><th>ジャンプ</th><td>しゃがんで → すばやく 伸び上がる（床から 足を はなさなくて よい）。トリガーでも</td></tr>
+      <tr><th>グラブ</th><td>空中で 手を 足もとへ 下ろして グリップを にぎる</td></tr>
+      <tr><th>スピン</th><td>空中で 体ごと 回る。板が 同じだけ 回る。着地までに まっすぐ（か 真うしろ）へ</td></tr>
+      <tr><th>ソフト着地</th><td>着地の 瞬間に ひざを 曲げる（減速なし・ボーナス）</td></tr>
+      <tr><th>クリスタル</th><td>体で ふれる。手を のばして さわると 1.5 倍</td></tr>
+    </table>
+  </details>
+  <details>
+    <summary>PC・スマホの 操作</summary>
+    <table class="keys">
+      <tr><th>曲がる</th><td><kbd>←</kbd><kbd>→</kbd>（<kbd>A</kbd><kbd>D</kbd>）、<kbd>Shift</kbd> で 深く・ゲームパッドの 左スティック</td></tr>
+      <tr><th>加速・減速</th><td><kbd>↑</kbd>（<kbd>W</kbd>）しゃがむ・<kbd>↓</kbd>（<kbd>S</kbd>）ブレーキ</td></tr>
+      <tr><th>ジャンプ</th><td><kbd>Space</kbd> を 押して ためて、はなす</td></tr>
+      <tr><th>空中</th><td><kbd>←</kbd><kbd>→</kbd> で スピン・<kbd>Z</kbd> <kbd>X</kbd> で グラブ・着地の 瞬間に <kbd>Space</kbd> / <kbd>↑</kbd> で ソフト着地</td></tr>
+      <tr><th>そのほか</th><td><kbd>Esc</kbd> ひと休み・<kbd>R</kbd> はじめから。スマホは 画面の ボタン</td></tr>
+    </table>
+  </details>
+  <footer>
+    <span id="offline"><i></i><span id="offline-text">オフライン対応を 確認中…</span></span><br>
+    三次元の 描画に three.js（MIT）。音は すべて その場で 合成。外部への 通信は ありません。<br>
+    <a href="https://github.com/tomy1031/lab/tree/HEAD/powder-line" target="_blank" rel="noopener">ソースコードと 設計メモ</a>
+  </footer>
+</section>
+
+<div id="hud" class="hidden">
+  <div id="runbar"><span id="h-course"></span><span id="h-time">0:00.00</span><span id="h-speed">0 km/h</span><span id="h-crystals"></span></div>
+  <div id="h-score">0</div>
+  <div id="pops"></div>
+  <div id="keyhint">← → 曲がる・↑ しゃがむ・↓ ブレーキ・Space ためて ジャンプ・空中 ← → スピン / Z X グラブ・Esc ひと休み</div>
+</div>
+<div id="big"></div>
+<div id="topbar" class="hidden"><button id="btn-sound">音 ON</button><button id="btn-pause">ひと休み</button></div>
+<div id="touch" class="hidden">
+  <div class="grp"><button data-key="ArrowLeft">◀</button><button data-key="ArrowRight">▶</button></div>
+  <div class="grp"><button data-key="ArrowDown">ブレーキ</button><button data-key="KeyX">グラブ</button><button data-key="ArrowUp">しゃがむ</button><button class="j" data-key="Space">ジャンプ</button></div>
+</div>
+
+<section id="pause" class="sheet hidden" aria-label="ひと休み">
+  <h3>ひと休み</h3>
+  <div class="row"><button id="p-resume" class="primary">つづける</button><button id="p-retry">はじめから</button><button id="p-menu">コース選択</button></div>
+</section>
+
+<section id="results" class="sheet hidden" aria-label="結果">
+  <div id="r-rank">S</div>
+  <h3 id="r-title"></h3>
+  <p id="r-score"></p>
+  <table id="r-stats"></table>
+  <div class="row"><button id="btn-retry" class="primary">もう一度（R）</button><button id="r-next">つぎ</button><button id="btn-menu">コース選択</button></div>
+</section>
+<div id="toast" class="hidden"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
