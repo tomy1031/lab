@@ -535,3 +535,7 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 
 /* PWA update banner */
 #upd-banner { position: fixed; left: 50%; top: max(10px, var(--safe-t)); transform: translateX(-50%); z-index: 90; display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 14px; background: var(--glass-2); color: var(--on-glass); box-shadow: var(--shadow); font-weight: 700; }
+
+/* VR (WebXR): the headset button on the HUD; the page itself is not seen while in the headset */
+#vr-enter { position: absolute; right: max(14px, var(--safe-r, 0px)); bottom: 132px; z-index: 6; pointer-events: auto; }
+body.in-vr #hud, body.in-vr #vr-enter { visibility: hidden; }

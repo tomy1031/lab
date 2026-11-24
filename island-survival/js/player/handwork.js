@@ -921,8 +921,34 @@ export class Handwork {
       resolve(r);
     };
     this.nextStep();
-    const loop = (t) => { if (this.active !== st) return; this.frame(t); requestAnimationFrame(loop); };
+    // in a VR session the headset's frames call tick() (the page's animation frames stop there)
+    const loop = (t) => { if (this.active !== st) return; if (!this.game.vrActive) this.frame(t); requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
+  }
+
+  // ---------------------------------------------------------------- VR (vr/xr.js): the table is a panel in the headset
+  /** a headset frame */
+  tick(t) { if (this.active && !this.active.done) this.frame(t); }
+  /** the laser on the table: x, y in table units (800 × 500), down = the trigger; null = the laser is off the table */
+  vrPointer(x, y, down = false) {
+    const I = this.active?.I;
+    if (!I) return;
+    if (x == null) { if (I.down && I.vr) { I.down = false; I.released = true; I.dragY = I.y - I.sy; } I.vr = false; return; }
+    const now = performance.now();
+    const dtm = Math.max(1, now - (I.vrT || now - 16)) / 1000;
+    I.speed = dist(x, y, I.x, I.y) / dtm; I.vrT = now;
+    I.x = x; I.y = y; I.active = true; I.vr = true; I.lastMouse = now;
+    if (down && !I.down) { I.down = true; I.pressed = true; I.sx = x; I.sy = y; I.dragY = 0; }
+    else if (!down && I.down) { I.down = false; I.released = true; I.dragY = y - I.sy; }
+    else if (down) I.dragY = y - I.sy;
+  }
+  /** a key from the controller: held (keys) and / or pressed this frame (hit) */
+  vrKey(code, on, { tap = false, hit = true } = {}) {
+    const I = this.active?.I;
+    if (!I) return;
+    if (tap) { if (on) I.hit.add(code); return; }
+    if (on && !I.keys.has(code)) { I.keys.add(code); if (hit) I.hit.add(code); }
+    else if (!on) I.keys.delete(code);
   }
 
   nextStep() {
@@ -964,7 +990,7 @@ export class Handwork {
     const I = st.I;
     // gestures: the camera hand as a pointer (pinch = pressed) plus motion events
     const hs = this.game.hands;
-    if (hs?.ready && this.game.freezeRender) hs.poll(); // the game loop is frozen while we are open
+    if (hs?.ready && this.game.freezeRender && !this.game.vrActive) hs.poll(); // the game loop is frozen while we are open
     if (hs?.ready) {
       I.gest = (hs.events || []).slice();
       const h = hs.motion?.state?.hands?.[0];

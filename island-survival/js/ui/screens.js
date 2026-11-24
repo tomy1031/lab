@@ -69,6 +69,8 @@ export class Screens {
   }
 
   show(name, data = {}) {
+    // in a VR session the page is not visible: the headset's own panels take these (vr/xr.js)
+    if (this.game.xr?.presenting && this.game.xr.screen(name, data)) return;
     const mod = REG[name];
     if (!mod) { console.warn('unknown screen', name); return; }
     if (this.cur && this.cur.name === name && this.cur.api.onData) {

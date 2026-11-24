@@ -23,6 +23,7 @@ export default function pause(ctx) {
         msg.textContent = ok === false ? 'セーブに 失敗しました' : 'セーブしました';
         if (ok !== false) toast(game, 'セーブしました', 'good');
       } }, '💾 セーブ'),
+      game.xr?.supported ? h('button', { class: 'btn teal', onclick: () => game.enterVR?.() }, '🥽 VR で 遊ぶ') : null,
       h('button', { class: 'btn', onclick: () => screens.show('settings', { from: 'pause' }) }, '⚙ 設定'),
       h('button', { class: 'btn', onclick: () => screens.show('gesture', { from: 'pause' }) }, '✋ ジェスチャーの 練習'),
       canRetire ? h('button', { class: 'btn ghost', onclick: () => ask('発煙筒で リタイアしますか？（スコア ×0.3）', () => { screens.hide(); game.retire?.(); }, 'リタイア') }, 'リタイアする') : null,

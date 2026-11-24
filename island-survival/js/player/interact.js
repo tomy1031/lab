@@ -61,7 +61,7 @@ export class Interact {
   // ---------------------------------------------------------------- targeting
   findTarget() {
     const g = this.game, P = g.player, nodes = g.world.nodes;
-    const eye = g.renderer.camera.position, fwd = P.forward;
+    const eye = P.vr && P.aim ? P.aim.origin : g.renderer.camera.position, fwd = P.forward;
     const comp = g.sys.companion?.body;
     if (comp && Math.hypot(comp.pos.x - P.pos.x, comp.pos.z - P.pos.z) < 2.4) {
       const dx = comp.pos.x - P.pos.x, dz = comp.pos.z - P.pos.z, d = Math.hypot(dx, dz);
@@ -824,7 +824,7 @@ export class Interact {
     const g = this.game;
     if (g.paused) return;
     // gesture events of this frame
-    const ev = g.hands?.ready ? (g.hands.events || []) : [];
+    const ev = g.hands?.ready ? (g.hands.events || []) : g.xr?.presenting ? g.xr.gestures : [];
     if (this.activity) {
       const a = this.activity;
       const keys = { Space: g.input.keys.has('Space') };
