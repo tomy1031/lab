@@ -118,6 +118,65 @@ export function createSfx(S, buses) {
       S.burst({ dur: 0.5, type: 'lowpass', freq: 300, sweepTo: 1600, gain: 0.35, dest: d, attack: 0.05, buf: S.brown });
       for (let i = 0; i < 6; i++) S.burst({ t: ac.currentTime + 0.1 + Math.random() * 0.6, dur: 0.02, type: 'highpass', freq: 2500, gain: 0.12, dest: d });
     },
+    // ── the counter flow (DESIGN_V2 §4.2) ──
+    /** perfect parry: a clear bell strike over a low tail */
+    parryPerfect({ dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime;
+      S.bell(midi(88), { t, decay: 1.4, gain: 0.22, dest: d });
+      S.bell(midi(76), { t: t + 0.01, decay: 0.9, gain: 0.08, dest: d });
+      S.tone(98, { t, decay: 0.9, gain: 0.16, dest: d, glideTo: 82, glideTime: 0.8 });
+    },
+    /** 崩れ: a low hum climbing to the deadline; returns stop() (a counter or the end cuts it) */
+    breakHum({ dur = 2.5, dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime;
+      const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+      o.type = 'sawtooth'; f.type = 'lowpass'; f.frequency.value = 700;
+      o.frequency.setValueAtTime(70, t); o.frequency.linearRampToValueAtTime(230, t + dur);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.07, t + 0.15);
+      g.gain.setValueAtTime(0.07, t + Math.max(0.2, dur - 0.1)); g.gain.linearRampToValueAtTime(0, t + dur);
+      o.connect(f); f.connect(g); g.connect(d);
+      o.start(t); o.stop(t + dur + 0.05);
+      return () => {
+        try { const n = ac.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + 0.08); o.stop(n + 0.12); } catch (e) { /* already stopped */ }
+      };
+    },
+    /** 返し斬り: a heavy strike and a short rising sting */
+    counter({ dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime;
+      S.burst({ t, dur: 0.14, type: 'lowpass', freq: 900, gain: 0.45, dest: d, buf: S.brown });
+      S.tone(150, { t, decay: 0.22, gain: 0.3, dest: d, glideTo: 55, glideTime: 0.2 });
+      for (const [i, n] of [[0, 76], [1, 81], [2, 88]]) S.tone(midi(n), { t: t + 0.06 + i * 0.06, type: 'triangle', decay: 0.25, gain: 0.07, dest: d });
+    },
+    /** guard broken: a dull wooden knock */
+    guardBreak({ dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime;
+      S.burst({ t, dur: 0.12, type: 'lowpass', freq: 520, gain: 0.4, dest: d, buf: S.brown });
+      S.tone(120, { t, type: 'triangle', decay: 0.22, gain: 0.18, dest: d, glideTo: 70, glideTime: 0.2 });
+    },
+    /** the last 0.25 s of a warning: one high note — "push now" */
+    cue({ dest }) { S.tone(2093, { type: 'sine', decay: 0.14, gain: 0.07, dest: dest || buses.sfx }); },
+    /** 見切り: a close whoosh and a light ring */
+    justDodge({ dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime;
+      S.burst({ t, dur: 0.2, type: 'bandpass', freq: 2200, sweepTo: 700, q: 1.3, gain: 0.2, dest: d });
+      S.tone(1568, { t: t + 0.05, decay: 0.2, gain: 0.05, dest: d });
+    },
+    /** a person's voice: soft "po-po-po" blips, one per syllable; pitch is per person (1 ≈ 300 Hz) */
+    voice({ pitch = 1, n = 4, dest }) {
+      const d = dest || buses.sfx, t = ac.currentTime, f0 = 300 * pitch;
+      for (let i = 0; i < n; i++) {
+        const f = f0 * (1 + 0.13 * Math.sin(i * 2.3 + pitch * 5));
+        S.tone(f, { t: t + i * 0.085, type: 'triangle', decay: 0.06, gain: 0.05, dest: d, glideTo: f * 0.92, glideTime: 0.05 });
+      }
+    },
+    /** a fire bowl catching (≈0.8 s): crackles that build, under a soft rising whoosh */
+    catching({ dest }) {
+      const d = dest || buses.sfx, t0 = ac.currentTime;
+      S.burst({ dur: 0.85, type: 'lowpass', freq: 220, sweepTo: 900, gain: 0.16, dest: d, attack: 0.55, buf: S.brown });
+      for (let i = 0; i < 14; i++) { const k = i / 13; S.burst({ t: t0 + k * 0.78 + Math.random() * 0.04, dur: 0.012 + Math.random() * 0.02, type: 'highpass', freq: 1700 + Math.random() * 2400, gain: 0.04 + 0.12 * k, dest: d }); }
+    },
+    /** a torch going out: a short hiss */
+    fizzle({ dest }) { S.burst({ dur: 0.4, type: 'highpass', freq: 3200, sweepTo: 1400, gain: 0.1, dest: dest || buses.sfx, attack: 0.01 }); },
     crackle({ dest }) { S.burst({ dur: 0.015 + Math.random() * 0.02, type: 'highpass', freq: 1800 + Math.random() * 2000, gain: 0.05 + Math.random() * 0.06, dest: dest || buses.amb }); },
     eat({ dest }) { const d = dest || buses.sfx, t = ac.currentTime; for (let i = 0; i < 3; i++) S.burst({ t: t + i * 0.11, dur: 0.06, type: 'bandpass', freq: 2200, q: 1.2, gain: 0.18, dest: d }); },
     drink({ dest }) { const d = dest || buses.sfx, t = ac.currentTime; for (let i = 0; i < 3; i++) S.tone(300 + i * 40, { t: t + i * 0.16, decay: 0.1, gain: 0.12, dest: d, glideTo: 520 + i * 40, glideTime: 0.08 }); },

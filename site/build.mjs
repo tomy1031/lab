@@ -16,6 +16,9 @@
 //   DREAMDRIFT_REF DREAM DRIFT (dream-drift/)                  default: HEAD if it has dream-drift/, else origin/claude/happy-turing-uknqds
 //   RALLY_REF     RALLY COURT (rally-court/)                   default: HEAD if it has rally-court/, else origin/claude/ecstatic-euler-zw060e
 //   ISLAND_REF    ひとつだけ島 (island-survival/)               default: HEAD if it has island-survival/, else origin/claude/deserted-island-survival-game-7tg6jw
+//   SKYATLAS_REF  SKY ATLAS (sky-atlas/)                      default: HEAD if it has sky-atlas/, else origin/claude/nifty-hamilton-jfagze
+//   ANAKATA_REF   ANAKATA (anakata/)                           default: HEAD if it has anakata/, else origin/claude/determined-turing-o80o1n
+//   POWDER_REF    POWDER LINE (powder-line/)                   default: HEAD if it has powder-line/, else origin/claude/stoic-maxwell-eaq1nw
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -41,6 +44,9 @@ const refs = {
   dreamdrift: process.env.DREAMDRIFT_REF || 'HEAD',
   rally: process.env.RALLY_REF || 'HEAD',
   island: process.env.ISLAND_REF || 'HEAD',
+  skyatlas: process.env.SKYATLAS_REF || 'HEAD',
+  anakata: process.env.ANAKATA_REF || 'HEAD',
+  powder: process.env.POWDER_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -53,6 +59,9 @@ if (!process.env.KOTOBA_REF && !hasDir(refs.kotoba, 'kotoba-town')) refs.kotoba 
 if (!process.env.DREAMDRIFT_REF && !hasDir(refs.dreamdrift, 'dream-drift')) refs.dreamdrift = 'origin/claude/happy-turing-uknqds';
 if (!process.env.RALLY_REF && !hasDir(refs.rally, 'rally-court')) refs.rally = 'origin/claude/ecstatic-euler-zw060e';
 if (!process.env.ISLAND_REF && !hasDir(refs.island, 'island-survival')) refs.island = 'origin/claude/deserted-island-survival-game-7tg6jw';
+if (!process.env.SKYATLAS_REF && !hasDir(refs.skyatlas, 'sky-atlas')) refs.skyatlas = 'origin/claude/nifty-hamilton-jfagze';
+if (!process.env.ANAKATA_REF && !hasDir(refs.anakata, 'anakata')) refs.anakata = 'origin/claude/determined-turing-o80o1n';
+if (!process.env.POWDER_REF && !hasDir(refs.powder, 'powder-line')) refs.powder = 'origin/claude/stoic-maxwell-eaq1nw';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -310,14 +319,23 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 12 ひとつだけ島 — first-person island survival (three.js, MediaPipe, Gemini Live). Static files: the page,
-// ES modules and assets; the tests, build tools and dev pages stay out of the published folder.
+// 12 ひとつだけ島 — first-person island survival (three.js, MediaPipe, Gemini Live; WebXR). Offline PWA: the game's
+// own tools/bundle.mjs copies what ships (no tests / tools / dev pages) and fills sw.js with the build id and the
+// files to cache, so the published game works with no network once opened (also in a VR headset).
+// Older refs without tools/bundle.mjs are copied as plain static files.
 {
   const dest = path.join(out, 'island-survival');
   try {
     const src = exportDir(refs.island, 'island-survival');
-    const skip = new Set(['tests', 'tools', 'dev']);
-    fs.cpSync(src, dest, { recursive: true, filter: (p) => !skip.has(path.relative(src, p).split(path.sep)[0]) });
+    if (fs.existsSync(path.join(src, 'tools', 'bundle.mjs'))) {
+      const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+      const build = sh(`git -C "${root}" rev-parse "${refs.island}:island-survival"`).slice(0, 12);
+      const r = bundle(src, dest, build);
+      console.log(`island-survival build ${r.build}: ${r.files} files (${r.mb} MB to cache)`);
+    } else {
+      const skip = new Set(['tests', 'tools', 'dev']);
+      fs.cpSync(src, dest, { recursive: true, filter: (p) => !skip.has(path.relative(src, p).split(path.sep)[0]) });
+    }
     const preview = path.join(src, 'docs', 'preview.jpg');
     if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'island-survival.jpg'));
   } catch (e) {
@@ -330,6 +348,74 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 13 SKY ATLAS — fly over the real world in VR (three.js / WebXR, open map data). Static files plus an offline
+// service worker, filled in by the game's own tools/bundle.mjs (like OFFBEAT GROVE). The map tiles are not
+// part of the site: each player downloads the areas they want into their own browser.
+{
+  const dest = path.join(out, 'sky-atlas');
+  try {
+    const src = exportDir(refs.skyatlas, 'sky-atlas');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.skyatlas}:sky-atlas"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'sky-atlas.jpg'));
+    console.log(`sky-atlas build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`sky-atlas not found at ${refs.skyatlas}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SKY ATLAS</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 14 ANAKATA — WebXR: feel the 4th and 5th dimensions (Interstellar's bulk). Like OFFBEAT GROVE, its own
+// tools/bundle.mjs copies what ships and fills sw.js with the build id and the file list, so the published
+// experience works with no network once opened.
+{
+  const dest = path.join(out, 'anakata');
+  try {
+    const src = exportDir(refs.anakata, 'anakata');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.anakata}:anakata"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'anakata.jpg'));
+    console.log(`anakata build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`anakata not found at ${refs.anakata}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ANAKATA</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
+// 15 POWDER LINE — WebXR snowboarding ridden with the body. Like ANAKATA, its own tools/bundle.mjs copies what
+// ships and fills sw.js with the build id and the file list, so the published game works with no network once opened.
+{
+  const dest = path.join(out, 'powder-line');
+  try {
+    const src = exportDir(refs.powder, 'powder-line');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.powder}:powder-line"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'powder-line.jpg'));
+    console.log(`powder-line build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`powder-line not found at ${refs.powder}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>POWDER LINE</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder}`);

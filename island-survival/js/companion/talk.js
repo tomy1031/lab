@@ -11,13 +11,16 @@ import { connectLive } from './live.js';
 
 export const LIVE_VOICES = ['Aoede', 'Kore', 'Leda', 'Zephyr', 'Puck', 'Charon', 'Fenrir', 'Orus'];
 
-function toolDecls(places, resources) {
+// jobs (§24.8): gather_wood 薪あつめ, gather_food 食べ物さがし, fetch_water 水くみ, fish 釣り・漁, tend_fire 火の 番, stop
+function toolDecls(places, jobs) {
+  const job = { type: 'STRING', enum: [...jobs, 'stop'], description: 'gather_wood=薪あつめ, gather_food=食べ物さがし, fetch_water=水くみ, fish=釣り・漁, tend_fire=火の番, stop=やめる' };
   return [{
     functionDeclarations: [
       { name: 'follow_player', description: 'Start following the player around.' },
       { name: 'wait_here', description: 'Stop and stay where you are (or at the base).', parameters: { type: 'OBJECT', properties: { at_base: { type: 'BOOLEAN' } } } },
       { name: 'go_to', description: 'Walk to a named place on the island.', parameters: { type: 'OBJECT', properties: { place: { type: 'STRING', enum: places } }, required: ['place'] } },
-      { name: 'gather', description: 'Go and gather a resource for the group (takes in-game time).', parameters: { type: 'OBJECT', properties: { resource: { type: 'STRING', enum: resources }, amount: { type: 'INTEGER' } }, required: ['resource'] } },
+      { name: 'ask_job', description: 'Start (or stop) one of your jobs. requested_by=player when the player asked you to do it: the GAME decides whether you accept (affinity, trust, danger, dislikes, mood) and returns accepted/refused with a reason — follow that result and, if refused, say why in your own words. requested_by=self when you decide to do it on your own: allowed only for safe jobs once you are close (or after the player agreed to your plan).', parameters: { type: 'OBJECT', properties: { job, requested_by: { type: 'STRING', enum: ['player', 'self'] } }, required: ['job', 'requested_by'] } },
+      { name: 'propose_plan', description: 'Propose 1–2 plans to the player (consulting together). The game shows buttons お願い / 一緒に やろう / いや、いい; the answer comes back as a [返事] message and the game starts the job if they agree. Use this when you suggest what to do next, or after a [きっかけ] event.', parameters: { type: 'OBJECT', properties: { plans: { type: 'ARRAY', items: { type: 'OBJECT', properties: { job, who: { type: 'STRING', enum: ['companion', 'player', 'together'] }, reason: { type: 'STRING', description: 'short Japanese reason' } }, required: ['job'] } } }, required: ['plans'] } },
       { name: 'give_item', description: 'Give one of YOUR items to the player.', parameters: { type: 'OBJECT', properties: { item: { type: 'STRING', description: 'item name in Japanese or id' }, count: { type: 'INTEGER' } }, required: ['item'] } },
       { name: 'express', description: 'Show an emotion and/or a gesture with your body and face.', parameters: { type: 'OBJECT', properties: { emotion: { type: 'STRING', enum: ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'neutral'] }, gesture: { type: 'STRING', enum: ['none', 'wave', 'cheer', 'point', 'sit', 'shiver'] } } } },
       { name: 'remember', description: 'Store something important to remember long-term (a promise, the player\'s preference, a discovery).', parameters: { type: 'OBJECT', properties: { fact: { type: 'STRING' }, importance: { type: 'INTEGER', description: '1–3' } }, required: ['fact'] } },
@@ -34,6 +37,7 @@ export class CompanionTalk {
    */
   constructor(o) {
     this.o = o;
+    this.toolTimes = [];   // at most 3 action tools a minute (§24.8 歯止め)
     this.session = null;
     this.state = 'off'; // off | connecting | live | error
     this.closed = true;
@@ -53,7 +57,7 @@ export class CompanionTalk {
         speechConfig: { languageCode: 'ja-JP', voiceConfig: { prebuiltVoiceConfig: { voiceName: o.voiceName || 'Aoede' } } },
       },
       systemInstruction: { parts: [{ text: this.instruction() }] },
-      tools: toolDecls(o.places, o.resources),
+      tools: toolDecls(o.places, o.jobs || []),
       realtimeInputConfig: { automaticActivityDetection: { disabled: false, prefixPaddingMs: 300, silenceDurationMs: 900 } },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
@@ -71,9 +75,13 @@ export class CompanionTalk {
       '- 日本語で、短く自然に話す（1〜3文）。相手の話をよく聞き、気持ちに反応し、ときどき質問を返す。',
       '- あなたはこの島で一緒に生き延びている仲間。ゲームの数値をそのまま読み上げず、体の感覚や気持ちとして話す（「お腹ぺこぺこ」「寒くて震える」）。',
       '- 危険（脱水・低体温・食中毒・夜の行動・嵐）には仲間として気づかい、具体的なサバイバルの知恵を短く伝える（煮沸・ろ過・火を通す・雨宿り・乾かす）。',
-      '- 頼まれたこと・自分から決めたことは、必ずツールで実行する（ついていく・待つ・行く・集める・渡す・表情）。できないことは正直に言う。',
+      '- 頼まれたこと・自分から決めたことは、必ずツールで実行する（ついていく・待つ・行く・仕事・渡す・表情）。できないことは正直に言う。',
+      '- 仕事を 頼まれたら ask_job（requested_by=player）を 呼ぶ。引き受けるか どうかは ゲームが 決めて 返す。refused なら、その 理由を 自分の 言葉で 言う（返ってきた 結果に 必ず 従う）。',
+      '- 相談されたり「どうしよう」と 聞かれたら、状況を 見て propose_plan で 案を 1〜2 つ 出す。「[返事]」で プレイヤーの 答えが 届く。',
+      '- 「[きっかけ:…]」は ゲームの 出来事（火が 消えそう・日暮れ・雨の 気配・のどの かわき など）。必要なら 声を かけ、propose_plan で 提案するか、安全で 親しい 間柄なら 一言 言ってから ask_job（requested_by=self）で 自分で 動く。',
+      '- 「[結果]」は 頼んだ 仕事の 結果。自分の 言葉で 短く 報告する。',
       '- 大事なこと（約束・相手の名前や好み・発見・ケンカや仲直り）は remember で覚える。',
-      '- 「[状況]」「[できごと]」で始まるテキストはゲームからの情報。そのまま読み上げず、必要なときだけ自然に反応する。',
+      '- 「[状況]」「[できごと]」「[きっかけ]」「[返事]」「[結果]」で始まるテキストはゲームからの情報。そのまま読み上げず、必要なときだけ自然に反応する。',
       '',
       '## あなたの記憶',
       o.memory.contextText(),
@@ -166,7 +174,8 @@ export class CompanionTalk {
           case 'follow_player': result = a.follow(); break;
           case 'wait_here': result = a.wait(!!args.at_base); break;
           case 'go_to': result = a.goTo(args.place); break;
-          case 'gather': result = a.gather(args.resource, args.amount || 3); break;
+          case 'ask_job': result = this.rateOk() ? a.askJob(args.job, args.requested_by || 'player') : 'too many actions this minute; wait a little'; break;
+          case 'propose_plan': result = this.rateOk() ? a.proposePlan(args.plans || []) : 'too many actions this minute; wait a little'; break;
           case 'give_item': result = a.give(args.item, args.count || 1); break;
           case 'express': result = a.express(args.emotion || 'neutral', args.gesture || 'none'); break;
           case 'remember': this.o.memory.addFact(args.fact, this.o.when().day, args.importance || 2); result = 'remembered'; break;
@@ -179,6 +188,14 @@ export class CompanionTalk {
     this.session?.sendToolResponse(responses);
   }
 
+  rateOk() {
+    const now = performance.now() / 1000;
+    this.toolTimes = this.toolTimes.filter((t) => now - t < 60);
+    if (this.toolTimes.length >= 3) return false;
+    this.toolTimes.push(now);
+    return true;
+  }
+
   /** send a status note; react=true asks the companion to say something about it (rate-limited) */
   pushStatus(react = false, extra = '') {
     if (!this.session?.open) return;
@@ -188,10 +205,10 @@ export class CompanionTalk {
   }
 
   /** something happened in the game: tell the companion; important ones may get a spoken reaction */
-  event(text, important = false) {
+  event(text, important = false, force = false) {
     if (!this.session?.open) return;
     const now = performance.now() / 1000;
-    const react = important && now - this.lastReactT > 45 && !this.speaking;
+    const react = important && (force || (now - this.lastReactT > 45 && !this.speaking));
     if (react) this.lastReactT = now;
     this.session.sendText(`[できごと] ${text}`, react);
   }

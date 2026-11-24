@@ -17,6 +17,7 @@ import { createFood } from './food.js';
 import { createFlask } from './flask.js';
 import { createWindfan } from './windfan.js';
 import { createWaybell } from './waybell.js';
+import { createRadiance, RADIANT } from './radiance.js';
 import { PROJECTILE_MAX } from '../core/config.js';
 import { getGems, getSprites } from '../core/gems.js';
 const HANDS = ['left', 'right'];
@@ -137,6 +138,7 @@ export async function createItems(ctx) {
     inst.heldBy = hand;
     inst.wasHeld = true;
     if (inst.state.hanging) inst.state.hanging = false;
+    inst.placed = false;
     inst.flying = false; inst.thrown = null; inst.stuck = false; inst.sleeping = false; inst.pulled = null;
     inst.vel.set(0, 0, 0); inst.angVel.set(0, 0, 0);
     held[hand] = inst;
@@ -199,6 +201,12 @@ export async function createItems(ctx) {
     flash(pos, opts) { try { ctx.world?.fx?.flash?.(pos, opts); } catch { /* stub */ } },
   };
 
+  /** the holster slot an item sits in after a stow (null = the bag) */
+  function holsterOf(id, inv, slot) {
+    if (inv && inv.slots) { for (const s of Object.keys(inv.slots)) if (inv.slots[s] === id) return s; return null; }
+    return slot && slot !== 'quiver' ? slot : null;
+  }
+
   function despawn(inst) {
     if (!inst) return;
     if (inst.heldBy && held[inst.heldBy] === inst) held[inst.heldBy] = null;
@@ -228,6 +236,8 @@ export async function createItems(ctx) {
   const fan = createWindfan(ctx, I);
   const bell = createWaybell(ctx, I);
   I.torch = torch; I.bomb = bomb; I.melee = melee;
+  const radiance = createRadiance(ctx, I);         // the enchanted sword's glow (held and in the world)
+  I.radiance = radiance;
 
   function collect(inst) {
     // a counted bundle or a material: straight into the bag
@@ -243,6 +253,7 @@ export async function createItems(ctx) {
     defs,
     handlesXButton: true,          // the X button rings the waybell here (ui checks this flag)
     models,                        // shared item geometries (holster marks reuse them)
+    get radiance() { return I.radiance; },   // the enchanted sword's glow (tests / tuning)
     held,
     pulling,
     get worldItems() { return world; },
@@ -250,7 +261,9 @@ export async function createItems(ctx) {
       const inst = makeInstance(itemId, { state, owned, count });
       if (!inst) return null;
       if (pos) inst.pos.copy(pos); else inst.pos.copy(ctx.player?.pos || ctx.rig.position).y += 1;
-      if (quat) inst.quat.copy(quat);
+      // a given orientation means "placed" (a sword standing on its pedestal): kept as is, not laid down or
+      // dropped to the ground below; it becomes an ordinary item once a hand takes it
+      if (quat) { inst.quat.copy(quat); inst.placed = true; }
       else inst.quat.setFromAxisAngle(_v.set(0, 1, 0), Math.random() * Math.PI * 2);
       if (vel) inst.vel.copy(vel);
       inst.sleeping = !vel || !!inst.state.hanging;      // fruit hanging on a tree stays put until grabbed
@@ -276,11 +289,28 @@ export async function createItems(ctx) {
       return items.createInHand(itemId, hand, 'bag', null);
     },
     blockTest(shape, fromPos) { return shield.blockTest(shape, fromPos); },
+    /** tests: the next blocked attack meets a shield push 'perfect' | 'normal' | 'late' (DESIGN_V2 §5.3) */
+    debugParry(kind) { return shield.armDebug(kind); },
+    shieldBroken(hand) { return shield.isBroken(hand); },
+    /** throwaway meshes that use every shader a held or world item can need (a held sword with its steel and
+     *  gold, its glow / the swing trail, a world pool): drawn once in the warm-up frame so no first use hitches */
+    warmObjects() {
+      const held = models.makeMesh('sword');
+      const pool = new THREE.InstancedMesh(models.geometry('apple'), models.material(), 1);
+      pool.setMatrixAt(0, _m.identity());
+      // the flame / spark / aim glows, the bowstring, a wind blade, the holster ghost
+      const glow = ctx.art.glow({ color: 0xffb347, size: 0.001, opacity: 0.001 });
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([_v.set(0, 0, 0), _v2.set(0, 0.1, 0)]),
+        new THREE.LineBasicMaterial({ color: 0xfffbe8, fog: false }));
+      const ghost = new THREE.Mesh(models.geometry('torch'), ctx.art.basic({ color: 0xffd76a, additive: true }));
+      return [held, radiance.warmObject(), pool, glow, line, proj.warmObject(), ghost];
+    },
     makeModel(itemId) { return models.makeModel(itemId); },
 
     // ── used by the player (grab.js / desktop.js) ──
     createInHand(itemId, hand, from = 'holster', slot = null) {
       const st = defs[itemId]?.stack === 1 && gearState[itemId] ? { ...gearState[itemId] } : undefined;
+      if (st) { gearState[itemId].slot = null; delete st.slot; }       // out of its holster now
       const inst = makeInstance(itemId, { state: st, owned: defs[itemId]?.stack === 1 });
       if (!inst) return null;
       scene.add(inst.object3D);
@@ -369,8 +399,14 @@ export async function createItems(ctx) {
         try { ok = inv.stow(slot || null, inst.id, { ...inst.state }) !== false; } catch (e) { ok = false; ctx.report?.(`inventory.stow: ${e.message}`); }
       }
       if (!ok) return false;
-      if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1, draw: 0 };
-      if (inst.state.lit) { inst.state.lit = false; ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id }); }
+      // a lit torch put in a holster keeps burning there (its timer paused, an ember glows at the slot) and is
+      // still lit when drawn again; anything else lit (or a torch put in the bag) goes out
+      const keepIn = inst.id === 'torch' && inst.state.lit ? holsterOf(inst.id, inv, slot) : null;
+      if (inst.def.stack === 1) {
+        gearState[inst.id] = keepIn ? { ...inst.state, fuse: -1, draw: 0, slot: keepIn }
+          : { ...inst.state, lit: false, litTime: 0, fuse: -1, draw: 0, slot: null };
+      }
+      if (inst.state.lit && !keepIn) { inst.state.lit = false; ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id, why: 'stowed' }); }
       const to = slot === 'quiver' ? 'holster' : !slot ? 'bag' : !inv ? 'holster' : inv.slots?.[slot] === inst.id ? 'holster' : 'bag';
       despawn(inst);
       ctx.events.emit('item:release', { uid: inst.uid, itemId: inst.id, hand, to, slot: slot || null, speed: 0 });
@@ -383,8 +419,9 @@ export async function createItems(ctx) {
     budget() {
       let calls = 0, tris = 0;
       for (const [id, p] of pools) if (p.mesh && p.mesh.count > 0) { calls++; tris += models.trianglesOf(id) * p.mesh.count; }
-      for (const h of HANDS) if (held[h]) { calls++; tris += models.trianglesOf(held[h].id); }
-      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls()
+      for (const h of HANDS) if (held[h]) { calls += Math.max(1, held[h].mesh.geometry.groups.length); tris += models.trianglesOf(held[h].id); }
+      for (const inst of world) if (RADIANT.has(inst.id) && inst.mesh.visible) { calls += Math.max(1, inst.mesh.geometry.groups.length); tris += models.trianglesOf(inst.id); }
+      const extra = melee.drawCalls() + bow.drawCalls() + torch.drawCalls() + proj.drawCalls() + bomb.drawCalls() + radiance.drawCalls()
         + (sprites.count > 0 ? 1 : 0) + (shadows.visible ? 1 : 0) + (gems.count > 0 ? 1 : 0);
       return { drawCalls: calls + extra, triangles: Math.round(tris + sprites.count * 2 + shadows.count * 2 + gems.count * 8), pools: pools.size };
     },
@@ -417,7 +454,7 @@ export async function createItems(ctx) {
         flask.update(dt);
         fan.update(dt);
         bell.update(dt);
-        proj.update(dt);
+        proj.update(dt * (ctx.clock.slow ?? 1));           // projectiles follow the slow motion (DESIGN_V2 §4.2)
         // auto-collect shards / seeds / pearls; owned gear comes home (8 s or 25 m)
         const pp = ctx.player?.pos;
         const now = ctx.clock.time;
@@ -433,7 +470,8 @@ export async function createItems(ctx) {
             const far = inst.pos.distanceTo(pp) > 25;
             if ((now - inst.droppedAt > 8 && !inst.thrown) || far) {
               const inv = I.inv;
-              if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1 };
+              if (inst.def.stack === 1) gearState[inst.id] = { ...inst.state, lit: false, litTime: 0, fuse: -1, slot: null };
+              if (inst.state.lit) ctx.events.emit('item:extinguish', { uid: inst.uid, itemId: inst.id, why: 'return' });
               despawn(inst);
               inv?.markIn?.(inst.id);
               ctx.events.emit('item:return', { itemId: inst.id });
@@ -451,6 +489,12 @@ export async function createItems(ctx) {
         inst.object3D.position.copy(inst.pos);
         inst.object3D.quaternion.copy(inst.quat);
         const d2 = inst.pos.distanceToSquared(pp);
+        if (RADIANT.has(inst.id)) {
+          // the hero blade keeps its own mesh in the world (steel and gold looks + its glow), not the matte pool
+          inst.mesh.visible = d2 <= POOL_DIST2;
+          if (inst.fx.aura) inst.fx.aura.visible = inst.mesh.visible;
+          continue;
+        }
         if (d2 > POOL_DIST2) continue;
         const p = pool(inst.id);
         ensureCap(inst.id, p, p.n + 1);
@@ -495,6 +539,7 @@ export async function createItems(ctx) {
         const inst = held[h];
         if (inst) inst.mesh.scale.setScalar(inst.state.bites > 0 ? 0.8 : 1);
       }
+      radiance.update(dt);
     },
   };
   I.items = items;

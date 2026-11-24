@@ -63,6 +63,8 @@ export function buildWaylight(env, def) {
     if (env.ready && value) { fx.api.flash(anchors.fire, { color: 0xffb347, size: 4, life: 0.5 }); fx.api.emit('ember', anchors.fire, { count: 14, speed: 1.8 }); }
   }
   function update(view, dist) {
+    // 昼の焚き火のにじみは控えめに（夜に向かって強く）
+    if (state.lit) fx.glows.set(g, { intensity: 0.22 + 0.78 * view.st.night });
     if (!state.lit || dist > 40) return;
     emberT -= view.dt;
     if (emberT <= 0) { emberT = 0.35 + Math.random() * 0.4; fx.api.emit('ember', anchors.fire, { count: 1 }); }

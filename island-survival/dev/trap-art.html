@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>trap-art dev</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+body { margin: 0; padding: 12px; background: #e9e1c6; font: 14px "Zen Maru Gothic", sans-serif; color: #2a2923; }
+h2 { margin: 18px 0 6px; font-size: 16px; } .row { display: flex; flex-wrap: wrap; gap: 8px; } figure { margin: 0; } figcaption { font-size: 11px; }
+canvas { width: 480px; height: 300px; display: block; background: #d8cfae; }
+canvas.card { width: 360px; height: 260px; }
+</style></head><body>
+<h1>trap-art</h1><div id="out"></div>
+<script type="module">
+import { GEO, drawTrapScene, drawTrackCard } from '../js/ui/trap-art.js';
+const out = document.getElementById('out');
+const BOX = { x: 40, y: 30, w: 720, h: 450 };
+const mk = (cap, fn, w = 800, h = 500, cls = '') => { const f = document.createElement('figure'); const c = document.createElement('canvas'); c.width = w; c.height = h; if (cls) c.className = cls; fn(c.getContext('2d')); const fc = document.createElement('figcaption'); fc.textContent = cap; f.append(c, fc); return f; };
+const sec = (t) => { const h = document.createElement('h2'); h.textContent = t; out.append(h); const r = document.createElement('div'); r.className = 'row'; out.append(r); return r; };
+const scene = (r, cap, id, st, view = 'normal') => r.append(mk(cap, (ctx) => drawTrapScene(ctx, id, st, view, BOX)));
+const P = Math.PI;
+const SC = {
+  snare: [
+    ['K0 start', { K: 0, step: 1 }],
+    ['K1 stake 2/3, bend .6', { K: 1, step: 2, stake: 0.67, bend: 0.6 }],
+    ['K2 loop bird, aim', { K: 2, step: 4, stake: 1, bend: 1, aim: 'bird', loop: { x: 0.5, y: 0.5, r: 0.12 }, tight: true, trigger: 0.3 }],
+    ['K3 small + bait', { K: 3, step: 5, stake: 1, bend: 1, aim: 'small', loop: { x: 0.5, y: 0.64, r: 0.08 }, tight: true, trigger: 0.5, set: true, bait: true }],
+    ['sprung', { K: 0, stake: 1, sprung: true, loop: { x: 0.5, y: 0.64, r: 0.08 }, tight: true, drift: 0.4 }],
+  ],
+  deadfall: [
+    ['K0 start', { K: 0 }],
+    ['K1 lifted, 1 part', { K: 1, step: 3, rockLift: 1, parts: ['upright'], bait: true }],
+    ['K2 lifted, 2 parts', { K: 2, step: 3, rockLift: 1, parts: ['upright', 'diagonal'], bait: true }],
+    ['K3 set', { K: 3, step: 4, rockLift: 1, parts: ['upright', 'diagonal', 'bait'], bait: true }],
+    ['sprung', { K: 0, sprung: true }],
+    ['K2 lift .5', { K: 2, step: 2, rockLift: 0.5 }],
+  ],
+  fish_trap: [
+    ['K0', { K: 0, drift: 0, mouthAngle: 2.2 }],
+    ['K1 bait, angle .9', { K: 1, step: 2, bait: true, mouthAngle: 0.9, drift: 3 }],
+    ['K2 right angle, 2 stones, rope .5', { K: 2, step: 3, bait: true, mouthAngle: 0.1, stones: 2, rope: 0.5, drift: 5 }],
+    ['K3 all set', { K: 3, step: 4, bait: true, mouthAngle: 0, stones: 3, rope: 1, drift: 8 }],
+  ],
+  crab_pot: [
+    ['K0', { K: 0, mouthAngle: 2.6, drift: 1 }],
+    ['K1', { K: 1, step: 1, mouthAngle: 1.2, bait: true, drift: 2 }],
+    ['K2 stones 1', { K: 2, step: 3, mouthAngle: 0.15, bait: true, stones: 1, rope: 0.34, drift: 4 }],
+    ['K3 set', { K: 3, step: 4, mouthAngle: 0, bait: true, stones: 3, rope: 1, drift: 6 }],
+  ],
+};
+for (const id of Object.keys(SC)) { const r = sec(id); SC[id].forEach(([c, s]) => scene(r, c, id, s)); }
+for (const t of ['teepee', 'logcabin', 'star']) {
+  const r = sec('firelay ' + t);
+  [[0, 0, 1], [1, 2, 1], [2, 3, 3], [3, 4, 5], [2, 6, 7]].forEach(([K, placed, step]) => scene(r, `K${K} placed ${placed}`, 'firelay', { K, layType: t, placed, step: Math.min(6, placed + 1) }));
+}
+{
+  const r = sec('coconut');
+  [['K0', { K: 0 }], ['K1 husk .4', { K: 1, step: 1, husk: 0.4 }], ['K2 husk .8', { K: 2, step: 1, husk: 0.8 }], ['K2 eye', { K: 2, step: 2, husk: 1 }], ['K3 opened', { K: 3, step: 3, husk: 1, opened: 1 }], ['K3 crack', { K: 3, step: 3, husk: 1, opened: 1, crack: 0.6 }], ['halves K1', { K: 1, husk: 1, halves: true }]]
+    .forEach(([c, s]) => scene(r, c, 'coconut', s));
+}
+{
+  const r = sec('knot');
+  [['K0', { K: 0 }], ['K1 3 wraps', { K: 1, step: 1, wraps: 3 }], ['K2 5 wraps', { K: 2, step: 2, wraps: 5 }], ['K3 5 wraps threaded', { K: 3, step: 3, wraps: 5, threaded: true }], ['6 tight threaded', { K: 0, wraps: 6, threaded: true, tight: true, wet: true }]].forEach(([c, s]) => scene(r, c, 'knot', s));
+}
+{
+  const r = sec('sos');
+  [['K0', { K: 0 }], ['K1 dark 2', { K: 1, color: 'dark', placed: 2 }], ['K2 light 3 (bad)', { K: 2, color: 'light', placed: 3 }], ['K3 seaweed 5', { K: 3, color: 'seaweed', placed: 5, drift: 2 }]].forEach(([c, s]) => scene(r, c, 'sos', s));
+}
+{
+  const r = sec('signal');
+  [['K0', { K: 0 }], ['K1 2', { K: 1, placed: 2 }], ['K2 4, not lit', { K: 2, placed: 4 }], ['K3 lit thin', { K: 3, placed: 4, lit: true, drift: 1 }], ['lit + covered', { K: 0, placed: 4, lit: true, covered: true, drift: 2 }]].forEach(([c, s]) => scene(r, c, 'signal', s));
+}
+{
+  const r = sec('mild view');
+  scene(r, 'snare mild', 'snare', { K: 2, stake: 1, bend: 1 }, 'mild'); scene(r, 'deadfall mild', 'deadfall', { K: 2, rockLift: 1 }, 'mild'); scene(r, 'coconut mild', 'coconut', { K: 3, husk: 1 }, 'mild');
+}
+{
+  const r = sec('mild all (K3)');
+  [['snare', { stake: 1, bend: 1, aim: 'bird', trigger: .5, bait: true }], ['deadfall', { rockLift: 1, parts: ['upright', 'diagonal', 'bait'], bait: true }], ['fish_trap', { stones: 2, mouthAngle: .2, bait: true, rope: .6 }], ['crab_pot', { stones: 2, mouthAngle: .2, bait: true, rope: .6 }], ['firelay', { layType: 'star', placed: 3 }], ['coconut', { husk: .6 }], ['coconut', { husk: 1, opened: 1 }], ['knot', { wraps: 5, threaded: true }], ['sos', { color: 'seaweed', placed: 3 }], ['signal', { placed: 3, lit: true }]]
+    .forEach(([id, s]) => scene(r, id, id, { K: 3, step: 2, ...s }, 'mild'));
+}
+const species = ['goat', 'boar', 'junglefowl', 'seabird', 'rat', 'monitor', 'coconut_crab'];
+for (const kind of ['track', 'scat']) for (const K of [0, 2, 3]) {
+  const r = sec(`cards ${kind} K${K}`);
+  species.forEach((sp, i) => ['fresh', 'half', 'old'].forEach((age, j) => { if (K !== 0 && j !== i % 3) return; r.append(mk(`${sp} ${kind} ${age}`, (ctx) => drawTrackCard(ctx, sp, kind, age, { x: 0, y: 0, w: 360, h: 260 }, { K }), 360, 260, 'card')); }));
+}
+window.GEO = GEO; window.ready = true;
+</script></body></html>

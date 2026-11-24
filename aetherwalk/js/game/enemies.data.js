@@ -1,6 +1,8 @@
 // js/game/enemies.data.js — the Nagi creatures (§5.2). All original. (OPUS-B)
 // attack.kind is the AttackShape kind (§5.3). windup = telegraph length (0.6–1.4 s). No attack without a telegraph.
 // LINE_HALF: the hit band is ±0.32 m so a 0.35 m side step always clears it (§2.5).
+// heavy: blocking it without pushing the shield out breaks your guard (DESIGN_V2 §4.1). chain: after this blow
+// lands, the next attack's windup starts chainGap s later (the husk's sweep → slam invites duck, then parry).
 export const LINE_HALF = 0.32;
 
 export const ENEMY_DEFS = {
@@ -17,7 +19,8 @@ export const ENEMY_DEFS = {
     keep: 1.6, center: 1.0,
     attacks: [
       { id: 'sweep', kind: 'high', windup: 0.9, damage: 4, range: [0, 2.3], arc: 80, cooldown: 1.6 },
-      { id: 'slam', kind: 'line', windup: 1.1, damage: 6, range: [0, 2.6], length: 3.0, cooldown: 1.8 },
+      { id: 'slam', kind: 'line', windup: 1.1, damage: 6, range: [0, 2.6], length: 3.0, cooldown: 1.8, heavy: true },
+      { id: 'sweep2', kind: 'high', windup: 0.9, damage: 4, range: [0, 2.3], arc: 80, cooldown: 2.4, chain: 'slam', chainGap: 0.5 },
     ],
     drops: [{ itemId: 'shard', min: 2, max: 4 }, { itemId: 'apple', min: 1, max: 1, chance: 0.5 }],
   },
@@ -33,7 +36,7 @@ export const ENEMY_DEFS = {
     name: '砂潜り', en: 'Sand Lurker', hp: 16, radius: 0.7, height: 0.9, speed: 2.6, turn: 3,
     keep: 9, center: 0.45, burrows: true,
     attacks: [
-      { id: 'charge', kind: 'line', windup: 1.2, damage: 6, range: [4, 13], extra: 4, chargeSpeed: 10, cooldown: 2.5 },
+      { id: 'charge', kind: 'line', windup: 1.2, damage: 6, range: [4, 13], extra: 4, chargeSpeed: 10, cooldown: 2.5, heavy: true },
     ],
     drops: [{ itemId: 'shard', min: 3, max: 5 }, { itemId: 'bomb', min: 1, max: 1, chance: 0.5 }],
   },
@@ -41,8 +44,8 @@ export const ENEMY_DEFS = {
     name: '霜の番人', en: 'Rime Warden', hp: 40, radius: 0.9, height: 3.0, speed: 1.3, turn: 1.6,
     keep: 2.6, center: 1.6, heavy: true, miniboss: true,
     attacks: [
-      { id: 'beam', kind: 'high', windup: 1.4, damage: 8, range: [0, 9], arc: 70, cooldown: 2.6 },
-      { id: 'quake', kind: 'line', windup: 1.2, damage: 6, range: [0, 8], length: 10, cooldown: 2.4 },
+      { id: 'beam', kind: 'high', windup: 1.4, damage: 8, range: [0, 9], arc: 70, cooldown: 2.6, heavy: true },
+      { id: 'quake', kind: 'line', windup: 1.2, damage: 6, range: [0, 8], length: 10, cooldown: 2.4, heavy: true },
     ],
     drops: [{ itemId: 'shard', min: 10, max: 10 }, { itemId: 'frostberry', min: 1, max: 1 }],
   },
@@ -58,4 +61,8 @@ export const ENEMY_DEFS = {
 };
 
 export const ENEMY_TYPES = Object.keys(ENEMY_DEFS);
+// the counter flow (DESIGN_V2 §4.1; the perfect window itself is items' blockTest, A2): break lengths, the counter
+// multiplier (with tailwind II at most ×3 in all) and its least swing speed, 見切り, the fallback slow moment
+export const BREAK_T = 2.5, BREAK_T_LURKER = 3.5, COUNTER_MUL = 2.5, COUNTER_CAP = 3, COUNTER_SPEED = 3,
+  JUST_DODGE = 0.2, JUST_STAGGER = 1.2, SLOW_SCALE = 0.3, SLOW_T = 0.3;
 export const NOTICE_DAY = 18, NOTICE_NIGHT = 24, LEASH = 40, ACTIVE_R = 60, DESPAWN_R = 80, MAX_ACTIVE = 6, MAX_ATTACKERS = 2;

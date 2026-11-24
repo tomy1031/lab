@@ -72,6 +72,34 @@
   .aw-foot { text-align: center; margin-top: 18px; font-size: 12px; color: var(--dim); }
   .aw-foot button { margin-left: 8px; }
 
+  /* new game / continue (shown only when a save exists) */
+  .aw-start { max-width: 660px; margin: 6px auto 0; }
+  .aw-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+  .aw-choice { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 16px; backdrop-filter: blur(6px); transition: border-color 0.15s, box-shadow 0.15s; }
+  .aw-choice input { accent-color: var(--gold); width: 18px; height: 18px; margin: 4px 0 0; flex: none; cursor: pointer; }
+  .aw-choice input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .aw-choice.is-on { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold), 0 4px 18px rgba(255, 215, 106, 0.18); }
+  .aw-choice-body { display: grid; gap: 2px; min-width: 0; }
+  .aw-choice-body b { font-size: 18px; letter-spacing: 0.08em; color: var(--ink); }
+  .aw-choice.is-on .aw-choice-body b { color: var(--gold); }
+  .aw-choice-body em { font-style: normal; font-size: 11px; letter-spacing: 0.2em; color: var(--dim); }
+  .aw-choice-body small { font-size: 13px; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+  .aw-confirm { margin: 10px auto 0; max-width: 460px; text-align: center; background: rgba(14, 20, 48, 0.92); border: 1px solid #ff3b5c;
+    border-radius: 14px; padding: 14px 16px; }
+  .aw-confirm p { margin: 0 0 10px; font-size: 16px; }
+  .aw-confirm-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .aw-confirm button { font: inherit; font-size: 15px; min-width: 112px; padding: 9px 18px; border-radius: 999px; cursor: pointer; }
+  #aw-confirm-yes { background: #ff3b5c; color: #fffbe8; border: 0; font-weight: 700; }
+  #aw-confirm-no { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .aw-confirm button:focus-visible, .aw-actions button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  #aw-start-note:empty { display: none; }
+  #aw-start-note { margin-top: 8px; color: var(--gold); }
+  @media (max-width: 520px) {
+    .aw-choices { grid-template-columns: 1fr; }
+    .aw-actions button { width: 100%; padding: 13px 18px; font-size: 16px; }
+  }
+
   /* PC preview */
   /* PC hints keep the middle of the view free (x 30–70 %, y 22–62 %: where the vista's subject sits) */
   #aw-hint { position: fixed; left: 50%; top: 76%; transform: translate(-50%, -50%); z-index: 6; display: none;
@@ -108,6 +136,27 @@
       <h2>風渡りの巡礼</h2>
       <p>その場で足踏みすると、世界を歩ける。腕を振れば、剣が振れる。<br>歩いた歩数が、止まった風をもう一度吹かせる。</p>
     </header>
+
+    <section id="aw-start" class="aw-start" hidden aria-label="はじめかた START">
+      <div class="aw-choices" role="radiogroup" aria-label="はじめかた START">
+        <label class="aw-choice" id="aw-choice-continue">
+          <input type="radio" name="aw-start" value="continue" checked>
+          <span class="aw-choice-body"><b>つづきから</b><em>CONTINUE</em><small id="aw-save-summary"></small></span>
+        </label>
+        <label class="aw-choice" id="aw-choice-new">
+          <input type="radio" name="aw-start" value="new">
+          <span class="aw-choice-body"><b>はじめから</b><em>NEW GAME</em><small>記録を消して、目覚めの石舞台から</small></span>
+        </label>
+      </div>
+      <div id="aw-confirm" class="aw-confirm" role="alertdialog" aria-modal="true" aria-labelledby="aw-confirm-q" hidden>
+        <p id="aw-confirm-q">記録を消して、はじめから始めますか？</p>
+        <div class="aw-confirm-btns">
+          <button type="button" id="aw-confirm-yes">はい</button>
+          <button type="button" id="aw-confirm-no">いいえ</button>
+        </div>
+      </div>
+    </section>
+    <div class="aw-note" id="aw-start-note" role="status"></div>
 
     <div class="aw-actions">
       <button id="enter-vr" type="button" disabled>VR をはじめる ENTER VR</button>

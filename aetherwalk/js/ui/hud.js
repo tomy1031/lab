@@ -26,6 +26,12 @@ export function createHud(ctx, S) {
     card(g, 4, 4, W - 8, H - 8, 26);
     const v = S.vitals;
     hearts(g, 22, 18, 36, v.hp, v.maxHp, 8);
+    // hits landing within 2 s of each other (combat.js)
+    if (S.counterT > 0) text(g, '返し！', W - 24, 50, { size: 34, weight: 800, color: C.gold, align: 'right' });
+    else if (S.combo >= 2) {
+      text(g, `×${S.combo}`, W - 96, 50, { size: 34, weight: 800, color: C.gold, align: 'right' });
+      text(g, 'COMBO', W - 24, 48, { size: 15, weight: 700, color: C.ink, align: 'right' });
+    }
     const rows = Math.ceil(v.maxHp / 4) > 8 ? 2 : 1;
     let y = 18 + rows * 37 + 8;
     // tailwind
@@ -100,7 +106,7 @@ export function createHud(ctx, S) {
         const v = S.vitals;
         const sb = `${v.hp}|${v.maxHp}|${Math.round(v.stamina)}|${v.tier}|${S.cadence}`;
         if (showBand && sb !== sigB) { sigB = sb; drawBand(); }
-        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}`;
+        const sf = `${sb}|${S.gait}|${S.stepsToday}|${Math.round(S.kcalToday)}|${S.objective ? S.objective.text : ''}|${Math.round((S.objDist || 0) / 5)}|${Math.round((S.objBearing || 0) * 8)}|${S.trial ? S.trial.label + S.trial.k.toFixed(2) : ''}|${S.boss ? S.boss.k.toFixed(2) + S.boss.phase : ''}|${S.combo >= 2 ? S.combo : 0}|${S.counterT > 0 ? 1 : 0}`;
         if (showFloat && sf !== sigF) { sigF = sf; drawFloat(); }
       }
       if (showFloat) {
@@ -132,8 +138,11 @@ export function createToasts(ctx, S) {
   const TOAST_D = 1.4, TITLE_D = 2.2, TOAST_DOWN = 18 * Math.PI / 180, TITLE_UP = 13 * Math.PI / 180;
   const toast = makePanel(ctx, 1024, 256, 0.5, { renderOrder: 62, depthTest: false });
   const title = makePanel(ctx, 1024, 200, 0.9, { renderOrder: 62, depthTest: false });
-  root.add(toast.mesh, title.mesh);
-  toast.mesh.visible = title.mesh.visible = false;
+  // VR pause board: the game stops while paused, so it sits straight ahead (1.5 m) until resumed
+  const pause = makePanel(ctx, 1024, 300, 0.7, { renderOrder: 63, depthTest: false });
+  root.add(toast.mesh, title.mesh, pause.mesh);
+  toast.mesh.visible = title.mesh.visible = pause.mesh.visible = false;
+  let pauseDrawn = false;
   const _h = new THREE.Vector3(), _f = new THREE.Vector3();
   let curT = null, curTitle = null, gYaw = 0, gPitch = 0, gInit = false;
   const BG = 'rgba(27,36,64,0.8)';
@@ -161,6 +170,16 @@ export function createToasts(ctx, S) {
     if (t.sub) text(g, String(t.sub), W / 2, 178, { size: 50, weight: 500, align: 'center', color: C.gold, maxW: W - 60 });
     title.flush();
   }
+  function drawPause() {
+    const g = pause.g, W = pause.w, H = pause.h;
+    g.clearRect(0, 0, W, H);
+    card(g, 6, 6, W - 12, H - 12, 40, 'rgba(27,36,64,0.92)', C.gold);
+    text(g, '一時停止中', W / 2, 118, { size: 96, weight: 800, align: 'center', color: C.ink, maxW: W - 60 });
+    text(g, 'B ボタンで再開', W / 2, 200, { size: 64, weight: 700, align: 'center', color: C.gold, maxW: W - 60 });
+    text(g, 'PAUSED — PRESS B TO RESUME', W / 2, 262, { size: 40, weight: 500, align: 'center', color: C.ink, maxW: W - 60 });
+    pause.flush();
+    pauseDrawn = true;
+  }
   function place(mesh, dist, dPitch) {
     const p = Math.max(-1.2, Math.min(1.1, gPitch + dPitch));
     _f.set(Math.sin(gYaw) * Math.cos(p), Math.sin(p), -Math.cos(gYaw) * Math.cos(p));
@@ -170,7 +189,7 @@ export function createToasts(ctx, S) {
 
   return {
     toast, title,
-    hideAll() { toast.mesh.visible = false; title.mesh.visible = false; },
+    hideAll() { toast.mesh.visible = false; title.mesh.visible = false; pause.mesh.visible = false; },
     update(dt, vr) {
       // queues (shared with the PC overlay)
       if (curT) { curT.left -= dt * 1000; if (curT.left <= 0) curT = null; }
@@ -197,6 +216,11 @@ export function createToasts(ctx, S) {
         place(toast.mesh, TOAST_D, -TOAST_DOWN);
         toast.mat.opacity = Math.max(0, Math.min(1, curT.left / 300, ((curT.ms || 3000) - curT.left) / 200));
       }
+      // shown whenever the game is paused by the player in VR, even with the HUD hidden
+      const showPause = !!(ctx.paused && ctx.pauseReason === 'user');
+      if (showPause && !pauseDrawn) drawPause();
+      if (showPause && !pause.mesh.visible) { _f.set(0, 0, -1).applyQuaternion(head.quat); _f.y = 0; if (_f.lengthSq() < 1e-6) _f.set(0, 0, -1); _f.normalize(); pause.mesh.position.copy(_h).addScaledVector(_f, 1.5); pause.mesh.lookAt(_h); }
+      pause.mesh.visible = showPause;
       if (title.mesh.visible) {
         place(title.mesh, TITLE_D, TITLE_UP);
         title.mat.opacity = Math.max(0, Math.min(1, ((curTitle.ms || 2400) - curTitle.left) / 300, curTitle.left / 600));

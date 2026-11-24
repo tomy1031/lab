@@ -8,6 +8,8 @@ import { createSteps } from './steps.js';
 import { createLocomotion } from './locomotion.js';
 import { createBody } from './body.js';
 import { createGlide } from './glide.js';
+import { createClimb } from './climb.js';
+import { createGestures } from './gestures.js';
 import { createComfort } from './comfort.js';
 import { createHolsters } from './holsters.js';
 import { createGrab } from './grab.js';
@@ -27,6 +29,7 @@ export async function createPlayer(ctx) {
     speed: 0, cadence: 0, steps: 0, stickSpeed: 0,
     gait: 'idle',
     moving: false, grounded: true, gliding: false, glideTired: false, glideBlend: 0, ducking: false, armsSpread: false,
+    airborne: false, jumping: false, climbing: false, climb: null, noJump: false, mantling: false, climbSpeed: 0,
     lean: 0,
     headHeight: DEFAULT_STAND_HEIGHT, standHeight: DEFAULT_STAND_HEIGHT, armSpan: DEFAULT_STAND_HEIGHT, armSpanSeen: 0,
     center: new THREE.Vector3(),               // play-space centre (rig-local, floor)
@@ -39,17 +42,19 @@ export async function createPlayer(ctx) {
   const steps = createSteps(ctx, P);
   const loco = createLocomotion(ctx, P, steps);
   const body = createBody(ctx, P);
+  const climb = createClimb(ctx, P, body);
   const glide = createGlide(ctx, P);
   const comfort = createComfort(ctx, P);
   const holsters = createHolsters(ctx, P);
-  const grab = createGrab(ctx, P, holsters);
+  const grab = createGrab(ctx, P, holsters, climb);
   const hands = createHands(ctx, P);
   const desktop = createDesktop(ctx, P, holsters);
+  const gestures = createGestures(ctx, P);
 
   P.body.hitTest = body.hitTest;
   P.holsters = { slotPos: holsters.slotPos, handIn: holsters.handIn, slotLocal: holsters.slotLocal, contentOf: holsters.contentOf };
   P.steps_ = steps;                     // internals for debugging
-  P.loco = loco; P.bodySim = body; P.grab = grab; P.desktop = desktop; P.comfort = comfort; P.hands = hands;
+  P.loco = loco; P.bodySim = body; P.grab = grab; P.desktop = desktop; P.comfort = comfort; P.hands = hands; P.climbing_ = climb;
 
   P.turn = (deg) => loco.turn((deg || 0) * DEG);
   P.recenter = () => {
@@ -89,6 +94,8 @@ export async function createPlayer(ctx) {
     ctx.events.emit('player:teleport', { x, z, yaw: Number(yawDeg) || 0 });
   };
   P.addImpulse = (vx, vz) => body.addImpulse(vx, vz);
+  /** jump now → true; false when it can't (in the air it is remembered for 0.1 s, so it fires on landing) */
+  P.jump = () => body.jump();
   P.setEnabled = (b) => { P.enabled = !!b; };
   P.simulateSteps = (spm, seconds) => steps.simulate(spm, seconds);
 
@@ -96,9 +103,12 @@ export async function createPlayer(ctx) {
   P.update = (dt) => {
     // integrate real time (sub-stepped) so speed follows real cadence even at a low frame rate
     const edt = dt > 0 ? Math.max(dt, ctx.clock.real || dt) : 0;
+    // A (right controller) / Space: jump (DESIGN_V2 §3); on a wall, A jumps away from it (climb.js)
+    if (edt > 0 && P.enabled && !P.climbing && input.justPressed('a')) body.jump();
     steps.update(edt);
     glide.update(edt);
     loco.update(edt);
+    climb.update(edt);                                  // a gripped wall moves the rig (before the body)
     if (edt <= 0) body.update(0);
     else { const n = Math.ceil(edt / 0.05 - 1e-6); for (let i = 0; i < n; i++) body.update(edt / n); }
     dt = edt;
@@ -113,6 +123,9 @@ export async function createPlayer(ctx) {
     P.ducking = P.headHeight < P.standHeight * duckK;
     if (P.ducking !== prevDuck) { prevDuck = P.ducking; ctx.events.emit('player:duck', { down: P.ducking }); }
     P.body.headPos.copy(head.pos);
+    P.body.headPos.y += body.B.viewDrop;               // (jumpView 'soft' only lowers what the eyes see)
+    P.airborne = !P.grounded && !P.climbing;
+    P.jumping = body.B.jumped && !P.grounded;
     // chest: 0.3 m under the eyes, a little behind (scaled when ducking)
     _q.setFromAxisAngle(_hw.set(0, 1, 0), -(P.bodyYawLocal + P.turnYaw));
     P.body.chestPos.set(0, -0.32 * (P.headHeight / Math.max(1, P.standHeight)), 0.06).applyQuaternion(_q).add(head.pos);
@@ -124,6 +137,7 @@ export async function createPlayer(ctx) {
     holsters.update(dt);
     grab.update(dt);
     hands.update(dt);
+    gestures.update(dt);
 
     // region changes (checked 4× a second)
     regionT -= dt;
@@ -143,9 +157,26 @@ export async function createPlayer(ctx) {
     // the first region of the session is announced once everyone listens
     try { lastRegion = ctx.world.regionAt(P.pos.x, P.pos.z); } catch { lastRegion = 'meadow'; }
   };
-  // B button (VR) pauses / resumes (§3.1); runs after input even while paused
-  ctx.loop?.addHook?.('pause-button', () => {
-    if (ctx.flags.xr && input.justPressed('b')) ctx.setPaused(!ctx.paused, 'user');
+  // B button (VR) pauses / resumes (§3.1); runs after input even while paused.
+  // Pausing needs B held for PAUSE_HOLD s: a thumb resting on B while gripping a sword must not freeze the game
+  // (playtest: 「剣を取ったらうごけなくなりました」). Resuming is a single press.
+  const PAUSE_HOLD = 0.9;
+  let bHeld = 0, bLatched = false;
+  ctx.loop?.addHook?.('pause-button', (dt) => {
+    if (!ctx.flags.xr) { bHeld = 0; bLatched = false; return; }
+    if (ctx.paused && ctx.pauseReason === 'user') {
+      if (input.justPressed('b') && !bLatched) ctx.setPaused(false, 'user');
+      if (!input.pressed('b')) bLatched = false;
+      bHeld = 0;
+      return;
+    }
+    if (input.pressed('b') && !bLatched) {
+      bHeld += dt;
+      if (bHeld >= PAUSE_HOLD) { bLatched = true; bHeld = 0; ctx.setPaused(true, 'user'); }
+    } else {
+      bHeld = 0;
+      if (!input.pressed('b')) bLatched = false;
+    }
   });
   // xr start: learn the real standing height again and recentre on the headset
   ctx.events.on('xr:start', () => { steps.reset(); P.center.set(0, 0, 0); P.turnYaw = -ctx.rig.rotation.y; });

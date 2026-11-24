@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>handwork-art dev</title>
+<style>body{margin:0;background:#f7f0dd;font:14px sans-serif;color:#2a2923}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script type="module">
+import { drawProp, drawHand, drawSpark, propBounds } from '../js/ui/handwork-art.js';
+const E = (id, label, sc, st = {}) => ({ id, label, sc, st });
+const items = [
+  E('lap', 'lap', .8), E('core', 'core chert chips0', 1.2, { material: 'chert' }), E('core', 'core chert chips3', 1.2, { material: 'chert', chips: 3 }),
+  E('core', 'core obsidian chips6 cracked', 1.2, { material: 'obsidian', chips: 6, cracked: true }), E('core', 'core stone chips2', 1.2, { material: 'stone', chips: 2 }),
+  E('hammerstone', 'hammerstone', 1.5, {}), E('hammerstone', 'hammerstone raised', 1.5, { raised: 1 }),
+  E('flake', 'flake chert', 1.3, { material: 'chert' }), E('flake', 'flake obsidian .6', 1.3, { material: 'obsidian', size: .6 }),
+  E('whetstone', 'whetstone wet0', .8, { wet: 0 }), E('whetstone', 'whetstone wet1', .8, { wet: 1 }),
+  E('blade', 'blade knife shine0', .8, { kind: 'knife' }), E('blade', 'blade knife shine1', .8, { kind: 'knife', shine: 1 }),
+  E('blade', 'blade axe', .8, { kind: 'axe', shine: .5 }), E('blade', 'blade stone', .8, { kind: 'stone' }), E('blade', 'blade bone', .8, { kind: 'bone', shine: .5 }), E('blade', 'blade shell', .8, { kind: 'shell', shine: .8 }),
+  E('stick', 'stick plain', .85, {}), E('stick', 'stick taper.7 straight.5', .85, { taper: .7, straight: .5 }), E('stick', 'stick notch.8', .85, { notch: .8 }),
+  E('stick', 'stick taper1 charred.8', .85, { taper: 1, charred: .8 }),
+  E('cord', 'cord p0', .8, { progress: 0 }), E('cord', 'cord p.5', .8, { progress: .5 }), E('cord', 'cord p.5 loose', .8, { progress: .5, loose: true }), E('cord', 'cord p1 tight', .8, { progress: 1, tight: true }),
+  E('lashing', 'lashing cross 0', .8, { wraps: 0 }), E('lashing', 'lashing cross 5 loose', .8, { wraps: 5 }), E('lashing', 'lashing cross 8 tight', .8, { wraps: 8, tight: true }),
+  E('lashing', 'lashing haft 6 tight', .8, { wraps: 6, tight: true, variant: 'haft' }),
+  E('weave', 'weave 0/8', .8, { rows: 0, total: 8 }), E('weave', 'weave 4/8 loose[2]', .8, { rows: 4, total: 8, loose: [2], material: 'vine' }), E('weave', 'weave 8/8 fiber', .8, { rows: 8, total: 8, material: 'fiber' }),
+  E('bowl', 'bowl paste mix0', 1, { mix: 0, content: 'paste' }), E('bowl', 'bowl paste mix.6 pestle', 1, { mix: .6, content: 'paste', pestle: true }), E('bowl', 'bowl clay mix1', 1, { mix: 1, content: 'clay' }),
+  E('bowl', 'bowl powder .3 pestle', 1, { mix: .3, content: 'powder', pestle: true }), E('bowl', 'bowl water', 1, { content: 'water', mix: .5 }),
+  E('clay', 'clay 0', 1, {}), E('clay', 'clay 1', 1, { coils: 1 }), E('clay', 'clay 3 rough', 1, { coils: 3, smooth: 0 }), E('clay', 'clay 3 smooth', 1, { coils: 3, smooth: 1 }),
+  E('fire', 'fire .2', .8, { power: .2 }), E('fire', 'fire .6', .8, { power: .6 }), E('fire', 'fire 1', .8, { power: 1 }),
+  E('skewer', 'skewer fish d0', .8, { food: 'fish', doneness: 0 }), E('skewer', 'fish d.7', .8, { food: 'fish', doneness: .7, side: 1 }), E('skewer', 'fish d1', .8, { food: 'fish', doneness: 1 }), E('skewer', 'fish d1.3', .8, { food: 'fish', doneness: 1.3 }),
+  E('skewer', 'meat d.5', .8, { food: 'meat', doneness: .5 }), E('skewer', 'crab d.8', .8, { food: 'crab', doneness: .8 }), E('skewer', 'root d.9', .8, { food: 'root', doneness: .9 }), E('skewer', 'meat d1.2', .8, { food: 'meat', doneness: 1.2 }),
+  E('pot', 'pot water b0', .9, { content: 'water' }), E('pot', 'pot water b.5 steam.5', .9, { bubbles: .5, steam: .5 }), E('pot', 'pot stew b1 steam1', .9, { bubbles: 1, steam: 1, content: 'stew' }), E('pot', 'pot pitch b.7', .9, { bubbles: .7, steam: .3, content: 'pitch' }), E('pot', 'pot tea', .9, { content: 'tea', bubbles: .2 }),
+  E('filter', 'filter empty 4 slots', .7, { layers: [], slots: 4 }), E('filter', 'filter cloth,charcoal 2 slots', .7, { layers: ['cloth', 'charcoal'], slots: 2 }),
+  E('filter', 'filter full water', .7, { layers: ['cloth', 'charcoal', 'sand', 'gravel'], slots: 0, water: 1 }),
+  ...['cloth', 'charcoal', 'sand', 'gravel', 'leaf', 'stone', 'stick', 'cord', 'blade', 'feather', 'meat', 'herb', 'fiber'].map((k, i) => E('token', 'token ' + k + (i === 1 ? ' held' : ''), 1.5, { kind: k, held: i === 1 })),
+  E('slot', 'slot idle', 1.2, {}), E('slot', 'slot active', 1.2, { active: true }), E('slot', 'slot filled', 1.2, { filled: true, w: 120, h: 70 }),
+  E('arm', 'arm wraps0', .8, { wraps: 0 }), E('arm', 'arm 3 loose', .8, { wraps: 3, tight: .1 }), E('arm', 'arm 6 tight', .8, { wraps: 6, tight: 1 }),
+  E('stake', 'stake depth0', .85, { depth: 0 }), E('stake', 'stake depth.6', .85, { depth: .6 }), E('stake', 'stake depth1', .85, { depth: 1 }),
+  E('mallet', 'mallet', .9, {}), E('mallet', 'mallet raised', .9, { raised: 1 }),
+  E('ring', 'ring r60 r0 30', 1, { r: 60, r0: 30 }), E('ring', 'ring good', 1, { r: 34, r0: 30, good: true }),
+  E('path', 'path done .5', 1, { pts: [[20, 40], [80, 20], [140, 70], [230, 40], [300, 90]], done: .5 }),
+  E('arrow', 'arrow', 1, { from: [40, 70], to: [280, 40] }),
+];
+const COLS = 5, CW = 330, CH = 250;
+const handRows = [['open', 'right'], ['grip', 'right'], ['pinch', 'left'], ['point', 'right'], ['fist', 'left']];
+const holds = [['grip', 'hammerstone', {}], ['grip', 'blade', { kind: 'knife' }], ['grip', 'stick', {}], ['grip', 'mallet', {}], ['pinch', 'token', { kind: 'leaf' }], ['pinch', 'stick', {}], ['pinch', 'blade', { kind: 'stone' }]];
+const rows = Math.ceil(items.length / COLS), H0 = rows * CH, total = H0 + 300 + 300 + 110;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d'), dpr = 1;
+cv.width = COLS * CW; cv.height = total; cv.style.width = cv.width + 'px';
+window.__ready = true;
+function frame(ms) {
+  const t = ms / 1000; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = '#f7f0dd'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+  items.forEach((it, i) => {
+    const cx = (i % COLS) * CW, cy = Math.floor(i / COLS) * CH;
+    ctx.strokeStyle = 'rgba(42,41,35,.15)'; ctx.strokeRect(cx + 4, cy + 4, CW - 8, CH - 8);
+    ctx.fillStyle = '#5d5849'; ctx.fillText(it.label, cx + CW / 2, cy + 20);
+    if (it.id === 'path' || it.id === 'arrow') { ctx.save(); ctx.translate(cx + 15, cy + 60); drawProp(ctx, it.id, { ...it.st, t }); ctx.restore(); }
+    else if (it.id === 'ring') drawProp(ctx, 'ring', { x: cx + CW / 2, y: cy + CH / 2 + 10, t, ...it.st, r: it.st.good ? it.st.r : 30 + 40 * ((t * .5) % 1) });
+    else drawProp(ctx, it.id, { x: cx + CW / 2, y: cy + CH / 2 + 12, scale: it.sc, t, rot: 0, ...it.st });
+  });
+  // hands row
+  let y0 = H0; ctx.fillStyle = '#5d5849'; ctx.fillText('hands (open, grip, pinch/left, point, fist/left) scale 1', COLS * CW / 2, y0 + 16);
+  handRows.forEach(([pose, side], i) => drawHand(ctx, { x: 100 + i * 200, y: y0 + 130, pose, side, scale: 1.1, rot: 0 }));
+  ctx.fillText('holding: grip hammerstone/knife/stick/mallet, pinch token/stick/blade', COLS * CW / 2, y0 + 300 + 20);
+  holds.forEach(([pose, h, hs], i) => drawHand(ctx, { x: 80 + i * 220, y: y0 + 300 + 140, pose, side: i % 2 ? 'left' : 'right', scale: 1, holding: h, holdState: hs }));
+  const ks = ['dust', 'chip', 'spark', 'shaving', 'water', 'steam', 'bubble', 'ember', 'leaf'];
+  ctx.fillText('sparks: ' + ks.join(' '), COLS * CW / 2, total - 75);
+  ks.forEach((k, i) => drawSpark(ctx, 90 + i * 170, total - 35, 16 + Math.sin(t * 3 + i) * 3, k));
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

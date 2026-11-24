@@ -27,7 +27,8 @@ export function createGlide(ctx, P) {
 
     let above = 0;
     try { above = P.pos.y - ctx.world.groundAt(P.pos.x, P.pos.z, P.pos.y - 0.7); } catch { above = 0; }
-    const want = !P.grounded && P.abilities.glide && P.armsSpread && (P.gliding || above > 1.0) && P.enabled;
+    // after a jump the cloak opens at any height (DESIGN_V2 §3.2): a short slide on flat ground
+    const want = !P.grounded && !P.climbing && P.abilities.glide && P.armsSpread && (P.gliding || above > 1.0 || P.jumping) && P.enabled;
     if (want !== P.gliding) {
       P.gliding = want;
       if (!want) P.glideTired = false;

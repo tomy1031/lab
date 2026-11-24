@@ -16,6 +16,7 @@ export const SETTING_DEFS = {
   stickMove: { def: false, label: 'スティックで歩く', en: 'STICK MOVE' },
   seated: { def: false, label: '座って遊ぶ', en: 'SEATED' },
   duckDepth: { def: 'normal', options: ['normal', 'shallow'], label: 'しゃがみの深さ', en: 'DUCK DEPTH', names: { normal: 'ふつう', shallow: '浅い' } },
+  combatFreq: { def: 'normal', options: ['low', 'normal', 'high'], label: '戦いの頻度', en: 'COMBAT', names: { low: '少なめ', normal: 'ふつう', high: '多め' } },
   edgeGuard: { def: true, label: '崖の縁で止まる', en: 'EDGE GUARD' },
   knockback: { def: true, label: 'ノックバック', en: 'KNOCKBACK' },
   gripToggle: { def: false, label: 'グリップ切り替え式', en: 'GRIP TOGGLE' },
@@ -28,6 +29,13 @@ export const SETTING_DEFS = {
   volMusic: { def: 0.7, min: 0, max: 1, step: 0.05, label: '音楽', en: 'MUSIC' },
   runBeat: { def: true, label: '走りの拍', en: 'RUN BEAT' },
   haptics: { def: 1.0, min: 0, max: 1, step: 0.1, label: '振動', en: 'HAPTICS' },
+  // v2 (DESIGN_V2 §5.3)
+  jumpView: { def: 'full', options: ['full', 'soft'], label: 'ジャンプの視点', en: 'JUMP VIEW', names: { full: 'そのまま', soft: '控えめ' } },
+  gestureJump: { def: false, label: '身ぶりジャンプ', en: 'GESTURE JUMP' },
+  climbAssist: { def: false, label: '登りアシスト', en: 'CLIMB ASSIST' },
+  parryWindow: { def: 'normal', options: ['normal', 'wide'], label: 'ジャスト受けの幅', en: 'PARRY WINDOW', names: { normal: 'ふつう', wide: '広い' } },
+  dash: { def: false, label: '風の身かわし', en: 'WIND DASH' },
+  talkGesture: { def: 'wave+gaze', options: ['wave+gaze', 'button'], label: '話しかけ方', en: 'TALK', names: { 'wave+gaze': '手を振る・見つめる', button: 'ボタン' } },
 };
 
 export function createSettings({ events = null, fresh = false } = {}) {

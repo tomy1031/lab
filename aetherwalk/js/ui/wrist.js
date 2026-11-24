@@ -10,10 +10,12 @@ const PAGES = [
   { id: 'map', name: '地図', en: 'MAP' }, { id: 'bag', name: '持ちもの', en: 'BAG' }, { id: 'stats', name: '記録', en: 'STATS' },
   { id: 'settings', name: '設定', en: 'SETTINGS' }, { id: 'rest', name: '休む', en: 'REST' },
 ];
+// pages opened from the world, not from the tab row: Gando's tempering and drill (DESIGN_V2 §1.2)
+const HIDDEN_PAGES = ['smith'];
 const SLOTS = ['backR', 'backL', 'hipR', 'hipL', 'chest', 'belt'];
 const SLOT_NAMES = { backR: '右肩', backL: '左肩', hipR: '右腰', hipL: '左腰', chest: '胸', belt: '腹' };
 const SETTING_ORDER = ['turnMode', 'snapAngle', 'smoothTurnSpeed', 'vignette', 'moveDirection', 'stepSensitivity', 'strideScale', 'armAssist',
-  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
+  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'combatFreq', 'parryWindow', 'talkGesture', 'jumpView', 'climbAssist', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
   'weightKg', 'volMaster', 'volSfx', 'volMusic', 'runBeat', 'haptics'];
 const STEP_OVERRIDE = { strideScale: 0.1, weightKg: 5, volMaster: 0.1, volSfx: 0.1, volMusic: 0.1, haptics: 0.25, smoothTurnSpeed: 30 };
 const FALLBACK_DEFS = {
@@ -27,6 +29,7 @@ const FALLBACK_DEFS = {
   quality: { options: ['auto', 'low', 'mid', 'high'], label: '画質', en: 'QUALITY' }, weightKg: { min: 25, max: 200, label: '体重 kg', en: 'WEIGHT' },
   volMaster: { min: 0, max: 1, label: '音量', en: 'VOLUME' }, volSfx: { min: 0, max: 1, label: '効果音', en: 'SFX' }, volMusic: { min: 0, max: 1, label: '音楽', en: 'MUSIC' },
   runBeat: { label: '走りの拍', en: 'RUN BEAT' }, haptics: { min: 0, max: 1, label: '振動', en: 'HAPTICS' },
+  combatFreq: { options: ['low', 'normal', 'high'], label: '戦いの頻度', en: 'COMBAT', names: { low: '少なめ', normal: 'ふつう', high: '多め' } },
 };
 const VALUE_NAMES = { snap: 'スナップ', smooth: 'スムーズ', head: '頭', hands: '手', mid: '中', low: '低', high: '高', normal: 'ふつう', shallow: '浅い',
   right: '右', left: '左', float: 'うく板', wrist: '腕輪', auto: '自動' };
@@ -69,6 +72,7 @@ export function createWrist(ctx, S, ui) {
       else if (page === 'stats') drawStats(g);
       else if (page === 'settings') drawSettings(g);
       else if (page === 'rest') drawRest(g);
+      else if (page === 'smith') drawSmith(g);
     } catch (e) { text(g, '…', 30, 140, { size: 24 }); }
     if (msg && msgT > 0) {
       card(g, 60, H - 74, W - 120, 52, 16, 'rgba(14,20,48,0.92)', C.gold);
@@ -188,8 +192,15 @@ export function createWrist(ctx, S, ui) {
       if (x.v) text(g, x.v >= 1000 ? `${(x.v / 1000).toFixed(1)}k` : `${x.v}`, bx + 25, 494 - bh, { size: 14, align: 'center', color: C.ink });
     });
     text(g, `累計 ${st.steps.toLocaleString()} 歩・${st.distance.toFixed(1)} km・${Math.round(st.kcal)} kcal・${Object.keys(st.days).length} 日`, 24, 560, { size: 18, color: C.ink, maxW: 600 });
-    if (game.quest && game.quest.stage === 0) btn(24, 574, 290, 54, 'チュートリアルを飛ばす', () => { game.quest.skipTutorial(); ui.closeMenu(); }, { sub: 'SKIP TUTORIAL', size: 20 });
-    btn(330, 574, 290, 54, '今日はここまで', () => { ui.startCooldown(); }, { sub: 'COOL DOWN', size: 20 });
+    if (game.quest && game.quest.stage === 0) btn(24, 574, 190, 54, 'チュートリアルを飛ばす', () => { game.quest.skipTutorial(); ui.closeMenu(); }, { sub: 'SKIP TUTORIAL', size: 16 });
+    btn(225, 574, 190, 54, '今日はここまで', () => { ui.startCooldown(); }, { sub: 'COOL DOWN', size: 18 });
+    // back to the title (はじめから／つづきから): the game is saved first; leaves XR on the way (core/landing)
+    const app = ctx.app;
+    if (app && typeof app.toTitle === 'function') btn(426, 574, 190, 54, 'タイトルへ戻る', () => {
+      try { game.save && game.save(); } catch (e) { /* saved on the next autosave */ }
+      ui.closeMenu();
+      try { const r = app.toTitle(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* stay */ }
+    }, { sub: 'BACK TO TITLE', size: 18 });
   }
 
   function settingDefs() { return (ctx.settings && ctx.settings.defs) || FALLBACK_DEFS; }
@@ -225,8 +236,10 @@ export function createWrist(ctx, S, ui) {
         btn(400, y + 3, 212, 32, fmt(k, v, d), () => cycle(k, d), { size: 18, r: 10, color: C.gold });
       }
     });
-    btn(24, 580, 290, 50, settingsCol ? '← 前のページ' : '次のページ →', () => { settingsCol = settingsCol ? 0 : 1; dirty = true; }, { size: 20 });
-    text(g, `${settingsCol + 1} / 2`, 470, 612, { size: 20, color: C.dim, align: 'center' });
+    const pages = Math.max(1, Math.ceil(keys.length / per));
+    if (settingsCol >= pages) settingsCol = 0;
+    btn(24, 580, 290, 50, settingsCol === pages - 1 ? '← 最初のページ' : '次のページ →', () => { settingsCol = (settingsCol + 1) % pages; dirty = true; }, { size: 20 });
+    text(g, `${settingsCol + 1} / ${pages}`, 470, 612, { size: 20, color: C.dim, align: 'center' });
   }
   function cycle(k, d) {
     const set = ctx.settings, v = set.get(k);
@@ -288,14 +301,46 @@ export function createWrist(ctx, S, ui) {
     };
     row(326, 'arrow', '矢 ×5', 'ARROWS', 20, () => inv.add('arrow', 5) > 0 || false, '矢を 5 本そろえた');
     row(396, 'bomb', '爆ぜ実 ×2', 'BURSTFRUIT', 30, () => inv.add('bomb', 2) > 0 || false, '爆ぜ実を 2 つ手に入れた');
+    text(g, '剣と槍の鍛え直しは、野営地のガンド爺に話しかけて', 24, 500, { size: 18, color: C.dim, maxW: 592 });
+    text(g, 'TEMPERING: TALK TO OLD GANDO AT THE MEADOW CAMP', 24, 528, { size: 14, color: C.dim, weight: 500, maxW: 592 });
+  }
+
+  // ── Gando's page (opened by talking to him): tempering and the shield drill ──
+  function drawSmith(g) {
+    const game = G();
+    if (!game) return;
+    const inv = game.inventory;
+    text(g, 'ガンド爺の鍛え直し', 24, 112, { size: 26, color: C.fireA });
+    text(g, `手持ちのかけら ${inv.count('shard')}`, 616, 112, { size: 18, color: C.gold, align: 'right' });
+    const buy = (cost, fn, okMsg) => () => {
+      if (inv.count('shard') < cost) { say('かけらが足りない NOT ENOUGH SHARDS'); return; }
+      if (fn() === false) return;
+      inv.remove('shard', cost); say(okMsg);
+    };
+    const row = (y, icon, label, sub, cost, fn, okMsg, disabled) => {
+      card(g, 24, y, 592, 64, 14, 'rgba(14,20,48,0.6)');
+      drawIcon(g, icon, 62, y + 32, 44);
+      text(g, label, 100, y + 30, { size: 21, color: disabled ? C.dim : C.ink });
+      text(g, sub, 100, y + 52, { size: 14, color: C.dim, weight: 500 });
+      if (!disabled) btn(470, y + 8, 136, 48, `◆ ${cost}`, buy(cost, fn, okMsg), { size: 20, color: C.gold });
+      else text(g, '—', 538, y + 40, { size: 20, align: 'center', color: C.dim });
+    };
     const ts = inv.temper.sword | 0, tp = inv.temper.spear | 0;
     const cost = (n) => [60, 90, 120][n];
-    row(466, 'sword', `剣を鍛え直す（+1）  ${ts}/3`, 'TEMPER BLADE', cost(ts), () => { inv.temper.sword++; ctx.events.emit('temper', { itemId: 'sword', level: inv.temper.sword }); }, '剣が鋭くなった', ts >= 3 || !inv.has('sword'));
-    row(536, 'spear', `槍を鍛え直す（+1）  ${tp}/3`, 'TEMPER SPEAR', cost(tp), () => { inv.temper.spear++; ctx.events.emit('temper', { itemId: 'spear', level: inv.temper.spear }); }, '槍が鋭くなった', tp >= 3 || !inv.has('spear'));
+    row(140, 'sword', `剣を鍛え直す（+1）  ${ts}/3`, 'TEMPER BLADE', cost(ts), () => { inv.temper.sword++; ctx.events.emit('temper', { itemId: 'sword', level: inv.temper.sword }); }, '剣が鋭くなった', ts >= 3 || !inv.has('sword'));
+    row(214, 'spear', `槍を鍛え直す（+1）  ${tp}/3`, 'TEMPER SPEAR', cost(tp), () => { inv.temper.spear++; ctx.events.emit('temper', { itemId: 'spear', level: inv.temper.spear }); }, '槍が鋭くなった', tp >= 3 || !inv.has('spear'));
+    // the shield drill (§4.6): the dummy beside him
+    const D = game.drill;
+    text(g, '盾の稽古  SHIELD DRILL', 24, 330, { size: 22, color: C.gold });
+    text(g, '木人がゆっくり打ってくる。当たる瞬間に盾を押し出す。', 24, 362, { size: 18, color: C.ink, maxW: 592 });
+    text(g, '3 回ジャストで崩れたら、返し斬り。ごほうび：かけら 10', 24, 390, { size: 18, color: C.ink, maxW: 592 });
+    if (D && D.ready()) btn(24, 414, 592, 64, D.active ? '稽古をやめる' : '盾の稽古をはじめる', () => { if (D.active) D.stop(false); else D.start(game.npcs && game.npcs.byId.gando ? game.npcs.byId.gando.folk.pos : null); ui.closeMenu(); }, { sub: D.active ? 'STOP THE DRILL' : 'START THE DRILL', size: 24, color: C.gold });
+    else text(g, '剣と盾を持ってくれば、稽古をつけてもらえる', 24, 450, { size: 18, color: C.dim, maxW: 592 });
+    btn(24, 574, 592, 54, '閉じる', () => ui.closeMenu(), { sub: 'CLOSE', size: 20 });
   }
 
   function setPage(p) {
-    if (!PAGES.some((x) => x.id === p)) p = 'map';
+    if (!PAGES.some((x) => x.id === p) && !HIDDEN_PAGES.includes(p)) p = 'map';
     page = p; sel = null; dirty = true;
     ctx.events.emit('ui:menu', { open, page });
   }
@@ -315,7 +360,7 @@ export function createWrist(ctx, S, ui) {
     panel,
     openMenu(p, opts = {}) {
       if (!opts.force && !canOpen()) return false;
-      if (p) page = PAGES.some((x) => x.id === p) ? p : 'map';
+      if (p) page = PAGES.some((x) => x.id === p) || HIDDEN_PAGES.includes(p) ? p : 'map';
       open = true; dirty = true; sel = null; byGesture = !!opts.gesture;
       map.invalidate();
       document.body.classList.add('awui-menu-open');
