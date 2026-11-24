@@ -47,6 +47,13 @@ on:
       - 'island-survival/img/**'
       - 'island-survival/assets/**'
       - 'island-survival/docs/preview.jpg'
+      - 'sky-atlas/index.html'
+      - 'sky-atlas/manifest.webmanifest'
+      - 'sky-atlas/sw.js'
+      - 'sky-atlas/js/**'
+      - 'sky-atlas/img/**'
+      - 'sky-atlas/tools/bundle.mjs'
+      - 'sky-atlas/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
