@@ -34,6 +34,15 @@ PC では **PC で遊ぶ**（後ろから見た視点）。**デモを見る**�
 | メニュー | B または Y（ゲームは止まる）。レーザーで指してトリガー | M / Esc、右上の「メニュー」 |
 | 向きのリセット | スティックを押し込んで 1 秒（いま向いている方がネット） | — |
 
+## オフライン
+
+公開版（https://tomy1031.github.io/lab/rally-court/ ）は、一度開けば次からは**ネットなしでも遊べます**（PWA）。
+three.js は `vendor/` に同梱し、サービスワーカー（`sw.js`）が最初に開いたときにゲームのファイルを全部（約 2.5 MB）保存します。
+メニューに「✓ オフラインでも遊べます」と出れば保存ずみです。Quest のブラウザでも同じで、アプリとして追加もできます。
+新しい版が出ると「新しいバージョンに更新」ボタンが出ます。開発用のサーバー（`node tests/serve.mjs`）ではサービスワーカーは動きません。
+公開用のコピーは `npm run build`（`node tools/bundle.mjs dist`）で作り、`node tests/offline.mjs` で
+「保存 → ネットとサーバーを切る → 開き直す → デモの試合が進む」を確かめます。
+
 ## モード
 
 - **試合**：CPU と 1 セット（設定で 3 セット、4 ゲームのショートセット、ノーアドも）。6-6 でタイブレーク（7 点先取、2 点差）。
@@ -110,6 +119,8 @@ node tests/xr.mjs      # Meta のエミュレーター（IWER、Quest 3）：VR 
 | `js/world.js` `ballview.js` `avatar.js` `hud.js` `audio.js` | スタジアム、ボール（影・軌跡・跡）、CPU の人、スコアボード、音（すべて合成） |
 | `js/config.js` `settings.js` `menu.js` `vrmenu.js` | 設定項目と初期値、保存、PC と VR のメニュー |
 | `js/desktop.js` `input.js` `main.js` | PC の操作、入力、起動 |
+| `js/pwa.js` `sw.js` `manifest.webmanifest` | オフライン（PWA）：サービスワーカーの登録と更新ボタン、ファイルの保存、アプリとしての名前とアイコン |
+| `tools/bundle.mjs` `tools/icons.mjs` `vendor/` | 公開用のコピー（版の番号と保存するファイルの一覧を入れる）、アイコンを描く、同梱の three.js |
 
 ## 注意
 

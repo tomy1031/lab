@@ -2,15 +2,18 @@
   "name": "rally-court",
   "private": true,
   "type": "module",
-  "description": "RALLY COURT — realistic VR tennis for Meta Quest (three.js / WebXR, no build step)",
+  "description": "RALLY COURT — realistic VR tennis for Meta Quest (three.js / WebXR, no build step; works offline once published)",
   "scripts": {
     "serve": "node tests/serve.mjs 8080",
-    "test": "node tests/unit.mjs && node tests/sim.mjs && node tests/racket.mjs && node tests/smoke.mjs && node tests/xr.mjs",
+    "test": "node tests/unit.mjs && node tests/sim.mjs && node tests/racket.mjs && node tests/smoke.mjs && node tests/xr.mjs && node tests/offline.mjs",
     "test:sim": "node tests/sim.mjs",
     "test:racket": "node tests/racket.mjs",
     "test:unit": "node tests/unit.mjs",
     "test:smoke": "node tests/smoke.mjs",
-    "test:xr": "node tests/xr.mjs"
+    "test:xr": "node tests/xr.mjs",
+    "test:offline": "node tests/offline.mjs",
+    "build": "node tools/bundle.mjs dist",
+    "icons": "node tools/icons.mjs"
   },
   "devDependencies": {
     "iwer": "2.7.0",
