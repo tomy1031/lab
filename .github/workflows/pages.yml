@@ -58,6 +58,13 @@ on:
       - 'sky-atlas/img/**'
       - 'sky-atlas/tools/bundle.mjs'
       - 'sky-atlas/docs/preview.jpg'
+      - 'anakata/index.html'
+      - 'anakata/manifest.webmanifest'
+      - 'anakata/sw.js'
+      - 'anakata/js/**'
+      - 'anakata/img/**'
+      - 'anakata/docs/preview.jpg'
+      - 'anakata/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
