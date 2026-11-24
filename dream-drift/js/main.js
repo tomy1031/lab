@@ -10,7 +10,8 @@ import { buildWorld } from './track/world.js';
 import { Race, POINTS } from './race/race.js';
 import { RaceCamera } from './race/camera.js';
 import { SPEED_CLASSES } from './race/kart.js';
-import { CHARACTERS, charById, renderPortraits } from './race/characters.js';
+import { CHARACTERS, charById, renderPortraits, renderKartShots } from './race/characters.js';
+import { CharPreview } from './ui/charpreview.js';
 import { COURSES, CUPS, cupOf, TITLE_MUSIC } from './courses/index.js';
 import { Hud, fmtTime } from './ui/hud.js';
 import { Nav } from './ui/nav.js';
@@ -53,7 +54,7 @@ const xr = new XRManager(renderer);
 const vrInput = new VRInput(renderer);
 let cockpit = null;
 let tuner = null; // the handling tuning panel (test drive / pause menu / ?tune)
-let portraits = new Map();
+let portraits = new Map(), kartShots = new Map(), charPreview = null;
 const portraitImgs = new Map();
 let hud = null;
 const inVR = () => xr.presenting;
@@ -73,6 +74,7 @@ let raceSeed = Number(params.get('seed') || Date.now() % 100000);
 const BACK = { 's-control': 's-title', 's-hands': 's-control', 's-setup': 's-control', 's-char': 's-setup', 's-course': 's-char', 's-settings': 's-title' };
 function showScreen(id) {
   for (const s of document.querySelectorAll('.screen')) s.classList.toggle('show', s.id === id);
+  if (id === 's-char') charPreview?.start(); else charPreview?.stop();
   state.screen = id || 'race';
   nav.setRoot(id ? $(id) : null);
   if (id === 's-pause' || id === 's-results' || id === 's-gp') return;
@@ -110,7 +112,7 @@ function go(id) {
   if (id === 's-title') { goTitle(); return; }
   showScreen(id);
   if (id === 's-setup') refreshSetup();
-  if (id === 's-char') refreshChar();
+  if (id === 's-char') refreshChar(true);
 }
 
 // click handling for every [data-act] / [data-val] button
@@ -231,14 +233,23 @@ function refreshSetup() {
 }
 function buildCharGrid() {
   const grid = $('chargrid');
-  grid.innerHTML = CHARACTERS.map((c) => `<button class="ch" data-nav data-char="${c.id}" style="--c:${c.kart}"><img alt="${c.name}" src="${portraits.get(c.id) || ''}"><div class="nm outline">${c.name}</div></button>`).join('');
+  grid.innerHTML = CHARACTERS.map((c) => `<button class="ch" data-nav data-char="${c.id}" style="--c:${c.kart}" title="${c.name}"><img alt="${c.name}" src="${portraits.get(c.id) || ''}"><div class="nm outline">${c.name}</div></button>`).join('');
 }
-function refreshChar() {
+let shownChar = null;
+function refreshChar(quiet = false) {
   for (const b of document.querySelectorAll('[data-char]')) b.classList.toggle('on', b.dataset.char === settings.char);
   const c = charById(settings.char);
   const bar = (v) => `<span class="bar">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= v ? 'f' : ''}"></i>`).join('')}</span>`;
-  $('chinfo').innerHTML = `<div class="sp">${c.species}</div><h3 class="outline" style="color:${c.kart}">${c.name}</h3><div style="font-weight:500;opacity:.9">${c.line}</div>
-    <div class="stat">スピード ${bar(c.speed)}</div><div class="stat">加速 ${bar(c.accel)}</div><div class="stat">ハンドル ${bar(c.handling)}</div><div class="stat">重さ ${bar(Math.round(1 + (c.weight - 0.8) / 0.15))}</div>`;
+  $('chshow').style.setProperty('--c', c.kart);
+  $('chtop').innerHTML = `<div class="chips"><span>${c.species}</span><span class="ty">${c.type}</span></div><h3>${c.name}</h3><div class="ln">${c.line}</div>`;
+  $('chinfo').innerHTML = `<div class="stat">スピード ${bar(c.speed)}</div><div class="stat">加速 ${bar(c.accel)}</div><div class="stat">ハンドル ${bar(c.handling)}</div><div class="stat">重さ ${bar(Math.round(1 + (c.weight - 0.8) / 0.15))}</div><p class="bio">${c.bio}</p>`;
+  charPreview?.set(c.id, quiet || shownChar === c.id);
+  shownChar = c.id;
+}
+// pick by moving the cursor over the roster (arrows, d-pad, mouse), like a fighting game's select screen
+function charFocus(el) {
+  if (state.screen !== 's-char' || !el?.dataset.char || el.dataset.char === settings.char) return;
+  settings.char = el.dataset.char; saveSettings(); refreshChar();
 }
 function buildCourseGrid() {
   $('coursegrid').innerHTML = CUPS.map((cup) => `<h3 class="cuphead outline">${cup.name}</h3>` + cup.courses.map((i, n) => {
@@ -497,9 +508,12 @@ function showResults() {
     gp.results.push(order.map((k) => k.char.id));
   }
   $('res-title').textContent = `${me.place}位 ${me.place === 1 ? '— 優勝！' : me.place <= 3 ? '— 表彰台！' : ''}`;
-  $('res-table').innerHTML = order.map((k, i) => `<div class="rrow ${k === me ? 'me' : ''}">
+  $('res-hero').style.setProperty('--c', me.char.kart);
+  $('res-hero').innerHTML = `<div class="rplace ${me.place <= 3 ? 'p' + me.place : ''}"><span class="n">${me.place}</span><span class="u">位</span></div>
+    <img alt="${me.char.name}" src="${kartShots.get(me.char.id) || portraits.get(me.char.id) || ''}"><div class="nm outline">${me.char.name}</div>`;
+  $('res-table').innerHTML = order.map((k, i) => `<div class="rrow ${k === me ? 'me' : ''}" style="animation-delay:${0.05 * i}s">
     <span class="pl outline" style="color:${['#ffd93b', '#e6ecff', '#ffb070'][i] || '#fff'}">${i + 1}</span>
-    <img alt="" src="${portraits.get(k.char.id) || ''}"><span>${k.char.name}</span>
+    <img alt="" src="${portraits.get(k.char.id) || ''}" style="--c:${k.char.kart}"><span>${k.char.name}</span>
     <span class="tm">${k.estimated ? '— —' : fmtTime(k.finishTime)}</span>
     <span class="pt">${gp ? `+${POINTS[i] || 0}　計 ${gp.totals.get(k.char.id)}` : ''}</span></div>`).join('');
   const btns = gp
@@ -527,10 +541,10 @@ function showGPFinal() {
   const pod = [ids[1], ids[0], ids[2]].map((id, j) => {
     if (!id) return '<div></div>';
     const pl = [2, 1, 3][j], h = [90, 130, 64][j], col = ['#c9d2ff', '#ffd93b', '#ffb070'][j];
-    return `<div><img alt="" src="${portraits.get(id) || ''}"><div class="outline">${charById(id).name}</div><div class="blk outline" style="height:${h}px;background:${col};color:#fff">${pl}</div></div>`;
+    return `<div><img alt="" src="${kartShots.get(id) || portraits.get(id) || ''}" style="animation-delay:${[0.25, 0.5, 0][j]}s"><div class="outline">${charById(id).name}</div><div class="blk outline" style="height:${h}px;background:${col};color:#fff">${pl}</div></div>`;
   }).join('');
   $('gp-podium').innerHTML = pod;
-  $('gp-table').innerHTML = ids.map((id, i) => `<div class="rrow ${id === myId ? 'me' : ''}"><span class="pl outline">${i + 1}</span><img alt="" src="${portraits.get(id) || ''}"><span>${charById(id).name}</span><span class="tm">${gp.results.map((r) => r.indexOf(id) + 1 + '位').join(' ・ ')}</span><span class="pt">${gp.totals.get(id)} pt</span></div>`).join('');
+  $('gp-table').innerHTML = ids.map((id, i) => `<div class="rrow ${id === myId ? 'me' : ''}" style="animation-delay:${0.05 * i}s"><span class="pl outline">${i + 1}</span><img alt="" src="${portraits.get(id) || ''}" style="--c:${charById(id).kart}"><span>${charById(id).name}</span><span class="tm">${gp.results.map((r) => r.indexOf(id) + 1 + '位').join(' ・ ')}</span><span class="pt">${gp.totals.get(id)} pt</span></div>`).join('');
   audio.play('finish', myPlace);
   showScreen('s-gp');
   if (inVR()) {
@@ -644,6 +658,10 @@ async function boot() {
   $('load-text').textContent = 'キャラクターを 準備中…';
   await new Promise((r) => setTimeout(r, 20));
   portraits = renderPortraits(256);
+  kartShots = renderKartShots(384);
+  charPreview = new CharPreview($('chprev'));
+  $('cast').innerHTML = CHARACTERS.map((c, i) => `<img alt="${c.name}" title="${c.name}" src="${portraits.get(c.id) || ''}" style="--c:${c.kart};animation-delay:${-i * 0.32}s">`).join('');
+  nav.onFocus = charFocus;
   hud = new Hud(portraits);
   tuner = new Tuner({ courses: COURSES, onCourse: (i) => startRace(i), onRestart: () => startRace(state.courseIdx, true) });
   buildCharGrid();
