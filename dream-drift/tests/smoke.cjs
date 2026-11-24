@@ -50,10 +50,20 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     await page.click('[data-group="mode"] [data-val="gp"]');
     await page.click('[data-act="setup-ok"]');
     await waitScreen(page, 's-char');
+    // the roster: moving the cursor picks (like a fighting game), and the turntable shows that racer
+    const pick0 = await page.evaluate(() => document.querySelector('.ch.on')?.dataset.char);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(800);
+    const pick = await page.evaluate(() => {
+      const p = window.DD.debug.charPreview, on = document.querySelector('.ch.on')?.dataset.char;
+      return { on, running: p.running, shown: p.cur && p.cur.root.name, w: p.canvas.width };
+    });
+    check(pick.on && pick.on !== pick0 && pick.shown === 'kart-' + pick.on && pick.running && pick.w > 0, `→ on the roster picks the next racer and the turntable shows it (${pick0} → ${JSON.stringify(pick)})`);
     await page.click('[data-char="momo"]');
     await page.click('[data-act="char-ok"]');
     await waitScreen(page, 'race');
     check(true, 'Grand Prix race 1 started');
+    check(!(await page.evaluate(() => window.DD.debug.charPreview.running)), 'the turntable stops when the race starts');
     await page.evaluate(() => window.DD.debug.skipIntro());
     await page.waitForFunction(() => window.DD.debug.state().phase === 'race', null, { timeout: 60000 });
     const d0 = await page.evaluate(() => window.DD.debug.state().me.raceDist);
@@ -63,6 +73,28 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     const s1 = await page.evaluate(() => window.DD.debug.state());
     await page.keyboard.up('ArrowUp');
     check(s1.me.raceDist - d0 > 3, `kart drives forward with ↑ (moved ${(s1.me.raceDist - d0).toFixed(1)} samples, speed ${s1.me.speed.toFixed(1)})`);
+    // HUD layout: no two parts overlap, the middle of the screen is clear, the item sits top left
+    const lay = await page.evaluate(() => {
+      const ids = ['h-item', 'h-rank', 'h-lapbox', 'h-pos', 'h-map', 'h-pause'], W = innerWidth, H = innerHeight;
+      const R = Object.fromEntries(ids.map((id) => [id, document.getElementById(id).getBoundingClientRect()]));
+      R.time = document.querySelector('.h-time').getBoundingClientRect();
+      const keys = Object.keys(R), over = [];
+      for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) {
+        const a = R[keys[i]], b = R[keys[j]];
+        if (a.width && b.width && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) over.push(keys[i] + '/' + keys[j]);
+      }
+      const mid = keys.filter((k) => { const r = R[k]; return r.width && r.left < W * 0.62 && r.right > W * 0.38 && r.top < H * 0.75 && r.bottom > H * 0.25; });
+      const it = R['h-item'];
+      return { over, mid, item: [Math.round(it.right / W * 100), Math.round(it.bottom / H * 100)] };
+    });
+    check(!lay.over.length && !lay.mid.length && lay.item[0] < 20 && lay.item[1] < 30, `HUD: nothing overlaps, the centre is clear, the item is top left (${JSON.stringify(lay)})`);
+    // the drivers' faces are alive: someone blinks or changes expression within a couple of seconds
+    const faces = await page.evaluate(async () => {
+      const seen = new Set(), r = window.DD.debug.race;
+      for (let i = 0; i < 80; i++) { for (const k of r.karts) seen.add(k.rig.anim.expr); await new Promise((res) => setTimeout(res, 100)); }
+      return [...seen];
+    });
+    check(faces.length > 1, `drivers blink and change expression (${faces.join(',')})`);
     await page.screenshot({ path: path.join(out, 'race-keyboard.png') });
     await page.keyboard.press('Escape');
     await waitScreen(page, 's-pause');

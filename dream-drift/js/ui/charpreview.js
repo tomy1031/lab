@@ -108,8 +108,9 @@ export class CharPreview {
     animateDriver(rig, f, dt);
     for (const wheel of rig.pivots) wheel.rotation.y = -f.steer * 0.45;
     // frame the kart: a little closer on a narrow canvas
-    const asp = this.cam.aspect, d = asp < 1 ? 9.4 : 8.2;
-    this.cam.position.set(0, 2.9, d); this.cam.lookAt(0, 1.0, 0);
+    // (aimed a little left, so the kart stands right of the name)
+    const asp = this.cam.aspect, d = asp < 1 ? 8.6 : asp > 1.6 ? 6.4 : 7.2, ox = asp > 1.2 ? -0.75 : 0;
+    this.cam.position.set(ox, 2.5, d); this.cam.lookAt(ox, 1.05, 0);
     this.r.render(this.scene, this.cam);
   }
 }

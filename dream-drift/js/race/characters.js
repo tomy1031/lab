@@ -926,12 +926,12 @@ function studio(size) {
   const back = new THREE.DirectionalLight('#bfe6ff', 2.0); back.position.set(-4, 3, -5); scene.add(back);
   return { r, scene };
 }
-function shoot(size, place, expr = EXPR.normal) {
+function shoot(size, place, expr = EXPR.normal, list = CHARACTERS) {
   const out = new Map();
   let st;
   try { st = studio(size); } catch { return out; }
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
-  for (const c of CHARACTERS) {
+  for (const c of list) {
     const k = buildKart(c);
     k.blob.visible = false;
     k.setExpr(expr);
@@ -959,12 +959,13 @@ export function renderPortraits(size = 256) {
   });
 }
 
-// the whole kart at three-quarters, smiling: Map id → dataURL
-export function renderKartShots(size = 384) {
-  return shoot(size, (k, cam) => {
-    k.root.rotation.y = 0.5;
-    k.head.rotation.y = -0.3;
-    cam.fov = 30; cam.updateProjectionMatrix();
-    cam.position.set(2.5, 2.25, 4.6); cam.lookAt(0, 1.05, 0);
-  }, EXPR.happy);
+// the whole kart at three-quarters, smiling: Map id → dataURL. `ids` and `expr` for one racer's mood
+const kartShot = (k, cam) => {
+  k.root.rotation.y = 0.5;
+  k.head.rotation.y = -0.3;
+  cam.fov = 30; cam.updateProjectionMatrix();
+  cam.position.set(2.5, 2.25, 4.6); cam.lookAt(0, 1.05, 0);
+};
+export function renderKartShots(size = 384, expr = EXPR.happy, ids = null) {
+  return shoot(size, kartShot, expr, ids ? CHARACTERS.filter((c) => ids.includes(c.id)) : CHARACTERS);
 }

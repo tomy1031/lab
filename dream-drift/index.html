@@ -164,9 +164,10 @@
   @media (max-height: 560px) and (min-width: 821px) {
     .charsel { grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 12px; }
     .chargrid { gap: 8px; max-width: calc((100vh - 150px) * 2); margin: 0 auto; width: 100%; }
-    .chshow { min-height: 0; height: calc(100vh - 140px); }
-    .chinfo { padding: 22px 14px 10px; gap: 3px; } .chinfo .bio { display: none; } .chtop .ln { display: none; }
-    .chtop h3 { font-size: 30px; }
+    .chshow { min-height: 0; height: calc(100vh - 150px); }
+    .chinfo { padding: 18px 14px 8px; gap: 2px; } .chinfo .bio { display: none; } .chtop .ln { display: none; }
+    .stat { font-size: 11px; } .bar i { height: 7px; }
+    .chtop { top: 10px; } .chtop h3 { font-size: 28px; } .chips span { font-size: 10px; padding: 1px 8px; }
   }
 
   /* course select */
@@ -174,6 +175,8 @@
   .cuphead { grid-column: 1 / -1; margin: 6px 0 -4px; font-size: 22px; font-weight: 900; }
   .opt[hidden] { display: none; }
   @media (max-height: 560px) {
+    h2.title { font-size: 24px; } h2.title[data-en]::before { font-size: 10px; margin-bottom: 1px; } h2.title[data-en]::after { display: none; }
+    .btn.big { font-size: 20px; padding: 10px 40px; } .btn { padding: 10px 24px; font-size: 16px; }
     .setup { gap: 8px; } .opt { padding: 8px 14px; } .opt h4 { margin-bottom: 6px; }
     .seg button { padding: 8px 10px; } .seg button small { display: none; } .screen { gap: 10px; }
   }

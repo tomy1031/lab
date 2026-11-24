@@ -10,7 +10,7 @@ import { buildWorld } from './track/world.js';
 import { Race, POINTS } from './race/race.js';
 import { RaceCamera } from './race/camera.js';
 import { SPEED_CLASSES } from './race/kart.js';
-import { CHARACTERS, charById, renderPortraits, renderKartShots } from './race/characters.js';
+import { CHARACTERS, charById, renderPortraits, renderKartShots, EXPR } from './race/characters.js';
 import { CharPreview } from './ui/charpreview.js';
 import { COURSES, CUPS, cupOf, TITLE_MUSIC } from './courses/index.js';
 import { Hud, fmtTime } from './ui/hud.js';
@@ -497,6 +497,14 @@ function vrEvent(type, d, me, mine) {
 
 // ---------------------------------------------------------------------------------------------
 // results
+// your racer on the results screen: all smiles on the podium, a shrug in the middle, sulking at the back
+const moodShots = new Map();
+function resultShot(me) {
+  const mood = me.place <= 3 ? EXPR.happy : me.place <= 5 ? EXPR.normal : EXPR.sad, key = me.char.id + mood;
+  if (mood === EXPR.happy || inVR()) return kartShots.get(me.char.id) || portraits.get(me.char.id); // (no extra WebGL context inside a VR session)
+  if (!moodShots.has(key)) moodShots.set(key, renderKartShots(384, mood, [me.char.id]).get(me.char.id));
+  return moodShots.get(key) || kartShots.get(me.char.id);
+}
 function showResults() {
   const race = state.race, me = state.me;
   state.inRace = false;
@@ -510,7 +518,7 @@ function showResults() {
   $('res-title').textContent = `${me.place}位 ${me.place === 1 ? '— 優勝！' : me.place <= 3 ? '— 表彰台！' : ''}`;
   $('res-hero').style.setProperty('--c', me.char.kart);
   $('res-hero').innerHTML = `<div class="rplace ${me.place <= 3 ? 'p' + me.place : ''}"><span class="n">${me.place}</span><span class="u">位</span></div>
-    <img alt="${me.char.name}" src="${kartShots.get(me.char.id) || portraits.get(me.char.id) || ''}"><div class="nm outline">${me.char.name}</div>`;
+    <img alt="${me.char.name}" src="${resultShot(me) || ''}"><div class="nm outline">${me.char.name}</div>`;
   $('res-table').innerHTML = order.map((k, i) => `<div class="rrow ${k === me ? 'me' : ''}" style="animation-delay:${0.05 * i}s">
     <span class="pl outline" style="color:${['#ffd93b', '#e6ecff', '#ffb070'][i] || '#fff'}">${i + 1}</span>
     <img alt="" src="${portraits.get(k.char.id) || ''}" style="--c:${k.char.kart}"><span>${k.char.name}</span>
@@ -905,6 +913,7 @@ DD.debug = {
   hands, input, audio, renderer, xr, vrInput, get cockpit() { return cockpit; },
   get race() { return state.race; },
   get raceCam() { return raceCam; },
+  get charPreview() { return charPreview; },
   tune: { TUNE, setTune, tuneText, applyTuneText, resetTune, get panel() { return tuner; } },
   setControl(c) { state.control = c; },
 };
