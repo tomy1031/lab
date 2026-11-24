@@ -65,6 +65,13 @@ on:
       - 'anakata/img/**'
       - 'anakata/docs/preview.jpg'
       - 'anakata/tools/bundle.mjs'
+      - 'powder-line/index.html'
+      - 'powder-line/manifest.webmanifest'
+      - 'powder-line/sw.js'
+      - 'powder-line/js/**'
+      - 'powder-line/img/**'
+      - 'powder-line/docs/preview.jpg'
+      - 'powder-line/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
