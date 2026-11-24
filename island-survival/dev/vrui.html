@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>VR UI dev</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+  body { margin: 0; background: #1b2b2e; color: #eee; font: 14px sans-serif; }
+  #gl { display: block; }
+  #previews { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; align-items: flex-start; }
+  #previews figure { margin: 0; background: repeating-conic-gradient(#555 0 25%, #777 0 50%) 0 0/20px 20px; }
+  #previews figcaption { background: #000; padding: 2px 6px; font-size: 12px; }
+  pre#out { padding: 0 16px; white-space: pre-wrap; }
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="gl" width="1600" height="900"></canvas>
+<div id="previews"></div>
+<pre id="out"></pre>
+<script type="module">
+import * as THREE from 'three';
+import { VRWrist, VRPrompt, VRToasts, VRMenu, VRLaser } from '../js/vr/vrui.js';
+
+const view = new URLSearchParams(location.search).get('view') || 'a';
+await document.fonts.load('900 30px "Zen Maru Gothic"', '持ち物'); await document.fonts.ready;
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true });
+renderer.setSize(1600, 900, false);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x6fa86a);
+// something in the world to prove depthTest:false works
+const wall = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 0.2), new THREE.MeshBasicMaterial({ color: 0xe9d9a3 }));
+wall.position.set(0, 0, -1.1); scene.add(wall);
+const cam = new THREE.PerspectiveCamera(40, 16 / 9, 0.05, 50);
+
+const wrist = new VRWrist(), prompt = new VRPrompt(), toasts = new VRToasts(), menu = new VRMenu(), laser = new VRLaser();
+wrist.update({ hp: 72, food: 45, water: 18, rest: 60, morale: 85, stamina: 70, bodyTemp: 35.4, wet: 40, day: 3, days: 7, time: '08:30', weather: '晴れ', held: 'サバイバルナイフ', conditions: ['風邪', '空腹', '切り傷'] });
+prompt.update({ label: '野イチゴの 茂み', index: 1, options: [
+  { label: '摘む', ok: true }, { label: '食べる', ok: true }, { label: '罠を しかける', ok: false, reason: '道具が ない' }, { label: '調べる', ok: true } ] });
+toasts.push('たき火に 薪を くべた', 'info'); toasts.push('野イチゴを 3つ 手に入れた', 'good'); toasts.push('体が 冷えてきた…', 'warn');
+toasts.subtitle('ミオ', 'ねえ、あっちに 煙が 見えない？ 行ってみよう！');
+for (const x of [wrist, prompt, toasts, menu]) x.mesh.material.userData = {};
+const items = ['サバイバルナイフ', '干し肉', '木の枝', '麻ひも', '野イチゴ', 'ヤシの実', '貝がら', '石おの'];
+const rows = items.map((t, i) => ({ id: 'i' + i, icon: ['🔪', '🥩', '🪵', '🧵', '🍓', '🥥', '🐚', '🪓'][i], text: t, sub: i % 2 ? '傷みやすい。早めに 食べよう' : '', right: '×' + (i + 1),
+  buttons: i < 4 ? [{ id: 'use', label: '使う', primary: true }, { id: 'drop', label: '置く' }] : [{ id: 'use', label: '食べる', primary: true, disabled: i === 7 }] }));
+rows[2].text = 'とても とても 長い名前の アイテムが ここに 入ったときの 省略表示テスト';
+const menuData = { title: '持ち物', note: '3日目 08:30', tabs: [{ id: 'items', label: '持ち物' }, { id: 'mates', label: '仲間' }, { id: 'rest', label: '休む' }, { id: 'cfg', label: '設定' }], tab: 'items', rows, scroll: 0,
+  footer: [{ id: 'exit', label: 'VR を 出る' }, { id: 'close', label: '閉じる', primary: true }] };
+menu.update(menuData); toasts.update(0.5);
+
+// layouts
+const D = 1.0;
+const place = (m, x, y, z = -D) => { m.position.set(x, y, z); scene.add(m); };
+if (view === 'a') { place(menu.mesh, 0, 0, -1.0); cam.position.set(0, 0, 0); wall.position.z = -1.1;
+  menu.setHover({ x: 0.5, y: 0.5 }); // see below, replaced by a precise hover
+  const hv = (px, py) => menu.setHover({ x: px / 900, y: 1 - py / 620 }); hv(750, 134 + 32);
+  scene.add(laser.mesh); laser.mesh.position.set(0.35, -0.3, 0); laser.mesh.lookAt(0.2, 0.15, -1.0); laser.update({ length: 1.0, hit: true, color: 0x8ee0e6 });
+}
+if (view === 'b') { cam.position.set(0, 0, 0); wall.position.z = -0.8;
+  place(wrist.mesh, -0.3, 0.12, -0.6); wrist.mesh.rotation.y = 0.3;
+  place(prompt.mesh, 0.15, 0.12, -0.6);
+  place(toasts.mesh, 0, -0.22, -0.8); toasts.mesh.scale.setScalar(0.9);
+}
+if (view === 'c') { // small vs large: wrist alone big
+  cam.position.set(0, 0, 0); wall.position.z = -0.4; place(wrist.mesh, 0, 0, -0.28); wrist.mesh.scale.setScalar(1.6);
+}
+renderer.render(scene, cam);
+
+// 2D previews
+const pv = document.getElementById('previews');
+for (const [n, p] of [['wrist', wrist], ['prompt', prompt], ['toasts', toasts], ['menu', menu]]) {
+  const f = document.createElement('figure'); const cap = document.createElement('figcaption'); cap.textContent = `${n} ${p.cv.width}x${p.cv.height}`;
+  f.append(p.cv, cap); pv.append(f);
+}
+
+// hit tests
+const out = [];
+const ok = (name, got, want) => { const pass = JSON.stringify(got) === JSON.stringify(want); out.push((pass ? 'PASS ' : 'FAIL ') + name + ' -> ' + JSON.stringify(got) + (pass ? '' : ' wanted ' + JSON.stringify(want))); };
+const uvAt = (x, y) => ({ x: x / 900, y: 1 - y / 620 });
+const t = new VRMenu(); t.update(menuData);
+const reg = k => t.regions.find(r => r.key === k);
+const mid = r => uvAt(r.x + r.w / 2, r.y + r.h / 2);
+ok('tab mates', t.hit(mid(reg('tab:mates'))), { id: 'tab:mates', row: null });
+ok('row i0 use', t.hit(mid(reg('row:i0:use'))), { id: 'row:i0:use', row: 'i0' });
+ok('row i1 drop', t.hit(mid(reg('row:i1:drop'))), { id: 'row:i1:drop', row: 'i1' });
+ok('footer close', t.hit(mid(reg('close'))), { id: 'close', row: null });
+ok('footer exit', t.hit(mid(reg('exit'))), { id: 'exit', row: null });
+ok('scroll down', t.hit(mid(reg('scroll:down'))), { id: 'scroll:down', row: null });
+ok('scroll up disabled at 0', t.hit(uvAt(860, 134 + 20)), null);
+ok('row background (no button)', t.hit(uvAt(300, 134 + 32)), null);
+ok('outside', t.hit(uvAt(5, 5)), null);
+t.update({ ...menuData, scroll: 2 });
+ok('scroll=2 first visible row i2', t.hit(mid(t.regions.find(r => r.row === 'i2'))).row, 'i2');
+ok('scroll=2 up enabled', t.hit(uvAt(860, 134 + 20)), { id: 'scroll:up', row: null });
+t.update({ ...menuData, scroll: 99 }); ok('scroll clamp', t.scroll, 2);
+ok('disabled btn (i7 use) not hit', t.update({ ...menuData, scroll: 2 }) && t.regions.some(r => r.key === 'row:i7:use'), false);
+const d0 = t.draws; t.setHover(uvAt(10, 10)); t.setHover(uvAt(11, 11)); ok('hover on nothing: no redraw', t.draws, d0);
+t.setHover(mid(reg('close'))); ok('hover change redraws', t.draws, d0 + 1); t.setHover(mid(reg('close'))); ok('hover same: no redraw', t.draws, d0 + 1);
+const w0 = wrist.draws; wrist.update({ hp: 72, food: 45, water: 18, rest: 60, morale: 85, stamina: 70, bodyTemp: 35.4, wet: 40, day: 3, days: 7, time: '08:30', weather: '晴れ', held: 'サバイバルナイフ', conditions: ['風邪', '空腹', '切り傷'] });
+ok('wrist same data: no redraw', wrist.draws, w0);
+const tt = new VRToasts(); tt.push('a', 'good'); const d1 = tt.draws; tt.update(0); ok('toasts idle no redraw', tt.draws, d1);
+for (let i = 0; i < 5; i++) tt.push('t' + i, 'info'); ok('toasts keep 3', tt.toasts.length, 3);
+tt.subtitle('ミオ', 'a'); tt.subtitle('ミオ', 'b'); ok('subtitle replaced', tt.subs.map(s => s.text), ['b']);
+for (let i = 0; i < 20; i++) tt.update(0.25); ok('toasts expire', [tt.toasts.length, tt.subs.length, tt.mesh.visible], [0, 0, false]);
+document.getElementById('out').textContent = out.join('\n');
+window.__out = out; window.__done = true;
+</script>
+</body>
+</html>

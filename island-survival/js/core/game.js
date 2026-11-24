@@ -34,7 +34,13 @@ export class Game {
     this.rng = new RNG(1);
     this.ended = false;
     this.ambient = false;
-    requestAnimationFrame((t) => this.frame(t));
+    this.loopRaf();
+  }
+
+  /** the page's own frame loop; in a VR session the headset's frames drive frame() instead (vr/xr.js) */
+  loopRaf() {
+    if (this._raf) return;
+    this._raf = requestAnimationFrame((t) => { this._raf = 0; if (this.xr?.presenting) return; this.loopRaf(); this.frame(t); });
   }
 
   add(name, system) {
@@ -143,6 +149,8 @@ export class Game {
     inp.on('use', () => { const s = this.sys.player?.heldStack(); if (s && !this.screens?.current) { const d = this.sys.player.heldDef(); if (d?.food || s.stew) this.screens?.show('inventory', { focus: s.uid, eat: true }); else this.actions.use(s.uid); } });
     inp.on('menu', () => { if (this.sys.interact?.activity) { this.sys.interact.cancelActivity(); return; } if (this.placement?.active) { this.placement.cancel(); return; } if (this.screens?.current) return; open('pause'); });
     inp.on('talk', () => this.sys.companion?.talkKey?.());
+    // answering a companion's proposal (§24.8): Y お願い / U 一緒に / N いや
+    for (const [k, id] of [['choiceOk', 'ok'], ['choiceTogether', 'together'], ['choiceNo', 'no']]) inp.on(k, () => { if (this.hud?.choiceOpen) this.bus.emit('choice:pick', { id }); });
     inp.on('companion', () => this.sys.companion?.call?.());
     inp.on('gesture', () => { if (!this.screens?.current) this.screens?.show('gesture'); });
   }
@@ -154,13 +162,16 @@ export class Game {
   }
 
   frame(t) {
-    requestAnimationFrame((tt) => this.frame(tt));
-    const dt = Math.min(0.1, (t - this.last) / 1000);
+    const dt = Math.min(0.1, Math.max(0, (t - this.last) / 1000));
     this.last = t;
     this.fps = this.fps * 0.95 + (1 / Math.max(dt, 1e-3)) * 0.05;
     if (!this.world) return;
+    const vr = !!this.xr?.presenting;
+    if (this.freezeRender && !vr) return; // a full-screen overlay (hand-work) is open: keep the last 3D frame (in VR it is a panel)
     try {
+      if (vr) this.xr.update(dt);
       this.update(dt);
+      if (vr) { this.xr.afterMove(); this.handwork?.tick?.(t); }
     } catch (e) {
       console.error(e);
       window.ISLE.errors.push(`frame: ${e.message}`);
@@ -182,10 +193,11 @@ export class Game {
     let gm = 0;
     if (!this.paused) {
       const look = this.input.consumeLook();
-      this.player.look(look.x, look.y);
+      const vr = !!this.xr?.presenting;
+      if (!vr) this.player.look(look.x, look.y);
       gm = this.clock.tick(dt);
       this.player.seaLevel = this.clock.tide();
-      this.player.update(dt, this.input.axes());
+      this.player.update(dt, vr ? this.xr.axes : this.input.axes());
       for (const name of this.order) this.sys[name].update?.(dt, gm, this);
     } else {
       for (const name of this.order) this.sys[name].updatePaused?.(dt, this);
@@ -215,7 +227,7 @@ export class Game {
     if (held?.lit > 0 && !this.paused) { held.lit -= dt * this.clock.rate * this.clock.scale; if (held.lit <= 0 || (weather.rain > 0.5 && Math.random() < dt * 0.8 / 60 * this.clock.rate)) { held.lit = 0; this.bus.emit('toast', { text: 'たいまつが 消えた', kind: 'info' }); } }
     P.torchLit = !!(held?.lit > 0);
     this.viewmodel?.update(dt, { moving: this.player.moveInfo.moving, running: this.player.moveInfo.running, swimming: this.player.swimming });
-    if (this.viewmodel) this.viewmodel.root.visible = !P.sleeping;
+    if (this.viewmodel) this.viewmodel.root.visible = !P.sleeping && !this.vrActive;
     const covered = (P.shelter?.rain ?? 0) >= 0.7;
     this.rain?.update(dt, covered ? weather.rain * 0.25 : weather.rain, weather.wind, this.renderer.camera, env?.night ?? 0);
     // ambience

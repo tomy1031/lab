@@ -23,6 +23,7 @@ export default function pause(ctx) {
         msg.textContent = ok === false ? 'セーブに 失敗しました' : 'セーブしました';
         if (ok !== false) toast(game, 'セーブしました', 'good');
       } }, '💾 セーブ'),
+      game.xr?.supported ? h('button', { class: 'btn teal', onclick: () => game.enterVR?.() }, '🥽 VR で 遊ぶ') : null,
       h('button', { class: 'btn', onclick: () => screens.show('settings', { from: 'pause' }) }, '⚙ 設定'),
       h('button', { class: 'btn', onclick: () => screens.show('gesture', { from: 'pause' }) }, '✋ ジェスチャーの 練習'),
       canRetire ? h('button', { class: 'btn ghost', onclick: () => ask('発煙筒で リタイアしますか？（スコア ×0.3）', () => { screens.hide(); game.retire?.(); }, 'リタイア') }, 'リタイアする') : null,
@@ -33,6 +34,8 @@ export default function pause(ctx) {
   return { el, back() { screens.hide(); return true; } };
 }
 
+export const HANDWORK = [['manual', '手で やる', '研ぐ・打つ・結ぶ を 自分の 手で。上手なら 品質が 上がる'], ['assist', '半自動', '最初の ひと区切りだけ 自分で。あとは 同じ 調子で 続ける'], ['auto', 'おまかせ', '短い アニメで 自動。品質は ふつう']];
+export const BUTCHER_VIEW = [['normal', 'ふつう', '紙の 図で 手順を 行う。色は ひかえめ'], ['mild', 'ひかえめ', '影絵と 点線で 手順を 行う。赤い 色や 生々しい 言葉は 出ない'], ['skip', '省略', '手順を とばして 結果だけ 受け取る']];
 const VOL = [['master', '全体'], ['sfx', '効果音'], ['amb', '環境音'], ['voice', '声'], ['ui', '操作音']];
 
 export function settings(ctx) {
@@ -52,6 +55,22 @@ export function settings(ctx) {
   const qSeg = h('div', { class: 'seg' }, [['low', '低'], ['mid', '中'], ['high', '高']].map(([v, l]) => h('button', { type: 'button', class: `seg-b${qual === v ? ' on' : ''}`,
     onclick: (e) => { save({ quality: v }); try { game.renderer?.setQuality?.(v); } catch { /* ignore */ } qSeg.querySelectorAll('.seg-b').forEach((b) => b.classList.remove('on')); e.currentTarget.classList.add('on'); } }, h('span', { class: 'seg-l' }, l))));
 
+  const isTouch = () => !!game.input?.touch || (game.setup?.control === 'touch');
+  const hwNow = s.handwork || (isTouch() ? 'assist' : 'manual');
+  const bvNow = s.butcherView || 'mild';
+  const pick = (opts, cur, key, descEl) => {
+    const wrap = h('div', { class: 'seg', role: 'group' });
+    const show = (v) => { descEl.textContent = (opts.find((o) => o[0] === v) || [])[2] || ''; };
+    for (const [v, l] of opts) {
+      wrap.append(h('button', { type: 'button', class: `seg-b${cur === v ? ' on' : ''}`, 'aria-pressed': cur === v ? 'true' : 'false',
+        onclick: () => { save({ [key]: v }); wrap.querySelectorAll('.seg-b').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); }); const me = wrap.children[opts.findIndex((o) => o[0] === v)]; me.classList.add('on'); me.setAttribute('aria-pressed', 'true'); show(v); } }, h('span', { class: 'seg-l' }, l)));
+    }
+    show(cur);
+    return wrap;
+  };
+  const hwDesc = h('p', { class: 'muted small opt-desc' });
+  const bvDesc = h('p', { class: 'muted small opt-desc' });
+
   const el = h('div', { class: 'sheet narrow settings-sheet', tabindex: '-1' },
     head('設定', screens),
     h('div', { class: 'sheet-body col gap' },
@@ -65,6 +84,25 @@ export function settings(ctx) {
         h('div', { class: 'row gap center-y' }, h('span', { class: 'muted small' }, '画質'), qSeg),
         toggle('画面の ゆれを 減らす', s.reduceShake, (v) => save({ reduceShake: v })),
         toggle('字幕を 出す', s.subtitles !== false, (v) => save({ subtitles: v }))),
-      h('button', { class: 'btn ghost small', onclick: () => screens.show('gesture', { from: 'settings' }) }, '✋ ジェスチャーの 練習')));
+      h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '手の 作業'),
+        pick(HANDWORK, hwNow, 'handwork', hwDesc), hwDesc,
+        toggle('作業の ヒントを 出す', s.hints !== false, (v) => save({ hints: v }))),
+      h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '解体の 表現'),
+        pick(BUTCHER_VIEW, bvNow, 'butcherView', bvDesc), bvDesc),
+      h('button', { class: 'btn ghost small', onclick: () => screens.show('gesture', { from: 'settings' }) }, '✋ ジェスチャーの 練習'),
+      offlineSection()));
   return { el };
+}
+
+/** オフライン: the state of the PWA cache and the optional hand-gesture pack */
+function offlineSection() {
+  const P = window.ISLE?.pwa;
+  const status = h('p', { class: 'muted small' }, !P?.supported ? 'この ページは オフライン用の 版では ありません（lab サイトの 版で 使えます）' : P.ready ? 'オフラインで 遊べます。ホーム画面に 追加すると アプリの ように 開けます。' : 'オフライン用に ファイルを 保存中…');
+  const handBtn = h('button', { class: 'btn ghost small', disabled: !P?.supported || null, onclick: async () => {
+    handBtn.disabled = true; handBtn.textContent = '保存中…';
+    const off = P.on((type, d) => { if (type === 'extra') { handBtn.textContent = `保存中…（${d.done}/${d.total}）`; if (d.done >= d.total) { handBtn.textContent = '✓ 手の 認識も オフラインで 使えます'; off(); } } });
+    if (!(await P.cacheHands())) { handBtn.textContent = 'いまは 保存できません'; handBtn.disabled = false; }
+  } }, '✋ 手の 認識も オフライン用に 保存（約 19 MB）');
+  if (P?.supported) P.handsCached().then((ok) => { if (ok) { handBtn.textContent = '✓ 手の 認識も オフラインで 使えます'; handBtn.disabled = true; } });
+  return h('section', { class: 'field' }, h('h3', { class: 'field-h' }, 'オフライン'), status, handBtn);
 }

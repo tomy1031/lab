@@ -101,12 +101,26 @@ export default function craft(ctx) {
   async function doCraft() {
     if (busy || !method) return;
     busy = true; goBtn.disabled = true;
-    prog.classList.remove('hidden');
-    const t0 = performance.now(), dur = 1300;
-    while (performance.now() - t0 < dur) { prog.firstChild.style.width = `${((performance.now() - t0) / dur) * 100}%`; await sleepMs(30); }
-    prog.classList.add('hidden');
+    let opts = {}, hw = null;
+    const top = (pv[method]?.candidates || [])[0];
+    if (game.handwork && top) {
+      // §24: do it with your own hands → p feeds the quality; Esc gives everything back
+      const { flowFor } = await import('../data/handwork.js');
+      const inv = game.sys?.player?.inv;
+      const mat = chosen().map((u) => inv?.get?.(u)?.id || '').find((id) => /obsidian|chert|flint|stone|shell|bone/.test(id)) || 'stone';
+      const tid = top.kind === 'generic' ? null : top.id;
+      hw = await game.handwork.run(flowFor(method, tid, chosen().length), { title: `${top.known === false ? '？？？' : top.name}を 作る`, key: tid || `m:${method}`, scene: { material: mat } });
+      if (!hw || hw.cancelled) { busy = false; render(); return; }
+      opts = { score: hw.p, timeMul: hw.feel.timeMul, failures: hw.failures };
+    } else {
+      prog.classList.remove('hidden');
+      const t0 = performance.now(), dur = 1300;
+      while (performance.now() - t0 < dur) { prog.firstChild.style.width = `${((performance.now() - t0) / dur) * 100}%`; await sleepMs(30); }
+      prog.classList.add('hidden');
+    }
     let res = null;
-    try { res = await C()?.craft?.(method, chosen()); } catch (e) { console.error(e); res = { ok: false, reason: String(e.message || e) }; }
+    try { res = await C()?.craft?.(method, chosen(), opts); } catch (e) { console.error(e); res = { ok: false, reason: String(e.message || e) }; }
+    if (res) res.handwork = hw;
     busy = false;
     res = res || { ok: false, reason: '作れませんでした' };
     result = res;
@@ -131,6 +145,8 @@ export default function craft(ctx) {
       h('div', { class: 'res-icon' }, d.icon || '✨'),
       h('h2', { class: `title ${rk.cls}` }, s.name || nameOf(game, s) || d.name),
       h('div', { class: `rank big ${rk.cls}` }, `${rk.name}（${Math.round(s.q ?? 0)}）`),
+      res.handwork ? h('p', { class: 'hw-line' }, `手仕事：${res.handwork.feel.label}（${res.handwork.feel.bonus >= 0 ? '＋' : '−'}${Math.abs(res.handwork.feel.bonus)}）${res.handwork.quick ? '・手慣れた' : ''}`) : null,
+      (res.handworkNotes || []).length ? h('p', { class: 'muted small' }, res.handworkNotes.join('、')) : null,
       stats.length ? h('div', { class: 'tags' }, stats) : null,
       h('div', { class: 'tags' }, tagChips(s.attrs || d.attrs, 8)),
       d.desc ? h('p', { class: 'muted small' }, d.desc) : null,

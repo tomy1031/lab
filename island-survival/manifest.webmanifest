@@ -1,0 +1,20 @@
+{
+  "name": "ひとつだけ島 — 無人島サバイバル",
+  "short_name": "ひとつだけ島",
+  "description": "持ち物はひとつだけ。無人島で決めた日数を生き延びる。罠・錬成・解体を自分の手で。仲間と相談（オフライン対応・VR 対応）",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#123a3f",
+  "theme_color": "#123a3f",
+  "categories": ["games"],
+  "icons": [
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "img/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

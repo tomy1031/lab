@@ -84,6 +84,10 @@ export default function inventory(ctx, data = {}) {
     if (d.tool || ['tool', 'weapon', 'ammo'].includes(d.cat)) acts.push(btn('✋ 持つ', after(() => A.equip?.(st.uid), `${name}を 手に 持った`)));
     if (d.wear) acts.push(btn('👕 着る', after(() => A.wear?.(st.uid))));
     if (d.med || d.cat === 'medicine') acts.push(btn('🩹 手当てに 使う', after(() => A.treat?.(st.uid))));
+    if (A.canSharpen?.(st.uid)) acts.push(btn('🪨 研ぐ', after(() => A.sharpen?.(st.uid))));
+    if (A.canTieHook?.(st.uid)) acts.push(btn('🪝 針を 結び直す', after(() => A.tieHook?.(st.uid))));
+    if (A.canSetTrap?.(st.uid)) acts.push(btn('🪤 前に 仕掛ける', after(() => A.setTrap?.(st.uid))));
+    if (A.canPrepFish?.(st.uid)) acts.push(btn('🔪 下ごしらえ（締める・うろこ・中身）', after(() => A.prepFish?.(st.uid))));
     if (d.use || d.cat === 'medicine') acts.push(btn('使う', after(() => A.use?.(st.uid))));
     acts.push(btn('🔍 調べる', after(() => A.inspect?.(st.uid))));
     if (game.sys?.companion && game.sys.companion.present !== false) acts.push(btn('🤝 仲間に 渡す', after(() => A.giveToCompanion?.(st.uid, 1))));

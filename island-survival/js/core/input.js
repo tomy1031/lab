@@ -4,7 +4,7 @@
 
 const ACTION_KEYS = {
   KeyE: 'interact', KeyF: 'use', Tab: 'inventory', KeyI: 'inventory', KeyC: 'craft', KeyB: 'build', Escape: 'menu', KeyM: 'map',
-  KeyT: 'talk', KeyQ: 'drop', KeyR: 'reload', KeyZ: 'sleep', KeyJ: 'journal', KeyH: 'help', KeyG: 'companion', KeyK: 'guide', KeyP: 'gesture',
+  KeyT: 'talk', KeyQ: 'drop', KeyR: 'reload', KeyZ: 'sleep', KeyJ: 'journal', KeyH: 'help', KeyG: 'companion', KeyK: 'guide', KeyP: 'gesture', KeyY: 'choiceOk', KeyU: 'choiceTogether', KeyN: 'choiceNo',
   Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4', Digit5: 'slot5', Digit6: 'slot6', Digit7: 'slot7', Digit8: 'slot8',
 };
 
