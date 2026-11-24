@@ -1,6 +1,6 @@
 // js/ui.js — the menu page: choose a place (famous places, search, the map), download it for offline play,
 // manage what is saved, settings, and the on-screen display while flying on a screen.
-import { PRESETS, downloadArea, deleteArea, storageInfo, fmtBytes, normArea } from './areas.js';
+import { PRESETS, CATS, downloadArea, deleteArea, storageInfo, fmtBytes, normArea } from './areas.js';
 import { Plan, RADII } from './plan.js';
 import { S2_YEARS, NOMINATIM, aerialFor } from './sources.js';
 import { MapPicker } from './map.js';
@@ -18,6 +18,7 @@ export class UI {
     this.picked = null; // a place chosen on the map / by coordinates
     this.xr = false;
     this.wantReload = false;
+    this.cat = 'all'; // the famous places shown: all | city | sight | nature
     if (navigator.xr) {
       navigator.xr.isSessionSupported('immersive-vr').then((ok) => { this.xr = ok; this.render(); }).catch(() => {});
     }
@@ -99,6 +100,7 @@ export class UI {
       case 'stop-dl': this.dl?.ac.abort(); break;
       case 'del': this.remove(area); break;
       case 'radius': app.setSetting('radius', +arg); break;
+      case 'cat': this.cat = arg; this.render(); break;
       case 'quality': app.setSetting('quality', arg); break;
       case 'mode': app.setSetting('mode', arg); break;
       case 'speed': app.setSetting('speed', arg); break;
@@ -120,7 +122,7 @@ export class UI {
     const rec = { ...normArea(area), done: false, bytes: 0, tiles: 0, failed: 0, date: Date.now() };
     try {
       const res = await downloadArea(area, { signal: ac.signal, onProgress: (p) => { this.dl.p = p; this.progress(); } });
-      Object.assign(rec, { done: res.failed === 0, failed: res.failed, bytes: res.bytes, tiles: res.total, bcount: res.buildings || 0 });
+      Object.assign(rec, { done: res.failed === 0, failed: res.failed, bytes: res.bytes, tiles: res.total, bcount: res.buildings || 0, wcount: res.walls || 0 });
       app.store.put(rec);
       this.toast(res.failed ? `${area.name}：${res.failed} 個 取れませんでした。「つづきから」でもう一度` : `${area.name} をダウンロードしました（${fmtBytes(res.bytes)}）。オフラインで飛べます`, 6000);
       if (res.buildingsError) this.toast(`建物を取れませんでした：${res.buildingsError}`, 6000);
@@ -183,7 +185,7 @@ export class UI {
     let meta, buttons = '';
     const flyLabel = this.xr ? 'VR で飛ぶ' : '飛ぶ';
     if (saved && saved.done) {
-      meta = `★ ダウンロード済み・半径 ${saved.r} km・${fmtBytes(saved.bytes || 0)}${saved.bcount ? `・建物 ${saved.bcount.toLocaleString()} 棟` : ''}`;
+      meta = `★ ダウンロード済み・半径 ${saved.r} km・${fmtBytes(saved.bytes || 0)}${saved.bcount ? `・建物 ${saved.bcount.toLocaleString()} 棟` : ''}${saved.wcount ? '・城壁' : ''}`;
       buttons = `<button class="go" data-act="fly" data-arg="${arg}">${flyLabel}</button>`
         + (this.xr ? `<button data-act="screen" data-arg="${arg}">画面で</button>` : '')
         + `<button data-act="view" data-arg="${arg}">背景に表示</button>`
@@ -224,7 +226,8 @@ export class UI {
     $('saved').innerHTML = saved.length
       ? saved.map((a, i) => this.card('saved', i, a, a.name, a.sub)).join('')
       : '<p class="note">まだありません。下の「世界の名所」や検索から、ネットのある所でダウンロードしてください。</p>';
-    $('presets').innerHTML = PRESETS.map((p, i) => this.card('preset', i, p, p.name, p.sub)).join('');
+    $('cats').innerHTML = [['all', 'すべて'], ...Object.entries(CATS)].map(([k, n]) => `<button class="chip" data-act="cat" data-arg="${k}" aria-pressed="${this.cat === k}">${n}<small>${k === 'all' ? PRESETS.length : PRESETS.filter((p) => p.cat === k).length} か所</small></button>`).join('');
+    $('presets').innerHTML = PRESETS.map((p, i) => (this.cat === 'all' || p.cat === this.cat ? this.card('preset', i, p, p.name, p.sub) : '')).join('');
     $('results').innerHTML = this.results.map((r, i) => this.card('result', i, r, r.name, r.sub)).join('');
     $('picked').innerHTML = this.picked ? this.card('picked', 0, this.picked, this.picked.name, this.picked.sub) : '';
     // settings

@@ -269,17 +269,22 @@ class App {
     return this.ui.areaFromPreset(PRESETS[0]);
   }
 
-  // VR menu: places you can go
-  areaChoices() {
-    const out = [];
-    for (const rec of this.store.list) if (rec.done) out.push({ id: rec.id, name: rec.name, sub: rec.sub || `${rec.r} km`, offline: true, key: rec });
-    if (this.online) {
-      for (const p of PRESETS) {
-        const a = this.ui.areaFromPreset(p);
-        if (!out.some((o) => o.id === a.id)) out.push({ id: a.id, name: a.name, sub: a.sub, offline: false, key: a });
-      }
+  // VR menu: places you can go. cat: all | saved | city | sight | nature
+  areaChoices(cat = 'all') {
+    const out = [], used = new Set();
+    for (const p of PRESETS) {
+      const saved = this.ui.savedFor(p);
+      const done = saved && saved.done;
+      if (done) used.add(saved.id);
+      if (cat !== 'all' && cat !== 'saved' && p.cat !== cat) continue;
+      if (done) out.push({ id: saved.id, name: saved.name, sub: p.sub, offline: true, key: saved });
+      else if (this.online && cat !== 'saved') { const a = this.ui.areaFromPreset(p); out.push({ id: a.id, name: a.name, sub: a.sub, offline: false, key: a }); }
     }
-    return out;
+    if (cat === 'all' || cat === 'saved') {
+      for (const rec of this.store.list) if (rec.done && !used.has(rec.id)) out.push({ id: rec.id, name: rec.name, sub: rec.sub || `${rec.r} km`, offline: true, key: rec });
+    }
+    out.sort((a, b) => b.offline - a.offline);
+    return cat === 'saved' ? out.filter((o) => o.offline) : out;
   }
   get currentId() { return this.area && this.area.id; }
   flyTo(area) {

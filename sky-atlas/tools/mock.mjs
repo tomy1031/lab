@@ -74,6 +74,10 @@ function overpass(body) {
     const geometry = [[lat - d, lon - d], [lat - d, lon + d], [lat + d, lon + d], [lat + d, lon - d], [lat - d, lon - d]].map(([la, lo]) => ({ lat: la, lon: lo }));
     elements.push({ type: 'way', id: id++, tags: { building: (a + b) % 3 ? 'yes' : 'office', ...(a === 0 && b === 0 ? { height: '120' } : {}) }, geometry });
   }
+  // a city wall (a line, 60 points) zig-zagging across the middle
+  const wall = [];
+  for (let i = 0; i < 60; i++) wall.push({ lat: cl - 0.004 + (i % 2) * 0.0004, lon: cn - 0.006 + i * 0.0002 });
+  elements.push({ type: 'way', id: id++, tags: { barrier: 'city_wall', name: 'テストの城壁' }, geometry: wall });
   return JSON.stringify({ elements });
 }
 

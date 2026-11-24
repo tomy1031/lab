@@ -106,15 +106,17 @@ export class MenuPanel extends Panel {
     this.button(x, 'close', this.w - 260, 100, 220, 62, '閉じる', { onClick: () => a.toggleMenu(false) });
     const top = 190;
     if (this.tab === 'places') {
-      const list = a.areaChoices();
-      const per = 12, pages = Math.max(1, Math.ceil(list.length / per));
+      if (!this.cat) this.cat = a.store.list.some((r) => r.done) ? 'saved' : 'all';
+      const cats = [['saved', '★ 保存済み'], ['city', '都市'], ['sight', '名所・遺跡'], ['nature', '自然'], ['all', 'すべて']];
+      cats.forEach(([id, l], i) => this.button(x, 'cat:' + id, 40 + i * 266, top - 6, 256, 58, l, { sel: this.cat === id, onClick: () => { this.cat = id; this.page = 0; this.redraw(); } }));
+      const list = a.areaChoices(this.cat);
+      const per = 9, pages = Math.max(1, Math.ceil(list.length / per));
       this.page = Math.min(this.page, pages - 1);
-      this.text(x, a.online ? '★ = ダウンロード済み（オフラインで飛べる）' : 'ダウンロード済みの場所', 44, top, 24, C.muted, 700);
       list.slice(this.page * per, this.page * per + per).forEach((c, i) => {
-        const bx = 40 + (i % 3) * 445, by = top + 26 + Math.floor(i / 3) * 104;
+        const bx = 40 + (i % 3) * 445, by = top + 70 + Math.floor(i / 3) * 104;
         this.button(x, 'area:' + c.id, bx, by, 430, 92, (c.offline ? '★ ' : '') + c.name, { sel: c.id === a.currentId, sub: c.sub, onClick: () => a.flyTo(c.key) });
       });
-      if (!list.length) this.text(x, 'まだありません。画面のメニューでダウンロードしてください', 44, top + 70, 26, C.warn, 600);
+      if (!list.length) this.text(x, this.cat === 'saved' ? 'まだありません。画面のメニューでダウンロードしてください' : 'オフラインでは、ダウンロード済みの場所だけ飛べます', 44, top + 120, 26, C.warn, 600);
       if (pages > 1) {
         this.button(x, 'pg:prev', 40, 650, 200, 64, '◀ 前', { disabled: this.page === 0, onClick: () => { this.page--; this.redraw(); } });
         this.text(x, `${this.page + 1} / ${pages}`, 340, 682, 26, C.muted, 700, 'center');

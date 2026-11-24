@@ -63,11 +63,18 @@ export function kindOf(t, h) {
   return KIND.generic;
 }
 
+// city walls — the Great Wall, Dubrovnik's walls… — are lines, not footprints: drawn as a stone wall
+// following the ground (the Great Wall is only 5–8 m wide: invisible in 10 m satellite photos)
+const isWall = (t) => t.barrier === 'city_wall' || t.historic === 'citywalls' || (t.barrier === 'wall' && /长城|長城|Great Wall/i.test(t.name || ''));
+const WALL_PIECE = 40; // points per piece (a long wall is cut so each piece sits in one chunk)
+
 // Overpass JSON → packed binary. Layout (little endian):
-//   'SKB1' | uint32 count | uint32 points | uint32 reserved
+//   'SKB2' | uint32 count | uint32 points | uint32 walls
 //   float32 height[count] | float32 minH[count] | uint16 npts[count] | uint8 kind[count] | pad to 4 | float32 xz[points*2]
+//   uint32 wallPoints | uint16 wn[walls] | pad to 4 | float32 wh[walls] | float32 wxz[wallPoints*2]
+// ('SKB1' files, from before walls, are the first two lines only.)
 export function pack(json, frame) {
-  const items = [];
+  const items = [], walls = [];
   const ring = (geom) => {
     if (!geom || geom.length < 4) return null;
     const a = geom[0], b = geom[geom.length - 1];
@@ -81,6 +88,12 @@ export function pack(json, frame) {
   };
   for (const el of json.elements || []) {
     const t = el.tags || {};
+    if (el.type === 'way' && isWall(t) && !t.building && el.geometry && el.geometry.length >= 2) {
+      const pts = el.geometry.map((g) => { const p = frame.toLocal(g.lon, g.lat); return [Math.round(p.x * 10) / 10, Math.round(p.z * 10) / 10]; });
+      const h = meters(t.height) > 0 && meters(t.height) < 40 ? meters(t.height) : 7.5;
+      for (let i = 0; i < pts.length - 1; i += WALL_PIECE - 1) walls.push({ pts: pts.slice(i, i + WALL_PIECE).flat(), h });
+      continue;
+    }
     if (!t.building || t.building === 'no' || t.building === 'construction' && !t.height) continue;
     const { h, minH } = heightOf(t, el.id);
     const kind = kindOf(t, h);
@@ -99,11 +112,21 @@ export function pack(json, frame) {
   off.n = off.m + count * 4;
   off.k = off.n + count * 2;
   off.xz = Math.ceil((off.k + count) / 4) * 4;
-  const buf = new ArrayBuffer(off.xz + points * 8);
+  const wc = walls.length, wp = walls.reduce((a, w) => a + w.pts.length / 2, 0);
+  off.w = off.xz + points * 8;
+  off.wn = off.w + 4;
+  off.wh = Math.ceil((off.wn + wc * 2) / 4) * 4;
+  off.wxz = off.wh + wc * 4;
+  const buf = new ArrayBuffer(off.wxz + wp * 8);
   const dv = new DataView(buf);
-  [83, 75, 66, 49].forEach((c, i) => dv.setUint8(i, c));
+  [83, 75, 66, 50].forEach((c, i) => dv.setUint8(i, c));
   dv.setUint32(4, count, true);
   dv.setUint32(8, points, true);
+  dv.setUint32(12, wc, true);
+  dv.setUint32(off.w, wp, true);
+  const WN = new Uint16Array(buf, off.wn, wc), WH = new Float32Array(buf, off.wh, wc), WXZ = new Float32Array(buf, off.wxz, wp * 2);
+  let q = 0;
+  walls.forEach((w, i) => { WN[i] = w.pts.length / 2; WH[i] = w.h; WXZ.set(w.pts, q); q += w.pts.length; });
   const H = new Float32Array(buf, off.h, count), M = new Float32Array(buf, off.m, count);
   const NP = new Uint16Array(buf, off.n, count), K = new Uint8Array(buf, off.k, count), XZ = new Float32Array(buf, off.xz, points * 2);
   let p = 0;
@@ -117,27 +140,41 @@ export function pack(json, frame) {
 
 export function unpack(buf) {
   const dv = new DataView(buf);
-  if (String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3)) !== 'SKB1') throw new Error('bad buildings file');
+  const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
+  if (magic !== 'SKB1' && magic !== 'SKB2') throw new Error('bad buildings file');
   const count = dv.getUint32(4, true), points = dv.getUint32(8, true);
   const off = { h: 16, m: 16 + count * 4 };
   off.n = off.m + count * 4;
   off.k = off.n + count * 2;
   off.xz = Math.ceil((off.k + count) / 4) * 4;
-  return {
+  const out = {
     count,
     h: new Float32Array(buf, off.h, count), minH: new Float32Array(buf, off.m, count),
     n: new Uint16Array(buf, off.n, count), kind: new Uint8Array(buf, off.k, count),
     xz: new Float32Array(buf, off.xz, points * 2),
+    walls: 0, wn: new Uint16Array(0), wh: new Float32Array(0), wxz: new Float32Array(0),
   };
+  if (magic === 'SKB2') {
+    const wc = dv.getUint32(12, true);
+    off.w = off.xz + points * 8;
+    const wp = dv.getUint32(off.w, true);
+    off.wn = off.w + 4;
+    off.wh = Math.ceil((off.wn + wc * 2) / 4) * 4;
+    off.wxz = off.wh + wc * 4;
+    Object.assign(out, { walls: wc, wn: new Uint16Array(buf, off.wn, wc), wh: new Float32Array(buf, off.wh, wc), wxz: new Float32Array(buf, off.wxz, wp * 2) });
+  }
+  return out;
 }
 
 export function overpassQuery(area, radius) {
   const dLat = radius / 111320, dLon = radius / (111320 * Math.cos((area.lat * Math.PI) / 180));
   const bb = [area.lat - dLat, area.lon - dLon, area.lat + dLat, area.lon + dLon].map((v) => v.toFixed(5)).join(',');
-  return `[out:json][timeout:180][maxsize:1073741824];(way["building"](${bb});relation["building"]["type"="multipolygon"](${bb}););out tags geom qt;`;
+  return `[out:json][timeout:180][maxsize:1073741824];(way["building"](${bb});relation["building"]["type"="multipolygon"](${bb});`
+    + `way["barrier"="city_wall"](${bb});way["historic"="citywalls"](${bb});way["barrier"="wall"]["name"~"长城|長城|Great Wall"](${bb}););out tags geom qt;`;
 }
 
-// fetch the area's buildings from Overpass (trying the mirrors in turn), pack and store them → count
+// fetch the area's buildings (and city walls) from Overpass (trying the mirrors in turn), pack and store
+// them → { count, walls }
 export async function fetchBuildings(plan, { signal, store = true } = {}) {
   const area = plan.area;
   const q = overpassQuery(area, plan.buildings.radius);
@@ -152,7 +189,8 @@ export async function fetchBuildings(plan, { signal, store = true } = {}) {
         const c = await tileCache();
         if (c) await c.put(buildingsKey(area), new Response(buf, { headers: { 'content-type': 'application/octet-stream' } }));
       }
-      return new DataView(buf).getUint32(4, true);
+      const dv = new DataView(buf);
+      return { count: dv.getUint32(4, true), walls: dv.getUint32(12, true) };
     } catch (e) {
       if (e.name === 'AbortError') throw e;
       last = e;
@@ -195,14 +233,22 @@ export class Buildings {
     let p = 0;
     for (let i = 0; i < data.count; i++) { starts[i] = p; p += data.n[i] * 2; }
     this.starts = starts;
-    for (let i = 0; i < data.count; i++) {
-      const s = starts[i], cx = Math.floor(data.xz[s] / CHUNK), cz = Math.floor(data.xz[s + 1] / CHUNK);
-      const key = `${cx},${cz}`;
+    const chunkAt = (x, z) => {
+      const cx = Math.floor(x / CHUNK), cz = Math.floor(z / CHUNK), key = `${cx},${cz}`;
       let ch = this.chunks.get(key);
-      if (!ch) { ch = { cx, cz, x: (cx + 0.5) * CHUNK, z: (cz + 0.5) * CHUNK, ids: [], mesh: null, demZ: -2, used: 0 }; this.chunks.set(key, ch); }
-      ch.ids.push(i);
+      if (!ch) { ch = { cx, cz, x: (cx + 0.5) * CHUNK, z: (cz + 0.5) * CHUNK, ids: [], walls: [], mesh: null, demZ: -2, used: 0 }; this.chunks.set(key, ch); }
+      return ch;
+    };
+    for (let i = 0; i < data.count; i++) chunkAt(data.xz[starts[i]], data.xz[starts[i] + 1]).ids.push(i);
+    // wall pieces, by their first point
+    this.wstarts = new Uint32Array(data.walls);
+    p = 0;
+    for (let i = 0; i < data.walls; i++) {
+      this.wstarts[i] = p;
+      chunkAt(data.wxz[p], data.wxz[p + 1]).walls.push(i);
+      p += data.wn[i] * 2;
     }
-    this.stats = { chunks: 0, tris: 0, count: data.count };
+    this.stats = { chunks: 0, tris: 0, count: data.count, walls: data.walls };
   }
 
   buildChunk(ch) {
@@ -247,6 +293,7 @@ export class Buildings {
         for (let q = 0; q < 3; q++) col.push(rr, rg, rb);
       }
     }
+    this.buildWalls(ch, pos, col);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
@@ -260,6 +307,35 @@ export class Buildings {
     ch.mesh = mesh;
     ch.tris = pos.length / 9;
     ch.demZ = center.z;
+  }
+
+  // a stone wall along each piece: two sides and a walkway on top, rising and falling with the ground
+  buildWalls(ch, pos, col) {
+    const d = this.data, W = 2.6; // half width (m)
+    const side = [0.78, 0.72, 0.62], top = [0.88, 0.84, 0.76];
+    const quad = (a, b, c, e, rgb) => { // a-b bottom, c-e top; both faces
+      pos.push(...a, ...b, ...c, ...a, ...c, ...e, ...a, ...c, ...b, ...a, ...e, ...c);
+      for (let q = 0; q < 12; q++) col.push(...rgb);
+    };
+    for (const i of ch.walls) {
+      const s = this.wstarts[i], n = d.wn[i], h = d.wh[i];
+      const P = [];
+      for (let k = 0; k < n; k++) {
+        const x = d.wxz[s + k * 2], z = d.wxz[s + k * 2 + 1];
+        P.push([x - ch.x, this.heightAt(x, z).h, z - ch.z]);
+      }
+      for (let k = 0; k < n - 1; k++) {
+        const [ax, ag, az] = P[k], [bx, bg, bz] = P[k + 1];
+        const ex = bx - ax, ez = bz - az, len = Math.hypot(ex, ez) || 1;
+        const nx = (-ez / len) * W, nz = (ex / len) * W;
+        const shadeL = 0.7 + 0.3 * Math.max(0, (-ez / len) * SUN.x + (ex / len) * SUN.y);
+        const shadeR = 0.7 + 0.3 * Math.max(0, (ez / len) * SUN.x + (-ex / len) * SUN.y);
+        const L = (x, g, z, y) => [x + nx, g + y, z + nz], R = (x, g, z, y) => [x - nx, g + y, z - nz];
+        quad(L(ax, ag, az, -3), L(bx, bg, bz, -3), L(bx, bg, bz, h), L(ax, ag, az, h), side.map((c) => c * shadeL));
+        quad(R(ax, ag, az, -3), R(bx, bg, bz, -3), R(bx, bg, bz, h), R(ax, ag, az, h), side.map((c) => c * shadeR));
+        quad(L(ax, ag, az, h), L(bx, bg, bz, h), R(bx, bg, bz, h), R(ax, ag, az, h), top);
+      }
+    }
   }
 
   update(cam, now = performance.now(), budgetMs = 3) {

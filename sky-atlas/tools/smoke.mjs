@@ -29,7 +29,12 @@ const until = (fn, arg, timeout = 30000) => page.waitForFunction(fn, arg, { time
 await page.goto(base + '?quality=low', { waitUntil: 'load' });
 await until(() => window.__app && window.__app.firstFrame);
 check(await page.isVisible('#menu'), 'menu page shows');
-check((await page.$$('#presets .place')).length === 20, `20 famous places listed`);
+const nPresets = (await page.$$('#presets .place')).length;
+check(nPresets >= 40, `${nPresets} famous places listed`);
+await page.click('#cats [data-arg="sight"]');
+const sights = await page.$$eval('#presets .place b', (els) => els.map((e) => e.textContent));
+check(sights.length >= 8 && sights.includes('マチュピチュ') && sights.some((n) => n.includes('万里の長城')) && !sights.includes('富士山'), `名所・遺跡 filter: ${sights.length} places (${sights.slice(0, 4).join('・')}…)`);
+await page.click('#cats [data-arg="all"]');
 
 // settings: the smallest radius, aerial photos on, buildings on
 await page.click('#radius [data-arg="10"]');
@@ -51,7 +56,7 @@ check(true, 'download started (progress bar)');
 await until(() => window.__app.store.list.length === 1 && window.__app.store.list[0].done && !window.__app.ui.dl, null, 120000);
 const rec = await page.evaluate(() => window.__app.store.list[0]);
 check(rec.done && rec.failed === 0, `saved: ${rec.tiles} items, ${Math.round(rec.bytes / 1024)} KB, ${rec.bcount} buildings`);
-check(rec.bcount === 81, 'buildings packed from Overpass (81)');
+check(rec.bcount === 81 && rec.wcount === 2, `buildings packed from Overpass (${rec.bcount}) and a city wall (${rec.wcount} pieces)`);
 const cached = await page.evaluate(async () => {
   const { Plan } = await import('./js/plan.js');
   const p = new Plan(window.__app.store.list[0]);
@@ -94,7 +99,7 @@ const st = await page.evaluate(() => {
 check(st.maxZ >= 15, `ground sharpened offline to zoom ${st.maxZ} (${st.vis} tiles drawn)`);
 check(st.errs === 0, 'no tile failed to load from the store');
 check(Math.abs(st.h.h - (MOUNT.h + 50)) < 120, `height at the centre ≈ the mock mountain: ${Math.round(st.h.h)} m (from zoom ${st.h.z})`);
-check(st.b && st.b.chunks > 0 && st.b.tris > 0, `buildings drawn offline (${st.b && st.b.chunks} chunks, ${st.b && st.b.tris} triangles)`);
+check(st.b && st.b.chunks > 0 && st.b.tris > 0 && st.b.walls === 2, `buildings and walls drawn offline (${st.b && st.b.chunks} chunks, ${st.b && st.b.tris} triangles, ${st.b && st.b.walls} wall pieces)`);
 await shot(page, '3-fly.png');
 
 // fly forward with W, then dive into the mountain: never below the ground
