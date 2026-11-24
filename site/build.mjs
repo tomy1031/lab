@@ -310,14 +310,23 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 12 ひとつだけ島 — first-person island survival (three.js, MediaPipe, Gemini Live). Static files: the page,
-// ES modules and assets; the tests, build tools and dev pages stay out of the published folder.
+// 12 ひとつだけ島 — first-person island survival (three.js, MediaPipe, Gemini Live; WebXR). Offline PWA: the game's
+// own tools/bundle.mjs copies what ships (no tests / tools / dev pages) and fills sw.js with the build id and the
+// files to cache, so the published game works with no network once opened (also in a VR headset).
+// Older refs without tools/bundle.mjs are copied as plain static files.
 {
   const dest = path.join(out, 'island-survival');
   try {
     const src = exportDir(refs.island, 'island-survival');
-    const skip = new Set(['tests', 'tools', 'dev']);
-    fs.cpSync(src, dest, { recursive: true, filter: (p) => !skip.has(path.relative(src, p).split(path.sep)[0]) });
+    if (fs.existsSync(path.join(src, 'tools', 'bundle.mjs'))) {
+      const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+      const build = sh(`git -C "${root}" rev-parse "${refs.island}:island-survival"`).slice(0, 12);
+      const r = bundle(src, dest, build);
+      console.log(`island-survival build ${r.build}: ${r.files} files (${r.mb} MB to cache)`);
+    } else {
+      const skip = new Set(['tests', 'tools', 'dev']);
+      fs.cpSync(src, dest, { recursive: true, filter: (p) => !skip.has(path.relative(src, p).split(path.sep)[0]) });
+    }
     const preview = path.join(src, 'docs', 'preview.jpg');
     if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'island-survival.jpg'));
   } catch (e) {

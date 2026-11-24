@@ -486,3 +486,56 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 }
 @media (prefers-reduced-motion: reduce) { .csheet.rolling .cs-val, .csheet.rolling .cs-head::after { animation: none; } .cs-bar i { transition: none; } }
 .cs-wrap .csheet { border: 0; box-shadow: none; background: none; padding: 0; } .cs-wrap > h3 { margin: 0 0 6px; }
+
+/* settings: handwork / butcherView option descriptions, setup "こまかい 設定" */
+.opt-desc { margin: 6px 0 10px; line-height: 1.5; }
+.fine-set { border: 2px dashed rgba(42, 41, 35, .3); border-radius: 12px; padding: 8px 12px; background: rgba(255, 252, 240, .5); }
+.fine-sum { cursor: pointer; margin-bottom: 0; list-style: none; min-height: 36px; }
+.fine-sum::-webkit-details-marker { display: none; }
+.fine-sum::after { content: "▸"; margin-left: auto; color: var(--teal-d); transition: transform .15s; }
+.fine-set[open] > .fine-sum::after { transform: rotate(90deg); }
+.fine-set[open] > .fine-sum { margin-bottom: 8px; }
+.fine-h { font-size: .9rem; margin: 10px 0 6px; color: var(--ink); }
+.fine-body .seg { margin-bottom: 2px; }
+
+/* companion proposal (§24.8) */
+#hud-choice { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(236px + var(--safe-b)); width: min(560px, 92vw); display: none; flex-direction: column; gap: 8px; padding: 10px 14px; background: rgba(8, 24, 28, .86); border: 1px solid var(--glass-line); border-radius: 14px; color: var(--on-glass); pointer-events: auto; z-index: 6; }
+#hud-choice.on { display: flex; }
+#hud-choice .choice-text { font-size: 1rem; line-height: 1.45; }
+#hud-choice .choice-btns { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+#hud-choice kbd { font: inherit; font-size: .78rem; padding: 0 5px; border-radius: 5px; background: rgba(255, 255, 255, .18); }
+@media (max-width: 640px) { #hud-choice { bottom: calc(200px + var(--safe-b)); } }
+.consult-answers { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; } .consult-answers:empty { display: none; }
+
+/* hand-work overlay (§24) */
+#handwork { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; background: rgba(8, 24, 28, .55); padding: max(10px, var(--safe-t)) 10px max(10px, var(--safe-b)); }
+.hw-panel { width: min(880px, 100%); max-height: 100%; display: flex; flex-direction: column; gap: 6px; background: var(--paper); border-radius: 18px; box-shadow: var(--shadow); padding: 10px 14px 12px; }
+.hw-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hw-title { font-size: 1.15rem; } .hw-step { color: var(--ink-soft); font-size: .92rem; } .hw-badge { margin-left: auto; font-size: .8rem; color: var(--teal-d); }
+.hw-cv { width: 100%; height: auto; aspect-ratio: 8 / 5; max-height: calc(100vh - 170px); object-fit: contain; border-radius: 12px; background: #f7f0dd; touch-action: none; cursor: crosshair; user-select: none; }
+.hw-hint { min-height: 1.4em; text-align: center; font-weight: 700; color: var(--ink); }
+.hw-done .hw-hint { color: var(--teal-d); font-size: 1.1rem; }
+.hw-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hw-dots { flex: 1 1 140px; height: 8px; border-radius: 4px; background: var(--paper-3); position: relative; overflow: hidden; }
+.hw-dots::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: var(--teal); transition: width .15s; }
+.hw-sp { font-size: .85rem; color: var(--ink-soft); min-width: 9em; }
+.hw-foot kbd { font: inherit; font-size: .75rem; padding: 0 4px; border-radius: 4px; background: var(--paper-3); }
+@media (max-width: 640px) { .hw-panel { padding: 8px; } .hw-foot .btn { flex: 1 1 auto; } }
+
+/* 解体の 表現：省略 (§25.5) — a short fade with one line */
+.bv-skip { position: fixed; inset: 0; z-index: 85; display: flex; align-items: center; justify-content: center; background: rgba(8, 18, 20, .86); color: var(--on-glass); font-size: 1.25rem; font-weight: 700; letter-spacing: .05em; animation: bvIn .35s ease; transition: opacity .4s; }
+.bv-skip.out { opacity: 0; }
+@keyframes bvIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 解体の 表現：省略 (§25.5) — a short fade with one line */
+.bv-skip { position: fixed; inset: 0; z-index: 85; display: flex; align-items: center; justify-content: center; background: rgba(8, 18, 20, .86); color: var(--on-glass); font-size: 1.25rem; font-weight: 700; letter-spacing: .05em; animation: bvIn .35s ease; transition: opacity .4s; }
+.bv-skip.out { opacity: 0; }
+@keyframes bvIn { from { opacity: 0; } to { opacity: 1; } }
+.hw-say { align-self: center; max-width: 92%; padding: 4px 14px; border-radius: 12px; background: var(--teal-l); color: var(--teal-d); font-weight: 700; } .hw-say.hidden { display: none; }
+
+/* PWA update banner */
+#upd-banner { position: fixed; left: 50%; top: max(10px, var(--safe-t)); transform: translateX(-50%); z-index: 90; display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 14px; background: var(--glass-2); color: var(--on-glass); box-shadow: var(--shadow); font-weight: 700; }
+
+/* VR (WebXR): the headset button on the HUD; the page itself is not seen while in the headset */
+#vr-enter { position: absolute; right: max(14px, var(--safe-r, 0px)); bottom: 132px; z-index: 6; pointer-events: auto; }
+body.in-vr #hud, body.in-vr #vr-enter { visibility: hidden; }

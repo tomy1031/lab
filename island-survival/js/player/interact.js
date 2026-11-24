@@ -61,7 +61,7 @@ export class Interact {
   // ---------------------------------------------------------------- targeting
   findTarget() {
     const g = this.game, P = g.player, nodes = g.world.nodes;
-    const eye = g.renderer.camera.position, fwd = P.forward;
+    const eye = P.vr && P.aim ? P.aim.origin : g.renderer.camera.position, fwd = P.forward;
     const comp = g.sys.companion?.body;
     if (comp && Math.hypot(comp.pos.x - P.pos.x, comp.pos.z - P.pos.z) < 2.4) {
       const dx = comp.pos.x - P.pos.x, dz = comp.pos.z - P.pos.z, d = Math.hypot(dx, dz);
@@ -72,6 +72,17 @@ export class Interact {
     if (fr) {
       const fp = fr.fire.group.position, d = Math.hypot(fp.x - P.pos.x, fp.z - P.pos.z);
       if ((((fp.x - P.pos.x) * fwd.x + (fp.z - P.pos.z) * fwd.z) / Math.max(d, 0.1) > 0.5) || d < 1.2) return { type: 'fire', fire: fr, label: '火', options: this.fireOptions(fr) };
+    }
+    // tracks / droppings on a game trail (§26.3): look closely (crouch) or know tracks
+    const sign = g.sys.traps?.signAt?.(P.pos, 1.7);
+    if (sign && (P.crouch || (g.sys.knowledge?.level?.('howto_read_tracks') ?? 0) >= 1) && !g.sys.traps?.nearest?.(P.pos, 2.4)) {
+      return { type: 'sign', sign, label: sign.kind === 'scat' ? 'ふん' : '足跡', options: [{ id: 'read', label: `${sign.kind === 'scat' ? 'ふん' : '足跡'}を 調べる（だれの？ いつの？）` }] };
+    }
+    // traps (§26): the one in front of you
+    const trap = g.sys.traps?.nearest?.(P.pos, 2.4);
+    if (trap) {
+      const dx = trap.x - P.pos.x, dz = trap.z - P.pos.z, d = Math.hypot(dx, dz);
+      if (d < 1 || (dx * fwd.x + dz * fwd.z) / Math.max(0.1, d) > 0.55) return { type: 'trap', trap, label: '罠', options: g.sys.traps.optionsFor(trap) };
     }
     const node = nodes.pick(eye, fwd, 2.6, (n) => (RESOURCE_OPTIONS[n.kind]?.length || n.kind === 'carcass' || n.kind === 'drop' || n.structure));
     if (node) {
@@ -124,10 +135,17 @@ export class Interact {
     const ops = [];
     if (!rec.fire.lit) {
       const ms = this.fireMethods(rec);
+      if (g.handwork && rec.layP == null) {
+        const hasTinder = inv.stacks.some((s) => (itemDef(s.id)?.tinder ?? 0) >= 0.5), twigs = inv.count('twig'), fuelWood = inv.stacks.some((s) => /branch|driftwood|firewood/.test(s.id));
+        ops.push({ id: 'lay', label: '薪を 組む（火口 → 焚きつけ → 薪：着火しやすく なる）', ok: hasTinder && twigs >= 2 && fuelWood, reason: '火口・小枝 2・枝が 要る' });
+      }
       for (const m of ms.slice(0, 3)) ops.push({ id: `light:${m.id}`, label: `火を おこす（${FIRE_METHODS[m.id].name}・成功率 ${Math.round(m.p * 100)}%）`, method: m });
       if (!ms.length) ops.push({ id: 'nomethod', label: '火を おこす 道具が ない', ok: false, reason: '弓ぎりセット・きりもみ・火打ち石を 作ろう' });
     } else {
-      if (held && hd?.food && hd.food.cookable !== false) ops.push({ id: 'cook', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 焼く` });
+      if (held && hd?.food && hd.food.cookable !== false) {
+        ops.push({ id: 'cook', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 火の そばに 置いて 焼く` });
+        if (g.handwork) ops.push({ id: 'skewer', label: `${g.sys.knowledge?.nameOf?.(held.id) || hd.name}を 串で 焼く（自分で 返す）` });
+      }
       const fuel = inv.stacks.find((s) => (itemDef(s.id, s)?.fuel ?? 0) > 0 && !itemDef(s.id, s)?.food && s.id !== 'log');
       if (fuel) ops.push({ id: 'fuel', label: `${itemDef(fuel.id).name}を くべる（残り ${(rec.fire.fuel / 60).toFixed(1)} 時間）`, stack: fuel });
       if (held && (hd?.container?.heatproof || held.stats?.heatproof) && held.water?.cups) ops.push({ id: 'boil', label: `${hd.name}を 火に かける（煮沸・煮込み）` });
@@ -145,7 +163,7 @@ export class Interact {
     const tinder = bestTinder(inv);
     const hereShelter = g.sys.building?.shelterAt?.(rec.fire.group.position.x, rec.fire.group.position.z) || { rain: 0, wind: 0 };
     const damp = dampness({ rain: W.rain, humidity: W.humidity, roof: hereShelter.rain >= 0.7, hour: g.clock.hour, tinderWet: tinder.stack?.wet > 60 });
-    const base = { tinderMul: tinder.mul, damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 };
+    const base = { tinderMul: tinder.mul * (rec.layMul ?? 1), damp, windSpeed: W.windSpeed, windBlock: Math.max(hereShelter.wind || 0, g.player.crouch ? 0.3 : 0), diffFire: g.diff?.fire ?? 0, skill: 0 }; // §26 the lay
     const out = [];
     const has = (id) => inv.stacks.find((s) => s.id === id);
     const steelish = inv.stacks.find((s) => /knife|axe|metal_scrap|nail|can/.test(s.id) || itemDef(s.id)?.tags?.includes('steel'));
@@ -167,10 +185,11 @@ export class Interact {
   carcassOptions(node) {
     const sp = SPECIES[node.data.species];
     const tool = this.butcherTool();
-    if (sp.small) return [{ id: 'take_small', label: `${sp.name}を ${sp.flies || node.data.species === 'junglefowl' ? '羽を むしって さばく' : '拾う'}` }];
+    const mild = (this.game.settings?.butcherView || 'mild') !== 'normal';
+    if (sp.small) return [{ id: 'take_small', label: `${sp.name}を ${sp.flies || node.data.species === 'junglefowl' ? (mild ? '下ごしらえ する（羽を むしる）' : '羽を むしって さばく') : '拾う'}` }];
     if (tool === 'hands') return [{ id: 'butcher', label: `${sp.name}を さばく`, ok: false, reason: '刃物が 要る（石刃でも できる）' }];
-    const ops = [{ id: 'butcher', label: `${sp.name}を 解体する（${BUTCHER[tool].label}）` }];
-    if (!node.data.bled) ops.push({ id: 'bleed', label: '血抜きを する' });
+    const ops = [{ id: 'butcher', label: mild ? `${sp.name}の 下ごしらえを する（${BUTCHER[tool].label}）` : `${sp.name}を 解体する（${BUTCHER[tool].label}）` }];
+    if (!node.data.bled) ops.push({ id: 'bleed', label: mild ? '下じまいを する（しばらく つるす）' : '血抜きを する' });
     return ops;
   }
 
@@ -209,6 +228,8 @@ export class Interact {
       case 'water': return this.waterAction(t, opt);
       case 'fire': return this.fireAction(t, opt);
       case 'carcass': return this.carcassAction(t, opt);
+      case 'trap': return this.trapAction(t.trap, opt);
+      case 'sign': return this.readSign(t.sign);
       case 'site': return g.sys.building?.act?.(t.node, opt, this);
       case 'node': return this.nodeAction(t, opt);
       default: break;
@@ -320,8 +341,10 @@ export class Interact {
   // ---------------------------------------------------------------- fire
   fireAction(t, opt) {
     const g = this.game, P = g.sys.player, rec = t.fire, fires = g.sys.fires;
+    if (opt.id === 'lay') return this.layFire(rec);
     if (opt.id.startsWith('light:')) return this.lightFire(rec, opt.method);
     if (opt.id === 'fuel') { const s = opt.stack; const part = P.inv.take(s.uid, 1)[0]; const h = fires.addFuel(rec, part); if (h < 0) { P.inv.addStack(part); g.bus.emit('toast', { text: '丸太は 大きな 火でないと 燃えない。先に 枝を くべよう', kind: 'warn' }); } else g.sys.sfx?.play('drop'); return; }
+    if (opt.id === 'skewer') { this.skewerCook(); return; }
     if (opt.id === 'cook') { const held = P.heldStack(); const one = P.inv.take(held.uid, 1)[0]; fires.cook(rec, one); P.validate(); g.bus.emit('toast', { text: '焼いている… 色と 音で 取り出す 時機を 決めよう', kind: 'info' }); return; }
     if (opt.id.startsWith('take:')) { const s = fires.takeOff(rec, +opt.id.split(':')[1]); if (s) { if (s.ash) { s.q = Math.max(1, s.q - 10); g.bus.emit('toast', { text: '串なしで 焼いたので 灰まみれ…', kind: 'warn' }); } g.bus.emit('toast', { text: `${itemDef(s.id).name}：${cookStageName(s.done)}`, kind: 'info' }); } return; }
     if (opt.id === 'boil') { const held = P.heldStack(); const r = fires.boil(rec, held); if (r === 'ok') { P.inv.removeStack(held.uid); P.validate(); g.bus.emit('toast', { text: '火に かけた。10 分 沸かすと 安全に なる', kind: 'info' }); } return; }
@@ -330,18 +353,57 @@ export class Interact {
     if (opt.id === 'sit') { P.resting = !P.resting; g.bus.emit('toast', { text: P.resting ? '火の そばで 休んでいる（動くと やめる）' : '立ち上がった', kind: 'info' }); return; }
   }
 
+  /** §26 火の 組み方: lay tinder, kindling and fuel in order — a good lay lights more easily (×0.8–1.2) */
+  async layFire(rec) {
+    const g = this.game, P = g.sys.player, inv = P.inv;
+    const FF = await import('./fieldflows.js');
+    const K = Math.max(g.sys.knowledge?.level?.('howto_fire_lay') ?? 0, inv.find('guide') ? 2 : 0);
+    const r = await g.handwork.run(FF.fireLayFlow({ K }), { title: '薪を 組む', key: 'firelay', tolMul: [0.9, 1, 1.1, 1.2][K], scene: { trap: { id: 'firelay', K, view: 'mild' } } });
+    if (r.cancelled) return;
+    inv.take('twig', 2); const br = inv.stacks.find((s) => /branch|driftwood|firewood/.test(s.id)); const fuel = br ? inv.take(br.uid, 1)[0] : null;
+    if (fuel) g.sys.fires.addFuel(rec, fuel);
+    P.validate();
+    // §26.9: ignition × (0.85 + 0.27 p) × the lay (teepee 1.1, log cabin 1.0, star 0.9); thick wood first chokes it
+    rec.layP = r.failures.includes('order') ? Math.min(r.p, 0.3) : r.p;
+    rec.layMul = (0.85 + 0.27 * rec.layP) * (FF.LAY_MUL[r.extra.layType] ?? 1) * (r.failures.includes('order') ? 0.5 : 1);
+    g.passTime(3);
+    const lv = Math.max(K, 1) + (K < 2 && (P.stats.fireLays = (P.stats.fireLays || 0) + 1) >= 3 ? 1 : 0);
+    if (lv > K) g.sys.knowledge?.learn?.('howto_fire_lay', Math.min(lv, 2), 'やって 覚えた');
+    g.bus.emit('toast', { text: r.failures.includes('order') ? '組む 順が ちがった。空気が 通らず 火が つきにくい' : `薪を 組んだ（${r.feel.label}：火が つきやすく なった）`, kind: r.failures.includes('order') ? 'warn' : 'good' });
+  }
+
+  /** §24.7 串焼き: hold it over the fire, turn it twice, take it off when it looks right (your eye decides the doneness) */
+  async skewerCook() {
+    const g = this.game, P = g.sys.player, held = P.heldStack();
+    if (!held) return;
+    const one = P.inv.take(held.uid, 1)[0]; P.validate();
+    const food = /sardine|jack|seabream|grouper|wrasse|goby|eel|trevally|fish|puffer|mackerel|snapper/.test(one.id) ? 'fish' : /crab|lobster|shrimp/.test(one.id) ? 'crab' : /meat|fowl|game|organ|liver/.test(one.id) ? 'meat' : 'root';
+    const { WORK_FLOW } = await import('../data/handwork.js');
+    const r = await g.handwork.run(WORK_FLOW.skewer(food), { title: `${itemDef(one.id)?.name}を 串で 焼く`, key: 'skewer' });
+    if (r.cancelled) { P.inv.addStack(one); P.validate(); return; }
+    const d = r.extra.doneness ?? 0.9;
+    // both faces matter: an underdone face keeps part of it half-raw (§7.3)
+    one.done = Math.round(Math.max(0, Math.min(140, (d / 0.9) * 85)));
+    if (r.p < 0.3 && d < 0.75) one.done = Math.min(one.done, 55);
+    if (r.p >= 0.8) { one.q = Math.min(100, (one.q ?? 50) + 5); g.sys.player.body.addMorale?.(1, 'crispy'); }
+    P.inv.addStack(one); P.validate();
+    g.passTime(8);
+    g.sys.sfx?.play('sizzle');
+    g.bus.emit('toast', { text: `${itemDef(one.id)?.name}：${cookStageName(one.done)}${r.p >= 0.8 ? '（こんがり！）' : ''}`, kind: r.p >= 0.5 ? 'good' : 'info' });
+  }
+
   lightFire(rec, m) {
     const g = this.game, P = g.sys.player, M = FIRE_METHODS[m.id];
     const tinder = bestTinder(P.inv);
     if (M.kind !== 'blow' && !tinder.stack) { g.bus.emit('toast', { text: '火口（枯れ草・ヤシの 繊維・木くず）が 要る', kind: 'warn' }); return; }
-    const done = (ok, s) => {
+    const done = (ok, s, quiet = false) => {
       P.body.s.stamina = Math.max(0, P.body.s.stamina - M.stamina);
       g.passTime(M.minutes, { heavy: M.kind === 'friction' });
       if (m.stack) { m.stack.dur = (m.stack.dur ?? 15) - 1; if (m.stack.dur <= 0) { P.inv.removeStack(m.stack.uid); g.bus.emit('toast', { text: 'セットが すり減って 使えなく なった', kind: 'bad' }); } }
       if (m.id === 'gunpowder' && g.setup?.ammo !== 'inf') P.inv.take('ammo', 1);
       if (m.id === 'firesteel') { const fs = P.inv.find('firesteel'); if (fs) fs.dur = (fs.dur ?? 3000) - 1; }
       if (m.id === 'lighter') { const lt = P.inv.find('lighter'); if (lt) { lt.dur = (lt.dur ?? 50) - 1; if (lt.dur <= 0) { P.inv.removeStack(lt.uid); g.bus.emit('toast', { text: 'ライターの ガスが 切れた', kind: 'bad' }); } } }
-      if (!ok) { g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花は 散ったが 火口に つかなかった', kind: 'warn' }); return; }
+      if (!ok) { if (!quiet) g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花は 散ったが 火口に つかなかった', kind: 'warn' }); return; }
       if (tinder.stack && M.kind !== 'blow') P.inv.take(tinder.stack.uid, 1);
       g.sys.fires.light(rec, m.id);
       P.stats.firesLit++;
@@ -351,6 +413,21 @@ export class Interact {
       else g.bus.emit('toast', { text: '火が ついた', kind: 'good' });
       g.rec?.('fire');
     };
+    if (g.handwork && M.kind !== 'blow') {
+      // §24: on the work table — make the ember with your hands (p raises or lowers the chance), carry it, blow it alive
+      import('../data/handwork.js').then(({ WORK_FLOW }) => {
+        const flow = M.kind === 'spark' ? WORK_FLOW.spark() : WORK_FLOW.friction(m.id === 'bow_drill');
+        let ember = false;
+        const gate = (i, res) => { if (i !== 0) return true; ember = g.rng.next() < Math.min(0.98, m.p * (0.45 + res[0].p)); if (!ember) g.bus.emit('toast', { text: M.kind === 'friction' ? '煙は 出たが 火種に ならなかった…' : '火花が 火口に 落ちなかった…', kind: 'warn' }); return ember; };
+        g.handwork.run(flow, { title: `${M.name}で 火を おこす`, key: `fire:${m.id}`, scene: { heat: 0 }, gate }).then((r) => {
+          if (r.cancelled) return;
+          if (!ember) { done(false, null, true); return; }
+          if (!r.extra.flame) g.bus.emit('toast', { text: '火種が 消えて しまった…（一定の 間で 吹く）', kind: 'warn' });
+          done(!!r.extra.flame, null, !r.extra.flame);
+        });
+      });
+      return;
+    }
     if (M.kind === 'spark') {
       // §10.2: 3–5 strikes, each with p1 = 1 − (1 − P)^(1/5)
       const p1 = 1 - Math.pow(1 - m.p, 1 / 5);
@@ -370,49 +447,134 @@ export class Interact {
   carcassAction(t, opt) {
     const g = this.game, P = g.sys.player, node = t.node, sp = SPECIES[node.data.species];
     if (opt.id === 'take_small') {
+      if ((sp.flies || node.data.species === 'junglefowl') && g.handwork) { this.birdCarcass(node); return; }
       this.startActivity({ kind: 'hold', title: opt.label, params: { seconds: 1.2 } }, () => { this.takeSmallCarcass(node); g.passTime(sp.flies || node.data.species === 'junglefowl' ? 10 : 1); });
       return;
     }
-    if (opt.id === 'bleed') { node.data.bled = true; g.passTime(5); g.bus.emit('toast', { text: '血抜きを した（肉の 傷みが 遅く なる）', kind: 'info' }); P.bloodyHands = true; return; }
-    const tool = this.butcherTool(), B = BUTCHER[tool];
-    const minutes = B.minutes[node.data.species === 'boar' ? 1 : 0];
-    this.startActivity({ kind: 'hold', title: `${sp.name}を 解体する`, params: { seconds: 3.0 } }, () => {
-      const y = sp.yield;
-      const ageH = (g.clock.total - node.data.diedAt) / 60;
-      const fresh = clamp(100 - ageH * 4 * (node.data.gutted ? 1 : 1.5), 0, 100);
-      const extra = { fresh, bled: !!node.data.bled, gutted: true, source: sp.name, rng: g.rng };
-      const meatId = Object.keys(y).find((k) => /meat|small_game/.test(k));
-      // §23.3 猟師の 読み: a hunter partner beside you gets ~10 % more meat out of the carcass
-      const huntPal = g.sys.companion?.perkNear?.('tracker', 8) ? 1.1 : 1;
-      let meat = Math.round(y[meatId] * B.meat * huntPal) - (node.data.meatLoss || 0);
-      if (node.data.dirty) extra.q = 30;
-      this.gain(meatId, Math.max(1, meat), extra);
-      if (y.hide && B.hide) this.gain('hide', Math.max(1, Math.round(y.hide * B.hide)), { q: B.hideQ });
-      if (y.sinew && B.sinew) this.gain('sinew', Math.round(y.sinew * B.sinew));
-      if (y.bone) this.gain('bone', y.bone);
-      if (y.fat && B.fat) this.gain('fat', Math.max(1, Math.round(y.fat * B.fat)), { fresh });
-      if (y.horn) this.gain('horn', y.horn);
-      if (B.organs) this.gain('organ_meat', 1, { fresh });
-      if (B.marrow) this.gain('marrow', 1, { fresh });
-      if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', Math.round(node.data.arrows * 0.8));
-      P.body.s.hygiene = Math.max(0, P.body.s.hygiene - 8);
-      P.bloodyHands = true;
-      P.body.s.stamina = Math.max(0, P.body.s.stamina - 6);
-      if (!P.firstKillDone) { P.firstKillDone = true; P.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); }
-      g.sys.fauna.removeCarcass(node.data.animal);
-      g.sys.knowledge?.learn?.(sp.guide, 3, 'butchered');
-      g.passTime(minutes, { heavy: true });
-      if (g.clock.total - node.data.diedAt > 60 && !node.data.gutted) g.bus.emit('toast', { text: '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
-    });
+    if (opt.id === 'bleed') { node.data.bled = true; g.passTime(5); g.bus.emit('toast', { text: (this.game.settings?.butcherView || 'mild') !== 'normal' ? '下じまいを した（肉の 傷みが 遅く なる）' : '血抜きを した（肉の 傷みが 遅く なる）', kind: 'info' }); P.bloodyHands = true; return; }
+    this.butcherCarcass(node);
   }
 
-  takeSmallCarcass(node) {
+  /** §25: butchering on the paper diagram (or skipped), then the yields — p moves them 0.9–1.08× */
+  async butcherCarcass(node) {
+    const g = this.game, P = g.sys.player, sp = SPECIES[node.data.species];
+    const tool = this.butcherTool(), B = BUTCHER[tool];
+    const minutes = B.minutes[node.data.species === 'boar' ? 1 : 0];
+    const BT = await import('./butcher.js');
+    const kind = BT.butcherKind(node.data.species), view = BT.viewOf(g);
+    const K0 = g.sys.knowledge?.level?.(kind.howto) ?? 0;
+    const K = P.inv.find('guide') ? Math.max(K0, 2) : K0; // the survival guide shows the beast steps (§20.3)
+    const ageMin = g.clock.total - node.data.diedAt;
+    const teachC = BT.teacher(g, kind);
+    let r;
+    if (view === 'skip' || !g.handwork) {
+      await BT.skipFade(view === 'skip' ? 'ていねいに 下ごしらえを した。' : `${sp.name}を 解体した。`);
+      r = { ok: true, p: 0.55, steps: [], extra: {}, skipped: true };
+    } else {
+      const flow = BT.butcherFlow({ kind, view, K, bledOK: !node.data.bled && ageMin <= 30, axe: tool === 'axe', teach: !!teachC });
+      r = await g.handwork.run(flow, {
+        title: view === 'normal' ? `${sp.name}を 解体する（${B.label}）` : `${sp.name}の 下ごしらえ`, key: `butcher:${kind.cat}`,
+        tolMul: (K >= 3 ? 1.2 : K >= 2 ? 1.1 : K === 0 ? 0.85 : 1) * (g.sys.companion?.near?.(4) ? 1.15 : 1),
+        scene: { carcass: { species: kind.diagram, view, knowledge: teachC ? Math.max(2, K) : K, showNoTouch: K >= 3, done: {}, traced: {}, portions: 0 } },
+        onStep: (step) => { if (teachC && step.kind !== 'choose') BT.teachLine(teachC, kind, step.bstep, view); },
+      });
+      if (r.cancelled) return;
+    }
+    const ps = BT.stepScores(r), p = r.p;
+    const pOf = (k) => ps[k] ?? (r.skipped ? 0.55 : 0.3);
+    const y = sp.yield;
+    const fresh = clamp(100 - (ageMin / 60) * 4 * (node.data.gutted ? 1 : 1.5), 0, 100);
+    const extra = { fresh, bled: !!node.data.bled || (ps.bleed ?? 0) >= 0.3, gutted: true, source: sp.name, rng: g.rng };
+    if (r.extra.cutDeep) extra.contam = K >= 3 ? 1.3 : 1.5; else if (K >= 3) extra.contam = 0.85;
+    const meatId = Object.keys(y).find((k) => /meat|small_game/.test(k));
+    // §23.3 猟師の 読み: a hunter partner beside you gets ~10 % more meat out of the carcass
+    const huntPal = g.sys.companion?.perkNear?.('tracker', 8) ? 1.1 : 1;
+    let meat = Math.round(y[meatId] * B.meat * huntPal * (0.9 + 0.18 * p)) - (node.data.meatLoss || 0) - (r.extra.squeezed ? 1 : 0);
+    if (node.data.dirty) extra.q = 30;
+    this.gain(meatId, Math.max(1, meat), extra);
+    const pSkin = pOf('skin');
+    if (y.hide && B.hide) this.gain('hide', Math.max(1, Math.round(y.hide * B.hide)), { q: Math.max(5, B.hideQ + Math.round(-10 + 18 * pSkin) - (pSkin < 0.3 ? 15 : 0)) });
+    if (y.sinew && B.sinew) this.gain('sinew', Math.max(0, Math.round(y.sinew * B.sinew * (0.8 + 0.4 * p))));
+    const missed = r.extra.missedJoints || 0;
+    if (y.bone) this.gain('bone', Math.max(0, y.bone - (missed ? 1 : 0)));
+    if (y.fat && B.fat) this.gain('fat', Math.max(1, Math.round(y.fat * B.fat * (pSkin < 0.3 ? 0.8 : 1))), { fresh });
+    if (y.horn) this.gain('horn', y.horn);
+    if (B.organs && !r.extra.squeezed) this.gain('organ_meat', 1, { fresh });
+    if (B.marrow && !missed) this.gain('marrow', 1, { fresh });
+    if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', Math.round(node.data.arrows * 0.8));
+    if (missed) { const blade = P.heldStack(); if (blade?.dur != null) blade.dur = Math.max(1, blade.dur - 2 * missed); }
+    P.body.s.hygiene = Math.max(0, P.body.s.hygiene - 8);
+    P.bloodyHands = true;
+    P.body.s.stamina = Math.max(0, P.body.s.stamina - 6);
+    if (!P.firstKillDone) { P.firstKillDone = true; P.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); BT.firstKillLine(g); }
+    g.sys.fauna.removeCarcass(node.data.animal);
+    g.sys.knowledge?.learn?.(sp.guide, 3, 'butchered');
+    const lv = BT.learnButcher(g, kind, { p, skipped: !!r.skipped, teach: !!teachC });
+    if (teachC) teachC.adjust(0, 1);
+    const tm = (1.2 - 0.36 * p) * (K >= 3 ? 0.9 : K >= 2 ? 0.95 : 1) * (1 + 0.1 * (r.extra.wrongChoices || 0)) * (g.sys.companion?.near?.(4) ? 0.8 : 1);
+    g.passTime(Math.round(minutes * tm), { heavy: true });
+    const mild = view !== 'normal';
+    if (r.extra.cutDeep) g.bus.emit('toast', { text: mild ? '中身を 傷つけて、肉が 傷みやすく なった（よく 火を 通そう）' : '腸を 破って 肉が 汚れた（よく 火を 通そう）', kind: 'warn' });
+    if (r.extra.squeezed) g.bus.emit('toast', { text: mild ? '中身を つぶして しまい、取れた 物が 減った' : 'にがい 袋を つぶして しまった', kind: 'warn' });
+    if (!r.skipped) g.bus.emit('toast', { text: `${mild ? '下ごしらえ' : '解体'}：${r.feel?.label || ''}（肉 ${Math.max(1, meat)}）${lv > K0 ? `・図鑑「${mild ? '下ごしらえ' : '解体'}の 手順」が K${lv} に` : ''}`, kind: 'good' });
+    if (ageMin > 60 && !node.data.gutted) g.bus.emit('toast', { text: mild ? '中身を 出すのが 遅れた。肉の 傷みが 早い' : '内臓を 出すのが 遅れた。肉の 傷みが 早い', kind: 'warn' });
+  }
+
+  /** §26.3 足跡・ふんを 読む: who left it, and (K2+) how old it is */
+  async readSign(sign) {
+    const g = this.game, P = g.sys.player, K = g.sys.knowledge?.level?.('howto_read_tracks') ?? 0;
+    const FF = await import('./fieldflows.js');
+    const all = ['goat', 'boar', 'junglefowl', 'seabird', 'rat', 'monitor', 'coconut_crab'].filter((x) => x !== sign.species);
+    const others = all.sort(() => Math.random() - 0.5).slice(0, 2);
+    const ageH = ((g.clock.total / 60) + sign.x * 7 + sign.z * 3) % 30;
+    const age = ageH < 6 ? 'fresh' : ageH < 18 ? 'half' : 'old';
+    const r = await g.handwork.run(FF.tracksFlow({ K, species: sign.species, kind: sign.kind, age, others }), { title: `${sign.kind === 'scat' ? 'ふん' : '足跡'}を 読む`, key: 'tracks', scene: { track: { species: sign.species, kind: sign.kind, age, K } } });
+    if (r.cancelled) return;
+    g.passTime(3);
+    const who = r.steps.find((x) => x.hid === 'who'), when = r.steps.find((x) => x.hid === 'when');
+    const right = (r.extra.wrongChoices || 0) === 0 || (who?.p ?? 0) >= 0.7;
+    const st = (P.stats.tracks = P.stats.tracks || { right: 0, ages: 0 });
+    if (right) { st.right++; sign.trail.known = true; }
+    if (when && when.p >= 0.7) st.ages++;
+    const lv = Math.max(K, 1, st.right >= 5 ? 2 : 0, K >= 2 && st.ages >= 5 ? 3 : 0);
+    if (lv > K) g.sys.knowledge?.learn?.('howto_read_tracks', lv, '読んで 覚えた');
+    const { TRACKS, TRACK_AGE } = await import('../data/fieldcraft.js');
+    g.bus.emit('toast', { text: right ? `${TRACKS[sign.species]?.name || sign.species}の ${sign.kind === 'scat' ? 'ふん' : '足跡'}${K >= 2 ? `（${TRACK_AGE[age]?.name}）` : ''}。この 道を 通って いる` : '…ちがうかも（だれの 跡か 分からなかった）', kind: right ? 'good' : 'info' });
+    g.sys.traps?.updateTrailVisibility?.();
+  }
+
+  /** §26 traps: delegate to player/trapwork.js */
+  async trapAction(trap, opt) { const TW = await import('./trapwork.js'); return TW.trapAction(this.game, this, trap, opt); }
+
+  /** §25.3 birds: pluck → take the insides out, on the diagram (or skipped) */
+  async birdCarcass(node) {
+    const g = this.game, sp = SPECIES[node.data.species];
+    const BT = await import('./butcher.js');
+    const kind = BT.butcherKind(node.data.species), view = BT.viewOf(g);
+    const K = g.sys.knowledge?.level?.(kind.howto) ?? 0;
+    let r = { p: 0.55, steps: [], extra: {}, skipped: true };
+    if (view !== 'skip' && g.handwork) {
+      r = await g.handwork.run(BT.butcherFlow({ kind, view, K, teach: !!BT.teacher(g, kind) }), { title: view === 'normal' ? `${sp.name}を さばく` : `${sp.name}の 下ごしらえ`, key: 'butcher:bird', scene: { carcass: { species: 'bird', view, knowledge: K, done: {}, traced: {}, portions: 0 } } });
+      if (r.cancelled) return;
+      r.skipped = false;
+    } else await BT.skipFade();
+    this.takeSmallCarcass(node, { p: r.p, contam: r.extra.cutDeep ? 1.5 : 1, feathers: r.skipped ? 1 : 2 });
+    BT.learnButcher(g, kind, { p: r.p, skipped: r.skipped });
+    if (!g.sys.player.firstKillDone) { g.sys.player.firstKillDone = true; g.sys.player.body.addMorale(-3, 'first_kill'); g.bus.emit('toast', { text: 'ごめん、いただきます', kind: 'info' }); BT.firstKillLine(g); }
+    g.passTime(Math.round(10 * (1.2 - 0.36 * r.p)));
+  }
+
+  takeSmallCarcass(node, o = {}) {
     const g = this.game, sp = SPECIES[node.data.species];
     const ageH = (g.clock.total - node.data.diedAt) / 60;
-    for (const [id, n] of Object.entries(sp.yield)) this.gain(id, n, { fresh: clamp(100 - ageH * 4, 0, 100), rng: g.rng });
+    for (const [id, n] of Object.entries(sp.yield)) {
+      const k = id === 'feather' ? n + (o.feathers ? o.feathers - 1 : 0) : o.p != null && /meat|small_game|fowl/.test(id) ? Math.max(1, Math.round(n * (0.9 + 0.18 * o.p))) : n;
+      this.gain(id, k, { fresh: clamp(100 - ageH * 4, 0, 100), rng: g.rng, ...(o.contam && o.contam !== 1 && /meat|small_game|fowl/.test(id) ? { contam: o.contam } : {}) });
+    }
+    if (o.feathers && !sp.yield.feather) this.gain('feather', o.feathers);
     if (node.data.arrows) this.gain(node.data.arrowItem || 'arrow_pro', node.data.arrows);
     g.sys.knowledge?.learn?.(sp.guide, 3, 'caught');
-    g.sys.fauna.removeCarcass(node.data.animal);
+    if (node.data.animal) g.sys.fauna.removeCarcass(node.data.animal);
   }
 
   // ---------------------------------------------------------------- held tool
@@ -587,7 +749,8 @@ export class Interact {
     const spec = { kind: 'rod', title: '釣り', params: { biteMin: Math.max(2, wait * 0.85), biteMax: Math.max(3, wait * 1.15), window, fish: { pull: F.power / 60, stamina: F.stamina / 50 }, lineStrength: lineStrength * tensionCap(sp, lineStrength) } };
     this.fishing = { spot, sp, bait };
     this.startActivity(spec, (r) => {
-      const ho = hookOutcome(sp, hook);
+      const ho = { ...hookOutcome(sp, hook) };
+      if (h.s?.knotP != null || h.id === 'rod') ho.escape *= 1.33 - 0.6 * (h.s?.knotP ?? 0.8); // §26.9 the knot you tied (a new rod's knot ≈ 0.8)
       P.body.s.stamina = Math.max(0, P.body.s.stamina - 3);
       if (r.ok && g.rng.next() < ho.escape) r = { ok: false, why: 'escaped' };
       if (bait && (r.ok || r.why === 'missed' || g.rng.next() < ho.nibbleOnly)) P.inv.take(bait.uid, 1);
@@ -661,7 +824,7 @@ export class Interact {
     const g = this.game;
     if (g.paused) return;
     // gesture events of this frame
-    const ev = g.hands?.ready ? (g.hands.events || []) : [];
+    const ev = g.hands?.ready ? (g.hands.events || []) : g.xr?.presenting ? g.xr.gestures : [];
     if (this.activity) {
       const a = this.activity;
       const keys = { Space: g.input.keys.has('Space') };

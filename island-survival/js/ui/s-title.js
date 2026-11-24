@@ -22,7 +22,7 @@ export default function title(ctx) {
     h('h1', { class: 'logo' }, h('span', null, 'ひとつだけ'), h('span', { class: 'logo-island' }, '島')),
     h('div', { class: 'logo-en' }, 'ONE THING ISLAND'),
     menu,
-    h('div', { class: 'title-foot muted small' }, 'マウス・キーボード / タッチ / ハンドジェスチャー'));
+    h('div', { class: 'title-foot muted small' }, 'マウス・キーボード / タッチ / ハンドジェスチャー / VR', window.ISLE?.pwa?.ready ? '　・　オフライン OK' : ''));
   return { el, cls: 'title-screen' };
 }
 

@@ -26,6 +26,8 @@ export class PlayerController {
     this.seaLevel = 0;
     this.moveInfo = { dist: 0, running: false, swimming: false, inWater: false, waterDepth: 0, waterType: null, jumped: false, moving: false };
     this.forward = new THREE.Vector3();
+    this.vr = false;       // in a VR session (vr/xr.js sets this and `aim` = { origin, dir } of the right controller)
+    this.aim = null;
   }
 
   place(x, z, yaw = 0) {
@@ -115,6 +117,11 @@ export class PlayerController {
   }
 
   updateCamera(dt) {
+    if (this.vr) {
+      // VR (vr/xr.js): the headset places the camera; "forward" is where the right controller points
+      if (this.aim) this.forward.copy(this.aim.dir);
+      return;
+    }
     const targetEye = this.swimming ? SWIM_EYE + 1.25 - 0.1 : this.crouch ? CROUCH_EYE : EYE;
     this.eye += (targetEye - this.eye) * (1 - Math.exp(-10 * dt || 0));
     const sp = Math.hypot(this.vel.x, this.vel.z);
@@ -127,6 +134,6 @@ export class PlayerController {
     this.forward.set(0, 0, -1).applyQuaternion(cam.quaternion);
   }
 
-  /** eye position and look direction (for picking) */
-  get eyePos() { return this.camera.position; }
+  /** eye position and look direction (for picking); in VR the ray starts at the right controller */
+  get eyePos() { return this.vr && this.aim ? this.aim.origin : this.camera.position; }
 }

@@ -74,7 +74,8 @@ export class Combat {
       const ndc = new THREE.Vector2((aim.x - 0.5) * 2 * 0.6, -(aim.y - 0.5) * 2 * 0.6);
       const ray = new THREE.Raycaster(); ray.setFromCamera(ndc, cam);
       dir.copy(ray.ray.direction);
-    } else cam.getWorldDirection(dir);
+    } else if (this.game.player?.vr && this.game.player.aim) dir.copy(this.game.player.aim.dir);
+    else cam.getWorldDirection(dir);
     const sx = (this.sway.x + (Math.random() - 0.5) * spreadDeg) * Math.PI / 180, sy = (this.sway.y + (Math.random() - 0.5) * spreadDeg) * Math.PI / 180;
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
     const up = new THREE.Vector3().crossVectors(right, dir).normalize();
@@ -117,7 +118,8 @@ export class Combat {
   launch(kind, o) {
     const g = this.game, cam = g.renderer.camera;
     const dir = this.shotDir(o.spread || 0);
-    const pos = cam.position.clone().addScaledVector(dir, 0.4).add(new THREE.Vector3(0, -0.05, 0));
+    const vrAim = this.game.player?.vr && this.game.player.aim;
+    const pos = (vrAim ? vrAim.origin.clone() : cam.position.clone()).addScaledVector(dir, 0.4).add(new THREE.Vector3(0, vrAim ? 0 : -0.05, 0));
     let mesh = null;
     if (kind !== 'bullet') {
       mesh = new THREE.Group();
@@ -199,6 +201,7 @@ export class Combat {
     const g = this.game, cam = g.renderer.camera;
     const dir = new THREE.Vector3(); cam.getWorldDirection(dir);
     const a = cam.position.clone();
+    if (g.player?.vr && g.player.aim) { dir.copy(g.player.aim.dir); a.copy(g.player.aim.origin); } // VR: along the right controller
     // reach down a bit so low animals (crabs, snakes) can be hit
     const b = a.clone().addScaledVector(dir, reach);
     let hit = g.sys.fauna?.hitTest(a, b, 0.12);

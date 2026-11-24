@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>butcher-art dev</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+body { margin: 0; padding: 12px; background: #e9e1c6; font: 14px "Zen Maru Gothic", sans-serif; color: #2a2923; }
+h2 { margin: 18px 0 6px; font-size: 16px; } .row { display: flex; flex-wrap: wrap; gap: 8px; } figure { margin: 0; } figcaption { font-size: 11px; }
+canvas { width: 400px; height: 250px; display: block; }
+canvas.wide { width: 1200px; height: 200px; }
+</style></head><body>
+<h1>butcher-art</h1><div id="out"></div>
+<script type="module">
+import { DIAGRAMS, drawCarcass, drawPortions } from '../js/ui/butcher-art.js';
+const out = document.getElementById('out');
+const mk = (cap, fn, w = 800, h = 500) => { const f = document.createElement('figure'); const c = document.createElement('canvas'); c.width = w; c.height = h; if (w > 800) c.className = 'wide'; fn(c.getContext('2d')); const fc = document.createElement('figcaption'); fc.textContent = cap; f.append(c, fc); return f; };
+const sec = (t) => { const h = document.createElement('h2'); h.textContent = t; out.append(h); const r = document.createElement('div'); r.className = 'row'; out.append(r); return r; };
+for (const sp of Object.keys(DIAGRAMS)) {
+  const d = DIAGRAMS[sp]; const ids = Object.keys(d.steps);
+  const mid = ids[ids.length > 3 ? 2 : 1]; // open / scale
+  const last = ids[ids.length - 1];
+  const sts = [
+    ['K0 ' + ids[1], { step: ids[1], knowledge: 0, traced: { [ids[1]]: [0.5, 0.5, 0.5] } }],
+    ['K2 ' + mid, { step: mid, knowledge: 2, done: { [ids[1]]: true }, traced: { [mid]: [0.55, 0.5, 0.5] } }],
+    ['K3 ' + (ids.includes('gut') ? 'gut' : last) + ' (noTouch)', { step: ids.includes('gut') ? 'gut' : last, knowledge: 3, done: { [ids[1]]: true, [mid]: true }, traced: {}, showNoTouch: true }],
+    ['removed/skinned/portions', { step: 'portion', knowledge: 3, done: Object.fromEntries(ids.map((i) => [i, true])), removed: true, skinned: !!d.steps.skin, portions: 3 }],
+  ];
+  for (const view of ['mild', 'normal']) {
+    const r = sec(`${sp} — ${view}`);
+    sts.forEach(([cap, st]) => r.append(mk(cap, (ctx) => drawCarcass(ctx, sp, view, st, { x: 0, y: 0, w: 800, h: 500 }))));
+  }
+}
+const items = [{ id: 'meat', n: 4 }, { id: 'hide', n: 1 }, { id: 'bone', n: 3 }, { id: 'sinew', n: 2 }, { id: 'fat', n: 1 }, { id: 'organ', n: 1 }, { id: 'feather', n: 4 }, { id: 'fish_fillet', n: 2 }, { id: 'scales', n: 3 }];
+for (const view of ['mild', 'normal', 'skip']) { const r = sec('portions — ' + view); r.append(mk(view, (ctx) => drawPortions(ctx, items, view, { x: 0, y: 0, w: 1200, h: 200 }), 1200, 200)); }
+const r = sec('skip carcass'); r.append(mk('skip', (ctx) => drawCarcass(ctx, 'goat', 'skip', {}, { x: 0, y: 0, w: 800, h: 500 })));
+window.ready = true;
+</script></body></html>

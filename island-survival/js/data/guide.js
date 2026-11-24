@@ -11,6 +11,7 @@
 // when:       season or time hints, shown from K2, or null
 // icon:       one emoji for the sketch frame
 // color:      CSS colour used for the sketch
+import { HOWTO_MORE } from './fieldcraft.js';
 
 export const GUIDE_CATS = {
   plant: '🌿 植物',
@@ -22,6 +23,56 @@ export const GUIDE_CATS = {
 };
 
 export const GUIDE = {
+  // ── 手順の 項目（§25.4 解体の 手順：K0〜K3。やって 覚える・図鑑・仲間に 教わる） ──────────
+  howto_fire_lay: {
+    cat: 'stone', name: '火の 組み方', provisional: '薪の 組み方', verdict: 'other', howto: true,
+    features: '下に 火口（枯れ草・ヤシの 繊維）、その まわりに 小枝を 三角に 立てかけ（ティピー）、外側に 太い 薪。空気の 通り道を 残す。',
+    uses: 'よく 組むと 火が つきやすい（×0.8〜1.2）。順を まちがえると 空気が 通らない。',
+    lookalike: null, where: 'たき火・炉', when: '火を おこす 前に',
+    icon: '🔥', color: '#e8743b',
+  },
+  howto_trap_snare: {
+    cat: 'animal', name: 'くくり罠の 仕掛け方', provisional: '罠の 仕掛け方（くくり罠）', verdict: 'food', howto: true,
+    features: '獣道（踏まれた 草の 筋・ふん・足跡）の 上に。杭を 打ち、しなる 木を 曲げて、輪を 獲物の 頭の 高さに。引き金は そっと かける。',
+    uses: '野鶏・海鳥・大ネズミが かかる。獣道の 上なら かかりやすさ ×1.5。仕掛けて 6 時間は 人の においで かかりにくい。',
+    lookalike: null, where: '草原・密林・ヤシ林・浜（海鳥は 小魚の エサで）', when: '夕方に 仕掛けて 朝 見回る。12 時間 以内に 回収',
+    icon: '🪤', color: '#8a6a3e',
+  },
+  howto_trap_deadfall: {
+    cat: 'animal', name: '石落としの 組み方', provisional: '罠の 組み方（石落とし）', verdict: 'food', howto: true,
+    features: '3 本の 棒に 切り欠きを 入れて「4 の 字」に 組み、平たい 石を そっと あずける。エサが 必須。',
+    uses: '大ネズミ・ヤシガニ・小さな トカゲが かかる。組みが 甘いと 空で 落ちる。手元で 落とすと 指を 打つ。',
+    lookalike: null, where: '草原・密林・ヤシ林', when: '夜に 動く 獲物 向け',
+    icon: '🪨', color: '#7d7a72',
+  },
+  howto_trap_fish: {
+    cat: 'sea', name: 'かごの 仕掛け方（魚かご・カニかご）', provisional: '罠の 仕掛け方（かご）', verdict: 'food', howto: true,
+    features: '浅い 流れに、口を 下手（しもて）に 向けて 沈め、石で 重しを する。カニかごは 磯の 潮だまりに エサを 入れて。',
+    uses: '川の ハゼ・ウナギ、海の 小魚・ベラ、カニが 入る。',
+    lookalike: null, where: '川・池・浅い 磯', when: '仕掛けて 半日〜1 日',
+    icon: '🧺', color: '#4a8fb0',
+  },
+  howto_butcher_beast: {
+    cat: 'animal', name: 'けものの 下ごしらえ（解体の 手順）', provisional: '解体の 手順（けもの）', verdict: 'food', howto: true,
+    features: '① 下じまい（のどの 線）→ ② 腹の 線に そって 浅く 開く → ③ 中身を そっと 取り出す → ④ 皮を 外す → ⑤ 関節で 切り分ける。',
+    uses: '手順を 知って いるほど 線と 印が 見え、まちがいが 減る。K3 で「さわらない 所」が 分かり、肉が 傷みにくい（B ×0.85）。',
+    lookalike: null, where: 'しとめた けもの（ヤギ・イノシシ・小さい けもの）', when: '倒して 30 分 以内に 下じまい、1 時間 以内に 中身を 出す',
+    icon: '🔪', color: '#8c8570',
+  },
+  howto_butcher_fish: {
+    cat: 'sea', name: '魚の 下ごしらえ', provisional: '下ごしらえの 手順（魚）', verdict: 'food', howto: true,
+    features: '① 釣って すぐ 下じまい（目の 後ろ）→ ② うろこを 尾から 頭へ → ③ 腹を 開いて 中身を 取る。',
+    uses: '締めると 傷みが ×0.7、中身を 取ると さらに ×0.8。毒の ある 魚は K3 で ないと 毒の 場所が 分からない。',
+    lookalike: null, where: '釣った 魚・網の 魚', when: '釣った その 場で',
+    icon: '🐟', color: '#4a8fb0',
+  },
+  howto_butcher_bird: {
+    cat: 'animal', name: '鳥の 下ごしらえ', provisional: '下ごしらえの 手順（鳥）', verdict: 'food', howto: true,
+    features: '① 羽を つまんで 引く（湯に つけると 楽）→ ② 腹を 短く 開いて 中身を 取る。',
+    uses: '羽根は 矢羽根・ウキ・詰め物に 使える。',
+    lookalike: null, where: '海鳥・野鶏', when: 'しとめて すぐ',
+    icon: '🪶', color: '#c9a96a',
+  },
   // ── 🌿 植物 ─────────────────────────────────────────────
   berry: {
     cat: 'plant', name: '野イチゴ', provisional: '赤い実', verdict: 'food',
@@ -461,3 +512,5 @@ export const GUIDE = {
     icon: '⚫', color: '#2a2a2a',
   },
 };
+// §26 how-to entries for the other knowledge-based acts (tracks, coconut, knots, signals, first aid, …)
+for (const [id, e] of Object.entries(HOWTO_MORE)) if (!GUIDE[id]) GUIDE[id] = e;
