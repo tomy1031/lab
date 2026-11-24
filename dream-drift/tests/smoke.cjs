@@ -64,8 +64,8 @@ const waitScreen = (page, id) => page.waitForFunction((s) => window.DD.debug.sta
     await waitScreen(page, 'race');
     check(true, 'Grand Prix race 1 started');
     check(!(await page.evaluate(() => window.DD.debug.charPreview.running)), 'the turntable stops when the race starts');
-    await page.evaluate(() => window.DD.debug.skipIntro());
-    await page.waitForFunction(() => window.DD.debug.state().phase === 'race', null, { timeout: 60000 });
+    // (the course may still be loading: keep skipping the intro until the race is on)
+    await page.waitForFunction(() => { window.DD.debug.skipIntro(); return window.DD.debug.state().phase === 'race'; }, null, { timeout: 120000, polling: 500 });
     const d0 = await page.evaluate(() => window.DD.debug.state().me.raceDist);
     await page.keyboard.down('ArrowUp');
     // software rendering is slow: wait for 2 s of game time rather than wall time
