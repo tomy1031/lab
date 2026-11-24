@@ -1,0 +1,35 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>preview</title>
+<script type="importmap">{ "imports": { "three": "../js/vendor/three.module.min.js" } }</script>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}</style></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { Room, TABLE_H } from '../js/room.js';
+import { CardMesh, CARD_W } from '../js/cardmesh.js';
+import { ICON_NAMES } from '../js/art.js';
+const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+r.setSize(innerWidth, innerHeight); r.setPixelRatio(1); document.body.appendChild(r.domElement);
+r.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 100);
+const mode = new URLSearchParams(location.search).get('m') || 'table';
+new Room(scene, r);
+const cards = [
+ { id: 'a', type: 'unit', name: '{要件定義|ようけんていぎ}の{賢者|けんじゃ}', en: 'Requirements Sage', cost: 3, text: '{登場|とうじょう}したとき：{要望|ようぼう}カードを1{枚|まい}「{要件|ようけん}」に{変|か}える。**なぜ？**を{聞|き}く。', stats: [{ label: '{品質|ひんしつ}', value: 3 }, { label: '{体力|たいりょく}', value: 4 }], art: { icon: 'ear', bg: 'blue', pattern: 'circuit' }, phaseLabel: '{要件定義|ようけんていぎ}' },
+ { id: 'b', type: 'enemy', name: 'ふんわり{要望|ようぼう}', en: 'Vague Request', cost: 2, text: '「なんかいい{感|かん}じにして」。{毎|まい}ターン{混乱|こんらん}を1つ{置|お}く。', stats: [{ label: '{圧|あつ}', value: 2 }, { label: 'HP', value: 3 }], art: { icon: 'fog', bg: 'purple', pattern: 'waves' } },
+ { id: 'c', type: 'guard', name: '{変更管理|へんこうかんり}', en: 'Change Control', cost: 1, text: '{相手|あいて}が「{仕様変更|しようへんこう}」を{出|だ}したとき{発動|はつどう}：{影響|えいきょう}を{見積|みつ}もり、{費用|ひよう}と{納期|のうき}を{合意|ごうい}してから{受|う}ける。', art: { icon: 'shield', bg: 'pink', pattern: 'hex' } },
+ { id: 'd', type: 'skill', name: '{議事録|ぎじろく}', en: 'Meeting Minutes', cost: 1, text: '「{言|い}った{言|い}わない」を{防|ふせ}ぐ。{合意|ごうい}を1つ{守|まも}る。', art: { icon: 'doc', icon2: 'pen', bg: 'green', pattern: 'grid' } },
+ { id: 'e', type: 'bug', name: 'バグ', en: 'Bug', text: '{工程|こうてい}が{進|すす}むたびに{威力|いりょく}が2{倍|ばい}。', stats: [{ label: '{威力|いりょく}', value: 1 }], art: { icon: 'bug', bg: 'red', pattern: 'binary' } },
+ { id: 'f', type: 'lesson', name: 'バグは{早|はや}く{見|み}つけるほど{安|やす}い', en: 'Find bugs early', text: '{要件|ようけん}の{誤|あやま}りを{本番|ほんばん}で{直|なお}すと、{最初|さいしょ}に{直|なお}すより{何十倍|なんじゅうばい}もかかる。', art: { icon: 'vmodel', bg: 'gold', pattern: 'rays' } },
+];
+if (mode === 'icons') {
+  cam.position.set(0, 1.6, 0.0); cam.lookAt(0, 1.6, -1);
+  ICON_NAMES.forEach((ic, i) => { const m = new CardMesh({ id: 'i' + i, type: ['unit','skill','guard','doc','enemy','event','bug','lesson'][i % 8], name: ic, cost: i % 6, text: ic, art: { icon: ic, bg: ['blue','green','pink','gold','purple','red','orange','teal'][i % 8], pattern: ['grid','circuit','rays','dots','waves','hex','fire','binary'][i % 8] } }); m.position.set(((i % 12) - 5.5) * 0.11, 1.95 - Math.floor(i / 12) * 0.155, -1.05); scene.add(m); });
+} else if (mode === 'close') {
+  cam.position.set(0, TABLE_H + 0.45, 0.25); cam.lookAt(0, TABLE_H + 0.42, -0.4);
+  cards.forEach((c, i) => { const m = new CardMesh(c); m.position.set((i - 2.5) * 0.11, TABLE_H + 0.42, -0.35); scene.add(m); });
+} else {
+  cam.position.set(0, 1.25, 0.75); cam.lookAt(0, TABLE_H, -0.1);
+  cards.forEach((c, i) => { const m = new CardMesh(c); m.rotation.x = -Math.PI / 2; m.position.set((i - 2.5) * 0.12, TABLE_H + 0.002, 0.15); scene.add(m); });
+}
+r.render(scene, cam); window.done = true;
+</script></body></html>
