@@ -1,4 +1,7 @@
 node_modules/
+rally-court/dist/
+dream-drift/dist/
+kotoba-town/dist/
 __pycache__/
 .segments-*/
 nextmake-mv/scripts/.glyphs.txt

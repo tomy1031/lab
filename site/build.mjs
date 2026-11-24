@@ -229,14 +229,23 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 08 ことばタウン — WebXR Japanese conversation practice with Gemini Live. Static files: the page, ES modules,
-// lesson data and the pre-made voices (three.js comes from the CDN).
+// 08 ことばタウン — WebXR Japanese conversation practice with Gemini Live. Offline PWA: the app's own tools/bundle.mjs
+// copies the page, ES modules (three.js bundled), lesson data and the pre-made voices, and fills sw.js with the build
+// id and the files to cache (the voices are cached as they are played, or all at once from the settings).
+// Older refs without tools/bundle.mjs are copied as plain static files.
 {
   const dest = path.join(out, 'kotoba-town');
   try {
     const src = exportDir(refs.kotoba, 'kotoba-town');
-    fs.mkdirSync(dest, { recursive: true });
-    for (const f of ['index.html', 'js', 'data', 'audio']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    if (fs.existsSync(path.join(src, 'tools', 'bundle.mjs'))) {
+      const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+      const build = sh(`git -C "${root}" rev-parse "${refs.kotoba}:kotoba-town"`).slice(0, 12);
+      const r = bundle(src, dest, build);
+      console.log(`kotoba-town build ${r.build}: ${r.files} files (${r.mb} MB to cache; ${r.voices} voices on use)`);
+    } else {
+      fs.mkdirSync(dest, { recursive: true });
+      for (const f of ['index.html', 'js', 'data', 'audio']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    }
     const preview = path.join(src, 'docs', 'preview.jpg');
     if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'kotoba-town.jpg'));
   } catch (e) {
@@ -271,14 +280,23 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 10 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Static files: the page, ES modules
-// and images (three.js and MediaPipe come from the CDN).
+// 10 DREAM DRIFT — kart racing (gamepad / keyboard / touch / hand gestures). Offline PWA: the game's own
+// tools/bundle.mjs copies the page, ES modules, images and the bundled three.js / MediaPipe, and fills sw.js with the
+// build id and the files to cache (the hand-gesture pack is cached on first use).
+// Older refs without tools/bundle.mjs are copied as plain static files (three.js and MediaPipe from the CDN).
 {
   const dest = path.join(out, 'dream-drift');
   try {
     const src = exportDir(refs.dreamdrift, 'dream-drift');
-    fs.mkdirSync(dest, { recursive: true });
-    for (const f of ['index.html', 'js', 'img']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    if (fs.existsSync(path.join(src, 'tools', 'bundle.mjs'))) {
+      const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+      const build = sh(`git -C "${root}" rev-parse "${refs.dreamdrift}:dream-drift"`).slice(0, 12);
+      const r = bundle(src, dest, build);
+      console.log(`dream-drift build ${r.build}: ${r.files} files (${r.mb} MB to cache)`);
+    } else {
+      fs.mkdirSync(dest, { recursive: true });
+      for (const f of ['index.html', 'js', 'img']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    }
     const preview = path.join(src, 'docs', 'preview.jpg');
     if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'dream-drift.jpg'));
   } catch (e) {
@@ -291,13 +309,22 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
-// 11 RALLY COURT — WebXR tennis. Static files: the page and ES modules (three.js comes from the CDN).
+// 11 RALLY COURT — WebXR tennis. Offline PWA: the game's own tools/bundle.mjs copies the page, ES modules, icons and
+// the bundled three.js, and fills sw.js with the build id and the files to cache.
+// Older refs without tools/bundle.mjs are copied as plain static files (three.js from the CDN).
 {
   const dest = path.join(out, 'rally-court');
   try {
     const src = exportDir(refs.rally, 'rally-court');
-    fs.mkdirSync(dest, { recursive: true });
-    for (const f of ['index.html', 'js']) copy(path.join(src, f), path.join(dest, f));
+    if (fs.existsSync(path.join(src, 'tools', 'bundle.mjs'))) {
+      const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+      const build = sh(`git -C "${root}" rev-parse "${refs.rally}:rally-court"`).slice(0, 12);
+      const r = bundle(src, dest, build);
+      console.log(`rally-court build ${r.build}: ${r.files} files (${r.mb} MB to cache)`);
+    } else {
+      fs.mkdirSync(dest, { recursive: true });
+      for (const f of ['index.html', 'js']) copy(path.join(src, f), path.join(dest, f));
+    }
     const preview = path.join(src, 'docs', 'preview.jpg');
     if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'rally-court.jpg'));
   } catch (e) {
