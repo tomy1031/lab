@@ -6,7 +6,8 @@
   "scripts": {
     "serve": "node tools/serve.mjs 8080",
     "build": "node tools/bundle.mjs dist",
-    "test": "node tools/smoke.mjs && node tools/xr.mjs && node tools/offline.mjs",
+    "test": "node tools/modes.mjs && node tools/smoke.mjs && node tools/xr.mjs && node tools/offline.mjs",
+    "test:modes": "node tools/modes.mjs",
     "test:smoke": "node tools/smoke.mjs",
     "test:xr": "node tools/xr.mjs",
     "test:offline": "node tools/offline.mjs",

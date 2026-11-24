@@ -4,6 +4,7 @@ import { PRESETS, downloadArea, deleteArea, storageInfo, fmtBytes, normArea } fr
 import { Plan, RADII } from './plan.js';
 import { S2_YEARS, NOMINATIM, aerialFor } from './sources.js';
 import { MapPicker } from './map.js';
+import { MODES, MODE_ORDER } from './modes.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -37,6 +38,7 @@ export class UI {
 
   bind() {
     document.body.addEventListener('click', (e) => {
+      this.app.sound.start(); // browsers let sound start only after a click
       const b = e.target.closest('[data-act]');
       if (!b || b.disabled) return;
       const act = b.dataset.act, arg = b.dataset.arg;
@@ -54,7 +56,7 @@ export class UI {
       this.render();
     });
     $('year').addEventListener('change', (e) => this.app.setSetting('year', +e.target.value));
-    for (const [id, key] of [['hires', 'hires'], ['bld', 'buildings'], ['clouds', 'clouds']]) {
+    for (const [id, key] of [['hires', 'hires'], ['bld', 'buildings'], ['clouds', 'clouds'], ['sound', 'sound']]) {
       $(id).addEventListener('change', (e) => this.app.setSetting(key, e.target.checked));
     }
     // touch buttons while flying on a phone / tablet
@@ -232,7 +234,10 @@ export class UI {
     $('bld').checked = s.buildings;
     $('clouds').checked = s.clouds;
     $('quality').innerHTML = [['low', '軽い'], ['normal', 'ふつう'], ['high', 'きれい']].map(([k, n]) => `<button class="chip" data-act="quality" data-arg="${k}" aria-pressed="${s.quality === k}">${n}</button>`).join('');
-    $('modes').innerHTML = [['point', 'スーパーマン', '手を向けてトリガー'], ['wings', 'つばさ', '腕を広げて傾ける']].map(([k, n, sub]) => `<button class="chip" data-act="mode" data-arg="${k}" aria-pressed="${s.mode === k}">${n}<small>${sub}</small></button>`).join('');
+    $('modes').innerHTML = MODE_ORDER.map((k) => `<button class="chip" data-act="mode" data-arg="${k}" aria-pressed="${s.mode === k}">${MODES[k].name}<small>${MODES[k].sub}</small></button>`).join('');
+    const M = MODES[s.mode] || MODES.point;
+    $('mode-help').innerHTML = `<b>VR</b>：${esc(M.vr)}<br><b>画面</b>：${esc(M.keys)}`;
+    $('sound').checked = s.sound;
     $('speeds').innerHTML = [['slow', 'ゆっくり'], ['normal', 'ふつう'], ['fast', 'ジェット']].map(([k, n]) => `<button class="chip" data-act="speed" data-arg="${k}" aria-pressed="${s.speed === k}">${n}</button>`).join('');
     const credits = app.credits();
     $('credits-now').innerHTML = credits.length ? credits.map((c) => `<li>${esc(c)}</li>`).join('') : '<li>（場所を表示すると、ここに出典が出ます）</li>';
@@ -251,7 +256,7 @@ export class UI {
   hud(d, st) {
     const el = $('hud');
     if (el.classList.contains('hidden')) return;
-    const k = `${d.name}|${d.kmh}|${d.alt}|${d.agl}|${d.dir}|${d.msg}|${st.loading}`;
+    const k = `${d.name}|${d.kmh}|${d.alt}|${d.agl}|${d.dir}|${d.msg}|${st.loading}|${d.mode}|${d.info}`;
     if (k === this.hudKey) return;
     this.hudKey = k;
     $('hud-name').textContent = d.name;
@@ -259,6 +264,9 @@ export class UI {
     $('hud-alt').textContent = d.alt.toLocaleString();
     $('hud-agl').textContent = d.agl.toLocaleString();
     $('hud-dir').textContent = d.dir;
+    $('hud-info').textContent = `${d.mode}${d.info ? '・' + d.info : ''}`;
+    const keys = (MODES[this.app.flight.mode] || MODES.point).keys;
+    if ($('hud-keys').textContent !== keys) $('hud-keys').textContent = keys;
     $('hud-msg').textContent = d.msg || (st.loading > 0 ? `読み込み中 ${st.loading}` : '');
   }
 

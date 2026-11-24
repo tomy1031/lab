@@ -2,6 +2,7 @@
 // left hand (height, speed, place), laser pointers, a toast line, and the comfort vignette.
 import * as THREE from 'three';
 import { MODES, SPEEDS } from './flight.js';
+import { MODE_ORDER } from './modes.js';
 
 export const FONT = '"Hiragino Sans", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", system-ui, sans-serif';
 const C = { glass: 'rgba(10,24,38,0.88)', line: 'rgba(255,255,255,0.16)', ink: '#f3f6fb', muted: '#a9bbcd', accent: '#7fd3ff', btn: 'rgba(255,255,255,0.08)', sel: '#7fd3ff', selInk: '#06203a', warn: '#ffcf6b' };
@@ -90,64 +91,85 @@ export class Panel {
   setHover(id) { if (id !== this.hover) { this.hover = id; this.redraw(); } }
 }
 
-// app must provide: areaChoices() → [{ id, name, sub, offline }], currentAreaId, flight, settings, actions
+// app must provide: areaChoices() → [{ id, name, sub, offline, key }], currentId, flight, settings, actions.
+// Three tabs: places, ways of flying, settings.
 export class MenuPanel extends Panel {
-  constructor(app) { super(1400, 940, 1.5); this.app = app; this.page = 0; }
+  constructor(app) { super(1400, 940, 1.5); this.app = app; this.page = 0; this.tab = 'modes'; }
   draw(x) {
     const a = this.app, f = a.flight, s = a.settings;
     this.bg(x);
-    this.text(x, 'SKY ATLAS', 44, 60, 50, C.ink, 900);
-    this.text(x, a.area ? `いま：${a.area.name}` : '', 360, 64, 28, C.accent, 700, 'left', 700);
-    this.text(x, 'トリガーで選ぶ・B / Y で閉じる', this.w - 44, 62, 21, C.muted, 500, 'right');
-    // places
-    const list = a.areaChoices();
-    const per = 10, pages = Math.max(1, Math.ceil(list.length / per));
-    this.page = Math.min(this.page, pages - 1);
-    this.text(x, a.online ? '場所（★ = ダウンロード済み・オフラインで飛べる）' : '場所（ダウンロード済み）', 44, 128, 24, C.muted, 700);
-    list.slice(this.page * per, this.page * per + per).forEach((c, i) => {
-      const bx = 40 + (i % 2) * 330, by = 152 + Math.floor(i / 2) * 92;
-      this.button(x, 'area:' + c.id, bx, by, 320, 82, (c.offline ? '★ ' : '') + c.name, { sel: c.id === a.currentId, sub: c.sub, onClick: () => a.flyTo(c.key) });
-    });
-    if (!list.length) this.text(x, 'まだありません。画面のメニューでダウンロードしてください', 44, 200, 24, C.warn, 600);
-    if (pages > 1) {
-      this.button(x, 'pg:prev', 40, 620, 150, 60, '◀ 前', { disabled: this.page === 0, onClick: () => { this.page--; this.redraw(); } });
-      this.text(x, `${this.page + 1} / ${pages}`, 355, 650, 24, C.muted, 700, 'center');
-      this.button(x, 'pg:next', 520, 620, 150, 60, '次 ▶', { disabled: this.page >= pages - 1, onClick: () => { this.page++; this.redraw(); } });
+    this.text(x, 'SKY ATLAS', 44, 58, 46, C.ink, 900);
+    this.text(x, a.area ? `いま：${a.area.name}` : '', 340, 62, 26, C.accent, 700, 'left', 560);
+    this.text(x, 'トリガーで選ぶ・B / Y で閉じる', this.w - 44, 60, 21, C.muted, 500, 'right');
+    const tabs = [['places', '場所'], ['modes', '飛び方'], ['settings', '設定']];
+    tabs.forEach(([id, l], i) => this.button(x, 'tab:' + id, 40 + i * 230, 100, 220, 62, l, { sel: this.tab === id, onClick: () => { this.tab = id; this.redraw(); } }));
+    this.button(x, 'close', this.w - 260, 100, 220, 62, '閉じる', { onClick: () => a.toggleMenu(false) });
+    const top = 190;
+    if (this.tab === 'places') {
+      const list = a.areaChoices();
+      const per = 12, pages = Math.max(1, Math.ceil(list.length / per));
+      this.page = Math.min(this.page, pages - 1);
+      this.text(x, a.online ? '★ = ダウンロード済み（オフラインで飛べる）' : 'ダウンロード済みの場所', 44, top, 24, C.muted, 700);
+      list.slice(this.page * per, this.page * per + per).forEach((c, i) => {
+        const bx = 40 + (i % 3) * 445, by = top + 26 + Math.floor(i / 3) * 104;
+        this.button(x, 'area:' + c.id, bx, by, 430, 92, (c.offline ? '★ ' : '') + c.name, { sel: c.id === a.currentId, sub: c.sub, onClick: () => a.flyTo(c.key) });
+      });
+      if (!list.length) this.text(x, 'まだありません。画面のメニューでダウンロードしてください', 44, top + 70, 26, C.warn, 600);
+      if (pages > 1) {
+        this.button(x, 'pg:prev', 40, 650, 200, 64, '◀ 前', { disabled: this.page === 0, onClick: () => { this.page--; this.redraw(); } });
+        this.text(x, `${this.page + 1} / ${pages}`, 340, 682, 26, C.muted, 700, 'center');
+        this.button(x, 'pg:next', 440, 650, 200, 64, '次 ▶', { disabled: this.page >= pages - 1, onClick: () => { this.page++; this.redraw(); } });
+      }
+      this.button(x, 'home', 700, 650, 320, 64, 'スタート地点へ', { onClick: () => a.respawn() });
+    } else if (this.tab === 'modes') {
+      MODE_ORDER.forEach((k, i) => {
+        const m = MODES[k];
+        const bx = 40 + (i % 3) * 445, by = top + Math.floor(i / 3) * 104;
+        this.button(x, 'mode:' + k, bx, by, 430, 92, m.name, { sel: f.mode === k, sub: m.sub, onClick: () => a.setSetting('mode', k) });
+      });
+      const m = f.M;
+      this.text(x, `${m.name} の飛び方`, 44, 530, 26, C.accent, 800);
+      wrapText(this, x, m.vr, 44, 572, this.w - 88, 26, 38);
+    } else {
+      const X = 40, W = 1320;
+      const row = (label, y, opts) => {
+        this.text(x, label, X + 4, y, 24, C.muted, 700);
+        const n = opts.length, bw = Math.min(300, (W - (n - 1) * 10) / n);
+        opts.forEach(([id, l, sel, fn], i) => this.button(x, id, X + i * (bw + 10), y + 22, bw, 64, l, { sel, onClick: fn }));
+      };
+      row('最高速度（スーパーマン・浮遊・ほうき・鳥・じゅうたん・ジェット・気球）', top, Object.entries(SPEEDS).map(([k, sp]) => ['speed:' + k, sp.name, f.speedSetting === k, () => a.setSetting('speed', k)]));
+      row('酔いどめ（曲がる・速さが変わる時に視野のまわりを暗く）', top + 110, [['vig:on', 'あり', s.vignette, () => a.setSetting('vignette', true)], ['vig:off', 'なし', !s.vignette, () => a.setSetting('vignette', false)]]);
+      row('右スティックの回転', top + 220, [['snap:30', '30° ずつ', s.snap, () => a.setSetting('snap', true)], ['snap:smooth', 'なめらか', !s.snap, () => a.setSetting('snap', false)]]);
+      row('音', top + 330, [['snd:on', 'あり', s.sound, () => a.setSetting('sound', true)], ['snd:off', 'なし', !s.sound, () => a.setSetting('sound', false)]]);
+      this.button(x, 'exit', X, 640, 420, 70, 'VR を終わる', { onClick: () => a.exitVR() });
     }
-    // options
-    const X = 730, W = 630;
-    const row = (label, y, opts) => {
-      this.text(x, label, X, y, 24, C.muted, 700);
-      const n = opts.length, bw = (W - (n - 1) * 8) / n;
-      opts.forEach(([id, l, sel, fn, sub], i) => this.button(x, id, X + i * (bw + 8), y + 22, bw, sub ? 82 : 64, l, { sel, sub, onClick: fn }));
-    };
-    row('飛び方', 128, Object.entries(MODES).map(([k, m]) => ['mode:' + k, m.name, f.mode === k, () => a.setSetting('mode', k), m.sub]));
-    row('最高速度', 262, Object.entries(SPEEDS).map(([k, m]) => ['speed:' + k, m.name, f.speedSetting === k, () => a.setSetting('speed', k)]));
-    row('酔いどめ（動くと視野のまわりを暗く）', 378, [['vig:on', 'あり', s.vignette, () => a.setSetting('vignette', true)], ['vig:off', 'なし', !s.vignette, () => a.setSetting('vignette', false)]]);
-    row('右スティックの回転', 494, [['snap:30', '30° ずつ', s.snap, () => a.setSetting('snap', true)], ['snap:smooth', 'なめらか', !s.snap, () => a.setSetting('snap', false)]]);
-    this.button(x, 'home', X, 640, W / 2 - 4, 70, 'スタート地点へ', { onClick: () => a.respawn() });
-    this.button(x, 'close', X + W / 2 + 4, 640, W / 2 - 4, 70, '閉じる', { onClick: () => a.toggleMenu(false) });
-    this.button(x, 'exit', X, 724, W, 70, 'VR を終わる', { onClick: () => a.exitVR() });
-    // help
-    this.text(x, 'スーパーマン：トリガーを引くと手の向きへ飛ぶ（両手で速く）', 44, 740, 22, C.muted, 500, 'left', 670);
-    this.text(x, 'つばさ：腕を広げ、傾けて曲がる・下げて急降下・上げて上昇', 44, 776, 22, C.muted, 500, 'left', 670);
-    this.text(x, '左スティック：見ている方へ移動　右スティック：上下と回転　A / X：ブレーキ', 44, 812, 22, C.muted, 500, 'left', 670);
     const cr = a.creditsShort();
-    this.text(x, cr, 44, 880, 17, 'rgba(255,255,255,0.45)', 500, 'left', this.w - 88);
+    this.text(x, cr, 44, 890, 17, 'rgba(255,255,255,0.45)', 500, 'left', this.w - 88);
   }
+}
+
+// draw text wrapped to a width (Japanese: break anywhere)
+function wrapText(p, x, str, px, py, maxW, size, lh) {
+  x.font = `600 ${size}px ${FONT}`;
+  let line = '', y = py;
+  for (const ch of String(str)) {
+    if (x.measureText(line + ch).width > maxW) { p.text(x, line, px, y, size, C.ink, 600); line = ''; y += lh; }
+    line += ch;
+  }
+  if (line) p.text(x, line, px, y, size, C.ink, 600);
 }
 
 // on the back of the left hand: height, speed, place, compass
 export class WristHud extends Panel {
   constructor() {
-    super(512, 256, 0.16);
+    super(512, 300, 0.16);
     this.mesh.material.depthTest = true;
     this.data = {};
     this.visible = true;
     this.mesh.visible = true;
   }
   set(d) {
-    const k = `${d.alt}|${d.agl}|${d.kmh}|${d.name}|${d.dir}|${d.msg}`;
+    const k = `${d.alt}|${d.agl}|${d.kmh}|${d.name}|${d.dir}|${d.msg}|${d.mode}|${d.info}`;
     if (k === this.key) return;
     this.key = k;
     this.data = d;
@@ -162,7 +184,8 @@ export class WristHud extends Panel {
     this.text(x, 'km/h', 24 + (String(d.kmh ?? 0).length * 42) + 8, 132, 24, C.muted, 700);
     this.text(x, `標高 ${d.alt ?? 0} m`, 488, 102, 30, C.ink, 800, 'right');
     this.text(x, `地面から ${d.agl ?? 0} m`, 488, 146, 24, C.muted, 700, 'right');
-    if (d.msg) this.text(x, d.msg, 24, 210, 24, C.warn, 800, 'left', 464);
+    this.text(x, `${d.mode || ''}${d.info ? '・' + d.info : ''}`, 24, 202, 21, C.muted, 700, 'left', 464);
+    if (d.msg) this.text(x, d.msg, 24, 254, 26, C.warn, 800, 'left', 464);
   }
 }
 
@@ -219,7 +242,7 @@ export class Pointers {
   }
 }
 
-// simple hands: a glove-ish shape, with wings that unfold in つばさ mode
+// simple hands: a glove-ish shape, with feathered wings that unfold in the 鳥 mode
 export function makeHand(side) {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.07, 4, 10), new THREE.MeshBasicMaterial({ color: side === 'L' ? 0x7fd3ff : 0xffb36b, fog: false }));

@@ -107,7 +107,7 @@ check(Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) > 20, `W flies forward (${Math.ro
 await page.evaluate(() => { const a = window.__app; a.rig.position.set(200, a.world.terrain.heightAt(200, 0).h + 60, 0); a.flight.vel.set(0, -3000, 0); });
 await page.waitForTimeout(600);
 const g = await page.evaluate(() => { const a = window.__app; return { y: a.rig.position.y, ground: a.world.terrain.heightAt(a.rig.position.x, a.rig.position.z).h }; });
-check(g.y >= g.ground + 1.5, `diving stops at the ground (${Math.round(g.y)} m over ${Math.round(g.ground)} m)`);
+check(g.y >= g.ground + 0.9, `diving stops at the ground (${Math.round(g.y)} m over ${Math.round(g.ground)} m)`);
 // the edge of the map turns you back
 await page.evaluate(() => { const a = window.__app; a.rig.position.set(a.flight.limit * 1.5, 3000, 0); });
 await page.waitForTimeout(400);

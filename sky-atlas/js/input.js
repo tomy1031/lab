@@ -10,12 +10,12 @@ export class XRInput {
     this.head = new THREE.Vector3(0, 1.6, 0); // in the rig's space (the play area)
     this.headQuat = new THREE.Quaternion();
     this.hands = {
-      L: { on: false, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), ray: { o: new THREE.Vector3(), d: new THREE.Vector3(0, 0, -1) }, trigger: 0, grip: 0, stick: [0, 0], buttons: [], prev: [] },
-      R: { on: false, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), ray: { o: new THREE.Vector3(), d: new THREE.Vector3(0, 0, -1) }, trigger: 0, grip: 0, stick: [0, 0], buttons: [], prev: [] },
+      L: { on: false, pos: new THREE.Vector3(), vel: new THREE.Vector3(), last: null, quat: new THREE.Quaternion(), ray: { o: new THREE.Vector3(), d: new THREE.Vector3(0, 0, -1) }, trigger: 0, grip: 0, stick: [0, 0], buttons: [], prev: [] },
+      R: { on: false, pos: new THREE.Vector3(), vel: new THREE.Vector3(), last: null, quat: new THREE.Quaternion(), ray: { o: new THREE.Vector3(), d: new THREE.Vector3(0, 0, -1) }, trigger: 0, grip: 0, stick: [0, 0], buttons: [], prev: [] },
     };
     this.pressed = []; // [side, index] pressed this frame
   }
-  read(frame, ref) {
+  read(frame, ref, dt = 1 / 72) {
     this.pressed = [];
     const vp = frame.getViewerPose(ref);
     if (vp) {
@@ -43,6 +43,11 @@ export class XRInput {
       }
       h.on = !!(gp || rp);
       seen[side] = h.on;
+      // hand velocity in the play area (for flapping): smoothed over a few frames
+      if (h.on) {
+        if (h.last) h.vel.lerp(new THREE.Vector3().subVectors(h.pos, h.last).divideScalar(Math.max(dt, 1e-3)), 0.45);
+        h.last = (h.last || new THREE.Vector3()).copy(h.pos);
+      }
       const g = src.gamepad;
       if (g) {
         h.trigger = g.buttons[0] ? g.buttons[0].value : 0;
@@ -54,7 +59,7 @@ export class XRInput {
         h.buttons.forEach((b, i) => { if (b && !h.prev[i]) this.pressed.push([side, i]); });
       }
     }
-    for (const s of ['L', 'R']) if (!seen[s]) { const h = this.hands[s]; h.on = false; h.trigger = 0; h.grip = 0; h.stick = [0, 0]; h.buttons = []; }
+    for (const s of ['L', 'R']) if (!seen[s]) { const h = this.hands[s]; h.on = false; h.trigger = 0; h.grip = 0; h.stick = [0, 0]; h.buttons = []; h.last = null; h.vel.set(0, 0, 0); }
   }
   was(side, i) { return this.pressed.some(([s, b]) => (side === '*' || s === side) && b === i); }
 }

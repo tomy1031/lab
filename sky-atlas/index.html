@@ -83,6 +83,9 @@
   .seg { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip { flex: 1 1 auto; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 14px; }
   .chip small { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); }
+  .seg.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 420px) { .seg.modes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  #mode-help b { color: var(--ink); }
   .chip[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
   .chip[aria-pressed="true"] small { color: rgba(6,32,58,.75); }
   .opt { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 14px; line-height: 1.5; }
@@ -156,13 +159,15 @@
   <label class="opt">衛星写真の年 <select id="year"></select></label>
   <p class="note">広いほど容量が増えます（半径 25 km で 約 30〜70 MB）。ダウンロードはこのブラウザの中に保存され、ほかのアプリやサーバーには送りません。</p>
 
-  <h2>飛び方（VR）</h2>
-  <div id="modes" class="seg"></div>
+  <h2>飛び方</h2>
+  <div id="modes" class="seg modes"></div>
+  <p id="mode-help" class="note"></p>
   <h2>最高速度</h2>
   <div id="speeds" class="seg"></div>
   <h2>画質</h2>
   <div id="quality" class="seg"></div>
   <label class="opt"><input id="clouds" type="checkbox">雲を出す</label>
+  <label class="opt"><input id="sound" type="checkbox">音（風・バーナー・グライダーの昇降計）</label>
 
   <h2>保存の容量</h2>
   <p id="storage" class="note"></p>
@@ -170,11 +175,10 @@
   <details>
     <summary>操作方法</summary>
     <ul class="help">
-      <li><b>VR・スーパーマン</b>：トリガーを引くと、その手の向きに飛ぶ（引くほど速い・両手でさらに速い）。離すとゆっくり止まる</li>
-      <li><b>VR・つばさ</b>：両腕を横に広げると滑空。腕を傾けて曲がる、下げると急降下して加速、上げると上昇。トリガーで加速</li>
-      <li><b>VR・スティック</b>：左は見ている方へ移動、右は上下と回転（30° ずつ／なめらか）。A / X でブレーキ、B / Y でメニュー</li>
-      <li><b>画面</b>：W / S 前後、A / D 横、Space / E 上昇、C / Q 下降、Shift で速く、X でブレーキ、マウスで見回す（クリックで固定・Esc で解除）、矢印キーでも操作。Esc でこのメニュー</li>
-      <li><b>スマホ・タブレット</b>：ドラッグで見回し、右下のボタンで前進・上昇・下降</li>
+      <li><b>飛び方</b>は 9 種類（上の「飛び方」で選ぶと、それぞれの操作が出ます）。VR の中では B / Y のメニューの「飛び方」タブでも切りかえられます</li>
+      <li><b>VR・共通</b>：B / Y でメニュー、右スティックの左右で回転（30° ずつ／なめらか。グライダーでは操縦桿）、A / X でブレーキ（気球は弁・ジェットパックはホバー）</li>
+      <li><b>画面</b>：マウスで見回す（クリックで固定・Esc で解除）。乗り物の飛び方では、見た方へ曲がります。Esc でこのメニュー</li>
+      <li><b>スマホ・タブレット</b>：ドラッグで見回し（乗り物は見た方へ曲がる）、右下のボタンで前進・上昇（羽ばたき・バーナー・噴射）・下降</li>
       <li>速さは地面からの高さで変わります：低いとゆっくり、高いと速く</li>
     </ul>
   </details>
@@ -197,8 +201,9 @@
   <div class="name" id="hud-name"></div>
   <div class="big"><span id="hud-kmh">0</span> <small>km/h</small></div>
   <div class="row">標高 <span id="hud-alt">0</span> <small>m</small>・地面から <span id="hud-agl">0</span> <small>m</small>・<span id="hud-dir"></span></div>
+  <div class="row" id="hud-info"></div>
   <div class="msg" id="hud-msg"></div>
-  <div class="keys">W/S 前後・A/D 横・Space/C 上下・Shift 速く・マウスで見回す</div>
+  <div class="keys" id="hud-keys"></div>
   <button data-act="menu">メニュー（Esc）</button>
 </div>
 <div id="hud-credit"></div>

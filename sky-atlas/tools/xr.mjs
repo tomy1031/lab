@@ -1,7 +1,9 @@
 // tools/xr.mjs — drives the real WebXR code path in Meta's emulator (IWER, Meta Quest 3 profile), with the
 // pretend internet: a place's "VR で飛ぶ" → in VR over the ground → スーパーマン: the right trigger flies
-// where the right hand points → B opens the menu → laser + trigger on つばさ → arms spread and tilted turn
-// you → right stick snap-turns 30° → the menu's "VR を終わる" leaves VR.
+// where the right hand points → B opens the menu (飛び方 tab) → laser + trigger on 鳥 → arms spread and
+// tilted turn you → 気球 from the menu: the basket is around you, the trigger fires the burner and you rise →
+// グライダー: the cockpit, the right stick banks it → right stick snap-turns 30° (スーパーマン) → the menu's
+// 設定 tab → "VR を終わる" leaves VR.
 //   npm i && node tools/xr.mjs [outDir]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +23,7 @@ const ctx = await b.newContext({ viewport: { width: 900, height: 500 } });
 await mockNet(ctx);
 const page = await ctx.newPage();
 const errors = [];
-page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+page.on('pageerror', (e) => { errors.push('pageerror: ' + e.message); if (process.env.DEBUG) console.log('pageerror', e.message, e.stack); });
 page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
 await page.addInitScript({ path: IWER });
 await page.addInitScript(() => {
@@ -89,19 +91,28 @@ const fly = await page.evaluate(async () => {
 check(fly.mode === 'point' && fly.along > 30 && fly.along > 0.9 * fly.dist, `right trigger flies where the hand points (${Math.round(fly.along)} m ahead, ${Math.round(fly.speed * 3.6)} km/h)`);
 await shot(page, '1-vr-flight.png');
 
-// B → menu; aim at つばさ and pull the trigger
+// B → menu (the 飛び方 tab: nine ways); aim at 鳥 and pull the trigger
+const pick = async (id) => {
+  await page.evaluate(() => window.__press('R', 'b-button'));
+  await until(() => window.__app.menu.visible);
+  await page.evaluate((id) => window.__aim('R', window.__app.menu, id), id);
+  await page.evaluate(() => window.__press('R', 'trigger'));
+  await page.evaluate(() => window.__press('R', 'b-button'));
+  await until(() => !window.__app.menu.visible);
+  // (the hover can show the left hand's laser; what counts is what the right trigger chose)
+  return 'mode:' + (await page.evaluate(() => window.__app.flight.mode));
+};
 await page.evaluate(() => window.__press('R', 'b-button'));
 await until(() => window.__app.menu.visible);
-check(true, 'B opens the menu panel in front of you');
-const hov = await page.evaluate(() => window.__aim('R', window.__app.menu, 'mode:wings'));
-check(hov === 'mode:wings', `laser hovers つばさ (${hov})`);
+const modeButtons = await page.evaluate(() => window.__app.menu.buttons.filter((b) => b.id.startsWith('mode:')).length);
+check(modeButtons === 9, `B opens the menu: 9 ways to fly on the 飛び方 tab`);
 await shot(page, '2-vr-menu.png');
-await page.evaluate(() => window.__press('R', 'trigger'));
-check(await page.evaluate(() => window.__app.flight.mode === 'wings'), 'trigger picks つばさ');
 await page.evaluate(() => window.__press('R', 'b-button'));
 await until(() => !window.__app.menu.visible);
+const hov = await pick('mode:bird');
+check(hov === 'mode:bird', `laser + trigger picks 鳥 (${hov})`);
 
-// つばさ: arms spread, left hand higher → turning right (yaw decreasing), moving forward
+// 鳥: arms spread, left hand higher → turning right (yaw decreasing), moving forward
 const wings = await page.evaluate(async () => {
   const app = window.__app, d = window.__xrd;
   const L = d.controllers.left, R = d.controllers.right;
@@ -111,10 +122,38 @@ const wings = await page.evaluate(async () => {
   const y0 = app.rig.rotation.y, p0 = app.rig.position.clone();
   L.position.set(-0.78, 1.62, -0.1); R.position.set(0.78, 1.22, -0.1);
   await window.__wait(1200);
-  return { open: app.flight.wingsOpen, dyaw: app.rig.rotation.y - y0, moved: app.rig.position.distanceTo(p0), vig: app.vignette.k };
+  return { wing: app.hands.L.userData.wing.visible, dyaw: app.rig.rotation.y - y0, moved: app.rig.position.distanceTo(p0), vig: app.vignette.k };
 });
-check(wings.open && wings.dyaw < -0.05 && wings.moved > 5, `つばさ: spread arms glide (${Math.round(wings.moved)} m) and a tilt turns right (${(wings.dyaw * 180 / Math.PI).toFixed(0)}°), comfort vignette ${wings.vig.toFixed(2)}`);
-await shot(page, '3-vr-wings.png');
+check(wings.wing && wings.dyaw < -0.05 && wings.moved > 5, `鳥: spread arms glide (${Math.round(wings.moved)} m) and a tilt turns right (${(wings.dyaw * 180 / Math.PI).toFixed(0)}°), comfort vignette ${wings.vig.toFixed(2)}`);
+await shot(page, '3-vr-bird.png');
+
+// 気球: the basket around you; the trigger is the burner
+await page.evaluate(() => { const d = window.__xrd; d.controllers.left.position.set(-0.2, 1.1, -0.3); d.controllers.right.position.set(0.2, 1.1, -0.3); });
+check((await pick('mode:balloon')) === 'mode:balloon', 'menu → 気球');
+const bal = await page.evaluate(async () => {
+  const app = window.__app, d = window.__xrd;
+  const y0 = app.rig.position.y;
+  d.controllers.right.updateButtonValue('trigger', 1);
+  await window.__wait(2500);
+  d.controllers.right.updateButtonValue('trigger', 0);
+  return { basket: app.props.items.balloon.visible, flame: app.props.items.balloon.userData.flame.visible || app.flight.st.heat > 0.6, heat: app.flight.st.heat, vy: app.flight.vel.y, info: app.hud.data.info };
+});
+check(bal.basket && bal.heat > 0.55 && bal.vy > 0, `気球: in the basket, the burner heats (${Math.round(bal.heat * 100)}%) and lifts (${bal.vy.toFixed(1)} m/s) — wrist: ${bal.info}`);
+await shot(page, '4-vr-balloon.png');
+
+// グライダー: the cockpit; the right stick banks it into a turn (no snap turn on that stick)
+check((await pick('mode:glider')) === 'mode:glider', 'menu → グライダー');
+const gl = await page.evaluate(async () => {
+  const app = window.__app, d = window.__xrd;
+  const y0 = app.rig.rotation.y;
+  d.controllers.right.updateAxes('thumbstick', 0.8, 0);
+  await window.__wait(2500);
+  d.controllers.right.updateAxes('thumbstick', 0, 0);
+  return { cockpit: app.props.items.cockpit.visible, bank: app.flight.st.bank, dyaw: app.rig.rotation.y - y0 };
+});
+check(gl.cockpit && gl.bank > 0.2 && gl.dyaw < -0.05, `グライダー: in the cockpit, stick right banks ${(gl.bank * 57.3).toFixed(0)}° and turns right ${(gl.dyaw * 57.3).toFixed(0)}°`);
+await shot(page, '5-vr-glider.png');
+check((await pick('mode:point')) === 'mode:point', 'menu → スーパーマン');
 
 // right stick → a 30° snap turn
 const snap = await page.evaluate(async () => {
@@ -137,6 +176,7 @@ check(hud.kmh >= 0 && hud.alt > 0 && hud.name, `wrist display: ${hud.name}・${h
 // leave VR from the menu
 await page.evaluate(() => window.__press('L', 'y-button'));
 await until(() => window.__app.menu.visible);
+await page.evaluate(async () => { await window.__aim('R', window.__app.menu, 'tab:settings'); await window.__press('R', 'trigger'); });
 await page.evaluate(async () => { await window.__aim('R', window.__app.menu, 'exit'); await window.__press('R', 'trigger'); });
 await until(() => window.__app.state === 'menu' && !window.__app.renderer.xr.isPresenting);
 check(await page.isVisible('#menu'), 'VR を終わる → back to the menu page');

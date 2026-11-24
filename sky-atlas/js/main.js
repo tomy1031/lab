@@ -9,6 +9,10 @@ import { Terrain } from './terrain.js';
 import { Buildings, loadBuildings, fetchBuildings } from './buildings.js';
 import { Sky } from './sky.js';
 import { Flight, MODES, SPEEDS } from './flight.js';
+import { MODE_ORDER } from './modes.js';
+import { Air } from './air.js';
+import { Props } from './props.js';
+import { Sound } from './audio.js';
 import { XRInput, ScreenInput } from './input.js';
 import { MenuPanel, WristHud, Vignette, Pointers, makeHand } from './vrui.js';
 import { AreaStore, PRESETS } from './areas.js';
@@ -21,7 +25,7 @@ const QUALITY = {
   high: { name: 'きれい', splitK: 2.2, bDist: 4500, scale: 1.0 },
 };
 const SETTINGS_KEY = 'sky-atlas:settings';
-const DEFAULTS = { mode: 'point', speed: 'normal', vignette: true, snap: true, radius: 25, year: 2024, hires: true, buildings: true, quality: 'normal', clouds: true };
+const DEFAULTS = { mode: 'point', speed: 'normal', vignette: true, snap: true, radius: 25, year: 2024, hires: true, buildings: true, quality: 'normal', clouds: true, sound: true };
 const params = new URLSearchParams(location.search);
 
 class App {
@@ -29,6 +33,9 @@ class App {
     this.settings = { ...DEFAULTS };
     try { Object.assign(this.settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch { /* defaults */ }
     if (params.get('quality') in QUALITY) this.settings.quality = params.get('quality');
+    if (this.settings.mode === 'wings') this.settings.mode = 'bird'; // renamed
+    if (!MODES[this.settings.mode]) this.settings.mode = 'point';
+    if (MODES[params.get('mode')]) this.settings.mode = params.get('mode');
     this.store = new AreaStore();
     this.online = navigator.onLine !== false;
     this.state = 'menu'; // menu | screen | vr
@@ -55,8 +62,9 @@ class App {
     this.scene.add(this.rig);
     this.sky = new Sky(this.scene);
     this.flight = new Flight(this.rig);
-    this.flight.mode = this.settings.mode;
     this.flight.speedSetting = this.settings.speed;
+    this.sound = new Sound();
+    this.sound.on = this.settings.sound;
     this.loader = new Loader(8);
 
     // VR things
@@ -73,8 +81,10 @@ class App {
     this.camera.add(this.vignette.mesh);
     this.pointers = new Pointers(this.rig);
     this.snapReady = true;
+    this.props = new Props(this);
 
     this.sin = new ScreenInput(r.domElement);
+    this.setMode(this.settings.mode);
     this.clock = new THREE.Clock();
     this.t = 0;
     this.ui = new UI(this);
@@ -91,9 +101,10 @@ class App {
 
   saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch { /* ignore */ } }
   setSetting(k, v) {
-    if (k === 'mode') { this.flight.mode = v; this.settings.mode = v; }
+    if (k === 'mode') { this.settings.mode = v; this.setMode(v); }
     else if (k === 'speed') { this.flight.speedSetting = v; this.settings.speed = v; }
     else this.settings[k] = v;
+    if (k === 'sound') this.sound.on = v;
     if (k === 'quality' && this.world) {
       this.world.terrain.splitK = QUALITY[v].splitK;
       if (this.world.buildings) this.world.buildings.drawDist = QUALITY[v].bDist;
@@ -101,6 +112,28 @@ class App {
     this.saveSettings();
     if (this.menu.visible) this.menu.redraw();
     this.ui.render();
+  }
+
+  // switch the way of flying (keeps where you look on a screen; seats you where you stand in VR).
+  // On a screen the heading modes turn the rig (so the broom / cockpit / carpet face the way you go) and
+  // the camera looks relative to it; the free modes keep the rig still and the camera looks around.
+  setMode(mode) {
+    const f = this.flight, was = f.M, now = MODES[mode] || MODES.point;
+    if (!this.renderer.xr.isPresenting) {
+      const look = (was.heading ? this.rig.rotation.y : 0) + this.sin.yaw; // where the camera looks now
+      if (now.heading) { f.heading = look; this.rig.rotation.y = look; this.sin.yaw = 0; }
+      else { this.rig.rotation.y = 0; this.sin.yaw = look; }
+    }
+    f.mode = mode;
+    this.resetMode();
+  }
+  resetMode() {
+    const f = this.flight, xr = this.renderer.xr.isPresenting;
+    this.rig.updateMatrixWorld();
+    const head = xr ? this.xin.head.clone() : new THREE.Vector3(0, 1.6, 0);
+    f.setMode(f.mode, { xr, inp: xr ? this.xin : null, sin: this.sin, headLocal: head, headWorld: head.clone().applyMatrix4(this.rig.matrixWorld) });
+    this.props.set(f.mode, head);
+    if (this.menu.visible) this.menu.redraw();
   }
 
   resize() {
@@ -126,6 +159,9 @@ class App {
     this.area = area;
     this.flight.limit = plan.limit;
     this.flight.groundAt = (x, z) => terrain.heightAt(x, z).h;
+    this.flight.groundAtFull = (x, z) => terrain.heightAt(x, z);
+    this.flight.air = world.air = new Air(area);
+    this.props.setAir(world.air, this.flight.groundAtFull);
     if (plan.buildings) {
       (async () => {
         let data = await loadBuildings(area);
@@ -160,10 +196,13 @@ class App {
     const y = s.alt != null ? Math.max(s.alt, g + 150) : g + 900;
     this.rig.position.set(x, y, z);
     this.flight.vel.set(0, 0, 0);
+    const f = this.flight;
     if (this.state === 'vr') { this.rig.rotation.y = -head; }
+    else if (f.M.heading) { f.heading = -head; this.rig.rotation.y = -head; this.sin.yaw = 0; this.sin.pitch = -0.2; }
     else { this.rig.rotation.y = 0; this.sin.yaw = -head; this.sin.pitch = -0.2; }
     w.spawned = s.alt != null || w.terrain.heightAt(x, z).z >= 0;
     w.spawnAt = { x, z, head };
+    this.resetMode();
   }
   respawn() { this.spawn(); this.toggleMenu(false); }
 
@@ -295,7 +334,7 @@ class App {
     const xr = this.renderer.xr.isPresenting;
     const camWorld = new THREE.Vector3();
     if (xr && frame) {
-      this.xin.read(frame, this.renderer.xr.getReferenceSpace());
+      this.xin.read(frame, this.renderer.xr.getReferenceSpace(), dt);
       this.rig.updateMatrixWorld();
       const headWorld = this.xin.head.clone().applyMatrix4(this.rig.matrixWorld);
       if (this.xin.was('*', 5)) this.toggleMenu();
@@ -304,7 +343,6 @@ class App {
         const h = this.xin.hands[s], m = this.hands[s];
         m.visible = h.on;
         if (h.on) { m.position.copy(h.pos); m.quaternion.copy(h.quat); }
-        m.userData.wing.visible = this.flight.mode === 'wings';
       }
       if (this.menuOpen) {
         this.flight.coast(dt, 3);
@@ -312,8 +350,8 @@ class App {
         this.pickMenu();
       } else {
         this.pointers.set('L', false); this.pointers.set('R', false);
-        // right stick: snap (or smooth) turn
-        const sx = this.xin.hands.R.stick[0];
+        // right stick: snap (or smooth) turn — except in the glider, where it is the control stick
+        const sx = this.flight.mode === 'glider' ? 0 : this.xin.hands.R.stick[0];
         if (this.settings.snap) {
           if (Math.abs(sx) > 0.7 && this.snapReady) { this.flight.turn(-Math.sign(sx) * Math.PI / 6, headWorld); this.snapReady = false; }
           if (Math.abs(sx) < 0.3) this.snapReady = true;
@@ -321,7 +359,7 @@ class App {
           this.flight.turn(-sx * dt * 1.4, headWorld);
           this.flight.yawRate = Math.max(this.flight.yawRate, Math.abs(sx) * 1.4);
         }
-        if (w && w.terrain.started) this.flight.updateXR(dt, this.xin, headWorld);
+        if (w && w.terrain.started) this.flight.update(dt, { xr: true, inp: this.xin, headLocal: this.xin.head, headWorld });
       }
       this.rig.updateMatrixWorld();
       camWorld.copy(this.xin.head).applyMatrix4(this.rig.matrixWorld);
@@ -329,7 +367,9 @@ class App {
       this.vignette.update(dt, motion, this.settings.vignette && !this.menuOpen);
     } else {
       if (this.state === 'screen' && w) {
-        if (w.terrain.started) this.flight.updateScreen(dt, this.sin);
+        const f = this.flight;
+        if (w.terrain.started) f.update(dt, { xr: false, sin: this.sin, headLocal: this.camera.position });
+        this.rig.rotation.y = f.M.heading ? f.heading : 0;
         this.camera.rotation.set(this.sin.pitch, this.sin.yaw, 0);
       } else if (w) this.attract(dt);
       this.camera.updateMatrixWorld();
@@ -342,6 +382,17 @@ class App {
       w.buildings?.update(camWorld);
     }
     this.sky.update(camWorld, dt, this.settings.clouds);
+    // the mode's props (broom, basket, cockpit…) and sound
+    const f = this.flight;
+    this.props.setActive(this.state !== 'menu');
+    if (this.state !== 'menu') this.props.update(dt, f, xr ? this.xin : null, xr ? this.xin.head : this.camera.position, xr);
+    this.sound.update(dt, {
+      speed: this.state === 'menu' ? 0 : f.speed,
+      fire: f.mode === 'balloon' ? f.st.burner || 0 : f.mode === 'jetpack' ? f.st.thr || 0 : 0,
+      fireTone: f.mode === 'jetpack' ? 'jet' : 'burner',
+      vario: f.mode === 'glider' && this.state !== 'menu',
+      climb: f.st.vy || 0,
+    });
     this.updateHud(camWorld);
     this.renderer.render(this.scene, this.camera);
     if (!this.firstFrame) { this.firstFrame = true; document.getElementById('loading').classList.add('hidden'); }
@@ -386,7 +437,9 @@ class App {
     const f = this.flight;
     const deg = ((-(this.state === 'vr' ? this.rig.rotation.y + new THREE.Euler().setFromQuaternion(this.xin.headQuat, 'YXZ').y : this.sin.yaw) * 180) / Math.PI % 360 + 360) % 360;
     const dirs = ['北', '北東', '東', '南東', '南', '南西', '西', '北西'];
-    const msg = this.toastMsg || (f.edge ? 'このエリアの端です' : this.world.terrain.started ? '' : '地図を読み込み中…');
+    if (f.msg) { this.flash = f.msg; this.flashT = this.t + 2.5; f.msg = ''; }
+    const flash = this.flashT > this.t ? this.flash : '';
+    const msg = this.toastMsg || flash || (f.edge ? 'このエリアの端です' : this.world.terrain.started ? '' : '地図を読み込み中…');
     const d = {
       name: this.world.area.name,
       dir: dirs[Math.round(deg / 45) % 8],
@@ -394,6 +447,8 @@ class App {
       alt: Math.round(cam.y),
       agl: Math.round(Math.max(0, cam.y - f.ground)),
       msg,
+      mode: f.M.name,
+      info: f.info,
     };
     if (this.state === 'vr') this.hud.set(d);
     else if (this.state === 'screen') this.ui.hud(d, this.world.terrain.stats);

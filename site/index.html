@@ -354,7 +354,7 @@
       <div class="notes">
         <div class="tags"><span>VR</span><span>Meta Quest 2/3</span><span>オフライン対応</span><span>three.js・WebXR・オープンデータ</span></div>
         <h2>SKY ATLAS — 世界の空を飛ぶ VR</h2>
-        <p class="lead">本物の地形と衛星写真で、富士山・グランドキャニオン・マッターホルン・ニューヨークなど世界中の空を飛べる VR です。行きたいエリアをネットのある所でダウンロードしておけば、ネットのない所でも飛べます。トリガーを引いて手の向きへ飛ぶ「スーパーマン」と、腕を広げて傾ける「つばさ」の 2 つの飛び方。日本・アメリカ・フランス・スイスでは高精細の航空写真、街では OpenStreetMap の建物も出ます。</p>
+        <p class="lead">本物の地形と衛星写真で、富士山・グランドキャニオン・マッターホルン・ニューヨークなど世界中の空を飛べる VR です。行きたいエリアをネットのある所でダウンロードしておけば、ネットのない所でも飛べます。飛び方は 9 種類：スーパーマン・空中浮遊・鳥（腕で羽ばたく）・ムササビ（ウイングスーツ）・ほうき・グライダー（上昇気流で高く）・気球（風まかせ）・ジェットパック・魔法のじゅうたん（体を傾けて）。日本・アメリカ・フランス・スイスでは高精細の航空写真、街では OpenStreetMap の建物も出ます。</p>
         <p class="note">データはすべて保存してよいオープンデータ（Sentinel-2 cloudless・Terrain Tiles・国土地理院・USGS・IGN・swisstopo・OpenStreetMap）。Google Earth のデータは規約で保存が禁止されているため使っていません。PC やスマホの画面でも飛べます。</p>
         <div class="actions">
           <a class="btn primary" href="sky-atlas/">あそぶ</a>
@@ -366,7 +366,8 @@
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/README.md">README</a>：遊び方、操作、データの出典とライセンス、オフラインのしくみ</li>
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/plan.js"><code>js/plan.js</code></a>：エリアに必要なタイル（ダウンロードと表示で共通）</li>
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/terrain.js"><code>js/terrain.js</code></a>：地形の四分木 LOD・航空写真の色合わせ・地球の丸み</li>
-            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/flight.js"><code>js/flight.js</code></a>：スーパーマン／つばさの飛び方</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/modes.js"><code>js/modes.js</code></a>：9 種類の飛び方の物理と操作</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/air.js"><code>js/air.js</code></a>：風・上昇気流・斜面の上昇風</li>
             <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/buildings.js"><code>js/buildings.js</code></a>：OpenStreetMap の建物</li>
           </ul>
         </details>
