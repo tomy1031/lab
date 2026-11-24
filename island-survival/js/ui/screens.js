@@ -56,6 +56,18 @@ export class Screens {
     } catch { /* ignore */ }
   }
 
+  /** a small fixed banner: 「新しい バージョンが あります」 → update (PWA) */
+  updateBanner(onUpdate) {
+    if (document.getElementById('upd-banner')) return;
+    const el = document.createElement('div');
+    el.id = 'upd-banner';
+    el.innerHTML = '<span>新しい バージョンが あります</span>';
+    const b = document.createElement('button'); b.className = 'btn small primary'; b.textContent = '更新する'; b.onclick = () => { b.disabled = true; onUpdate(); };
+    const x = document.createElement('button'); x.className = 'btn small ghost'; x.textContent = 'あとで'; x.onclick = () => el.remove();
+    el.append(b, x);
+    document.body.appendChild(el);
+  }
+
   show(name, data = {}) {
     const mod = REG[name];
     if (!mod) { console.warn('unknown screen', name); return; }

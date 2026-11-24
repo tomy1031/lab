@@ -88,6 +88,20 @@ export function settings(ctx) {
         toggle('作業の ヒントを 出す', s.hints !== false, (v) => save({ hints: v }))),
       h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '解体の 表現'),
         pick(BUTCHER_VIEW, bvNow, 'butcherView', bvDesc), bvDesc),
-      h('button', { class: 'btn ghost small', onclick: () => screens.show('gesture', { from: 'settings' }) }, '✋ ジェスチャーの 練習')));
+      h('button', { class: 'btn ghost small', onclick: () => screens.show('gesture', { from: 'settings' }) }, '✋ ジェスチャーの 練習'),
+      offlineSection()));
   return { el };
+}
+
+/** オフライン: the state of the PWA cache and the optional hand-gesture pack */
+function offlineSection() {
+  const P = window.ISLE?.pwa;
+  const status = h('p', { class: 'muted small' }, !P?.supported ? 'この ページは オフライン用の 版では ありません（lab サイトの 版で 使えます）' : P.ready ? 'オフラインで 遊べます。ホーム画面に 追加すると アプリの ように 開けます。' : 'オフライン用に ファイルを 保存中…');
+  const handBtn = h('button', { class: 'btn ghost small', disabled: !P?.supported || null, onclick: async () => {
+    handBtn.disabled = true; handBtn.textContent = '保存中…';
+    const off = P.on((type, d) => { if (type === 'extra') { handBtn.textContent = `保存中…（${d.done}/${d.total}）`; if (d.done >= d.total) { handBtn.textContent = '✓ 手の 認識も オフラインで 使えます'; off(); } } });
+    if (!(await P.cacheHands())) { handBtn.textContent = 'いまは 保存できません'; handBtn.disabled = false; }
+  } }, '✋ 手の 認識も オフライン用に 保存（約 19 MB）');
+  if (P?.supported) P.handsCached().then((ok) => { if (ok) { handBtn.textContent = '✓ 手の 認識も オフラインで 使えます'; handBtn.disabled = true; } });
+  return h('section', { class: 'field' }, h('h3', { class: 'field-h' }, 'オフライン'), status, handBtn);
 }

@@ -5,6 +5,7 @@ import { Renderer } from './engine/renderer.js';
 import { Game } from './core/game.js';
 import { Screens } from './ui/screens.js';
 import { loadSettings } from './core/save.js';
+import { pwa } from './pwa.js';
 
 const params = new URLSearchParams(location.search);
 const ISLE = window.ISLE;
@@ -30,6 +31,14 @@ async function boot() {
     game.startAmbientPreview();
   }
   ISLE.ready = true;
+  // offline play (published builds only): cache everything, tell when it is ready, offer updates
+  ISLE.pwa = pwa;
+  pwa.on((type) => {
+    if (type === 'ready' && !localStorage.getItem('isle.offlineToast')) { try { localStorage.setItem('isle.offlineToast', '1'); } catch { /* ignore */ } game.bus?.emit('toast', { text: 'この 島は オフラインでも 遊べます（ホーム画面に 追加できます）', kind: 'good' }); }
+    if (type === 'update') screens.updateBanner?.(() => pwa.update());
+  });
+  pwa.register();
+  addEventListener('offline', () => game.bus?.emit('toast', { text: 'オフライン：仲間との 声の 会話（Gemini）は 使えません。ほかは そのまま 遊べます', kind: 'info' }));
 }
 
 boot().catch((e) => {

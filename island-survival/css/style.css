@@ -532,3 +532,6 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 .bv-skip.out { opacity: 0; }
 @keyframes bvIn { from { opacity: 0; } to { opacity: 1; } }
 .hw-say { align-self: center; max-width: 92%; padding: 4px 14px; border-radius: 12px; background: var(--teal-l); color: var(--teal-d); font-weight: 700; } .hw-say.hidden { display: none; }
+
+/* PWA update banner */
+#upd-banner { position: fixed; left: 50%; top: max(10px, var(--safe-t)); transform: translateX(-50%); z-index: 90; display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 14px; background: var(--glass-2); color: var(--on-glass); box-shadow: var(--shadow); font-weight: 700; }
