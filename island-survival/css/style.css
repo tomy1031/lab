@@ -539,3 +539,16 @@ body.touch #hud-action.on ~ #hud-subtitle { bottom: calc(206px + var(--safe-b));
 /* VR (WebXR): the headset button on the HUD; the page itself is not seen while in the headset */
 #vr-enter { position: absolute; right: max(14px, var(--safe-r, 0px)); bottom: 132px; z-index: 6; pointer-events: auto; }
 body.in-vr #hud, body.in-vr #vr-enter { visibility: hidden; }
+
+/* the controls guide on the screen (H / 「？ 操作」) */
+#ctl-guide-btn { position: absolute; right: max(14px, var(--safe-r, 0px)); top: calc(118px + var(--safe-t)); z-index: 6; pointer-events: auto; }
+#ctl-guide-btn.on { background: var(--sun, #f2b84b); color: var(--ink, #2a2923); }
+#ctl-guide { position: absolute; right: max(14px, var(--safe-r, 0px)); top: calc(158px + var(--safe-t)); width: 300px; max-height: calc(100% - 250px); overflow: auto; z-index: 5; pointer-events: auto;
+  padding: 8px 10px 10px; background: var(--glass); color: var(--on-glass, #fdf8ea); border: 1px solid var(--glass-line); border-radius: 14px; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); font-size: .82rem; }
+#ctl-guide.hidden { display: none; }
+#ctl-guide .cg-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+#ctl-guide .cg-x { background: none; border: 0; color: inherit; font: inherit; opacity: .8; cursor: pointer; }
+#ctl-guide .cg-vr { margin: 2px 0 8px; padding: 6px 8px; border-radius: 10px; background: rgba(31, 127, 134, .45); }
+#ctl-guide .cg-row { display: flex; gap: 8px; align-items: baseline; margin: 2px 0; line-height: 1.28; }
+#ctl-guide kbd { flex: none; min-width: 2.2em; padding: 0 6px; border-radius: 6px; background: rgba(253, 248, 234, .92); color: var(--ink, #2a2923); font: 800 .78rem/1.5 inherit; text-align: center; }
+@media (max-width: 760px), (max-height: 520px) { #ctl-guide { top: auto; bottom: 120px; width: 240px; max-height: 45vh; font-size: .74rem; } #ctl-guide-btn { top: calc(84px + var(--safe-t)); } }

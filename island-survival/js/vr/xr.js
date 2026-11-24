@@ -17,6 +17,8 @@ import * as THREE from 'three';
 import { VRWrist, VRPrompt, VRToasts, VRMenu, VRLaser, makePanelMaterial } from './vrui.js';
 import { defOf, nameOf } from '../ui/common.js';
 import { loadSettings, saveSettings } from '../core/save.js';
+import { StepDetector, ArmSwingDetector, swingAxis } from './locomotion.js';
+import { VRGuide } from './guide.js';
 
 const SNAP = Math.PI / 6;
 const METHODS = [['tie', '結ぶ'], ['carve', '削る'], ['weave', '編む'], ['mix', '混ぜる'], ['knap', '割る'], ['heat', '火に かける'], ['pack', '詰める']];
@@ -42,6 +44,10 @@ export class IslandXR {
     this.yaw = 0;                      // the world turned around it (snap turns)
     this.lift = 0;                     // seated play: the eyes raised to standing height
     this.stance = 'auto';              // auto | stand | seat
+    this.move = 'stick';               // stick | step (足踏み) | arms (腕振り) | both — the stick always works too (§27.5)
+    this.steps = new StepDetector();
+    this.arms = new ArmSwingDetector();
+    this.body = { walking: false, by: '', speed: 0 };
     this.standH = 0;
     this.axes = { x: 0, y: 0, run: false, jump: false, crouch: false };
     this.prev = {};
@@ -74,14 +80,17 @@ export class IslandXR {
     if (g.screens?.current && g.screens.current !== 'result') g.screens.hide();
     const P = g.player;
     this.W.set(P.pos.x, P.pos.y, P.pos.z);
-    this.yaw = P.yaw; this.lift = 0; this.standH = 0; this.t0 = performance.now(); this.lastPos = null;
+    this.yaw = P.yaw; this.lift = 0; this.standH = 0; this.t0 = performance.now(); this.lastPos = null; this.poseFrames = 0;
     this.stance = loadSettings().vrStance || 'auto';
+    this.move = loadSettings().vrMove || 'stick';
+    this.steps.reset(); this.arms.reset(); this.room = null;
     this.applyOffset();
     g.vrActive = true;
     document.body.classList.add('in-vr');
     // the headset drives the frames from now on (the page's own loop stops itself, see Game.loopRaf)
     r.setAnimationLoop((t) => g.frame(t));
-    this.toasts.push('VR で 島へ。左スティック：歩く　トリガー：する　B：メニュー', 'info');
+    this.guide.on = loadSettings().vrGuide !== false;
+    this.toasts.push(this.guide.on ? 'VR で 島へ。手元の ガイドに ボタンの 使い方。消すのは B → ガイド' : 'VR で 島へ。左スティック：歩く　トリガー：する　B：メニュー', 'info');
     return s;
   }
 
@@ -132,6 +141,8 @@ export class IslandXR {
     this.prompt = new VRPrompt();
     this.toasts = new VRToasts();
     this.menu = new VRMenu();
+    this.guide = new VRGuide();
+    this.group.add(...this.guide.meshes);
     this.menu.mesh.visible = false;
     this.group.add(this.prompt.mesh, this.toasts.mesh, this.menu.mesh);
     this.placeWrist();
@@ -179,9 +190,11 @@ export class IslandXR {
     P.pitch = Math.asin(clamp(this.aim.dir.y, -1, 1));
     const yaw = this.headYaw();
     P.yaw = yaw;
-    // standing height (the first moments), seated play, crouching in the room
-    const headH = cam.position.y - this.W.y - this.lift;
-    if (performance.now() - this.t0 < 1500) this.standH = Math.max(this.standH, headH);
+    // standing height (the first moments), seated play, crouching in the room — from the headset's own pose above the
+    // room's floor (the 2-D camera's height of the first frames must not count, or a seated player crouches all game)
+    const vp = this.r.xr.getFrame?.()?.getViewerPose?.(this.baseSpace);
+    const headH = vp ? vp.transform.position.y : cam.position.y - this.W.y - this.lift;
+    if (vp && (this.poseFrames = (this.poseFrames || 0) + 1) <= 90) this.standH = Math.max(this.standH, headH);
     const seat = this.stance === 'seat' || (this.stance === 'auto' && this.standH > 0.3 && this.standH < 1.3);
     this.lift = seat ? clamp(1.62 - (this.standH || 1.2), 0.2, 0.9) : 0;
     // the game moved the body between frames (a teleport, a loaded save, the tent): carry the headset's origin along
@@ -198,8 +211,11 @@ export class IslandXR {
     if (this.edge('Lstick', btn(L, 3))) this.runOn = !this.runOn;
     if (Math.hypot(lx, ly) < 0.2) this.runOn = false;
     this.axes.run = !!this.runOn;
+    // walking by the body (足踏み・腕振り, §27.5): forward where you look, while the stick rests
+    const bodyWalk = this.bodyWalk(dt);
+    if (!uiOpen && bodyWalk.speed > 0 && Math.hypot(lx, ly) < 0.2) { this.axes.y = bodyWalk.speed; this.axes.run = bodyWalk.run; }
     this.axes.jump = !uiOpen && btn(R, 3);
-    this.axes.crouch = !seat && this.standH > 1 && headH < this.standH * 0.72;
+    this.axes.crouch = !seat && this.poseFrames > 90 && this.standH > 1 && headH < this.standH * 0.72;
     // right stick: turn (or rotate the building being placed) / options
     if (!uiOpen) {
       const turn = rx > 0.7 ? 1 : rx < -0.7 ? -1 : 0;
@@ -244,11 +260,53 @@ export class IslandXR {
     this.ui(dt);
   }
 
+  /**
+   * walking by the body: the head's bob (足踏み) and the two hands swinging in turn (腕振り), read in the room's own
+   * space (the floor origin of the headset), so the walking and turning of the game do not disturb them
+   */
+  bodyWalk(dt) {
+    const out = { speed: 0, run: false, by: '' };
+    this.armsActive = false;
+    if (this.move === 'stick' || dt <= 0) { this.body = { ...out, walking: false }; return out; }
+    const frame = this.r.xr.getFrame?.();
+    const vp = frame?.getViewerPose?.(this.baseSpace);
+    if (!vp) return out;
+    const hp = vp.transform.position, ho = vp.transform.orientation;
+    _q.set(ho.x, ho.y, ho.z, ho.w); _e.setFromQuaternion(_q);
+    const yaw = _e.y, pitch = _e.x;
+    const sens = clamp(Number(this.game.settings?.vrMoveSens) || 1, 0.5, 2);
+    if (this.move === 'step' || this.move === 'both') {
+      const r = this.steps.update(dt, hp.y, pitch, sens);
+      if (r.walking) { out.speed = r.speed; out.run = r.run; out.by = '足踏み'; }
+    }
+    if (this.move === 'arms' || this.move === 'both') {
+      // each hand relative to the head, its velocity forward + up (a walking arm swings forward-up and back-down)
+      const pos = {};
+      for (const side of ['left', 'right']) {
+        const c = this.ctrl?.find((x) => x.hand === side && x.source);
+        const sp = c?.source?.gripSpace || c?.source?.targetRaySpace;
+        const p = sp && frame.getPose?.(sp, this.baseSpace);
+        if (p) pos[side] = { x: p.transform.position.x - hp.x, y: p.transform.position.y - hp.y, z: p.transform.position.z - hp.z };
+      }
+      const prev = this.room;
+      this.room = pos;
+      if (prev?.left && prev?.right && pos.left && pos.right) {
+        const v = (a, b) => ({ x: (a.x - b.x) / dt, y: (a.y - b.y) / dt, z: (a.z - b.z) / dt });
+        const r = this.arms.update(dt, swingAxis(v(pos.left, prev.left), yaw), swingAxis(v(pos.right, prev.right), yaw), sens);
+        this.armsActive = r.active;
+        if (r.active && r.speed >= out.speed) { out.speed = r.speed; out.run = out.run || r.run; out.by = '腕振り'; }
+      }
+    }
+    this.body = { ...out, walking: out.speed > 0 };
+    return out;
+  }
+
   /** the right controller's motion → gesture events (swing / push / pull) and side-to-side rubbing (mouseDX) */
   motion(dt, yaw, grip, it) {
     const cam = this.game.renderer.camera;
     this.rel.copy(this.aim.origin).sub(cam.position);
     if (!this.relPrev || dt <= 0) { this.relPrev = this.rel.clone(); return; }
+    if (this.armsActive) { this.relPrev.copy(this.rel); this.gCool = 0.4; return; } // swinging the arms to walk: not a chop
     const vx = (this.rel.x - this.relPrev.x) / dt, vy = (this.rel.y - this.relPrev.y) / dt, vz = (this.rel.z - this.relPrev.z) / dt;
     const rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
     const side = vx * rightX + vz * rightZ, fwd = -(vx * Math.sin(yaw) + vz * Math.cos(yaw));
@@ -377,6 +435,24 @@ export class IslandXR {
     this.toasts.mesh.position.lerp(_v, 1 - Math.exp(-4 * dt));
     this.toasts.mesh.rotation.set(-0.35, yaw, 0, 'YXZ');
     this.toasts.update(dt);
+    // the controls guide above the hands (§27.6)
+    const L = this.gp('left'), R = this.gp('right');
+    const pressedOf = (gp, side) => {
+      const p = new Set();
+      if (!gp) return p;
+      if (btn(gp, 0)) p.add('trigger');
+      if (btn(gp, 1)) p.add('grip');
+      if (btn(gp, 3) || Math.hypot(gp.axes?.[2] || 0, gp.axes?.[3] || 0) > 0.5) p.add('stick');
+      if (btn(gp, 4)) p.add(side === 'right' ? 'a' : 'x');
+      if (btn(gp, 5)) p.add(side === 'right' ? 'b' : 'y');
+      if (side === 'right' && this.gestureShown > 0) p.add('swing');
+      return p;
+    };
+    this.gestureShown = Math.max(0, (this.gestureShown || 0) - dt);
+    if (this.gestures.length) this.gestureShown = 0.6;
+    const mode = this.menuOpen ? 'menu' : g.handwork?.active ? 'work' : g.placement?.active ? 'place' : it?.activity ? 'activity' : 'world';
+    const grips = { left: this.hand('left')?.source ? this.hand('left').grip : null, right: this.hand('right')?.source ? this.hand('right').grip : null };
+    this.guide.update(grips, cam, { mode, move: this.move, held: it?.heldInfo?.()?.kind, target: !!t }, { left: pressedOf(L, 'left'), right: pressedOf(R, 'right') });
     // the work table
     const hw = g.handwork?.active;
     if (hw && hw !== this.hwFor) {
@@ -431,6 +507,15 @@ export class IslandXR {
     return false;
   }
 
+  /** the controls guide above the hands: on / off (kept in the settings) */
+  setGuide(on) {
+    this.guide.on = !!on;
+    saveSettings({ ...loadSettings(), vrGuide: !!on });
+    this.game.settings = { ...(this.game.settings || {}), vrGuide: !!on };
+    this.toasts.push(on ? '手元の 操作ガイドを 出した' : '操作ガイドを 消した（B → ガイドを 出す で 戻る）', 'info');
+    this.refreshMenu();
+  }
+
   // ---------------------------------------------------------------- the VR menu
   openMenu(page = this.page) {
     if (!this.menu) return;
@@ -479,7 +564,7 @@ export class IslandXR {
   pageSpec() {
     const g = this.game, P = g.sys.player, A = g.actions || {}, page = this.page;
     const tabs = [{ id: 'items', label: '持ち物' }, { id: 'make', label: '作る' }, { id: 'build', label: '建てる' }, { id: 'companion', label: '仲間' }, { id: 'rest', label: '休む' }, { id: 'settings', label: '設定' }];
-    const footer = [{ id: 'exit', label: 'VR を 出る' }, { id: 'close', label: '閉じる', primary: true }];
+    const footer = [{ id: 'exit', label: 'VR を 出る' }, { id: 'guide', label: this.guide?.on ? 'ガイドを 消す' : 'ガイドを 出す' }, { id: 'close', label: '閉じる', primary: true }];
     const sc = this.scroll;
     if (page === 'result') {
       const d = this.result || g.screens?.cur?.data || {};
@@ -582,9 +667,12 @@ export class IslandXR {
       const set = loadSettings();
       const hw = g.settings?.handwork || set.handwork || 'manual', bv = g.settings?.butcherView || set.butcherView || 'mild', st = this.stance;
       rows = [
+        { id: 'gd', icon: '❓', text: '操作ガイド', buttons: [{ id: 'gd-on', label: '出す', primary: this.guide.on }, { id: 'gd-off', label: '消す', primary: !this.guide.on }] },
+        { id: 'ws', icon: '🏃', text: '歩く 速さ', buttons: [['normal', 'ふつう'], ['fast', '速い'], ['faster', 'とても']].map(([v, l]) => ({ id: `ws-${v}`, label: l, primary: (g.settings?.walkSpeed || 'normal') === v })) },
+        { id: 'mv', icon: '🚶', text: '歩き方', buttons: [['stick', 'スティック'], ['step', '足踏み'], ['arms', '腕振り'], ['both', '両方']].map(([v, l]) => ({ id: `mv-${v}`, label: l, primary: this.move === v })) },
+        { id: 'st', icon: '🧍', text: '姿勢', buttons: [['auto', '自動'], ['stand', '立って'], ['seat', '座って']].map(([v, l]) => ({ id: `st-${v}`, label: l, primary: st === v })) },
         { id: 'hw', icon: '✋', text: '手の 作業', buttons: [['manual', '手で'], ['assist', '半自動'], ['auto', 'おまかせ']].map(([v, l]) => ({ id: `hw-${v}`, label: l, primary: hw === v })) },
         { id: 'bv', icon: '🔪', text: '解体の 表現', buttons: [['normal', 'ふつう'], ['mild', 'ひかえめ'], ['skip', '省略']].map(([v, l]) => ({ id: `bv-${v}`, label: l, primary: bv === v })) },
-        { id: 'st', icon: '🧍', text: '姿勢', buttons: [['auto', '自動'], ['stand', '立って'], ['seat', '座って']].map(([v, l]) => ({ id: `st-${v}`, label: l, primary: st === v })) },
         { id: 'h1', icon: '🕹', text: '左スティック：歩く（押す：走る）', sub: '右：向き・選ぶ・押して ジャンプ' },
         { id: 'h2', icon: '🎯', text: 'トリガー：する・使う', sub: 'A：選んだ 行動　グリップ：構える　X：仲間' },
         { id: 'h3', icon: '🪓', text: 'コントローラーを 振ると 振った ことに', sub: '下に 振る：切る・たたく　前に 突く：突く・投げる' },
@@ -597,6 +685,7 @@ export class IslandXR {
     const g = this.game, A = g.actions || {};
     if (!id) return;
     if (id === 'close') return this.closeMenu();
+    if (id === 'guide') return this.setGuide(!this.guide.on);
     if (id === 'exit') { this.closeMenu(); return this.exit(); }
     if (id === 'again') { this.closeMenu(); return g.restartGame?.(); }
     if (id === 'back') { if (this.page === 'item' || this.page === 'eat') this.page = 'items'; this.scroll = 0; return this.refreshMenu(); }
@@ -641,10 +730,13 @@ export class IslandXR {
       }
       if (this.page === 'settings') {
         const [k, v] = b.split('-');
-        const key = { hw: 'handwork', bv: 'butcherView', st: 'vrStance' }[k];
+        if (k === 'gd') return this.setGuide(v === 'on');
+        const key = { hw: 'handwork', bv: 'butcherView', st: 'vrStance', mv: 'vrMove', ws: 'walkSpeed' }[k];
         if (key) {
           saveSettings({ ...loadSettings(), [key]: v });
-          if (k === 'st') this.stance = v; else g.settings = { ...(g.settings || {}), [key]: v };
+          if (k === 'st') this.stance = v;
+          else if (k === 'mv') { this.move = v; this.steps.reset(); this.arms.reset(); this.room = null; if (v !== 'stick') this.toasts.push(v === 'step' ? 'その場で 足踏みすると 前へ 歩く（速く 足踏みで 走る）' : v === 'arms' ? '両腕を 交互に 振ると 前へ 歩く（大きく 振ると 走る）' : '足踏みか 腕振りで 前へ 歩く', 'info'); }
+          else g.settings = { ...(g.settings || {}), [key]: v };
           return this.refreshMenu();
         }
       }

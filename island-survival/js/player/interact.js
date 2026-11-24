@@ -824,7 +824,8 @@ export class Interact {
     const g = this.game;
     if (g.paused) return;
     // gesture events of this frame
-    const ev = g.hands?.ready ? (g.hands.events || []) : g.xr?.presenting ? g.xr.gestures : [];
+    // (swinging both hands to walk is not a chop: the camera gestures pause while the arms walk)
+    const ev = g.hands?.ready ? (g.armWalk?.active ? [] : g.hands.events || []) : g.xr?.presenting ? g.xr.gestures : [];
     if (this.activity) {
       const a = this.activity;
       const keys = { Space: g.input.keys.has('Space') };
