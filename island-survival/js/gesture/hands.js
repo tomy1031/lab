@@ -5,8 +5,9 @@ import { MotionRecognizer } from './motion.js';
 import { LM, classify } from './pose.js';
 
 const MP_VER = '0.10.35';
-const MP_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}`;
-const MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+// bundled with the game (vendor/mediapipe) so the hands work offline too (the PWA caches them on first use)
+const MP_URL = new URL('../../vendor/mediapipe', import.meta.url).href;
+const MODEL = new URL('../../vendor/mediapipe/hand_landmarker.task', import.meta.url).href;
 const CONNECTIONS = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]];
 const POSE_COLORS = { fist: '#ff8a3d', open: '#6ff0ff', point: '#b8ff6a', gun: '#ff4f6a', peace: '#ffe14d', call: '#d68aff', other: '#ffffff' };
 

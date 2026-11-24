@@ -28,7 +28,7 @@ export function makeStack(id, n = 1, extra = {}) {
     dur: extra.dur ?? (d?.tool?.durability ?? d?.durability ?? null),
     wet: extra.wet ?? 0,
   };
-  for (const k of ['attrs', 'stats', 'name', 'water', 'contents', 'stage', 'gutted', 'bled', 'mix', 'toxicMix', 'kinds', 'stew', 'source', 'ripe']) if (extra[k] !== undefined) s[k] = extra[k];
+  for (const k of ['attrs', 'stats', 'name', 'water', 'contents', 'stage', 'gutted', 'bled', 'contam', 'mix', 'toxicMix', 'kinds', 'stew', 'source', 'ripe']) if (extra[k] !== undefined) s[k] = extra[k];
   return s;
 }
 
@@ -36,6 +36,7 @@ const CUSTOM_KEYS = ['attrs', 'stats', 'name', 'water', 'contents', 'mix', 'toxi
 const mergeable = (a, b) => a.id === b.id && a.dur === null && b.dur === null && a.proc === b.proc
   && Math.abs((a.done || 0) - (b.done || 0)) < 15 && Math.abs(a.q - b.q) < 15 && (a.stage ?? null) === (b.stage ?? null)
   && (a.fresh === null) === (b.fresh === null) && Math.abs((a.fresh ?? 0) - (b.fresh ?? 0)) < 20
+  && (a.contam || 1) === (b.contam || 1)
   && !CUSTOM_KEYS.some((k) => a[k] !== undefined || b[k] !== undefined);
 
 export class Inventory {

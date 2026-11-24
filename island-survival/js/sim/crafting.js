@@ -113,7 +113,8 @@ export function qualityOf(o = {}) {
       ow += w;
     }
   }
-  const mini = o.noMini ? 0 : o.score == null ? 4 : 8 * clamp(o.score, 0, 1);
+  // §24.4 手仕事: round(−6 + 18 p) — the button / おまかせ (p 0.55) gives +4 as before
+  const mini = o.noMini ? 0 : o.score == null ? 4 : Math.round(-6 + 18 * clamp(o.score, 0, 1));
   const skill = (o.skill || 0) * 2 + mini;
   const over = Math.min(12, 3 * (o.extra || 0));
   const raw = base + (o.tool || 0) + skill + (o.mood || 0) + (o.noise || 0) + over + (o.bonus || 0);

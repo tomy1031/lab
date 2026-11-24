@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SKY ATLAS</title>
+<meta name="description" content="世界の本物の地形と衛星写真の上を、Meta Quest の VR や画面で飛ぶ。エリアをダウンロードしておけば、ネットのない所でも飛べます（three.js / WebXR・オープンデータ）。">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1d30">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SKY ATLAS">
+<script type="importmap">
+{ "imports": { "three": "./js/vendor/three.module.min.js" } }
+</script>
+<style>
+  :root {
+    --bg: #0b1d30; --sheet: rgba(9, 24, 40, 0.88); --ink: #f2f6fb; --muted: #a9bbcd; --line: rgba(255, 255, 255, 0.14);
+    --chip: rgba(255, 255, 255, 0.07); --chip-hover: rgba(255, 255, 255, 0.15); --sel: #7fd3ff; --sel-ink: #06203a;
+    --accent: #7fd3ff; --gold: #ffd166; --warn: #ff8f70; --ok: #8be28b;
+    --font: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+  body { overflow: hidden; }
+  #stage, #stage canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled { cursor: default; opacity: .45; }
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 50; font-weight: 800; letter-spacing: .12em; }
+
+  .sheet { position: fixed; top: 0; bottom: 0; left: 0; width: min(580px, 100%); overflow-y: auto; background: var(--sheet); border-right: 1px solid var(--line);
+    padding: max(18px, env(safe-area-inset-top)) 16px 40px max(16px, env(safe-area-inset-left)); backdrop-filter: blur(8px); z-index: 10; }
+  .brand { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+  .brand h1 { margin: 4px 0 0; font-size: clamp(34px, 8vw, 46px); line-height: 1; letter-spacing: .03em; font-weight: 900; }
+  .brand h1 b { color: var(--accent); }
+  .brand .sub { margin: 0; font-weight: 800; color: var(--gold); letter-spacing: .06em; }
+  .lead { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+  .net { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 99px; margin-left: auto; }
+  .net.on { background: rgba(139, 226, 139, .16); color: var(--ok); }
+  .net.off { background: rgba(255, 143, 112, .16); color: var(--warn); }
+  h2 { font-size: 13px; letter-spacing: .14em; color: var(--muted); margin: 26px 0 8px; font-weight: 800; }
+  .play { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .play .vr { font-size: 19px; padding: 15px; background: var(--accent); color: var(--sel-ink); border: 0; border-radius: 14px; font-weight: 900; }
+  .play .sec { padding: 15px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 17px; }
+  .play .vr:disabled { background: var(--chip); color: var(--muted); opacity: 1; }
+  #vr-note, #now { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  #now b { color: var(--ink); }
+  .note { color: var(--muted); font-size: 13.5px; line-height: 1.7; margin: 6px 0; }
+
+  .places { display: grid; gap: 8px; }
+  .place { border: 1px solid var(--line); background: var(--chip); border-radius: 14px; padding: 10px 12px; }
+  .place.current { border-color: var(--accent); }
+  .place .t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .place .t b { font-size: 16.5px; }
+  .place .t small { color: var(--muted); font-size: 12.5px; }
+  .place .meta { margin: 4px 0 8px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .place .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .place .acts button { padding: 7px 11px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.06); font-weight: 800; font-size: 13.5px; }
+  .place .acts button:hover:not(:disabled) { background: var(--chip-hover); }
+  .place .acts .go { background: var(--accent); color: var(--sel-ink); border-color: var(--accent); }
+  .place .acts .del { color: var(--warn); }
+  .prog { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; margin: 0 0 8px; font-size: 12.5px; color: var(--muted); }
+  .prog .bar { grid-column: 1 / -1; height: 8px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .prog .bar i { display: block; height: 100%; background: var(--gold); transition: width .2s; }
+  .prog button { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; font-size: 12.5px; }
+
+  details { margin-top: 6px; }
+  details summary { cursor: pointer; font-weight: 800; padding: 6px 0; }
+  .grid-list { display: grid; gap: 8px; }
+  form.row { display: flex; gap: 6px; }
+  form.row input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(0,0,0,.25); color: var(--ink); font: inherit; font-size: 15px; }
+  form.row button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; }
+  .mapbox { position: relative; margin-top: 8px; }
+  #map { width: 100%; height: 260px; border-radius: 14px; border: 1px solid var(--line); display: block; touch-action: none; cursor: crosshair; }
+  .mapbox .zoom { position: absolute; right: 8px; top: 8px; display: grid; gap: 4px; }
+  .mapbox .zoom button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: rgba(9,24,40,.85); font-weight: 900; font-size: 18px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { flex: 1 1 auto; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 14px; }
+  .chip small { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); }
+  .seg.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 420px) { .seg.modes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  #mode-help b { color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--sel); color: var(--sel-ink); border-color: var(--sel); }
+  .chip[aria-pressed="true"] small { color: rgba(6,32,58,.75); }
+  .opt { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 14px; line-height: 1.5; }
+  .opt input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+  .opt select { padding: 7px 10px; border-radius: 9px; border: 1px solid var(--line); background: rgba(0,0,0,.25); color: var(--ink); font: inherit; }
+  .help { font-size: 13.5px; color: var(--muted); line-height: 1.8; margin: 6px 0; padding-left: 18px; }
+  .help b { color: var(--ink); }
+  .credits { font-size: 12px; color: var(--muted); line-height: 1.6; padding-left: 18px; }
+  .offline { margin-top: 18px; font-size: 12.5px; color: var(--muted); }
+  .offline.ok { color: var(--ok); }
+  .offline button { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; }
+
+  #hud { position: fixed; left: max(12px, env(safe-area-inset-left)); top: max(12px, env(safe-area-inset-top)); z-index: 5; background: rgba(9, 24, 40, .7); border: 1px solid var(--line);
+    border-radius: 14px; padding: 10px 14px; min-width: 210px; backdrop-filter: blur(6px); pointer-events: none; }
+  #hud .name { font-weight: 900; color: var(--accent); font-size: 15px; }
+  #hud .big { font-size: 30px; font-weight: 900; line-height: 1.15; }
+  #hud .big small, #hud .row small { font-size: 12px; color: var(--muted); font-weight: 700; }
+  #hud .row { font-size: 14px; font-weight: 800; margin-top: 2px; }
+  #hud .msg { color: var(--gold); font-size: 13px; font-weight: 800; min-height: 1em; margin-top: 4px; }
+  #hud button { pointer-events: auto; margin-top: 8px; padding: 6px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; font-size: 13px; }
+  #hud .keys { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+  #hud-credit { position: fixed; right: 8px; bottom: 6px; z-index: 5; font-size: 10.5px; color: rgba(255,255,255,.75); text-shadow: 0 1px 2px #000; pointer-events: none; max-width: 70vw; text-align: right; }
+  #touch { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); z-index: 6; display: grid; grid-template-columns: 64px 64px; gap: 8px; }
+  #touch button { height: 64px; border-radius: 16px; border: 1px solid var(--line); background: rgba(9,24,40,.7); font-size: 15px; font-weight: 900; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; transition: .25s; z-index: 60; background: rgba(9,24,40,.95); border: 1px solid var(--line);
+    padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; max-width: min(92vw, 560px); pointer-events: none; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 640px) { .sheet { background: rgba(9, 24, 40, 0.94); } }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="loading">SKY ATLAS</div>
+
+<aside id="menu" class="sheet">
+  <header class="brand">
+    <h1>SKY <b>ATLAS</b></h1>
+    <p class="sub">世界の空を飛ぶ VR</p>
+    <span id="net" class="net on">オンライン</span>
+  </header>
+  <p class="lead">本物の地形と衛星写真で、富士山からグランドキャニオンまで世界中の空を飛べます。行きたいエリアを<b>ネットのある所でダウンロード</b>しておけば、ネットのない所でも飛べます。データはすべて自由に保存できるオープンデータです。</p>
+  <div class="play">
+    <button id="btn-vr" class="vr" data-act="vr" disabled>VR で飛ぶ</button>
+    <button id="btn-screen" class="sec" data-act="screen">画面で飛ぶ</button>
+    <p id="vr-note"></p>
+    <p id="now"></p>
+  </div>
+
+  <h2>ダウンロード済み（オフラインで飛べる）</h2>
+  <div id="saved" class="places"></div>
+
+  <h2>世界の名所</h2>
+  <div id="cats" class="seg" style="margin-bottom:8px"></div>
+  <div id="presets" class="places"></div>
+
+  <h2>場所をさがす</h2>
+  <form id="search" class="row"><input id="q" type="search" placeholder="地名（例：屋久島、Machu Picchu、モンブラン）" autocomplete="off"><button>検索</button></form>
+  <div id="results" class="places" style="margin-top:8px"></div>
+  <form id="coord" class="row" style="margin-top:8px"><input id="ll" placeholder="緯度, 経度（例：35.3606, 138.7274）" inputmode="decimal" autocomplete="off"><button>この座標</button></form>
+  <div class="mapbox">
+    <canvas id="map" aria-label="世界地図：ドラッグで移動、タップで場所をえらぶ"></canvas>
+    <div class="zoom"><button data-act="zoom-in" aria-label="拡大">＋</button><button data-act="zoom-out" aria-label="縮小">−</button></div>
+  </div>
+  <p class="note">地図をタップすると、その場所をダウンロードできます。黄色の四角はダウンロード済みのエリア。</p>
+  <div id="picked" class="places"></div>
+
+  <h2>ダウンロードの設定</h2>
+  <div class="opt">範囲（中心からの半径）</div>
+  <div id="radius" class="seg"></div>
+  <label class="opt"><input id="hires" type="checkbox">高精細の航空写真も（日本・アメリカ・フランス・スイス。中心のまわり数 km）</label>
+  <label class="opt"><input id="bld" type="checkbox">街では建物も（OpenStreetMap。高さはわかる範囲で）</label>
+  <label class="opt">衛星写真の年 <select id="year"></select></label>
+  <p class="note">広いほど容量が増えます（半径 25 km で 約 30〜70 MB）。ダウンロードはこのブラウザの中に保存され、ほかのアプリやサーバーには送りません。</p>
+
+  <h2>飛び方</h2>
+  <div id="modes" class="seg modes"></div>
+  <p id="mode-help" class="note"></p>
+  <h2>最高速度</h2>
+  <div id="speeds" class="seg"></div>
+  <h2>画質</h2>
+  <div id="quality" class="seg"></div>
+  <label class="opt"><input id="clouds" type="checkbox">雲を出す</label>
+  <label class="opt"><input id="sound" type="checkbox">音（風・バーナー・グライダーの昇降計）</label>
+
+  <h2>保存の容量</h2>
+  <p id="storage" class="note"></p>
+
+  <details>
+    <summary>操作方法</summary>
+    <ul class="help">
+      <li><b>飛び方</b>は 9 種類（上の「飛び方」で選ぶと、それぞれの操作が出ます）。VR の中では B / Y のメニューの「飛び方」タブでも切りかえられます</li>
+      <li><b>VR・共通</b>：B / Y でメニュー、右スティックの左右で回転（30° ずつ／なめらか。グライダーでは操縦桿）、A / X でブレーキ（気球は弁・ジェットパックはホバー）</li>
+      <li><b>画面</b>：マウスで見回す（クリックで固定・Esc で解除）。乗り物の飛び方では、見た方へ曲がります。Esc でこのメニュー</li>
+      <li><b>スマホ・タブレット</b>：ドラッグで見回し（乗り物は見た方へ曲がる）、右下のボタンで前進・上昇（羽ばたき・バーナー・噴射）・下降</li>
+      <li>速さは地面からの高さで変わります：低いとゆっくり、高いと速く</li>
+    </ul>
+  </details>
+  <details>
+    <summary>データとライセンス</summary>
+    <p class="note">いま表示している場所：</p>
+    <ul id="credits-now" class="credits"></ul>
+    <ul class="credits">
+      <li>衛星写真：<a href="https://s2maps.eu">Sentinel-2 cloudless</a> by EOX IT Services GmbH（Contains modified Copernicus Sentinel data）。2018 年以降の版は CC BY-NC-SA 4.0（非商用）、2016 年版は CC BY 4.0</li>
+      <li>航空写真：国土地理院（地理院タイル）、USGS The National Map（パブリックドメイン）、© swisstopo、© IGN（Licence Ouverte）</li>
+      <li>地形：Terrain Tiles（Mapzen / AWS Open Data）— ArcticDEM、Geoscience Australia、DGM Österreich、Open Government Licence – Canada、EU-DEM（Copernicus）、ETOPO1（NOAA）、INEGI、LINZ、Kartverket、Environment Agency、USGS 3DEP・GMTED2010・SRTM、国土地理院 標高タイル</li>
+      <li>建物と地名検索：© OpenStreetMap contributors（ODbL）、Nominatim</li>
+      <li>Google Earth / Google マップのデータは使っていません（規約で保存が禁止されているため）</li>
+    </ul>
+  </details>
+  <p id="offline" class="offline"></p>
+</aside>
+
+<div id="hud" class="hidden">
+  <div class="name" id="hud-name"></div>
+  <div class="big"><span id="hud-kmh">0</span> <small>km/h</small></div>
+  <div class="row">標高 <span id="hud-alt">0</span> <small>m</small>・地面から <span id="hud-agl">0</span> <small>m</small>・<span id="hud-dir"></span></div>
+  <div class="row" id="hud-info"></div>
+  <div class="msg" id="hud-msg"></div>
+  <div class="keys" id="hud-keys"></div>
+  <button data-act="menu">メニュー（Esc）</button>
+</div>
+<div id="hud-credit"></div>
+<div id="touch" class="hidden">
+  <button data-touch="up">上昇</button><button data-touch="fwd">前へ</button>
+  <button data-touch="down">下降</button><button data-touch="back">後ろ</button>
+</div>
+<div id="toast" role="status"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

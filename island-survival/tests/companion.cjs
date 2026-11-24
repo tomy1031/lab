@@ -152,6 +152,43 @@ async function boot(browser, base, q) {
     await page.close();
   }
 
+  // ---------------------------------------------------------------- 4 相談して 頼む (§24.8): proposals, answers, triggers, Live tools
+  {
+    const { page, errors } = await boot(browser, base, 'companion=nagi&prof=fisher&aff=45');
+    const r = await page.evaluate(() => {
+      const g = window.ISLE.game, C = g.sys.companion, P = g.sys.player.body.s, out = {};
+      C.body.place(g.player.pos.x + 2, g.player.pos.z);
+      P.water = 20; P.food = 80;
+      const c1 = C.discuss('consult');
+      out.sit = c1.situation; out.choices = c1.choices.map((x) => x.id).join(); out.text = c1.text;
+      C.answer('ok'); out.job = C.job?.id; out.order = C.order;
+      // a trigger at dusk proposes with buttons (stage 3)
+      C.follow(); C.job = null; C.trigT = {}; C.lastProposalT = -999; P.water = 80;
+      g.clock.total += ((17.4 - g.clock.hour + 24) % 24) * 60;
+      C.checkTriggers();
+      out.trigSit = C.pendingPlan?.sit; out.hud = document.getElementById('hud-choice')?.className;
+      C.answer('no'); out.afterNo = C.order;
+      // Live tools: on its own at stage 3 without agreement → not allowed; asked by the player → the game rolls
+      C.agreedPlan = null;
+      out.selfDenied = C.askJobTool('gather_wood', 'self');
+      C.trust = 90; C.affinity = 90; C.adjust(0, 0); C.refused = {};
+      out.playerAsk = C.askJobTool('gather_wood', 'player');
+      C.follow(); C.job = null;
+      out.propose = C.proposePlanTool([{ job: 'fish', reason: '潮が いい' }]);
+      out.pendingAfterPropose = !!C.pendingPlan;
+      C.answer('together'); out.together = C.togetherActive();
+      return out;
+    });
+    check(r.sit === 'water' && r.choices === 'ok,together,no' && r.text, `consult when thirsty proposes water (${r.sit}: ${r.text})`);
+    check(r.job && r.order === 'job', `お願い starts the proposed job (${r.job})`);
+    check(r.trigSit === 'dusk' && r.hud === 'on', `the dusk trigger shows a proposal with buttons (${r.trigSit})`);
+    check(/not allowed/.test(r.selfDenied), `on its own at stage 3 the model must propose first (${r.selfDenied})`);
+    check(/accepted/.test(r.playerAsk), `a close friend accepts a request (${r.playerAsk})`);
+    check(r.pendingAfterPropose && r.together, 'propose_plan → 一緒に やろう');
+    check(!errors.length, `no page errors (${errors.join(' | ')})`);
+    await page.close();
+  }
+
   await browser.close();
   srv.close();
   if (fail.length) { console.log(`\n${fail.length} failed`); process.exit(1); }

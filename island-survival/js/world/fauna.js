@@ -520,6 +520,9 @@ export class Fauna {
 
   dropBlood(x, z) {
     const m = this.bloodMesh, n = 500;
+    // §25.5: in ひかえめ / 省略 the trail is trampled grass and scuffs, not red (same information for tracking)
+    const mild = (this.game.settings?.butcherView || 'mild') !== 'normal';
+    m.material.color.set(mild ? '#5e5a3a' : '#6d0f0f'); m.material.opacity = mild ? 0.7 : 0.85;
     const y = this.game.world.terrain.heightAt(x, z) + 0.02;
     const i = this.blood.length < n ? this.blood.length : (this.bloodIdx = (this.bloodIdx + 1) % n);
     m.setMatrixAt(i, new THREE.Matrix4().compose(new THREE.Vector3(x + this.rng.float(-0.25, 0.25), y, z + this.rng.float(-0.25, 0.25)), new THREE.Quaternion(), new THREE.Vector3().setScalar(this.rng.float(0.6, 1.7))));

@@ -29,7 +29,16 @@ export default function companion(ctx, data = {}) {
   function renderTalk() {
     let topics = []; try { topics = C?.topics?.() || []; } catch { /* ignore */ }
     if (!topics.length) topics = [{ id: 'hello', label: 'こんにちは' }, { id: 'weather', label: '天気の はなし' }, { id: 'island', label: 'この島の こと' }, { id: 'rescue', label: '助けは 来る？' }];
-    pane.append(h('div', { class: 'topic-grid' }, topics.map((t) => h('button', { class: 'btn', onclick: async () => say(await safe(() => C?.talk?.(t.id)) || '…') }, t.label))));
+    const answerBox = h('div', { class: 'consult-answers' });
+    pane.append(h('div', { class: 'topic-grid' }, topics.map((t) => h('button', { class: `btn ${t.id === 'consult' ? 'teal' : ''}`, onclick: async () => {
+      const r = await safe(() => (C?.discuss ? C.discuss(t.id) : typeof C?.talk === 'function' ? C.talk(t.id) : null));
+      clear(answerBox);
+      if (r && typeof r === 'object') {
+        // 相談 (§24.8): the companion's proposal with three answers
+        say(r.text || '…');
+        answerBox.append(...(r.choices || []).map((o) => h('button', { class: `btn ${o.id === 'ok' ? 'primary' : ''}`, onclick: async () => { const t2 = await safe(() => C?.answer?.(o.id)); if (t2) say(t2); clear(answerBox); if (o.id !== 'no') setTimeout(() => screens.hide(), 900); } }, o.label)));
+      } else say(r || '…');
+    } }, t.icon ? `${t.icon} ${t.label}` : t.label))), answerBox);
     if (C?.liveAvailable) {
       const mic = h('button', { class: 'btn teal mic', onclick: async () => {
         const on = !mic.classList.contains('live');
