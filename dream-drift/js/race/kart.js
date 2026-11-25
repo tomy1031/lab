@@ -2,7 +2,7 @@
 // jumps, walls, off-road) and the visual rig (lean, drift angle, spin, wheels, sparks and flames).
 import * as THREE from 'three';
 import { clamp, damp, dampAngle, wrapAngle, hsl, linearOut } from '../engine/util.js';
-import { buildKart, statMultipliers } from './characters.js';
+import { buildKart, statMultipliers, animateDriver } from './characters.js';
 import { TUNE } from './tune.js';
 
 export const SPEED_CLASSES = {
@@ -295,6 +295,7 @@ export class Kart {
     this.lean = damp(this.lean, this.steer * 0.28 + (this.drift.active ? this.drift.dir * 0.12 : 0), 8, dt);
     rig.driver.rotation.z = this.lean;
     rig.driver.rotation.x = damp(rig.driver.rotation.x, this.boost > 0 ? -0.12 : 0, 6, dt);
+    if (rig.anim && rig.driver.visible) animateDriver(rig, this, dt);
     this.squash = damp(this.squash, 0, 9, dt);
     rig.visual.scale.set(1 + this.squash * 0.5, 1 - this.squash, 1 + this.squash * 0.3);
     const spinRate = (this.speed * dt) / 0.42;

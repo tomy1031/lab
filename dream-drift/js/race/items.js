@@ -25,6 +25,10 @@ export const ITEM_ICONS = {
   shield: `<svg viewBox="0 0 64 64"><path d="M32 4l24 9v16c0 15-10 26-24 31C18 55 8 44 8 29V13z" fill="#7a6bff"/><path d="M32 10l18 7v12c0 11-7 20-18 24-11-4-18-13-18-24V17z" fill="#6fe7ff"/><path d="M32 18l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#fff"/></svg>`,
   comet: `<svg viewBox="0 0 64 64"><defs><linearGradient id="cg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ff4fd8" stop-opacity="0"/><stop offset="1" stop-color="#6ff0ff"/></linearGradient></defs><path d="M4 60L34 22l8 8z" fill="url(#cg)"/><path d="M42 6l5 11 12 2-9 8 2 12-10-6-11 6 3-12-9-8 12-2z" fill="#ffe14d" stroke="#fff" stroke-width="2"/></svg>`,
 };
+// the same icons as standalone images (VR paints them on a canvas). As a file an SVG needs its namespace,
+// without it the image never loads.
+export const itemIconURL = (id) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ITEM_ICONS[id].replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '));
+
 
 // weights by race position (front → back)
 const TABLE = [
