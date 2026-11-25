@@ -1,7 +1,8 @@
 // vr/cockpit.js — everything you see in VR besides the course:
 //   the rig that seats you in your kart (1st person) or follows it (3rd person), yaw only so the horizon
 //   never tilts; a steering wheel that sits where your controllers are and turns exactly as your hands do;
-//   the dashboard (place, lap, time, item, mini-map); a controls card before the start;
+//   two panels at the top of the view, clear of the wheel and your hands: the item (up left) and your place,
+//   lap and time (up right); a controls card before the start;
 //   big messages (3-2-1, LAP, GOAL); menu panels with laser pointers; and a comfort vignette that narrows
 //   the view while the kart turns hard.
 import * as THREE from 'three';
@@ -9,13 +10,15 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
 import { VRPanel, roundRect, text } from './panel.js';
 import { WHEEL_X, WHEEL_Y } from './vrinput.js';
-import { ITEM_ICONS, ITEM_IDS, ITEMS } from '../race/items.js';
+import { ITEM_IDS, ITEMS, itemIconURL } from '../race/items.js';
 import { clamp, damp, dampAngle, wrapAngle } from '../engine/util.js';
 import { fmtTime } from '../ui/hud.js';
 
 const SEAT_Y = 1.55, SEAT_Z = -0.25; // eye point in kart space (+z forward)
 const UP = new THREE.Vector3(0, 1, 0);
-const RANK_COLORS = ['#ffd93b', '#e6ecff', '#ffb070'];
+const RANK_COLORS = [['#fff6b0', '#ffc61a'], ['#ffffff', '#b9c6e8'], ['#ffd8b0', '#e0803a']];
+// the two HUD panels, in the seat frame (eyes at the origin, -z ahead): up left and up right, facing you
+const POD_ITEM = new THREE.Vector3(-0.5, 0.2, -1.12), POD_STATUS = new THREE.Vector3(0.5, 0.2, -1.12);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Euler(), _m = new THREE.Matrix4();
 const FONT = '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif';
 const WHEEL_R = 0.19; // radius of the wheel model
@@ -52,15 +55,17 @@ export class VRCockpit {
     this.hint.visible = false;
     this.rig.add(this.hint);
 
-    // dashboard
-    this.dash = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.3), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, fog: false }));
-    this.dashCv = document.createElement('canvas'); this.dashCv.width = 1040; this.dashCv.height = 400;
-    this.dashTex = new THREE.CanvasTexture(this.dashCv); this.dashTex.colorSpace = THREE.SRGBColorSpace; this.dashTex.anisotropy = 4;
-    this.dash.material.map = this.dashTex;
-    this.dash.renderOrder = 15;
-    this.dashT = 0;
+    // HUD panels: the item, and place / lap / time. Drawn over everything (never hidden by the kart or the wheel)
+    this.itemPod = makePod(0.27, 512, 600);
+    this.statusPod = makePod(0.36, 640, 420);
+    placePod(this.itemPod.mesh, POD_ITEM); placePod(this.statusPod.mesh, POD_STATUS);
+    this.rig.add(this.itemPod.mesh, this.statusPod.mesh);
+    this.podT = 0; this.itemSig = ''; this.pop = 0; this.lastItem = null;
     this.icons = {};
-    for (const id of ITEM_IDS) { const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ITEM_ICONS[id]); this.icons[id] = im; }
+    for (const id of ITEM_IDS) {
+      const im = new Image(); im.src = itemIconURL(id); this.icons[id] = im;
+      im.onload = () => { this.itemSig = ''; }; // redraw once it has loaded
+    }
 
     // big messages, 2.6 m ahead
     this.msgPanel = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.8), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, depthTest: false, fog: false }));
@@ -107,14 +112,12 @@ export class VRCockpit {
     this.rig.parent?.remove(this.rig);
     this.vignette.parent?.remove(this.vignette);
     this.wheel.parent?.remove(this.wheel);
-    this.dash.parent?.remove(this.dash);
   }
 
   // seat the player in kart k
   setKart(k, view = this.view) {
     this.kart = k; this.view = view;
     this.wheel.parent?.remove(this.wheel);
-    this.dash.parent?.remove(this.dash);
     // a VR seat kart has no fixed wheel: the turning one stands in for it in both views
     const tilt = this.wheel.userData.tilt;
     if (k.vrSeat && view === 'first') {
@@ -125,25 +128,13 @@ export class VRCockpit {
       tilt.rotation.x = -0.5; this.wheel.quaternion.identity(); this.wheel.scale.setScalar(1);
       this.wheel.position.set(0, 1.1, 0.42); k.rig.visual.add(this.wheel);
     }
-    if (view === 'first') {
-      k.rig.driver.visible = false;
-      // low on the dash, just above the wheel, tilted to face the driver's eyes (kart +z is forward)
-      this.dash.position.set(0, 1.25, 1.12);
-      this.dash.rotation.set(Math.atan2(SEAT_Y - 1.25, 1.12 - SEAT_Z), Math.PI, 0, 'YXZ');
-      this.dash.scale.setScalar(0.95);
-      k.rig.root.add(this.dash);
-    } else {
-      k.rig.driver.visible = true;
-      this.dash.position.set(0, -0.62, -1.45);
-      this.dash.rotation.set(-0.55, 0, 0, 'XYZ');
-      this.dash.scale.setScalar(1);
-      this.rig.add(this.dash);
-    }
+    k.rig.driver.visible = view !== 'first';
     this.hint.userData.draw();
     this.yaw = k.heading; this.lastHeading = k.heading;
     this.y = k.pos.y;
     this.place(0, true);
-    this.drawDash(k, null);
+    this.itemSig = ''; this.lastItem = k.item || null; this.pop = 0;
+    this.drawPods(k, null, 0);
   }
 
   // line the player's head up with the seat (or the 3rd-person anchor) and face forward
@@ -184,9 +175,11 @@ export class VRCockpit {
     const u = this.vignette.material.uniforms.k;
     u.value = damp(u.value, Math.min(0.85, target), 6, dt);
     this.vignette.visible = u.value > 0.01;
-    // dashboard ~12 Hz
-    this.dashT -= dt;
-    if (this.dashT <= 0) { this.dashT = 1 / 12; this.drawDash(k, race); }
+    // HUD panels: place / lap / time ~12 Hz, the item when it changes (or spins); a pop when you get one
+    this.drawPods(k, race, dt);
+    const pv = this.itemPod.mesh.visible;
+    this.itemPod.mesh.visible = this.statusPod.mesh.visible = !this.menuOpen && !!race;
+    if (!pv) this.itemSig = '';
     // message fade
     if (this.msgPanel.visible) {
       this.msgT += dt;
@@ -231,37 +224,84 @@ export class VRCockpit {
     this.msgPanel.visible = true;
   }
 
-  drawDash(k, race) {
-    const c = this.dashCv.getContext('2d'), W = this.dashCv.width, H = this.dashCv.height;
-    c.clearRect(0, 0, W, H);
-    roundRect(c, 6, 6, W - 12, H - 12, 60);
-    c.fillStyle = 'rgba(24, 16, 60, 0.82)'; c.fill();
-    c.lineWidth = 8; c.strokeStyle = 'rgba(255,255,255,0.5)'; c.stroke();
-    // place
-    const pl = k.place || 1;
-    text(c, String(pl), 150, 205, 230, RANK_COLORS[pl - 1] || '#7fdcff');
-    text(c, '位', 262, 265, 80, '#ffffff');
+  drawPods(k, race, dt) {
+    // the item: a pop when the roulette starts and when it lands
+    const holding = k.roulette > 0 ? 'spin' : k.item || null;
+    if (holding !== this.lastItem) { if (holding) this.pop = 1; this.lastItem = holding; }
+    if (this.pop > 0) {
+      this.pop = Math.max(0, this.pop - dt * 3.2);
+      const p = this.pop, s = 1 + 0.32 * Math.sin(p * Math.PI) * p;
+      this.itemPod.mesh.scale.setScalar(s);
+    } else this.itemPod.mesh.scale.setScalar(1);
+    const spinFrame = k.roulette > 0 ? Math.floor(performance.now() / 70) % ITEM_IDS.length : -1;
+    const sig = `${holding}|${k.itemCount}|${spinFrame}|${this.pop > 0.5}`;
+    if (sig !== this.itemSig) { this.itemSig = sig; this.drawItemPod(k, spinFrame); }
+    this.podT -= dt;
+    if (this.podT <= 0) { this.podT = 1 / 12; this.drawStatusPod(k, race); }
+  }
+
+  drawItemPod(k, spinFrame) {
+    const { cv, tex } = this.itemPod, c = cv.getContext('2d'), W = cv.width, s = 440, x0 = (W - s) / 2, y0 = 14;
+    c.clearRect(0, 0, W, cv.height); c.textBaseline = 'middle';
+    const id = spinFrame >= 0 ? ITEM_IDS[spinFrame] : k.item;
+    const live = !!id;
+    // frame: a white ring around a deep glass square, brighter while you hold something
+    c.save();
+    c.shadowColor = live ? 'rgba(120, 230, 255, 0.9)' : 'rgba(0,0,0,0)'; c.shadowBlur = live ? 36 : 0;
+    roundRect(c, x0, y0, s, s, 96); c.fillStyle = live ? '#ffffff' : 'rgba(255,255,255,0.45)'; c.fill();
+    c.restore();
+    roundRect(c, x0 + 16, y0 + 16, s - 32, s - 32, 82);
+    const g = c.createLinearGradient(0, y0, 0, y0 + s); g.addColorStop(0, live ? '#6a4fe0' : 'rgba(60,40,140,0.55)'); g.addColorStop(1, live ? '#22105e' : 'rgba(30,16,80,0.55)');
+    c.fillStyle = g; c.fill();
+    roundRect(c, x0 + 34, y0 + 30, s - 68, (s - 60) * 0.42, 70); c.fillStyle = 'rgba(255,255,255,0.12)'; c.fill();
+    const im = id && this.icons[id];
+    if (im && im.complete && im.naturalWidth) {
+      c.save(); c.shadowColor = 'rgba(0,0,0,0.35)'; c.shadowOffsetY = 10; c.shadowBlur = 10;
+      const m = spinFrame >= 0 ? 0.88 : 1, d = (s - 110) * m;
+      c.drawImage(im, x0 + (s - d) / 2, y0 + (s - d) / 2, d, d);
+      c.restore();
+    } else if (!live) text(c, 'ITEM', W / 2, y0 + s / 2, 64, 'rgba(255,255,255,0.35)', 900);
+    if (k.itemCount > 1 && spinFrame < 0) {
+      c.beginPath(); c.arc(x0 + s - 34, y0 + s - 34, 62, 0, Math.PI * 2); c.fillStyle = '#ff4fa8'; c.fill(); c.lineWidth = 12; c.strokeStyle = '#ffffff'; c.stroke();
+      text(c, `×${k.itemCount}`, x0 + s - 34, y0 + s - 30, 62, '#ffffff', 900);
+    }
+    if (id && spinFrame < 0) {
+      const name = ITEMS[id].name;
+      c.font = `900 50px ${FONT}`; const tw = Math.min(W - 20, c.measureText(name).width + 70);
+      roundRect(c, (W - tw) / 2, y0 + s + 22, tw, 82, 41); c.fillStyle = 'rgba(20, 10, 56, 0.85)'; c.fill();
+      c.lineWidth = 5; c.strokeStyle = 'rgba(255,255,255,0.6)'; c.stroke();
+      text(c, name, W / 2, y0 + s + 64, 46, '#ffffff', 900);
+    }
+    tex.needsUpdate = true;
+  }
+
+  drawStatusPod(k, race) {
+    const { cv, tex } = this.statusPod, c = cv.getContext('2d'), W = cv.width, H = cv.height;
+    c.clearRect(0, 0, W, H); c.textBaseline = 'middle';
+    roundRect(c, 8, 8, W - 16, H - 16, 64);
+    const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(46, 28, 110, 0.86)'); g.addColorStop(1, 'rgba(18, 10, 48, 0.86)');
+    c.fillStyle = g; c.fill(); c.lineWidth = 6; c.strokeStyle = 'rgba(255,255,255,0.55)'; c.stroke();
+    // place, big, with a metal gradient for the podium
+    const pl = k.place || 1, cols = RANK_COLORS[pl - 1] || ['#bff4ff', '#4fd2ff'];
+    c.save();
+    c.font = `italic 900 230px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    const pg = c.createLinearGradient(0, 60, 0, 270); pg.addColorStop(0, cols[0]); pg.addColorStop(1, cols[1]);
+    c.lineJoin = 'round'; c.lineWidth = 22; c.strokeStyle = '#1a0e40'; c.strokeText(String(pl), 160, 262);
+    c.fillStyle = pg; c.fillText(String(pl), 160, 262);
+    c.font = `900 76px ${FONT}`; c.lineWidth = 14; c.strokeText('位', 268, 258); c.fillStyle = '#ffffff'; c.fillText('位', 268, 258);
+    c.restore();
     // lap and time
     const laps = race ? race.laps : 3;
-    text(c, `LAP ${Math.min(laps, k.lap || 1)}/${laps}`, 520, 120, 78, '#ffffff');
+    text(c, 'LAP', 470, 92, 46, 'rgba(255,255,255,0.75)', 900);
+    text(c, `${Math.min(laps, k.lap || 1)}/${laps}`, 470, 168, 92, '#ffffff', 900);
     const t = race ? (k.finished && !k.estimated ? k.finishTime : race.started ? race.raceTime : 0) : 0;
-    text(c, fmtTime(t), 520, 215, 64, '#ffffff', 800);
-    // speed bar
+    text(c, fmtTime(t), 470, 250, 54, '#ffffff', 800);
+    // speed
     const sp = clamp(Math.max(0, k.speed) / (k.maxSpeed * 1.3), 0, 1);
-    roundRect(c, 360, 280, 320, 34, 17); c.fillStyle = 'rgba(255,255,255,0.15)'; c.fill();
-    if (sp > 0.01) { roundRect(c, 360, 280, Math.max(34, 320 * sp), 34, 17); c.fillStyle = k.boost > 0 ? '#ff8a1f' : '#4fe3ff'; c.fill(); }
-    if (k.wrongWay > 1.2 && !k.finished) text(c, '逆走中！', 520, 350, 46, '#ff6070');
-    // item slot
-    const x0 = 760, y0 = 60, s = 230;
-    roundRect(c, x0, y0, s, s, 50);
-    c.fillStyle = 'rgba(120, 100, 220, 0.7)'; c.fill(); c.lineWidth = 8; c.strokeStyle = '#ffffff'; c.stroke();
-    let id = k.item;
-    if (k.roulette > 0) id = ITEM_IDS[Math.floor(performance.now() / 70) % ITEM_IDS.length];
-    const im = id && this.icons[id];
-    if (im && im.complete && im.naturalWidth) c.drawImage(im, x0 + 25, y0 + 25, s - 50, s - 50);
-    if (k.itemCount > 1 && k.roulette <= 0) text(c, `×${k.itemCount}`, x0 + s - 20, y0 + s - 15, 54, '#ff9ad0');
-    if (id && k.roulette <= 0) text(c, ITEMS[id].name, x0 + s / 2, y0 + s + 52, 40, '#ffffff', 800);
-    this.dashTex.needsUpdate = true;
+    roundRect(c, 60, 312, W - 120, 30, 15); c.fillStyle = 'rgba(255,255,255,0.15)'; c.fill();
+    if (sp > 0.01) { roundRect(c, 60, 312, Math.max(30, (W - 120) * sp), 30, 15); c.fillStyle = k.boost > 0 ? '#ff8a1f' : '#4fe3ff'; c.fill(); }
+    if (k.wrongWay > 1.2 && !k.finished) { roundRect(c, 60, 352, W - 120, 50, 25); c.fillStyle = '#ff3c50'; c.fill(); text(c, '逆走中！', W / 2, 378, 40, '#ffffff', 900); }
+    tex.needsUpdate = true;
   }
 
   // ---- menus
@@ -381,4 +421,18 @@ function makeVignette() {
   m.visible = false;
   m.onBeforeRender = (renderer) => { if (renderer.xr.isPresenting) m.matrixWorld.copy(renderer.xr.getCamera().matrixWorld); };
   return m;
+}
+
+// a HUD panel: a canvas on a plane `w` metres wide, drawn over the scene
+function makePod(w, cw, ch) {
+  const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, (w * ch) / cw), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+  mesh.renderOrder = 25;
+  return { cv, tex, mesh };
+}
+// at p in the seat frame, turned to face the eyes
+function placePod(mesh, p) {
+  mesh.position.copy(p);
+  mesh.rotation.set(Math.atan2(p.y, Math.hypot(p.x, p.z)), Math.atan2(-p.x, -p.z), 0, 'YXZ');
 }

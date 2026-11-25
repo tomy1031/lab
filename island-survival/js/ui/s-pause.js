@@ -36,6 +36,9 @@ export default function pause(ctx) {
 
 export const HANDWORK = [['manual', '手で やる', '研ぐ・打つ・結ぶ を 自分の 手で。上手なら 品質が 上がる'], ['assist', '半自動', '最初の ひと区切りだけ 自分で。あとは 同じ 調子で 続ける'], ['auto', 'おまかせ', '短い アニメで 自動。品質は ふつう']];
 export const BUTCHER_VIEW = [['normal', 'ふつう', '紙の 図で 手順を 行う。色は ひかえめ'], ['mild', 'ひかえめ', '影絵と 点線で 手順を 行う。赤い 色や 生々しい 言葉は 出ない'], ['skip', '省略', '手順を とばして 結果だけ 受け取る']];
+export const VR_MOVE = [['stick', 'スティック', '左スティックで 歩く（どの 設定でも 使えます）'], ['step', '足踏み', 'その場で 足踏みすると 見ている 方へ 歩く。速く 足踏みすると 走る'], ['arms', '腕振り', '両腕を 歩くように 交互に 振ると 歩く。大きく 振ると 走る（座っても できる）'], ['both', '両方', '足踏みでも 腕振りでも 歩ける']];
+export const WALK_SPEED = [['normal', 'ふつう', '歩く 3.6 m/秒・走る 6.2 m/秒'], ['fast', '速い', '歩く・走る が ×1.3'], ['faster', 'とても 速い', '歩く・走る が ×1.6（VR で 酔いやすい 人は 注意）']];
+export const VR_STANCE = [['auto', '自動', '最初の 頭の 高さで 立ち・座りを 決める'], ['stand', '立って', '部屋で 立って 遊ぶ'], ['seat', '座って', '座ったまま 立った 目の 高さに する']];
 const VOL = [['master', '全体'], ['sfx', '効果音'], ['amb', '環境音'], ['voice', '声'], ['ui', '操作音']];
 
 export function settings(ctx) {
@@ -69,6 +72,9 @@ export function settings(ctx) {
     return wrap;
   };
   const hwDesc = h('p', { class: 'muted small opt-desc' });
+  const mvDesc = h('p', { class: 'muted small opt-desc' });
+  const wsDesc = h('p', { class: 'muted small opt-desc' });
+  const stDesc = h('p', { class: 'muted small opt-desc' });
   const bvDesc = h('p', { class: 'muted small opt-desc' });
 
   const el = h('div', { class: 'sheet narrow settings-sheet', tabindex: '-1' },
@@ -77,9 +83,17 @@ export function settings(ctx) {
       h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '音量'),
         VOL.map(([b, l]) => slider(l, 0, 1, 0.05, vol[b] ?? 0.7, (v) => { vol[b] = v; game.audio?.setVolume?.(b, v); save({ vol: { ...vol } }); }))),
       h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '操作'),
+        h('div', { class: 'muted small' }, '歩く 速さ'), pick(WALK_SPEED, s.walkSpeed || 'normal', 'walkSpeed', wsDesc), wsDesc,
         slider('マウス・視点の 感度', 0.3, 2.5, 0.05, s.sens ?? game.input?.sensitivity ?? 1, (v) => { if (game.input) game.input.sensitivity = v; save({ sens: v }); }, (v) => `×${(+v).toFixed(2)}`),
         slider('ジェスチャーの 感度', 0.5, 2, 0.05, s.gsens ?? 1, (v) => { game.hands?.motion?.setSensitivity?.(v); save({ gsens: v }); }, (v) => `×${(+v).toFixed(2)}`),
-        toggle('カメラの 小窓を 出す（ジェスチャー時）', s.camPreview !== false, (v) => save({ camPreview: v }))),
+        toggle('カメラの 小窓を 出す（ジェスチャー時）', s.camPreview !== false, (v) => save({ camPreview: v })),
+        toggle('両手を 交互に 振って 歩く（ジェスチャー時）', !!s.camArmWalk, (v) => save({ camArmWalk: v })),
+        toggle('操作ガイドを 出す（H でも 切りかえ）', s.ctlGuide !== false, (v) => { save({ ctlGuide: v }); game.ctlGuide?.toggle?.(v); })),
+      h('section', { class: 'field' }, h('h3', { class: 'field-h' }, 'VR（Meta Quest など）'),
+        h('div', { class: 'muted small' }, '歩き方'), pick(VR_MOVE, s.vrMove || 'stick', 'vrMove', mvDesc), mvDesc,
+        h('div', { class: 'muted small' }, '姿勢'), pick(VR_STANCE, s.vrStance || 'auto', 'vrStance', stDesc), stDesc,
+        slider('足踏み・腕振りの 感度', 0.5, 2, 0.05, s.vrMoveSens ?? 1, (v) => save({ vrMoveSens: v }), (v) => `×${(+v).toFixed(2)}`),
+        toggle('手元に 操作ガイドを 出す（VR の 中の メニューでも 切りかえ）', s.vrGuide !== false, (v) => save({ vrGuide: v }))),
       h('section', { class: 'field' }, h('h3', { class: 'field-h' }, '画面'),
         h('div', { class: 'row gap center-y' }, h('span', { class: 'muted small' }, '画質'), qSeg),
         toggle('画面の ゆれを 減らす', s.reduceShake, (v) => save({ reduceShake: v })),

@@ -13,6 +13,7 @@ import { Clock } from './clock.js';
 import { EventBus } from './events.js';
 import { RNG } from './rng.js';
 import { AudioEngine } from '../audio/engine.js';
+import { CameraArmWalk } from '../vr/locomotion.js';
 
 export class Game {
   constructor(renderer, { params } = {}) {
@@ -162,7 +163,8 @@ export class Game {
   }
 
   frame(t) {
-    const dt = Math.min(0.1, Math.max(0, (t - this.last) / 1000));
+    // up to 0.25 s per frame: a slow machine (or a busy headset) must not slow the game down; the body steps in 0.05 s
+    const dt = Math.min(0.25, Math.max(0, (t - this.last) / 1000));
     this.last = t;
     this.fps = this.fps * 0.95 + (1 / Math.max(dt, 1e-3)) * 0.05;
     if (!this.world) return;
@@ -197,7 +199,15 @@ export class Game {
       if (!vr) this.player.look(look.x, look.y);
       gm = this.clock.tick(dt);
       this.player.seaLevel = this.clock.tide();
-      this.player.update(dt, vr ? this.xr.axes : this.input.axes());
+      this.player.userSpeed = { fast: 1.3, faster: 1.6 }[this.settings?.walkSpeed] || 1;
+      let ax = vr ? this.xr.axes : this.input.axes();
+      // camera hands: swinging both hands in turn walks (設定「両手を 交互に 振って 歩く」, §27.5)
+      if (!vr && this.settings?.camArmWalk && this.hands?.ready) {
+        this.armWalk ||= new CameraArmWalk();
+        this.armWalk.update(dt, this.hands.motion?.state?.hands, Number(this.settings?.gsens) || 1);
+        if (this.input.enabled) ax = this.armWalk.merge(ax);
+      } else if (this.armWalk) this.armWalk.state.active = false;
+      this.player.update(dt, ax);
       for (const name of this.order) this.sys[name].update?.(dt, gm, this);
     } else {
       for (const name of this.order) this.sys[name].updatePaused?.(dt, this);
@@ -243,6 +253,24 @@ export class Game {
       if (this.player.moveInfo.moving && this.player.onGround) { this.stepAcc = (this.stepAcc || 0) + this.player.moveInfo.dist; if (this.stepAcc > (this.player.moveInfo.running ? 1.6 : 1.1)) { this.stepAcc = 0; this.sys.sfx.footstep(this.player.moveInfo.inWater ? 'water' : zone, { volume: this.player.crouch ? 0.3 : 0.7 }); } }
     }
     this.hud?.update(dt);
+    this.ctlGuide?.update(dt);
+    this.watchFps(dt);
+  }
+
+  /** a machine that cannot keep up: lighter drawing (once, unless the quality was chosen in the settings) */
+  watchFps(dt) {
+    if (this.vrActive || this.paused || this.fpsChecked) return;
+    this.fpsT = (this.fpsT || 0) + dt;
+    if (this.fpsT < 8) return;
+    this.fpsLow = this.fps < 22 ? (this.fpsLow || 0) + dt : 0;
+    if (this.fpsLow < 5) return;
+    this.fpsChecked = true;
+    const chosen = this.settings?.quality;
+    if (!chosen && this.renderer.qname !== 'low') {
+      this.renderer.setQuality?.('low');
+      this.bus.emit('toast', { text: '動きが 重いので 画質を「低」に した（次の 起動から 草木も 軽く なる。設定で 変えられる）', kind: 'info' });
+      try { const s = JSON.parse(localStorage.getItem('isle.settings') || '{}'); s.quality = 'low'; s.qualityAuto = true; localStorage.setItem('isle.settings', JSON.stringify(s)); } catch { /* ignore */ }
+    }
   }
 
   serialize() {
