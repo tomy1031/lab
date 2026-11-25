@@ -74,6 +74,9 @@ export const TYPE_STYLE = {
   event: { frame: '#d4541f', frame2: '#86300c', label: 'イベント' },
   bug: { frame: '#b8202a', frame2: '#6d0f15', label: 'バグ' },
   lesson: { frame: '#e8b53a', frame2: '#8a6411', label: '教訓' },
+  stage: { frame: '#0f8fa8', frame2: '#07485a', label: '工程' },
+  trouble: { frame: '#7a3fd0', frame2: '#4a2287', label: 'トラブル' },
+  plot: { frame: '#3a3f6b', frame2: '#15182f', label: 'たくらみ' },
 };
 
 const faceCache = new Map();
@@ -81,7 +84,8 @@ const faceCache = new Map();
 // draw the face of a card into a canvas. card: { id, name, en, type, cost, text, stats: [{label, value, color}], art, phase }
 export function drawFace(c, card, opts = {}) {
   const W = PX_W, H = PX_H;
-  const st = TYPE_STYLE[card.type] || TYPE_STYLE.unit;
+  const st0 = TYPE_STYLE[card.type] || TYPE_STYLE.unit;
+  const st = card.frame ? { ...st0, frame: card.frame, frame2: card.frame2 || st0.frame2 } : st0;
   const ruby = opts.ruby !== false;
   c.clearRect(0, 0, W, H);
   // frame
@@ -140,7 +144,7 @@ export function drawFace(c, card, opts = {}) {
       c.fillStyle = s.bg || 'rgba(0,0,0,0.45)';
       c.beginPath(); c.roundRect(x, y, sw, 54, 14); c.fill();
       c.fillStyle = s.color || '#ffffff';
-      c.font = `800 22px ${FONT}`; c.textBaseline = 'middle';
+      c.font = `800 ${n > 2 ? 19 : 22}px ${FONT}`; c.textBaseline = 'middle';
       c.fillText(plain(s.label), x + 12, y + 28);
       c.font = `900 36px ${FONT}`; c.textAlign = 'right';
       c.fillText(String(s.value), x + sw - 12, y + 29);
@@ -169,6 +173,7 @@ export class CardMesh extends THREE.Group {
     this.card = card;
     this.front = new THREE.Mesh(g.face, new THREE.MeshStandardMaterial({ map: faceTexture(card, opts), roughness: 0.45, metalness: 0.0 }));
     this.front.position.z = 0.00085;
+    this.front.userData.ownMat = true;
     this.back = new THREE.Mesh(g.face, backTexture());
     this.back.rotation.y = Math.PI;
     this.back.position.z = -0.00085;
@@ -176,8 +181,10 @@ export class CardMesh extends THREE.Group {
     this.add(this.edge, this.front, this.back);
     // glow outline for selection / playable
     const glowShape = roundedRect(CARD_W + 0.012, CARD_H + 0.012, 0.01);
-    this.glow = new THREE.Mesh(new THREE.ShapeGeometry(glowShape, 6), new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.0, depthWrite: false }));
+    if (!sharedGeo().glow) sharedGeo().glow = new THREE.ShapeGeometry(glowShape, 6);
+    this.glow = new THREE.Mesh(sharedGeo().glow, new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.0, depthWrite: false }));
     this.glow.position.z = -0.0012;
+    this.glow.userData.ownMat = true;
     this.glow.renderOrder = -1;
     this.add(this.glow);
     this.target = { pos: new THREE.Vector3(), quat: new THREE.Quaternion(), scale: 1 };

@@ -8,7 +8,7 @@
 // right. Stages not placed yet are shown as see-through "plans" on their slots, so the whole project is always in
 // view; the next one glows.
 import * as THREE from 'three';
-import { CardMesh, CARD_W, CARD_H, faceTexture } from './cardmesh.js';
+import { CardMesh, CARD_W, CARD_H, faceTexture, clearFaceCache } from './cardmesh.js';
 import { canvasTex } from './board.js';
 import { TABLE_H } from './room.js';
 import { FONT } from './text.js';
@@ -56,6 +56,7 @@ function labelSprite(w = 128, h = 64) {
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
   const s = new THREE.Sprite(mat);
   s.renderOrder = 40;
+  s.raycast = () => {};
   s.userData.paint = (text, bg = '#d22', fg = '#fff') => {
     if (s.userData.last === text + bg) return;
     s.userData.last = text + bg;
@@ -74,28 +75,34 @@ function labelSprite(w = 128, h = 64) {
 const bugMat = new THREE.MeshStandardMaterial({ color: '#e0262f', roughness: 0.35, metalness: 0.1, emissive: '#400000' });
 const bugDark = new THREE.MeshStandardMaterial({ color: '#2a0a0c', roughness: 0.6 });
 const eggMat = new THREE.MeshStandardMaterial({ color: '#f3e9ff', roughness: 0.3, transparent: true, opacity: 0.85, emissive: '#3a2a55' });
+const BUG_HIT_MAT = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false });
+const BUG_GEO = { hit: new THREE.SphereGeometry(0.02, 8, 6), body: new THREE.SphereGeometry(0.011, 12, 8), head: new THREE.SphereGeometry(0.0062, 10, 6), leg: new THREE.CylinderGeometry(0.0009, 0.0009, 0.012, 4), egg: new THREE.SphereGeometry(0.01, 12, 8) };
 function makeBug() {
   const g = new THREE.Group();
   const beetle = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 8), bugMat);
+  const body = new THREE.Mesh(BUG_GEO.body, bugMat);
   body.scale.set(1, 0.65, 1.3);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.0062, 10, 6), bugDark);
+  const head = new THREE.Mesh(BUG_GEO.head, bugDark);
   head.position.set(0, 0.001, -0.014);
   beetle.add(body, head);
-  const legG = new THREE.CylinderGeometry(0.0009, 0.0009, 0.012, 4);
+  const legG = BUG_GEO.leg;
   for (const s of [-1, 1]) for (let i = 0; i < 3; i++) {
     const l = new THREE.Mesh(legG, bugDark);
     l.position.set(s * 0.011, -0.002, -0.006 + i * 0.006);
     l.rotation.z = s * 1.1;
     beetle.add(l);
   }
-  const egg = new THREE.Mesh(new THREE.SphereGeometry(0.01, 12, 8), eggMat);
+  const egg = new THREE.Mesh(BUG_GEO.egg, eggMat);
   egg.scale.set(0.85, 1.15, 0.85);
   egg.position.y = 0.004;
   const label = labelSprite();
   label.scale.set(0.026, 0.013, 1);
   label.position.y = 0.024;
-  g.add(beetle, egg, label);
+  // a still, invisible ball is what the pointer hits (the bug itself wiggles and bounces)
+  const hit = new THREE.Mesh(BUG_GEO.hit, BUG_HIT_MAT);
+  hit.position.y = 0.006;
+  for (const part of [beetle, egg]) part.traverse((x) => { x.raycast = () => {}; });
+  g.add(hit, beetle, egg, label);
   g.userData.parts = { beetle, egg, label };
   return g;
 }
@@ -146,7 +153,7 @@ export class Table {
     this.vr = false;
     // the deck / discard piles (a few stacked card backs)
     this.piles = {};
-    for (const [name, x, z, enemy] of [['deck', 0.8, 0.33, false], ['discard', 0.8, 0.12, false], ['edeck', 0.72, -0.52, true], ['ediscard', 0.86, -0.52, true]]) {
+    for (const [name, x, z, enemy] of [['deck', 0.63, 0.13, false], ['discard', 0.76, 0.13, false], ['edeck', 0.56, -0.5, true], ['ediscard', 0.69, -0.5, true]]) {
       const g = new THREE.Group();
       for (let i = 0; i < 6; i++) {
         const c = new CardMesh({ id: 'pile', type: 'unit', name: '' });
@@ -261,6 +268,7 @@ export class Table {
       m.userData.key = key;
       m.userData.born = this.t;
     } else if (m.card.id !== card.id || m.card.faceKey !== card.faceKey) m.setCard(card, { ruby: this.app.settings.ruby });
+    if (m.userData.leaving) { m.userData.leaving = 0; if (m.parent !== this.group && m.parent !== this.handGroup) this.group.add(m); }
     m.userData.seen = this.syncN;
     return m;
   }
@@ -317,6 +325,7 @@ export class Table {
       if (u.tired || u.acted) m.target.quat.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), u.tired ? 0.5 : 0.18));
       m.target.scale = 1;
       m.userData.hit = { kind: 'team', uid: u.uid, id: u.id };
+      this.unitSign(m, u, D);
     });
     // back row (guards face down, documents face up)
     D.p.back.forEach((b, i) => {
@@ -426,6 +435,18 @@ export class Table {
     if (t.isNew) m.userData.newSign.userData.paint('NEW!', '#ffcf3f', '#3a2500');
   }
 
+  unitSign(m, u, D) {
+    if (!m.userData.sign) {
+      const s = labelSprite(192, 80);
+      s.scale.set(0.075, 0.031, 1);
+      s.position.set(0, CARD_H * 0.55, 0.03);
+      m.add(s);
+      m.userData.sign = s;
+    }
+    const p = D.unitPower(u);
+    m.userData.sign.userData.paint(u.tired ? 'つかれ' : u.acted ? '対応ずみ' : `力 ${p}`, u.tired ? '#8a5a00' : u.acted ? '#55607a' : '#2f6fe0');
+  }
+
   syncBugs(D, st, p) {
     const n = st.bugs.length;
     st.bugs.forEach((b, k) => {
@@ -442,11 +463,11 @@ export class Table {
       o.userData.data = b;
       o.userData.hit = b.found ? { kind: 'bug', idx: st.idx, bid: b.bid } : { kind: 'bugq', idx: st.idx, bid: b.bid };
       const cols = Math.min(4, n), row = Math.floor(k / 4), col = k % 4;
-      const ox = (col - (Math.min(4, n - row * 4) - 1) / 2) * 0.026;
-      o.userData.target = new THREE.Vector3(p.x + ox, Y + 0.008, p.z + 0.018 - row * 0.03);
+      const ox = (col - (Math.min(4, n - row * 4) - 1) / 2) * 0.03;
+      o.userData.target = new THREE.Vector3(p.x + ox, Y + 0.01, p.z + 0.02 - row * 0.034);
       const { beetle, egg, label } = o.userData.parts;
       beetle.visible = b.found; egg.visible = !b.found;
-      const sc = [1, 1, 1.25, 1, 1.55, 1, 1, 1, 1.9][b.size] || 1;
+      const sc = 1.7 * ([1, 1, 1.22, 1, 1.45, 1, 1, 1, 1.75][b.size] || 1);
       o.userData.scaleTarget = sc;
       label.userData.paint(b.found ? String(b.size) : '?', b.found ? (b.size >= 8 ? '#ff3d00' : b.size >= 4 ? '#e8262f' : '#c4363e') : '#7a6aa8');
       void cols;
@@ -461,12 +482,12 @@ export class Table {
     const sel = this.app.sel && this.app.sel.kind === 'hand' && this.app.sel.uid === m.userData.hit?.uid;
     if (!this.vr) {
       // in camera space (the hand group is a child of the camera)
-      const width = Math.min(0.5, 0.075 * n);
-      const x = spread * width;
-      const y = -0.235 + (hov || sel ? 0.07 : 0) - Math.abs(spread) * 0.03;
-      t.pos.set(x, y, -0.55 + i * 0.0015);
-      t.quat.setFromEuler(new THREE.Euler(0, 0, -spread * 0.35));
-      t.scale = hov || sel ? 1.25 : 1.0;
+      const width = Math.min(0.46, 0.068 * n);
+      const x = spread * width - 0.02;
+      const y = -0.262 + (hov || sel ? 0.075 : 0) - Math.abs(spread) * 0.025;
+      t.pos.set(x, y, -0.6 + i * 0.0015);
+      t.quat.setFromEuler(new THREE.Euler(0, 0, -spread * 0.3));
+      t.scale = hov || sel ? 1.25 : 0.86;
     } else {
       const width = Math.min(0.62, 0.09 * n);
       const x = spread * width;
@@ -531,18 +552,18 @@ export class Table {
       else m.setGlow(null);
       // see-through plans
       if (key.startsWith('plan:')) {
-        const op = hl ? 0.85 : isHover ? 0.75 : 0.32;
+        const op = hl ? 0.9 : isHover ? 0.8 : 0.3;
         for (const part of [m.front, m.edge]) { part.material.transparent = true; part.material.opacity = op; part.material.depthWrite = false; }
         m.back.visible = false;
       }
-      if (m.userData.leaving && this.t - m.userData.leaving > 0.9) { m.parent?.remove(m); this.cards.delete(key); }
+      if (m.userData.leaving && this.t - m.userData.leaving > 0.9) { m.parent?.remove(m); this.cards.delete(key); disposeTree(m); }
     }
     for (const [bid, b] of this.bugs) {
       if (b.userData.leaving) {
         const k = this.t - b.userData.leaving;
         b.scale.setScalar(Math.max(0.001, (b.userData.size || 1) * (1 - k * 2.5)));
         b.position.y += dt * 0.08;
-        if (k > 0.4) { this.group.remove(b); this.bugs.delete(bid); }
+        if (k > 0.4) { this.group.remove(b); this.bugs.delete(bid); disposeTree(b); }
         continue;
       }
       if (b.userData.target) b.position.lerp(b.userData.target, 1 - Math.exp(-8 * dt));
@@ -563,13 +584,25 @@ export class Table {
 
   // clear everything (new duel)
   reset() {
-    for (const m of this.cards.values()) m.parent?.remove(m);
+    for (const m of this.cards.values()) { m.parent?.remove(m); disposeTree(m); }
     this.cards.clear();
-    for (const b of this.bugs.values()) this.group.remove(b);
+    for (const b of this.bugs.values()) { this.group.remove(b); disposeTree(b); }
     this.bugs.clear();
     this.stamps.clear();
     this.over.clear();
     this.layout = null;
     this.highlight = new Map();
+    clearFaceCache(); // card faces are drawn again on demand (keeps memory flat over many duels)
   }
 }
+
+// free what a removed object owns (not the shared card geometry / back / textures in the face cache)
+const SHARED = new Set();
+function disposeTree(o) {
+  o.traverse((x) => {
+    if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); return; }
+    if (x.userData?.ownGeo) x.geometry?.dispose();
+    if (x.userData?.ownMat) x.material?.dispose();
+  });
+}
+void SHARED;

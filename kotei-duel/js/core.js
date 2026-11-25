@@ -55,9 +55,8 @@ export class Core {
 
   // where the PC camera should be (portrait screens sit higher and further back)
   placePC(snap = false) {
-    const aspect = innerWidth / innerHeight;
-    const far = aspect < 0.8 ? 1.45 : aspect < 1.2 ? 1.18 : 1;
-    const eye = new THREE.Vector3(0, TABLE_H + 0.62 * far, 0.78 * far);
+    const far = this.pcFar || 1;
+    const eye = new THREE.Vector3(0, TABLE_H + (this.pcHeight || 0.95) * far, (this.pcDist || 0.78) * far + this.pcLook.z);
     // look around (right drag): yaw/pitch around the look point
     const off = eye.clone().sub(this.pcLook);
     off.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.orbit.yaw);
@@ -101,7 +100,7 @@ export class Core {
     this.xrActive = true;
     this.camera.position.set(0, 0, 0);
     this.camera.rotation.set(0, 0, 0);
-    this.rig.position.set(0, 0, 0.62);
+    this.rig.position.set(0, 0, 0.92);
     this.rig.rotation.set(0, 0, 0);
     this.needCalibrate = true;
     this.calT = 0;
@@ -134,7 +133,7 @@ export class Core {
     const yawWorld = Math.atan2(-fwd.x, -fwd.z);
     const yawLocal = yawWorld - this.rig.rotation.y;
     // we want: the head at (0, TABLE_H + 0.45, 0.5) in the world, facing −z
-    const want = new THREE.Vector3(0, TABLE_H + 0.45, 0.5);
+    const want = new THREE.Vector3(0, TABLE_H + 0.45, 0.92);
     const eyeH = Math.max(0.9, local.y);
     this.rig.rotation.set(0, -yawLocal, 0);
     const rotated = new THREE.Vector3(local.x, 0, local.z).applyAxisAngle(new THREE.Vector3(0, 1, 0), -yawLocal);

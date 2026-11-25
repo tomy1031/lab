@@ -80,13 +80,13 @@ export class Board {
     if (spec.body) {
       const maxH = btnTop - y - (spec.en ? W * 0.09 : 0) - 10;
       const L = fit(c, spec.body, W - pad * 2, maxH, Math.round(W * (spec.bodySize || 0.038)), { ruby: this.ruby, minSize: Math.round(W * 0.024) });
-      y = drawLines(c, L, pad, y, { color: '#eef3ff', rubyColor: '#c9d8ff', bold: ACCENT });
+      y = drawLines(c, L, pad, y, { color: spec.bodyColor || '#eef3ff', rubyColor: spec.rubyColor || '#c9d8ff', bold: spec.boldColor || ACCENT });
     }
     if (spec.draw) y = spec.draw(c, y, W, H, pad) ?? y;
     if (spec.en) {
       c.font = `italic 500 ${Math.round(W * 0.027)}px ${FONT}`;
       const L = layout(c, spec.en, W - pad * 2, Math.round(W * 0.027), { weight: 500 });
-      y = drawLines(c, L, pad, y + 8, { color: '#9fb1d8' });
+      y = drawLines(c, L, pad, y + 8, { color: spec.enColor || '#9fb1d8' });
     }
     // buttons
     this.buttons = [];
