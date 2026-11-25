@@ -72,6 +72,13 @@ on:
       - 'powder-line/img/**'
       - 'powder-line/docs/preview.jpg'
       - 'powder-line/tools/bundle.mjs'
+      - 'kotei-duel/index.html'
+      - 'kotei-duel/manifest.webmanifest'
+      - 'kotei-duel/sw.js'
+      - 'kotei-duel/js/**'
+      - 'kotei-duel/img/**'
+      - 'kotei-duel/docs/preview.jpg'
+      - 'kotei-duel/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

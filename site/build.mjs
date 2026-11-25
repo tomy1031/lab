@@ -19,6 +19,7 @@
 //   SKYATLAS_REF  SKY ATLAS (sky-atlas/)                      default: HEAD if it has sky-atlas/, else origin/claude/nifty-hamilton-jfagze
 //   ANAKATA_REF   ANAKATA (anakata/)                           default: HEAD if it has anakata/, else origin/claude/determined-turing-o80o1n
 //   POWDER_REF    POWDER LINE (powder-line/)                   default: HEAD if it has powder-line/, else origin/claude/stoic-maxwell-eaq1nw
+//   KOTEI_REF     KOTEI DUEL (kotei-duel/)                      default: HEAD if it has kotei-duel/, else origin/claude/it-manufacturing-card-game-2qkhxb
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -47,6 +48,7 @@ const refs = {
   skyatlas: process.env.SKYATLAS_REF || 'HEAD',
   anakata: process.env.ANAKATA_REF || 'HEAD',
   powder: process.env.POWDER_REF || 'HEAD',
+  kotei: process.env.KOTEI_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -62,6 +64,7 @@ if (!process.env.ISLAND_REF && !hasDir(refs.island, 'island-survival')) refs.isl
 if (!process.env.SKYATLAS_REF && !hasDir(refs.skyatlas, 'sky-atlas')) refs.skyatlas = 'origin/claude/nifty-hamilton-jfagze';
 if (!process.env.ANAKATA_REF && !hasDir(refs.anakata, 'anakata')) refs.anakata = 'origin/claude/determined-turing-o80o1n';
 if (!process.env.POWDER_REF && !hasDir(refs.powder, 'powder-line')) refs.powder = 'origin/claude/stoic-maxwell-eaq1nw';
+if (!process.env.KOTEI_REF && !hasDir(refs.kotei, 'kotei-duel')) refs.kotei = 'origin/claude/it-manufacturing-card-game-2qkhxb';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -416,6 +419,28 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 16 KOTEI DUEL — a duel card game about how systems are built at Japanese IT companies (PC and WebXR). Like the
+// ones above, its own tools/bundle.mjs copies what ships and fills sw.js, so the published game works offline.
+{
+  const dest = path.join(out, 'kotei-duel');
+  try {
+    const src = exportDir(refs.kotei, 'kotei-duel');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.kotei}:kotei-duel"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'kotei-duel.jpg'));
+    console.log(`kotei-duel build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`kotei-duel not found at ${refs.kotei}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KOTEI DUEL</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei}`);
