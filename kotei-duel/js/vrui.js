@@ -175,8 +175,7 @@ export class VRUI {
 
   // keep the boards facing the player's head (after the table was fitted to them)
   update() {
-    const cam = this.app.core.renderer.xr.getCamera();
-    const p = cam.getWorldPosition(new THREE.Vector3());
+    const p = this.app.camera.getWorldPosition(new THREE.Vector3());
     for (const b of [this.modal, this.bubble]) if (b.visible) {
       const q = b.mesh.quaternion.clone();
       b.mesh.lookAt(p);

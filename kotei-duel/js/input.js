@@ -22,7 +22,11 @@ class Hand {
     this.axes = [0, 0];
     this.connected = false;
     this.ray.addEventListener('connected', (e) => { this.source = e.data; this.connected = true; this.side = e.data.handedness === 'left' ? 'L' : 'R'; });
-    this.ray.addEventListener('disconnected', () => { this.source = null; this.connected = false; });
+    this.ray.addEventListener('disconnected', () => { this.source = null; this.connected = false; this.selecting = false; });
+    // the runtime's own "select" (a pinch for tracked hands, the trigger for controllers)
+    this.selecting = false;
+    this.ray.addEventListener('selectstart', () => { this.selecting = true; });
+    this.ray.addEventListener('selectend', () => { this.selecting = false; });
     // laser
     const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
     this.laser = new THREE.Line(g, new THREE.LineBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: 0.8 }));
@@ -66,8 +70,9 @@ class Hand {
       let pinch = 0;
       if (th && ix) {
         const dd = th.position.distanceTo(ix.position);
-        pinch = dd < 0.018 ? 1 : dd < 0.03 ? 0.5 : 0;
+        pinch = dd < 0.02 ? 1 : dd < 0.035 ? 0.5 : 0;
       }
+      if (this.selecting) pinch = 1;
       this.btn = { trigger: pinch >= 1 ? 1 : 0, grip: 0, a: 0, b: 0, stick: 0, pinch };
       this.axes = [0, 0];
       const names = ['thumb-tip', 'index-finger-tip', 'middle-finger-tip', 'ring-finger-tip', 'pinky-finger-tip'];

@@ -48,8 +48,7 @@ export class FX {
       const k = Math.min(1, t / 0.45);
       plane.position.y = 0.04 + k * 0.17;
       plane.scale.setScalar(0.3 + 0.7 * k);
-      const cam = this.app.core.renderer.xr.isPresenting ? this.app.core.renderer.xr.getCamera() : this.app.core.camera;
-      const cp = cam.getWorldPosition(new THREE.Vector3());
+      const cp = this.app.camera.getWorldPosition(new THREE.Vector3());
       plane.lookAt(cp);
       plane.rotation.y += 0;
       const fade = t > life - 0.4 ? (life - t) / 0.4 : 1;
@@ -164,8 +163,7 @@ export class FX {
       const k = Math.min(1, t / 0.18);
       o.scale.set(0.6 + 0.4 * k, k, 1);
       o.material.opacity = t > life - 0.3 ? (life - t) / 0.3 : 1;
-      const cam = this.app.core.renderer.xr.isPresenting ? this.app.core.renderer.xr.getCamera() : this.app.core.camera;
-      o.lookAt(cam.getWorldPosition(new THREE.Vector3()));
+      o.lookAt(this.app.camera.getWorldPosition(new THREE.Vector3()));
     });
   }
 

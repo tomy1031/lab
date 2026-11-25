@@ -357,6 +357,7 @@ class App {
 
   toTitle() {
     this.duelN++;
+    document.getElementById('banner').classList.add('hidden');
     this.mode = 'title';
     this.D = null;
     this.tut = null;

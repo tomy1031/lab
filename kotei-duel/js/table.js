@@ -482,20 +482,21 @@ export class Table {
     const sel = this.app.sel && this.app.sel.kind === 'hand' && this.app.sel.uid === m.userData.hit?.uid;
     if (!this.vr) {
       // in camera space (the hand group is a child of the camera)
-      const width = Math.min(0.46, 0.068 * n);
-      const x = spread * width - 0.02;
-      const y = -0.262 + (hov || sel ? 0.075 : 0) - Math.abs(spread) * 0.025;
+      const portrait = innerWidth < innerHeight;
+      const width = Math.min(portrait ? 0.3 : 0.46, (portrait ? 0.05 : 0.068) * n);
+      const x = spread * width - (portrait ? 0 : 0.02);
+      const y = (portrait ? -0.2 : -0.262) + (hov || sel ? 0.075 : 0) - Math.abs(spread) * 0.025;
       t.pos.set(x, y, -0.6 + i * 0.0015);
       t.quat.setFromEuler(new THREE.Euler(0, 0, -spread * 0.3));
-      t.scale = hov || sel ? 1.25 : 0.86;
+      t.scale = (hov || sel ? 1.25 : 0.86) * (portrait ? 0.75 : 1);
     } else {
       const width = Math.min(0.62, 0.09 * n);
       const x = spread * width;
       const a = spread * 0.9;
-      const y = TABLE_H + 0.2 + (hov || sel ? 0.05 : 0) - Math.abs(spread) * 0.04;
-      const z = 0.6 + Math.abs(spread) * 0.08 - (hov || sel ? 0.03 : 0);
+      const y = TABLE_H + 0.12 + (hov || sel ? 0.06 : 0) - Math.abs(spread) * 0.035;
+      const z = 0.66 + Math.abs(spread) * 0.07 - (hov || sel ? 0.03 : 0);
       t.pos.set(x, y, z);
-      t.quat.setFromEuler(new THREE.Euler(-0.55, -a * 0.6, 0, 'YXZ'));
+      t.quat.setFromEuler(new THREE.Euler(-0.85, -a * 0.6, 0, 'YXZ'));
       t.scale = hov || sel ? 1.2 : 1.05;
     }
     m.userData.inHand = true;

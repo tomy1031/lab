@@ -122,17 +122,11 @@ export class Core {
   // move the play space so the mat is in front of the eyes and ~45 cm below them
   calibrate() {
     this.needCalibrate = false;
-    const xrCam = this.renderer.xr.getCamera();
-    const head = new THREE.Vector3();
-    xrCam.getWorldPosition(head);
-    const local = this.rig.worldToLocal(head.clone()); // head in play space
-    // yaw of the head (in play space)
-    const q = new THREE.Quaternion();
-    xrCam.getWorldQuaternion(q);
-    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(q);
-    const yawWorld = Math.atan2(-fwd.x, -fwd.z);
-    const yawLocal = yawWorld - this.rig.rotation.y;
-    // we want: the head at (0, TABLE_H + 0.45, 0.5) in the world, facing −z
+    // the head in the play space: three.js puts the headset pose on our camera, which is a child of the rig
+    const local = this.camera.position.clone();
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    const yawLocal = Math.atan2(-fwd.x, -fwd.z);
+    // we want: the head at (0, TABLE_H + 0.45, 0.92) in the world, facing −z (the table)
     const want = new THREE.Vector3(0, TABLE_H + 0.45, 0.92);
     const eyeH = Math.max(0.9, local.y);
     this.rig.rotation.set(0, -yawLocal, 0);
