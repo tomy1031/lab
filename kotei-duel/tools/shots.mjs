@@ -41,6 +41,9 @@ async function playInto(page, turns) {
     clearInterval(iv);
     const plan = D.ptr < D.track.length ? { kind: 'plan', idx: D.ptr } : null;
     if (plan) A.onPick(plan);
+    await new Promise((r) => setTimeout(r, 1200));
+    A.fx.clear();
+    document.getElementById('banner').classList.add('hidden');
   }, turns);
 }
 
