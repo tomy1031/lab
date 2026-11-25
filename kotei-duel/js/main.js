@@ -264,7 +264,7 @@ class App {
 
   // ---------- demo (behind the title) ----------
   async runDemo() {
-    const { playTurn } = await import('../tools/bot.mjs').catch(() => ({}));
+    const { playTurn } = await import('./bot.js').catch(() => ({}));
     if (!playTurn) return;
     this.demo = true;
     const n = ++this.duelN;

@@ -124,7 +124,7 @@ const vis = (page, sel) => page.isVisible(sel).catch(() => false);
   for (const ch of ['ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9']) {
     const r = await page.evaluate(async (ch) => {
       const A = window.__app;
-      const { playTurn } = await import('./tools/bot.mjs');
+      const { playTurn } = await import('./js/bot.js');
       // answer every dialog / bubble at once (take the primary button), like a quick player
       const click = () => {
         const bb = document.querySelector('#bubble:not(.hidden) .bbtn button'); if (bb) bb.click();

@@ -96,7 +96,7 @@ function makeBug() {
   egg.scale.set(0.85, 1.15, 0.85);
   egg.position.y = 0.004;
   const label = labelSprite();
-  label.scale.set(0.026, 0.013, 1);
+  label.scale.set(0.022, 0.011, 1);
   label.position.y = 0.024;
   // a still, invisible ball is what the pointer hits (the bug itself wiggles and bounces)
   const hit = new THREE.Mesh(BUG_GEO.hit, BUG_HIT_MAT);
@@ -467,7 +467,7 @@ export class Table {
       o.userData.target = new THREE.Vector3(p.x + ox, Y + 0.01, p.z + 0.02 - row * 0.034);
       const { beetle, egg, label } = o.userData.parts;
       beetle.visible = b.found; egg.visible = !b.found;
-      const sc = 1.7 * ([1, 1, 1.22, 1, 1.45, 1, 1, 1, 1.75][b.size] || 1);
+      const sc = 1.35 * ([1, 1, 1.22, 1, 1.45, 1, 1, 1, 1.75][b.size] || 1);
       o.userData.scaleTarget = sc;
       label.userData.paint(b.found ? String(b.size) : '?', b.found ? (b.size >= 8 ? '#ff3d00' : b.size >= 4 ? '#e8262f' : '#c4363e') : '#7a6aa8');
       void cols;

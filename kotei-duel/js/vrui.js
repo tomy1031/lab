@@ -25,9 +25,9 @@ export class VRUI {
     const head = new THREE.Vector3(0, TABLE_H + 0.45, 0.95);
     this.head = head;
     this.info = new Board('info', 1024, 1180, 0.42);
-    face(this.info, new THREE.Vector3(-0.46, TABLE_H + 0.3, 0.58), head);
+    face(this.info, new THREE.Vector3(-0.62, TABLE_H + 0.33, 0.62), head);
     this.hud = new Board('hud', 1024, 760, 0.36);
-    face(this.hud, new THREE.Vector3(0.46, TABLE_H + 0.27, 0.6), head);
+    face(this.hud, new THREE.Vector3(0.62, TABLE_H + 0.3, 0.64), head);
     this.modal = new Board('modal', 1024, 1100, 0.72, { renderOrder: 70, depthTest: false });
     face(this.modal, new THREE.Vector3(0, TABLE_H + 0.42, 0.05), head);
     this.bubble = new Board('bubble', 1024, 460, 0.7);

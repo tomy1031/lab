@@ -66,7 +66,7 @@ export class PageUI {
     $('h-effort-v').textContent = D.effort;
     const left = D.deadline - D.turn;
     $('h-deadline-v').textContent = D.released ? '✓' : D.deadline >= 50 ? '—' : left >= 0 ? `あと ${left}` : `${-left} 遅れ`;
-    $('h-deadline-t').textContent = D.released || D.deadline >= 50 ? '' : `（ターン ${D.deadline} まで）`;
+    $('h-deadline-t').textContent = D.released || D.deadline >= 50 ? '' : `（ターン ${D.deadline}）`;
     $('h-deadline').classList.toggle('warn', !D.released && left <= 1);
     $('h-ops').classList.toggle('hidden', !D.released);
     $('h-ops-v').textContent = D.opsLeft ?? '';

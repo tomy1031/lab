@@ -73,11 +73,11 @@
   .foot { margin-top: 18px; font-size: 12.5px; color: var(--muted); line-height: 1.8; }
 
   /* ---------- duel HUD (PC) ---------- */
-  #hud { position: fixed; top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: calc(var(--side) + 12px); z-index: 10; display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; pointer-events: none; }
-  .hbox { background: rgba(9, 16, 40, 0.82); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; backdrop-filter: blur(4px); }
+  #hud { position: fixed; top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: calc(var(--side) + 120px); z-index: 10; display: flex; gap: 6px; flex-wrap: wrap; align-items: stretch; pointer-events: none; }
+  .hbox { background: rgba(9, 16, 40, 0.82); border: 1px solid var(--line); border-radius: 12px; padding: 5px 9px; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; backdrop-filter: blur(4px); }
   .hbox .k { color: var(--muted); font-size: 12px; font-weight: 700; }
   .hbox .v { font-size: 20px; font-weight: 900; }
-  #h-trust .bar { width: 110px; height: 10px; border-radius: 6px; background: rgba(255,255,255,0.12); overflow: hidden; }
+  #h-trust .bar { width: 70px; height: 10px; border-radius: 6px; background: rgba(255,255,255,0.12); overflow: hidden; }
   #h-trust .bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff5a7a, #ff9aa8); transition: width .4s; }
   #h-trust.hit { animation: hit .5s; }
   @keyframes hit { 0%, 100% { transform: none; } 25% { transform: translateX(-6px); background: rgba(160, 20, 40, 0.9); } 75% { transform: translateX(6px); } }
@@ -86,7 +86,8 @@
   .gems i.on { background: linear-gradient(135deg, #fff6c9, var(--accent)); box-shadow: 0 0 6px rgba(255, 207, 63, 0.6); }
   #h-deadline.warn .v { color: var(--hot); }
   #h-turn .v { color: var(--ice); }
-  #h-enemy { gap: 8px; max-width: 260px; }
+  #h-enemy { gap: 8px; max-width: 210px; }
+  #h-enemy .k { display: none; }
   #h-enemy .pic canvas { width: 38px; height: 38px; border-radius: 50%; display: block; }
   #h-enemy #h-enemy-n { font-size: 13px; line-height: 1.5; }
   #h-enemy.act { animation: hit .5s; }
