@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { canvasTexture, FONT, roundRect, fmtTime } from './util.js';
 import { SONGS, songById } from './songs.js';
 import { MODES, DIFFS } from './chart.js';
-import { HAND_COLOR, SUB_COLOR } from './targets.js';
+import { HAND_COLOR, SUB_COLOR, drawIcon, drawBadge } from './targets.js';
 
 const C = { glass: 'rgba(12,28,22,0.86)', line: 'rgba(255,255,255,0.16)', ink: '#f5f2e8', muted: '#b6c3b4', accent: '#9be36a', btn: 'rgba(255,255,255,0.08)', sel: '#f5f2e8', selInk: '#10231b', gold: SUB_COLOR.and };
 
@@ -165,7 +165,7 @@ export class ResultsPanel extends Panel {
     this.text(x, `パンチ ${r.hits}/${r.punches}   よけた枝 ${r.dodged}/${r.ducks}   ${fmtTime(r.duration)}   目安 ${r.kcal} kcal`, 44, 340, 26, C.muted, 600);
     // timing per subdivision
     this.text(x, 'タイミング（＋は遅い、−は早い）', 44, 410, 26, C.ink, 800);
-    const cats = [['on', '表拍「1 2 3 4」'], ['and', '裏拍「&」'], ['six', '16分の裏「e・a」']];
+    const cats = [['on', '表拍「1 2 3 4」'], ['and', '裏拍「ウラ」'], ['six', '16ウラ']];
     let y = 450;
     for (const [k, label] of cats) {
       const c = r.cat[k];
@@ -197,9 +197,9 @@ export class ResultsPanel extends Panel {
   wrap(x, s, px, py, w, size, color) { MenuPanel.prototype.wrap.call(this, x, s, px, py, w, size, color); }
 }
 
-// score, combo, the count of the bar ("1 & 2 & 3 & 4 &") and the last timing, below the hit zone
+// score, combo, the count of the bar ("1 ウラ 2 ウラ 3 ウラ 4 ウラ") and the last timing
 export class Hud extends Panel {
-  constructor() { super(1200, 240, 1.6); this.mesh.renderOrder = 7; this.state = {}; }
+  constructor() { super(1200, 260, 1.6); this.mesh.renderOrder = 7; this.state = {}; }
   set(st) {
     const k = JSON.stringify(st);
     if (k === this._k) return;
@@ -209,30 +209,114 @@ export class Hud extends Panel {
   }
   draw(x) {
     const s = this.state;
-    x.fillStyle = 'rgba(10,24,18,0.55)';
-    roundRect(x, 4, 4, this.w - 8, this.h - 8, 30);
+    const g = x.createLinearGradient(0, 0, 0, this.h);
+    g.addColorStop(0, 'rgba(16,40,32,0.78)');
+    g.addColorStop(1, 'rgba(8,22,18,0.62)');
+    x.fillStyle = g;
+    roundRect(x, 4, 4, this.w - 8, this.h - 8, 36);
     x.fill();
-    this.text(x, (s.score || 0).toLocaleString(), 40, 70, 56, C.ink, 900);
-    this.text(x, s.combo > 1 ? `${s.combo} COMBO  ×${s.mult}` : ' ', 40, 140, 30, s.mult >= 4 ? '#fff3a6' : C.accent, 800);
-    this.text(x, s.timing || ' ', 40, 196, 26, C.muted, 600);
-    // the count strip
-    const labels = ['1', '&', '2', '&', '3', '&', '4', '&'];
-    const X = 420, W = 740, cw = W / 8;
+    x.strokeStyle = 'rgba(255,255,255,0.22)';
+    x.lineWidth = 3;
+    x.stroke();
+    // score and combo
+    this.text(x, 'SCORE', 44, 46, 22, C.muted, 800);
+    this.text(x, (s.score || 0).toLocaleString(), 42, 100, 60, C.ink, 900);
+    if (s.combo > 1) {
+      const hot = s.mult >= 4 ? '#fff0a0' : s.mult >= 2 ? C.gold : C.accent;
+      this.text(x, `${s.combo}`, 42, 170, 48, hot, 900);
+      x.font = `900 48px ${FONT}`;
+      const w = x.measureText(`${s.combo}`).width;
+      this.text(x, 'COMBO', 52 + w, 176, 24, hot, 800);
+      if (s.mult > 1) {
+        x.fillStyle = hot;
+        roundRect(x, 190 + w, 150, 74, 44, 22);
+        x.fill();
+        this.text(x, `×${s.mult}`, 227 + w, 173, 28, C.selInk, 900, 'center');
+      }
+    }
+    this.text(x, s.timing || ' ', 44, 226, 24, C.muted, 600);
+    // the count strip: beats (white) and ウラ (gold), where this bar's punches are (hand-coloured dots)
+    const labels = ['1', 'ウラ', '2', 'ウラ', '3', 'ウラ', '4', 'ウラ'];
+    const X = 400, W = 760, cw = W / 8;
     labels.forEach((l, i) => {
       const on = s.pos === i;
       const mark = s.marks && s.marks[i];
       const sub = i % 2 === 0 ? 'on' : 'and';
-      x.fillStyle = on ? (sub === 'on' ? '#ffffff' : C.gold) : mark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.05)';
-      roundRect(x, X + i * cw + 4, 30, cw - 8, 110, 16);
+      const cx = X + i * cw + cw / 2;
+      x.fillStyle = on ? (sub === 'on' ? '#ffffff' : C.gold) : 'rgba(255,255,255,0.07)';
+      roundRect(x, X + i * cw + 5, 34, cw - 10, 116, 20);
       x.fill();
-      if (mark) { x.fillStyle = HAND_COLOR[mark]; x.beginPath(); x.arc(X + i * cw + cw / 2, 158, 11, 0, Math.PI * 2); x.fill(); }
-      this.text(x, l, X + i * cw + cw / 2, 88, 64, on ? C.selInk : sub === 'on' ? C.ink : C.gold, 900, 'center');
+      if (mark && !on) { x.strokeStyle = HAND_COLOR[mark]; x.lineWidth = 5; roundRect(x, X + i * cw + 7, 36, cw - 14, 112, 18); x.stroke(); }
+      this.text(x, l, cx, 94, sub === 'on' ? 66 : 38, on ? C.selInk : sub === 'on' ? C.ink : C.gold, 900, 'center');
+      if (mark) {
+        x.fillStyle = HAND_COLOR[mark];
+        x.beginPath(); x.arc(cx, 174, 13, 0, Math.PI * 2); x.fill();
+        x.strokeStyle = 'rgba(255,255,255,0.8)'; x.lineWidth = 3; x.stroke();
+      }
     });
     // progress, or the count-in after a pause
     x.fillStyle = 'rgba(255,255,255,0.12)';
-    x.fillRect(X, 190, W, 8);
+    roundRect(x, X, 208, W, 10, 5);
+    x.fill();
     x.fillStyle = C.accent;
-    x.fillRect(X, 190, W * (s.progress || 0), 8);
-    if (s.count) this.text(x, `${s.count}…`, X + W / 2, 220, 30, '#fff3a6', 900, 'center');
+    roundRect(x, X, 208, Math.max(10, W * (s.progress || 0)), 10, 5);
+    x.fill();
+    if (s.count) this.text(x, `再開まで ${s.count}`, X + W / 2, 238, 26, '#fff3a6', 900, 'center');
+  }
+}
+
+// how to read a target: one picture used by the VR menu ("見かた" panel) and by the page
+export function drawLegend(x, W, H) {
+  const k = W / 900;
+  x.save();
+  x.scale(k, k);
+  const T = (s, px, py, size, color = C.ink, weight = 700, align = 'left') => {
+    x.font = `${weight} ${size}px ${FONT}`; x.fillStyle = color; x.textAlign = align; x.textBaseline = 'middle'; x.fillText(s, px, py);
+  };
+  const orb = (cx, cy, r, col) => {
+    const g = x.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, col); g.addColorStop(1, col);
+    x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 4; x.stroke();
+  };
+  T('的の見かた', 40, 52, 44, C.ink, 900);
+  let y = 130;
+  const row = (title) => { T(title, 40, y, 26, C.gold, 800); y += 56; };
+  row('色 ＝ どちらの手');
+  orb(80, y, 34, HAND_COLOR.L); T('左手', 130, y, 32, C.ink, 800);
+  orb(330, y, 34, HAND_COLOR.R); T('右手', 380, y, 32, C.ink, 800);
+  T('グローブと同じ色', 560, y, 24, C.muted, 600);
+  y += 92;
+  row('まん中の印 ＝ 打ち方');
+  [['straight', 'まっすぐ'], ['hookL', 'フック（横から）'], ['upper', 'アッパー（下から）']].forEach(([kd, l], i) => {
+    const cx = 80 + i * 280;
+    orb(cx, y, 38, '#58738a');
+    drawIcon(x, kd, cx, y, 0.62);
+    T(l, cx + 52, y, 26, C.ink, 800);
+  });
+  y += 100;
+  row('上の札 ＝ いつ打つか');
+  drawBadge(x, '1', 'on', 80, y, 46); T('〜4：その拍ちょうど', 120, y, 26, C.ink, 700);
+  y += 64;
+  drawBadge(x, 'ウラ', 'and', 92, y, 46); T('拍と拍のまん中（裏拍）', 150, y, 26, C.ink, 700);
+  y += 64;
+  drawBadge(x, '16ウラ', 'six', 108, y, 46); T('もっと細かいウラ（むずかしい）', 182, y, 26, C.ink, 700);
+  y += 86;
+  row('タイミング');
+  orb(80, y + 4, 30, HAND_COLOR.R);
+  x.strokeStyle = C.gold; x.lineWidth = 5;
+  x.beginPath(); x.arc(80, y + 4, 52, 0, Math.PI * 2); x.stroke();
+  T('外の輪が縮んで、的に重なった瞬間に打つ', 150, y + 4, 25, C.ink, 700, 'left');
+  y += 96;
+  x.fillStyle = '#7a5634'; roundRect(x, 40, y - 12, 90, 24, 12); x.fill();
+  T('枝はしゃがんでくぐる（いつも小節の頭）', 150, y, 25, C.ink, 700);
+  x.restore();
+}
+
+export class LegendPanel extends Panel {
+  constructor() { super(900, 900, 0.85); }
+  draw(x) {
+    this.bg(x);
+    drawLegend(x, this.w, this.h);
   }
 }

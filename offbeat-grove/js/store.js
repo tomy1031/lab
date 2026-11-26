@@ -12,6 +12,7 @@ const DEFAULTS = {
   vol: { music: 0.85, guide: 0.7, sfx: 0.7 },
   seated: false,
   labels: true, // count labels on the beat lane
+  hints: 'auto', // explanations on the first targets: auto (first 3 plays) | on | off
   quality: 'high',
   records: {}, // `${song}|${mode}|${diff}|${length}` -> { score, rank, acc, date }
   history: [], // last sessions: { date, song, mode, diff, acc, on: {mean, sd, n}, and: {...}, six: {...} }

@@ -1,18 +1,18 @@
 // js/lane.js — the beat lane on the ground in front of you. Every eighth note is a line that travels toward
 // you exactly like the targets do: solid white lines are the beats "1 2 3 4" (表拍), dashed gold lines are
-// the "&" in between (裏拍), and each line carries its count on both sides. A target that floats above a
-// dashed line will arrive on the "&". The bright line at your feet is "now".
+// the "ウラ" in between (裏拍), and each line carries its count on both sides. A target that floats above a
+// dashed line will arrive on the ウラ. The bright line at your feet is "now".
 import * as THREE from 'three';
 import { canvasTexture, FONT } from './util.js';
 
 function atlas() {
   const { ctx, tex } = canvasTexture(1024, 128);
-  const labels = ['1', '&', '2', '&', '3', '&', '4', '&'];
+  const labels = ['1', 'ウラ', '2', 'ウラ', '3', 'ウラ', '4', 'ウラ'];
   ctx.clearRect(0, 0, 1024, 128);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   labels.forEach((l, i) => {
-    ctx.font = `900 ${l === '&' ? 92 : 104}px ${FONT}`;
+    ctx.font = `900 ${l === 'ウラ' ? 56 : 104}px ${FONT}`;
     ctx.lineWidth = 10;
     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.strokeText(l, i * 128 + 64, 70);

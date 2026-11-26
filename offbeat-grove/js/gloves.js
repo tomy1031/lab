@@ -8,25 +8,92 @@ import { HAND_COLOR } from './targets.js';
 function gloveMesh(side) {
   const g = new THREE.Group();
   const col = new THREE.Color(HAND_COLOR[side]);
-  const mat = new THREE.MeshLambertMaterial({ color: col, emissive: col.clone().multiplyScalar(0.12) });
-  const white = new THREE.MeshLambertMaterial({ color: '#f4f1e8' });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), mat);
-  body.scale.set(0.058, 0.064, 0.074);
-  body.position.set(0, 0.008, -0.012);
-  const knuckle = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), mat);
-  knuckle.scale.set(0.054, 0.05, 0.04);
-  knuckle.position.set(0, 0.02, -0.055);
-  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.018, 0.045, 4, 8), mat);
-  thumb.rotation.x = Math.PI / 2.4;
-  thumb.position.set(side === 'L' ? 0.05 : -0.05, -0.02, -0.03);
-  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.047, 0.05, 0.07, 18), white);
+  const mat = new THREE.MeshPhysicalMaterial({
+    color: col, roughness: 0.36, clearcoat: 0.75, clearcoatRoughness: 0.22, sheen: 0.4, sheenColor: new THREE.Color('#ffffff'),
+    emissive: col.clone(), emissiveIntensity: 0.12,
+  });
+  const white = new THREE.MeshPhysicalMaterial({ color: '#f7f4ec', roughness: 0.45, clearcoat: 0.4 });
+  const dark = new THREE.MeshBasicMaterial({ color: '#13202c' });
+  // the mitt: a sphere stretched forward, flatter under the palm, rolled up at the knuckles
+  const geo = new THREE.SphereGeometry(1, 40, 28);
+  const P = geo.attributes.position;
+  for (let i = 0; i < P.count; i++) {
+    let x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const front = Math.max(0, -z);
+    if (y < 0) y *= 0.8;
+    y += 0.16 * front * front * (y > 0 ? 1 : 0.25);
+    P.setXYZ(i, x * (0.06 + 0.01 * front), y * 0.066, z * 0.09 - 0.014);
+  }
+  geo.computeVertexNormals();
+  const body = new THREE.Mesh(geo, mat);
+  // thumb, tucked along the inner side
+  const s = side === 'L' ? 1 : -1;
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.02, 0.05, 6, 12), mat);
+  thumb.rotation.set(Math.PI / 2, s * 0.22, 0);
+  thumb.position.set(s * 0.054, 0.006, -0.028);
+  thumb.scale.set(0.9, 1, 1.15);
+  // a white patch on the back of the hand
+  const patch = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), white);
+  patch.scale.set(0.034, 0.01, 0.03);
+  patch.position.set(0, 0.07, -0.004);
+  patch.rotation.x = -0.25;
+  // the cuff: hand colour with a white band, open toward the wrist
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.047, 0.052, 0.07, 32), mat);
   cuff.rotation.x = Math.PI / 2;
-  cuff.position.set(0, -0.004, 0.072);
-  const stripe = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.006, 6, 24), mat);
-  stripe.position.set(0, -0.004, 0.055);
-  g.add(body, knuckle, thumb, cuff, stripe);
+  cuff.position.set(0, -0.004, 0.07);
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.0505, 0.009, 10, 40), white);
+  band.position.set(0, -0.004, 0.058);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(0.04, 28), dark);
+  hole.position.set(0, -0.004, 0.1055);
+  g.add(body, thumb, patch, cuff, band, hole);
   g.userData.mat = mat;
   return g;
+}
+
+// a short ribbon of light behind a fast-moving glove
+class Trail {
+  constructor(color, parent) {
+    this.n = 14;
+    this.pts = [];
+    const pos = new Float32Array(this.n * 2 * 3);
+    const a = new Float32Array(this.n * 2);
+    const idx = [];
+    for (let i = 0; i < this.n - 1; i++) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('alpha', new THREE.BufferAttribute(a, 1));
+    geo.setIndex(idx);
+    this.geo = geo;
+    this.mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(color) }, uOpacity: { value: 0 } },
+      vertexShader: 'attribute float alpha; varying float vA; void main() { vA = alpha; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: 'uniform vec3 uColor; uniform float uOpacity; varying float vA; void main() { gl_FragColor = vec4(uColor * vA * uOpacity, 1.0); }',
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    }));
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 4;
+    parent.add(this.mesh);
+    this.opacity = 0;
+  }
+  update(p, up, speed, dt, visible) {
+    this.pts.unshift(p.clone());
+    if (this.pts.length > this.n) this.pts.length = this.n;
+    const want = visible ? Math.min(1, Math.max(0, (speed - 1.2) / 2.5)) : 0;
+    this.opacity += (want - this.opacity) * Math.min(1, dt * 14);
+    this.mesh.material.uniforms.uOpacity.value = this.opacity;
+    this.mesh.visible = this.opacity > 0.01;
+    if (!this.mesh.visible) return;
+    const pos = this.geo.attributes.position.array, al = this.geo.attributes.alpha.array;
+    for (let i = 0; i < this.n; i++) {
+      const q = this.pts[Math.min(i, this.pts.length - 1)];
+      const f = 1 - i / (this.n - 1);
+      const w = 0.045 * f;
+      pos.set([q.x + up.x * w, q.y + up.y * w, q.z + up.z * w, q.x - up.x * w, q.y - up.y * w, q.z - up.z * w], i * 6);
+      al[i * 2] = al[i * 2 + 1] = f * f * 0.8;
+    }
+    this.geo.attributes.position.needsUpdate = true;
+    this.geo.attributes.alpha.needsUpdate = true;
+  }
 }
 
 export class Glove {
@@ -34,6 +101,7 @@ export class Glove {
     this.side = side;
     this.mesh = gloveMesh(side);
     parent.add(this.mesh);
+    this.trail = new Trail(HAND_COLOR[side], parent);
     this.pos = new THREE.Vector3(side === 'L' ? -0.2 : 0.2, 1.3, -0.3); // fist centre, world
     this.prev = this.pos.clone();
     this.quat = new THREE.Quaternion();
@@ -71,6 +139,7 @@ export class Glove {
   lost() {
     this.tracked = false;
     this.mesh.visible = false;
+    this.trail.mesh.visible = false;
   }
 
   haptic(intensity, ms) {
@@ -84,7 +153,9 @@ export class Glove {
 
   update(dt) {
     this.glow = Math.max(0, this.glow - dt * 4);
-    this.mesh.userData.mat.emissive.set(HAND_COLOR[this.side]).multiplyScalar(0.12 + this.glow * 0.8);
+    this.mesh.userData.mat.emissiveIntensity = 0.12 + this.glow * 0.9;
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.quat);
+    this.trail.update(this.pos, up, this.vel.length(), dt, this.mesh.visible);
   }
 }
 
@@ -221,7 +292,8 @@ export class DeskGloves {
         else if (t < a.lead + 0.03 + back) p = end.clone().lerp(rest, (t - a.lead - 0.03) / back);
         else this.anim[side] = null;
       }
-      g.setPose(p, cam.quaternion.clone(), dt);
+      const q = cam.quaternion.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.35, side === 'L' ? 0.12 : -0.12, 0)));
+      g.setPose(p, q, dt);
     }
   }
 }

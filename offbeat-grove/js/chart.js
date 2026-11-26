@@ -10,9 +10,9 @@ import { rng } from './util.js';
 
 export const MODES = {
   on: { name: '表拍', en: 'ON BEAT', desc: '「1・2・3・4」の拍でパンチ。まずはテンポに体をのせる基本。' },
-  off: { name: '裏拍', en: 'OFFBEAT', desc: '拍と拍のまん中「&（エン）」でパンチ。体（ひざ）で表拍を感じながら、その間を打ちます。' },
+  off: { name: '裏拍', en: 'OFFBEAT', desc: '拍と拍のまん中「ウラ」でパンチ。体（ひざ）で表拍「1・2・3・4」を感じながら、その間を打ちます。' },
   mix: { name: '表裏ミックス', en: 'SWITCH', desc: '表拍の小節と裏拍の小節が入れかわります。切りかえで迷わない練習。' },
-  sync: { name: 'シンコペーション', en: 'SYNCOPATION', desc: '3-3-2（トレシージョ）やクラーベ、16分の裏など、ずれたリズム。' },
+  sync: { name: 'シンコペーション', en: 'SYNCOPATION', desc: '3-3-2（トレシージョ）やクラーベ、さらに細かい「16ウラ」など、ずれたリズム。' },
 };
 export const DIFFS = {
   easy: { name: 'やさしい', en: 'EASY' },
@@ -49,7 +49,7 @@ export const subOf = (s) => (s % 4 === 0 ? 'on' : s % 2 === 0 ? 'and' : 'six');
 export const labelOf = (s) => (s % 4 === 0 ? String(s / 4 + 1) : s % 4 === 2 ? '&' : s % 4 === 1 ? 'e' : 'a');
 
 // where each punch meets you, relative to your eyes (x right, y up, z forward is negative), in metres
-const POS = {
+export const POS = {
   straight: { x: 0.17, y: -0.12, z: -0.52 },
   body: { x: 0.15, y: -0.36, z: -0.5 },
   hook: { x: 0.33, y: -0.14, z: -0.42 },

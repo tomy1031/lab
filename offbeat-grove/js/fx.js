@@ -1,6 +1,7 @@
 // js/fx.js — hit feedback: a burst of petals and sparks, a shock ring, and a floating word (PERFECT, はやい…).
 import * as THREE from 'three';
 import { canvasTexture, FONT } from './util.js';
+import { ringTex } from './targets.js';
 
 export const WORDS = [
   ['PERFECT', '#fff3a6'], ['GREAT', '#9ff5c8'], ['GOOD', '#bfe0ff'], ['ずれ', '#ffb38a'], ['MISS', '#ff8080'],
@@ -49,7 +50,13 @@ export class FX {
           gl_PointSize = uScale * 0.5 * projectionMatrix[1][1] * size / -mv.z; }`,
       fragmentShader: /* glsl */ `
         varying vec3 vC;
-        void main() { vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.1, length(d)); gl_FragColor = vec4(vC * a, 1.0); }`,
+        void main() {
+          vec2 d = (gl_PointCoord - 0.5) * 2.0;
+          float r = length(d);
+          float core = smoothstep(0.55, 0.0, r);
+          float star = max(smoothstep(0.16, 0.0, abs(d.x)) * smoothstep(1.0, 0.0, abs(d.y)), smoothstep(0.16, 0.0, abs(d.y)) * smoothstep(1.0, 0.0, abs(d.x)));
+          gl_FragColor = vec4(vC * (core + star * 0.9), 1.0);
+        }`,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     });
     this.points = new THREE.Points(g, mat);
@@ -58,9 +65,10 @@ export class FX {
     parent.add(this.points);
 
     this.rings = [];
-    const rg = new THREE.RingGeometry(0.1, 0.111, 40);
+    const rg = new THREE.PlaneGeometry(0.3, 0.3);
+    const rt = ringTex();
     for (let i = 0; i < 10; i++) {
-      const m = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ color: '#fff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ map: rt, color: '#fff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
       m.visible = false;
       m.renderOrder = 5;
       parent.add(m);
@@ -96,7 +104,7 @@ export class FX {
       const c = i % 3 === 0 ? white : col;
       this.c[k * 3] = c.r; this.c[k * 3 + 1] = c.g; this.c[k * 3 + 2] = c.b;
       this.life[k] = 0.3 + Math.random() * 0.35;
-      this.size[k] = 0.01 + Math.random() * 0.018;
+      this.size[k] = 0.012 + Math.random() * 0.018;
     }
   }
 
@@ -142,9 +150,9 @@ export class FX {
     this.geo.attributes.size.needsUpdate = true;
     for (const r of this.rings) {
       if (r.t >= 1) continue;
-      r.t = Math.min(1, r.t + dt * 5);
-      r.m.scale.setScalar(0.95 + r.t * 0.5);
-      r.m.material.opacity = (1 - r.t) * 0.6;
+      r.t = Math.min(1, r.t + dt * 4.5);
+      r.m.scale.setScalar(0.55 + r.t * 0.55);
+      r.m.material.opacity = (1 - r.t) * (1 - r.t) * 0.75;
       if (r.t >= 1) r.m.visible = false;
     }
     for (const p of this.pops) {
