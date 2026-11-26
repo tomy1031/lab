@@ -107,3 +107,37 @@ export class TrackPlayer extends BasePlayer {
   }
   chordAt() { return null; }
 }
+
+// a YouTube video (js/youtube.js) as the music: song time is the video's time; the beat grid comes from
+// the tap calibration. Resuming after a pause rewinds one bar, so the song itself is the count-in.
+export class YTPlayer extends BasePlayer {
+  constructor(audio, yt, sync) {
+    super(audio);
+    this.kind = 'youtube';
+    this.yt = yt;
+    const bpm = sync.bpm;
+    this.grid = { bpm, spb: 60 / bpm, t0: sync.t0 };
+    this.bars = sync.bars;
+    this.duration = sync.duration;
+  }
+  start(atCtx, fromT = 0, countIn = 0) {
+    if (this.seg) this.seg.stop();
+    this.seg = this.audio.segment(); // for the guide clicks
+    this.fromT = fromT;
+    this.yt.seek(Math.max(0, fromT - countIn * this.grid.spb));
+    this.yt.play();
+    this.playing = true;
+    this.songStartCtx = 0;
+  }
+  songTime(perfMs) { return this.yt.time(perfMs); }
+  pump() { this.yt.sample(); }
+  // guide clicks wait until the video is really playing (not while it buffers)
+  clockReady() { return this.yt.playing && !!this.yt.base; }
+  // AudioContext time for a song time (guide clicks), from the video clock right now
+  ctxTime(t) { return this.audio.ctx.currentTime + (t - this.yt.time(performance.now())); }
+  stop() {
+    this.yt.pause();
+    super.stop();
+  }
+  chordAt() { return null; }
+}

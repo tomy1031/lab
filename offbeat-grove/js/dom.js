@@ -2,6 +2,7 @@
 // your own music file with its tempo tools, the timing calibration, PC/phone controls, pause and results,
 // and the offline (service worker) status.
 import { SONGS, songById } from './songs.js';
+import { YT_SONGS, ytById, YouTubeSong, fitTaps } from './youtube.js';
 import { MODES, DIFFS } from './chart.js';
 import { decodeFile, analyze, trackBars, saveTrack, loadTrack, clearTrack } from './beat.js';
 import { SUB_COLOR } from './targets.js';
@@ -35,7 +36,8 @@ export class DomUI {
 
   renderSongs() {
     const s = this.app.store.data;
-    const list = SONGS.map((g) => ({ id: g.id, title: g.title, sub: `${g.jp}・${g.genre}`, bpm: g.drill ? s.drillBpm : g.bpm }));
+    const list = SONGS.map((g) => ({ id: g.id, title: g.title, sub: `${g.jp}・${g.genre}`, bpm: g.drill ? s.drillBpm : g.songBpm ? `${g.songBpm}（${g.bpm}で打つ）` : g.bpm }));
+    for (const y of YT_SONGS) list.push({ id: y.id, title: `${y.title}`, sub: `${y.artist}・YouTube（インターネットが必要）`, bpm: `${y.songBpm}（${y.bpm}で打つ）` });
     const t = this.app.track;
     if (t) list.push({ id: 'track', title: t.name, sub: 'じぶんの曲', bpm: t.bpm });
     $('songs').innerHTML = list.map((g) => `<button class="song" data-song="${g.id}"><b>${esc(g.title)}</b><em>BPM ${g.bpm}</em><small>${esc(g.sub)}</small></button>`).join('');
@@ -54,7 +56,8 @@ export class DomUI {
       } else if (b.dataset.bpm) {
         app.audio.ensure();
         app.choose({ drillBpm: Math.max(60, Math.min(160, store.data.drillBpm + Number(b.dataset.bpm))) });
-      } else if (b.dataset.tb) this.adjustTrack({ tb: b.dataset.tb });
+      } else if (b.dataset.yts) this.adjustYT(b.dataset.yts);
+      else if (b.dataset.tb) this.adjustTrack({ tb: b.dataset.tb });
       else if (b.dataset.tset) this.adjustTrack({ set: Number(b.dataset.tset) });
       else if (b.dataset.to) this.adjustTrack({ to: b.dataset.to });
     });
@@ -76,6 +79,7 @@ export class DomUI {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (this.calib) { if (e.code === 'Space') { e.preventDefault(); this.calibTap(e); } return; }
+      if (this.ytCal) { if (e.code === 'Space') { e.preventDefault(); this.ytTap(e); } return; }
       if (app.state === 'play' && !app.xr) {
         if (e.code === 'KeyF' || e.code === 'KeyD' || e.code === 'ArrowLeft') { press('L', e); e.preventDefault(); }
         else if (e.code === 'KeyJ' || e.code === 'KeyK' || e.code === 'ArrowRight') { press('R', e); e.preventDefault(); }
@@ -96,6 +100,11 @@ export class DomUI {
     $('labels').checked = store.data.labels;
     $('labels').onchange = () => store.set({ labels: $('labels').checked });
     $('btn-calib').onclick = () => this.startCalib();
+    $('yt-calib').onclick = () => this.startYTCalib();
+    $('yt-check').onclick = () => this.ytCheck();
+    $('yt-tap').addEventListener('pointerdown', (e) => { e.preventDefault(); this.ytTap(e); });
+    window.addEventListener('online', () => this.sync());
+    window.addEventListener('offline', () => this.sync());
     $('calib-close').onclick = () => this.endCalib();
     $('calib-pad').addEventListener('pointerdown', (e) => { e.preventDefault(); this.calibTap(e); });
     // your own music
@@ -119,8 +128,13 @@ export class DomUI {
     if (s.song === 'track' && !this.app.track) s.song = 'skank';
     for (const b of document.querySelectorAll('.song')) b.setAttribute('aria-pressed', String(b.dataset.song === s.song));
     for (const b of document.querySelectorAll('.chip')) b.setAttribute('aria-pressed', String(s[b.dataset.k] === b.dataset.v));
-    const song = s.song === 'track' ? null : songById(s.song);
-    $('song-tip').textContent = song ? song.tip : 'じぶんの曲：テンポと拍は自動で検出しました。ずれていたら下で調整できます。';
+    const ys = ytById(s.song);
+    const song = s.song === 'track' || ys ? null : songById(s.song);
+    $('song-tip').textContent = ys ? ys.tip : song ? song.tip : 'じぶんの曲：テンポと拍は自動で検出しました。ずれていたら下で調整できます。';
+    $('yt-box').classList.toggle('hidden', !ys);
+    if (ys) this.ensureYT(ys);
+    this.ytStatus();
+    this.dock();
     $('drill').classList.toggle('hidden', !(song && song.drill));
     $('drill-bpm').textContent = `BPM ${s.drillBpm}`;
     const bpmEm = document.querySelector('.song[data-song="drill"] em');
@@ -132,6 +146,7 @@ export class DomUI {
 
   onState() {
     const a = this.app, st = a.state, desk = !a.xr;
+    this.dock();
     $('menu').classList.toggle('hidden', !(desk && st === 'menu'));
     $('playbar').classList.toggle('hidden', !(desk && (st === 'play' || st === 'paused')));
     $('pausebtn').classList.toggle('hidden', !(desk && st === 'play'));
@@ -344,5 +359,136 @@ export class DomUI {
     clearTimeout(this._ct);
     if (this.calib) this.finishCalib();
     $('calib').classList.add('hidden');
+  }
+
+  // ---- YouTube songs ----
+  // the player sits in a small dock (YouTube asks that its player stays visible); hidden for other songs
+  dock() {
+    const a = this.app;
+    const ys = ytById(a.store.data.song);
+    const playingYT = a.player && a.player.kind === 'youtube' && (a.state === 'play' || a.state === 'paused');
+    const on = !!(ys || playingYT) && navigator.onLine;
+    $('yt-dock').classList.toggle('hidden', !on);
+    document.body.classList.toggle('yt-on', on);
+    document.body.classList.toggle('playing', a.state === 'play' || a.state === 'paused');
+    if (ys) $('yt-cap').textContent = `YouTube：${ys.artist}「${ys.title}」（${ys.channel}）`;
+  }
+
+  ensureYT(ys) {
+    const a = this.app;
+    if (!navigator.onLine) return;
+    if (a.yt && a.yt.song.id === ys.id) return;
+    a.yt = new YouTubeSong(ys, 'yt-player');
+    a.yt.onChange(() => this.ytStatus());
+    a.yt.load().then(() => this.ytStatus(), (e) => { this.ytStatus(); this.toast(e.message, 5000); });
+    this.ytStatus();
+  }
+
+  ytStatus() {
+    const a = this.app;
+    const ys = ytById(a.store.data.song);
+    if (!ys) return;
+    const el = $('yt-status');
+    if (!navigator.onLine) { el.textContent = 'いまはオフラインです。YouTube の曲はインターネットにつながっているときだけ遊べます。'; return; }
+    const yt = a.yt;
+    const sync = a.ytSync(ys);
+    const parts = [];
+    parts.push(!yt || (!yt.ready && !yt.error) ? '動画を読み込んでいます…' : yt.error ? yt.error : '動画の準備OK');
+    parts.push(sync ? `拍あわせ済み：BPM ${sync.songBpm}・最初の「1」${sync.t0.toFixed(3)} 秒` : '拍あわせ：まだ（最初に1回してください）');
+    if (this.ytCal) parts.push(`タップ ${this.ytCal.taps.length}/16`);
+    el.textContent = parts.join('　/　');
+  }
+
+  startYTCalib() {
+    const a = this.app, yt = a.yt;
+    const ys = ytById(a.store.data.song);
+    if (!ys || !yt || !yt.ready) { this.toast('動画の準備ができてから、もう一度押してください'); return; }
+    a.audio.ensure();
+    this.ytCal = { taps: [], song: ys };
+    yt.seek(0);
+    yt.play();
+    $('yt-tap').classList.remove('hidden');
+    $('yt-tap').textContent = 'ドラムが入ったら、拍に合わせてここをタップ（Space）';
+    $('yt-tap').focus();
+    this.ytStatus();
+  }
+
+  ytTap(e) {
+    const c = this.ytCal, yt = this.app.yt;
+    if (!c || !yt || !yt.playing) return;
+    c.taps.push(yt.time(e.timeStamp || performance.now()));
+    const pad = $('yt-tap');
+    pad.classList.add('flash');
+    setTimeout(() => pad.classList.remove('flash'), 90);
+    pad.textContent = `${c.taps.length} / 16`;
+    this.ytStatus();
+    if (c.taps.length >= 16) this.finishYTCalib();
+  }
+
+  finishYTCalib() {
+    const a = this.app, c = this.ytCal;
+    if (!c) return;
+    this.ytCal = null;
+    $('yt-tap').classList.add('hidden');
+    a.yt.pause();
+    const fit = fitTaps(c.taps, c.song.songBpm);
+    if (fit.consistency < 0.55) {
+      this.toast('タップのばらつきが大きかったので、覚えませんでした。もう一度どうぞ（ドラムの「ドン・タン」に合わせて）', 6000);
+    } else {
+      const all = { ...(a.store.data.ytSync || {}) };
+      all[c.song.video] = { t0: +fit.t0.toFixed(3), songBpm: c.song.songBpm };
+      a.store.set({ ytSync: all });
+      this.toast('拍の位置を覚えました。「クリック付きで確認」で、クリックがドラムと重なるか聞いてみてください', 6000);
+    }
+    this.ytStatus();
+    a.menu.redraw();
+  }
+
+  adjustYT(kind) {
+    const a = this.app;
+    const ys = ytById(a.store.data.song);
+    const sync = ys && a.ytSync(ys);
+    if (!sync) { this.toast('先に「拍あわせ」をしてください'); return; }
+    const P = 60 / sync.songBpm;
+    let t0 = sync.t0;
+    if (kind === 'swap') t0 = t0 - P >= 0 ? t0 - P : t0 + P; // the other 220 beat becomes the 110 beat: kicks and snares change places
+    else if (kind === 'beat') t0 = t0 - 2 * P >= 0 ? t0 - 2 * P : t0 + 2 * P;
+    else t0 = Math.max(0, t0 + Number(kind) / 1000);
+    const all = { ...(a.store.data.ytSync || {}) };
+    all[ys.video] = { ...sync, t0: +t0.toFixed(3) };
+    a.store.set({ ytSync: all });
+    this.ytStatus();
+  }
+
+  // play a stretch of the video with a click on every beat (high click on each bar's "1")
+  ytCheck() {
+    const a = this.app, yt = a.yt;
+    const ys = ytById(a.store.data.song);
+    const sync = ys && a.ytSync(ys);
+    if (!sync || !yt || !yt.ready) { this.toast('先に「拍あわせ」をしてください'); return; }
+    a.audio.ensure();
+    const spb = 60 / (sync.songBpm * (ys.bpm / ys.songBpm));
+    const from = sync.t0 + spb * 4 * 4;
+    yt.seek(from);
+    yt.play();
+    let next = 0;
+    const until = from + spb * 24;
+    const first = Math.ceil((from - sync.t0) / spb);
+    const tick = () => {
+      if (!yt.playing && next > 0 && yt.time() > until) return;
+      const now = yt.time(performance.now());
+      if (yt.playing) {
+        for (;;) {
+          const b = first + next;
+          const tb = sync.t0 + b * spb;
+          if (tb > now + 0.25) break;
+          if (tb > now) a.audio.guideClick(null, a.audio.ctx.currentTime + (tb - now), b % 4 === 0 ? 'accent' : 'on', 1);
+          next++;
+        }
+        if (now > until) { yt.pause(); return; }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 }

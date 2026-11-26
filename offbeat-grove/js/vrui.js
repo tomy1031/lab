@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { canvasTexture, FONT, roundRect, fmtTime } from './util.js';
 import { SONGS, songById } from './songs.js';
+import { YT_SONGS, ytById } from './youtube.js';
 import { MODES, DIFFS } from './chart.js';
 import { HAND_COLOR, SUB_COLOR, drawIcon, drawBadge } from './targets.js';
 
@@ -55,8 +56,9 @@ export class Panel {
     if (hov) { x.strokeStyle = sel ? '#fff' : 'rgba(255,255,255,0.6)'; x.lineWidth = 4; x.stroke(); }
     const ink = sel ? C.selInk : C.ink;
     if (sub) {
-      this.text(x, label, bx + 22, by + bh * 0.36, big ? 44 : 30, ink, 800, 'left', bw - 40);
-      this.text(x, sub, bx + 22, by + bh * 0.72, 21, sel ? 'rgba(16,35,27,0.75)' : C.muted, 500, 'left', bw - 40);
+      const tight = bh < 66; // a long song list: smaller letters so the two lines don't touch
+      this.text(x, label, bx + 22, by + bh * (tight ? 0.34 : 0.36), big ? 44 : tight ? 26 : 30, ink, 800, 'left', bw - 40);
+      this.text(x, sub, bx + 22, by + bh * (tight ? 0.76 : 0.72), tight ? 18 : 21, sel ? 'rgba(16,35,27,0.75)' : C.muted, 500, 'left', bw - 40);
     } else this.text(x, label, bx + bw / 2, by + bh / 2 + 2, big ? 46 : 28, ink, 800, 'center', bw - 16);
   }
   // ray (world) → { distance, point, quat, button }
@@ -94,12 +96,13 @@ export class MenuPanel extends Panel {
     this.text(x, 'トリガー（またはつまむ）で選択', this.w - 44, 64, 22, C.muted, 500, 'right');
     // songs
     this.text(x, '曲', 44, 140, 26, C.muted, 700);
-    const songs = [...SONGS];
+    const songs = [...SONGS, ...YT_SONGS.map((y) => ({ id: y.id, title: y.title, jp: y.artist, genre: 'YouTube', bpm: y.songBpm, songBpm: y.songBpm, half: y.bpm }))];
     if (a.track) songs.push({ id: 'track', title: a.track.name, jp: 'じぶんの曲', genre: `BPM ${a.track.bpm}`, bpm: a.track.bpm });
+    const rh = Math.min(84, Math.floor(560 / songs.length));
     songs.forEach((song, i) => {
-      const y = 166 + i * 84;
-      const bpm = song.drill ? `${s.drillBpm}` : song.bpm;
-      this.button(x, 'song:' + song.id, 40, y, 640, 74, song.title, { sel: s.song === song.id, sub: `${song.jp}・${song.genre}・BPM ${bpm}`, onClick: () => a.choose({ song: song.id }) });
+      const y = 166 + i * rh;
+      const bpm = song.drill ? `${s.drillBpm}` : song.songBpm ? `${song.songBpm}（${song.half || song.bpm}で打つ）` : song.bpm;
+      this.button(x, 'song:' + song.id, 40, y, 640, rh - 8, song.title, { sel: s.song === song.id, sub: `${song.jp}・${song.genre}・BPM ${bpm}`, onClick: () => a.choose({ song: song.id }) });
     });
     // options
     const X = 720, W = 640;
@@ -115,16 +118,19 @@ export class MenuPanel extends Panel {
     row('むずかしさ', 360, 'diff', Object.entries(DIFFS).map(([k, d]) => [k, d.name]));
     row('ガイド音（打つ場所のクリック）', 470, 'guide', [['on', 'あり'], ['fade', 'だんだん消える'], ['off', 'なし']]);
     row('長さ', 580, 'length', [['full', 'フル（約2分半）'], ['short', 'ショート（約1分）']]);
-    const song = s.song === 'track' ? null : songById(s.song);
+    const ys = ytById(s.song);
+    const song = s.song === 'track' || ys ? null : songById(s.song);
     if (song && song.drill) {
       this.text(x, `テンポ  BPM ${s.drillBpm}`, X, 690, 26, C.ink, 800);
       this.button(x, 'bpm-', X + 330, 664, 140, 54, '−5', { onClick: () => a.choose({ drillBpm: Math.max(60, s.drillBpm - 5) }) });
       this.button(x, 'bpm+', X + 490, 664, 140, 54, '+5', { onClick: () => a.choose({ drillBpm: Math.min(160, s.drillBpm + 5) }) });
     }
+    if (a.menuMsg) this.wrap(x, a.menuMsg, X, 704, W, 22, C.gold);
     this.button(x, 'start', X, 738, W, 120, '▶  START', { sel: true, color: C.accent, big: true, onClick: () => a.start() });
     // footer: the tip for this song and mode, and the best score
-    const tip = s.song === 'track' ? 'じぶんの曲：テンポは自動で検出しました。ずれる場合はPC画面で調整できます。' : song.tip;
-    this.wrap(x, tip, 44, 166 + songs.length * 84 + 18, 640, 24, C.muted);
+    const tip = ys ? ys.tip + (a.ytSync(ys) ? '' : '最初の1回は、VR に入る前のページで「拍あわせ」を。')
+      : s.song === 'track' ? 'じぶんの曲：テンポは自動で検出しました。ずれる場合はPC画面で調整できます。' : song.tip;
+    this.wrap(x, tip, 44, 166 + songs.length * rh + 14, 640, 22, C.muted);
     const best = a.store.best({ song: s.song, mode: s.mode, diff: s.diff, length: s.length });
     if (best) this.text(x, `ベスト ${best.score.toLocaleString()}（${best.rank}）`, 44, this.h - 40, 24, C.gold, 800);
   }

@@ -13,6 +13,7 @@ const DEFAULTS = {
   seated: false,
   labels: true, // count labels on the beat lane
   hints: 'auto', // explanations on the first targets: auto (first 3 plays) | on | off
+  ytSync: {}, // YouTube video id -> { t0: first downbeat (video seconds), songBpm } from the tap calibration
   quality: 'high',
   records: {}, // `${song}|${mode}|${diff}|${length}` -> { score, rank, acc, date }
   history: [], // last sessions: { date, song, mode, diff, acc, on: {mean, sd, n}, and: {...}, six: {...} }

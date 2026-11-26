@@ -67,6 +67,14 @@ export const SONGS = [
     short: sec([['intro', 4, 0], ['A', 8, 1], ['B', 8, 2], ['C', 8, 3], ['outro', 4, 0]]),
   },
   {
+    id: 'night', title: 'Summer Night Run', jp: '夏夜ラン', genre: 'ギターロック', bpm: 110, songBpm: 220, key: 50, penta: MAJ_PENTA, style: 'rock',
+    prog: [[5, 'maj'], [7, 'maj'], [4, 'm'], [9, 'm']],
+    motif: [[0, 4, 2], [2, 5, 2], [4, 7, 4], [8, 6, 2], [10, 5, 2], [12, 4, 4], [16, 5, 2], [18, 4, 2], [20, 2, 4], [24, 1, 2], [26, 2, 2], [28, 4, 4]],
+    tip: 'BPM 220 の速いギターロックを、半分の 110 で打ちます。キック「ドン」が拍、スネア「タン」がウラ。「八月、某、月明かり」と同じテンポのオリジナル曲で、オフラインでも遊べます。',
+    full: sec([['intro', 4, 0], ['A', 8, 1], ['B', 8, 2], ['C', 8, 3], ['break', 4, 0.5], ['A', 8, 1], ['B', 8, 2], ['C', 8, 3], ['C', 8, 3], ['outro', 4, 0]]),
+    short: sec([['intro', 4, 0], ['A', 8, 1], ['B', 8, 2], ['C', 8, 3], ['outro', 4, 0]]),
+  },
+  {
     id: 'drill', title: 'Metronome Trail', jp: 'メトロノームの小道', genre: 'リズムドリル', bpm: 100, key: 48, penta: MAJ_PENTA, style: 'drill', drill: true,
     prog: [[0, 'maj7'], [5, 'maj7']],
     motif: [],
@@ -252,6 +260,46 @@ export const STYLES = {
       for (let s = 0; s < 16; s++) S.arp(seg, B.at(s), seq[s % seq.length] + 12, B.step * 0.8, { vel: s % 4 === 2 ? 0.16 : 0.1, pan: (s % 2 ? 0.3 : -0.3) });
     }
     if (e >= 3) melody(B, 'saws', { vel: 0.18, a: 0.02, rel: 0.15 });
+  },
+
+  // fast guitar rock at 220 BPM, written on the half-time grid of 110: one step is a 220 eighth note,
+  // kicks on the 110 beats, snares on the 110 ウラ (= 220's backbeat), chugging guitars and bass
+  rock(B) {
+    const { S, seg, e, gi } = B;
+    const D = (n, s, v, o) => S.drum(seg, n, B.at(s), v, o);
+    const r = bassNote(B.root);
+    if (e >= 1) {
+      for (const s of [0, 4, 8, 12]) D('kick', s, s % 8 === 0 ? 0.95 : 0.8);
+      if (e >= 3) { D('kick', 7, 0.55); D('kick', 15, 0.55); }
+      for (const s of [2, 6, 10, 14]) D('snare', s, 0.78, { wet: 0.14 });
+      for (let s = 0; s < 16; s++) D('hat', s, s % 2 === 0 ? 0.26 : 0.12, { pan: 0.25 });
+      if (gi % 4 === 3) D('hatO', 15, 0.25, { pan: 0.25 });
+    } else if (e === 0.5) {
+      D('kick', 0, 0.8); D('snare', 6, 0.5, { wet: 0.3 }); D('snare', 14, 0.5, { wet: 0.3 });
+      for (let s = 0; s < 16; s += 2) D('hat', s, 0.14, { pan: 0.25 });
+    } else {
+      D('kick', 0, 0.7); D('tom', 12, 0.35); D('tom', 14, 0.4, { rate: 0.85 });
+    }
+    if (B.first && e >= 1) D('crash', 0, 0.34, { wet: 0.3 });
+    if (B.last && e >= 1 && B.nextE >= 1) for (const s of [12, 13, 14, 15]) D('snare', s, 0.35 + (s - 12) * 0.12);
+    const pc = fold(B.root, 40, 51);
+    if (e >= 1) {
+      const step = e >= 2 ? 1 : 2;
+      for (let s = 0; s < 16; s += step) S.bass(seg, B.at(s), r + (s === 14 ? 12 : 0), B.step * step * 0.85, { wave: 'sawtooth', cut: 320, env: 900, q: 3, sub: 0.6, vel: s % 4 === 0 ? 0.48 : 0.38 });
+      if (e >= 3) {
+        S.guitar(seg, B.at(0), pc, B.step * 7.5, { vel: 0.24, pan: -0.3 });
+        S.guitar(seg, B.at(8), pc, B.step * 7.5, { vel: 0.24, pan: 0.3 });
+      } else {
+        for (let s = 0; s < 16; s++) {
+          const accent = s === 0 || s === 8;
+          S.guitar(seg, B.at(s), pc, accent ? B.step * 1.8 : B.step * 0.6, { vel: accent ? 0.24 : 0.17, mute: !accent, pan: s % 2 ? 0.3 : -0.3 });
+        }
+      }
+    } else {
+      S.guitar(seg, B.at(0), pc, B.step * 15, { vel: 0.2 });
+      S.pad(seg, B.at(0), voice(B.root, B.q, 54, 69), B.step * 16, { vel: 0.12 });
+    }
+    if (e >= 2) melody(B, e >= 3 ? 'saws' : 'pluck', { vel: e >= 3 ? 0.16 : 0.26, oct: 1, a: 0.01, rel: 0.1 });
   },
 
   drill(B) {

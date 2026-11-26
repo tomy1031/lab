@@ -10,7 +10,8 @@ import { FX } from './fx.js';
 import { Input, DeskGloves } from './gloves.js';
 import { MenuPanel, PausePanel, ResultsPanel, Hud, LegendPanel } from './vrui.js';
 import { songById } from './songs.js';
-import { GenPlayer, TrackPlayer } from './player.js';
+import { GenPlayer, TrackPlayer, YTPlayer } from './player.js';
+import { ytById, ytBars } from './youtube.js';
 import { buildChart, POS } from './chart.js';
 import { PlaySession } from './game.js';
 import { DomUI } from './dom.js';
@@ -81,6 +82,7 @@ class App {
 
   // ---- flow ----
   choose(patch) {
+    if (patch.song) this.menuMsg = '';
     store.set(patch);
     this.menu.redraw();
     this.dom.sync();
@@ -92,6 +94,7 @@ class App {
     if (this.state !== 'menu' || !this.audio.ready || this.params.has('nosound')) return;
     const s = store.data;
     let p;
+    if (ytById(s.song)) return; // YouTube songs are previewed in their own player on the page
     if (s.song === 'track') {
       if (!this.track) return;
       p = new TrackPlayer(this.audio, this.track);
@@ -118,14 +121,40 @@ class App {
     this.start();
   }
 
+  // the beat grid of a YouTube song, once tapped in (js/youtube.js)
+  ytSync(song) {
+    const k = (store.data.ytSync || {})[song.video];
+    return k && typeof k.t0 === 'number' ? k : null;
+  }
+
+  // why a YouTube song cannot start yet (or null)
+  ytBlocker(song) {
+    if (!navigator.onLine) return 'インターネットにつながっていません（YouTube の曲はオンラインのときだけ）';
+    if (!this.yt || this.yt.song.id !== song.id || !this.yt.ready) return this.yt && this.yt.error ? this.yt.error : 'YouTube のプレーヤーを準備中です。少し待ってからもう一度';
+    if (!this.ytSync(song)) return '先にページの「拍あわせ」をしてください（最初の1回だけ）';
+    return null;
+  }
+
   start() {
     const s = store.data;
     this.audio.ensure();
     this.stopPreview();
+    const ys = ytById(s.song);
+    if (ys) {
+      const why = this.ytBlocker(ys);
+      if (why) { this.menuMsg = why; this.menu.redraw(); this.dom.toast(why, 5000); return; }
+    }
+    this.menuMsg = '';
     if (this.player) this.player.stop();
     this.targets.clear();
     let player, title;
-    if (s.song === 'track' && this.track) {
+    if (ys) {
+      const sync = this.ytSync(ys);
+      const bpm = (sync.songBpm || ys.songBpm) * (ys.bpm / ys.songBpm);
+      const duration = this.yt.duration();
+      player = new YTPlayer(this.audio, this.yt, { bpm, t0: sync.t0, duration, bars: ytBars(duration, sync.t0, bpm) });
+      title = `${ys.title}（${ys.artist}）`;
+    } else if (s.song === 'track' && this.track) {
       player = new TrackPlayer(this.audio, this.track);
       title = this.track.name;
     } else {
@@ -185,6 +214,7 @@ class App {
   finish(res) {
     const s = store.data;
     res.isBest = store.addResult({ song: s.song, mode: s.mode, diff: s.diff, length: s.length }, res);
+    if (this.player && this.player.kind === 'youtube') this.player.stop(); // don't leave the video running
     this.lastResults = res;
     this.resultsPanel.res = res;
     this.targets.clear();
@@ -340,11 +370,12 @@ class App {
       if (this.needPlace) { this.needPlace = false; this.menu.visible = false; this.panels(); }
     } else this.deskCamera(dt);
 
+    if (this.yt) this.yt.sample();
     const p = this.player;
     if (p && p.playing) {
       const disp = xr ? (xrFrame && xrFrame.predictedDisplayTime) || performance.now() + 20 : performance.now() + 12;
-      this.songT = p.songTime(disp);
       if (p.pump) p.pump();
+      this.songT = p.songTime(disp);
       if (this.songT > p.duration) p.stop();
     }
     if (this.preview) {
