@@ -108,19 +108,35 @@ export function createGrab(ctx, P, holsters, climb = null) {
     items.drop(hand, _v);
   }
 
+  // Gear stays in the hand (playtest: 「剣が拾っても手に入らないし、落ちたら消えてしまいます」): weapons and tools
+  // that live in a holster are not dropped when the grip is let go. Letting go at a holster stows them; anywhere
+  // else they stick. To drop or throw stuck gear, squeeze the grip again and let go (the release carries the
+  // hand's swing, so a throw still works). Food, stones, bombs and arrows keep plain hold-to-hold.
+  const stuck = { left: false, right: false }, armed = { left: false, right: false };
+  const isGear = (inst) => !!(inst && inst.def && inst.def.stack === 1 && Array.isArray(inst.def.slots) && inst.def.slots.length > 0);
+
   function update(dt) {
     if (dt <= 0 || !P.enabled) return;
     const toggle = ctx.settings.get('gripToggle');
+    const sticky = ctx.settings.get('stickyGear') !== false;
     for (const hand of HANDS) {
       const g = hand === 'left' ? 'gripL' : 'gripR';
       const held = ctx.items?.held?.[hand];
+      if (!held) { stuck[hand] = false; armed[hand] = false; }
       if (toggle) {
         if (input.justPressed(g)) {
           if (held || climb?.isHolding(hand)) release(hand); else toggled[hand] = tryGrab(hand);
         }
-      } else {
-        if (input.justPressed(g) && !held) tryGrab(hand);
-        else if (input.justReleased(g)) release(hand);
+      } else if (input.justPressed(g)) {
+        if (!held) tryGrab(hand);
+        else if (stuck[hand]) armed[hand] = true;       // the next let-go drops, throws or stows it
+      } else if (input.justReleased(g)) {
+        if (held && sticky && isGear(held) && !armed[hand] && !holsters.handIn(hand)) {
+          if (!stuck[hand]) { stuck[hand] = true; ctx.events.emit('item:stick', { hand, itemId: held.id }); }
+        } else {
+          stuck[hand] = false; armed[hand] = false;
+          release(hand);
+        }
       }
     }
   }

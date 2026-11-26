@@ -18,7 +18,7 @@ import { createSafeZones } from './safezones.js';
 import { createEncounters } from './encounters.js';
 import { createDrill } from './drill.js';
 import { createNpcs } from './npcs.js';
-import { ITEM_INFO, ITEM_HINTS } from './itemInfo.js';
+import { ITEM_INFO, ITEM_HINTS, SLOT_NAMES } from './itemInfo.js';
 import { emit, toast, setPropState, propsOf, playerPos, todayKey } from './util.js';
 import * as THREE from 'three';
 
@@ -61,6 +61,26 @@ export async function createGame(ctx) {
   let saveT = AUTOSAVE, saveSoon = -1, deathT = 0;
   const deaths = [];          // recent death spots (for the blessing, §5.6)
   let errOnce = new Set();
+
+  // ── gear that comes home (8 s after a drop, or 25 m away): say where it went ──
+  // (playtest: a dropped sword looked like it vanished)
+  ctx.events?.on?.('item:return', (e) => {
+    if (!e || !e.itemId || G.isStub) return;
+    const def = G.itemInfo(e.itemId);
+    const slot = Object.keys(G.inventory.slots).find((k) => G.inventory.slots[k] === e.itemId);
+    const where = slot ? (SLOT_NAMES[slot] || {}).name : null;
+    const name = (def && def.name) || '持ちもの';
+    const reach = slot === 'backR' || slot === 'backL' ? '肩ごしに手をのばしてグリップで抜こう' : 'その場所に手をのばしてグリップで取り出そう';
+    if (where) toast(ctx, `${name}は${where}のホルスターに戻った`, reach, 'item', 4500, 'return');
+    else toast(ctx, `${name}は持ちものに戻った`, '手首メニューの「持ちもの」から出せる', 'item', 4500, 'return');
+  });
+  // the first time a weapon stays in the hand after letting go of the grip, say how to put it away
+  let stickTold = false;
+  ctx.events?.on?.('item:stick', () => {
+    if (stickTold || G.isStub) return;
+    stickTold = true;
+    toast(ctx, '武器はグリップを離しても手に残る', 'しまうときはホルスターでにぎって離す・捨てる/投げるはにぎり直して離す', 'item', 6000, 'stick');
+  });
 
   // ── food & drink (items emits item:consume; we apply defs.food) ──
   G.eat = function (itemId, how = 'eat') {
