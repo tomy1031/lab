@@ -156,8 +156,11 @@ class Speaker {
     const c = sound.ctx;
     this.panner = c.createPanner();
     this.panner.panningModel = 'HRTF';
-    this.panner.distanceModel = 'inverse';
+    // Speech must stay easy to hear for learners: the direction tells where the voice comes from, the
+    // distance only softens it a little (8 m away ≈ −2 dB, instead of −14 dB with the inverse model).
+    this.panner.distanceModel = 'linear';
     this.panner.refDistance = 1;
+    this.panner.maxDistance = 20;
     this.panner.rolloffFactor = 0.6;
     this.out = c.createGain();
     this.analyser = c.createAnalyser();
