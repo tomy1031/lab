@@ -22,7 +22,7 @@ export const TUNE = {
   dragBrake: 0.004,
   dragAir: 0.0035,
   maxYawRate: 2.6, // rad/s: the tightest a board can pivot
-  popBase: 1.8, popExtra: 2.0, // ollie: 1.8–3.8 m/s along the snow's normal
+  popBase: 2.6, popExtra: 1.6, // ollie: 2.6–4.2 m/s along the snow's normal (0.35–0.9 m high)
   lipBonus: 1.25, lipWindow: 3.2, // pop within 3.2 m before a lip (or just after leaving it): ×1.25
   airSteer: 0.18,
   vMax: 30,
@@ -288,9 +288,18 @@ export class Rider {
     for (const l of c.logs) {
       if (!(this.prevS < l.s && s >= l.s)) continue;
       if (p.x < l.x0 - 0.3 || p.x > l.x1 + 0.3) continue;
-      if (p.y - c.heightS(p.x, l.s) > l.h) continue; // jumped it
-      if (this.speed > 4 && this.invuln <= 0) { this.doCrash(ev, 'log'); return; }
-      p.z = -(l.s - 0.4); v.x *= 0.2; v.y = 0; v.z = 0.0;
+      // jumped it (the board may scrape the top: 12 cm of grace)
+      if (p.y - c.heightS(p.x, l.s) > l.h - 0.12) continue;
+      if (this.speed > 4 && this.invuln <= 0) { this.crashLog = l; this.doCrash(ev, 'log'); return; }
+      // just after a restart, or crawling: bump up and over it, never stop dead in front of it
+      // (stopping there would leave you stuck behind the log, as if it followed you)
+      p.z = -(l.s + 0.05);
+      p.y = c.heightS(p.x, -p.z) + 0.02;
+      const f = this.speed > 1 ? 0.75 : 1;
+      v.x *= f; v.z *= f;
+      if (v.z > -2) v.z = -2;
+      v.y = Math.max(v.y, 1.5);
+      if (!this.air) this.takeOff(false);
       ev.push({ type: 'graze', kind: 'log' });
     }
     // a hard edge far up the banks
@@ -325,7 +334,10 @@ export class Rider {
 
   respawn(ev, back = 6) {
     const c = this.course;
-    const s = clamp(-this.pos.z - back, 1, c.length + 150);
+    let s = clamp(-this.pos.z - back, 1, c.length + 150);
+    // fell on a log: start again on the far side of it, not in front of the same log
+    if (this.crash <= 0 && this.crashLog) s = Math.max(s, this.crashLog.s + 3);
+    this.crashLog = null;
     const x = c.safeSpot(this.pos.x, s);
     const sw = this.switch;
     this.reset(s, x, 7);

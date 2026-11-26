@@ -359,7 +359,7 @@ function BuildHelpers(C) {
     tree(s, ox, sc = 1) { C.after.push(() => C.obstacles.push({ kind: 'tree', x: C.cx(s) + ox, s, r: 0.75, h: 6, scale: sc, collide: true })); },
     rock(s, ox, r = 1.2) { C.after.push(() => C.obstacles.push({ kind: 'rock', x: C.cx(s) + ox, s, r, h: r * 1.1, scale: r })); },
     ice(s, ox, r = 0.9) { C.after.push(() => C.obstacles.push({ kind: 'ice', x: C.cx(s) + ox, s, r, h: 4.5 + r * 2, scale: r })); },
-    log(s, ox0, ox1) { C.logs.push({ s, ox0, ox1, h: 0.55 }); },
+    log(s, ox0, ox1) { C.logs.push({ s, ox0, ox1, h: 0.42 }); },
     sign(s, side, key, text) { C.signs.push({ s, x: side, kind: 'lesson', key, text }); },
     arch(s, kind = 'ice') { C.arches.push({ s, kind }); },
     lanterns(s0, s1, step = 24) { for (let s = s0; s <= s1; s += step) C.lanterns.push({ s }); },

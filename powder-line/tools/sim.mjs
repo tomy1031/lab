@@ -113,6 +113,32 @@ const ride = (rider, it, sec) => { const ev = []; for (let t = 0; t < sec; t += 
   check(crash && crash.why === 'tree' && resp && r.speed > 3, `hit a tree at speed: crash, then respawn (now ${r.speed.toFixed(1)} m/s at s=${r.s.toFixed(0)})`);
 }
 
+// 5b. logs: a fall restarts you past the log (not in front of it again), a slow bump never pins you,
+//     and a light ollie clears one with a wide timing window
+{
+  const c = getCourse('practice'), log = c.logs[0];
+  const r = new Rider(c); r.reset(log.s - 25, 0, 11);
+  const ev = ride(r, { lean: 0 }, 5);
+  const resp = ev.findIndex((e) => e.type === 'respawn');
+  const after = ev.slice(resp + 1);
+  check(ev.some((e) => e.type === 'crash' && e.why === 'log') && resp >= 0 && after.every((e) => e.type !== 'graze') && r.s > log.s + 3 && r.speed > 5,
+    `fall on a log: restart ${'past it'} (now s=${r.s.toFixed(0)} > ${log.s}, ${r.speed.toFixed(1)} m/s), not stopped by it again`);
+  const slow = new Rider(c); slow.reset(log.s - 1.5, 0, 2);
+  slow.invuln = 0;
+  const ev2 = ride(slow, { lean: 0 }, 3);
+  check(slow.s > log.s + 1 && !ev2.some((e) => e.type === 'crash'), `crawl into a log at 2 m/s: bumped over it (s=${slow.s.toFixed(1)})`);
+  for (const st of [0.3, 0.5]) {
+    const ok = [];
+    for (let d = 0.25; d <= 9; d += 0.25) {
+      const q = new Rider(c); q.reset(log.s - 25, 0, 10);
+      const e = []; let popped = false;
+      for (let t = 0; t < 2.6; t += STEP_DT) { const it = { pop: 0 }; if (!popped && !q.air && q.s > log.s - d) { it.pop = st; popped = true; } q.step(STEP_DT, it, e); }
+      if (!e.some((x) => x.type === 'crash')) ok.push(d);
+    }
+    check(ok.length && ok[ok.length - 1] - ok[0] >= 3, `ollie strength ${st} at ~11 m/s clears the log when popped ${ok[0]}–${ok[ok.length - 1]} m before it`);
+  }
+}
+
 // 6. the body tracker
 {
   const b = new Body();
