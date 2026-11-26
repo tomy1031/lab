@@ -120,11 +120,11 @@ A node is: the NPC(s) say 0–3 lines, then either the learner answers (`listen`
     "grammar": ["g1"],
     "hintJa": "はじめまして。わたしは ＿＿です。＿＿じんです。",   // fill-in template shown after 1 miss
     "modelAnswers": [                  // 1–3 full model answers (shown after 2 misses, used by offline mode)
-      "はじめまして。わたしは リンです。ベトナムじんです。どうぞ よろしく おねがいします。"
+      "はじめまして。わたしは リンです。カンボジアじんです。どうぞ よろしく おねがいします。"
     ],
     "branches": [                      // 2–4; the judge picks one by meaning
       { "id": "full", "whenEn": "Learner said their name AND their nationality or country.", "next": "n2",
-        "exampleJa": "わたしは リンです。ベトナムじんです。" },
+        "exampleJa": "わたしは リンです。カンボジアじんです。" },
       { "id": "name_only", "whenEn": "Learner said only their name.", "next": "n2_ask_country",
         "exampleJa": "リンです。" }
     ],

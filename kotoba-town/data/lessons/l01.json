@@ -9,7 +9,7 @@
       "pattern": "N1は N2です",
       "meaningEn": "N1 is N2 (は marks the topic; \"わたしは\" is often dropped)",
       "exampleJa": "わたしは リンです。",
-      "exampleEn": "I am Linh."
+      "exampleEn": "I am Lin."
     },
     {
       "id": "g2",
@@ -57,8 +57,8 @@
       "id": "g8",
       "pattern": "はじめまして。～です。～から きました。どうぞ よろしく。",
       "meaningEn": "Self-introduction set phrases; ～さん is for other people, never for your own name",
-      "exampleJa": "はじめまして。リンです。ベトナムから きました。どうぞ よろしく おねがいします。",
-      "exampleEn": "How do you do. I'm Linh. I'm from Vietnam. Pleased to meet you."
+      "exampleJa": "はじめまして。リンです。カンボジアから きました。どうぞ よろしく おねがいします。",
+      "exampleEn": "How do you do. I'm Lin. I'm from Cambodia. Pleased to meet you."
     }
   ],
   "vocab": [
@@ -277,7 +277,7 @@
             ],
             "hintJa": "はじめまして。＿＿です。＿＿から きました。",
             "modelAnswers": [
-              "はじめまして。リンです。ベトナムから きました。",
+              "はじめまして。リンです。カンボジアから きました。",
               "はじめまして。わたしは マリアです。ブラジルじんです。"
             ],
             "branches": [
@@ -285,7 +285,7 @@
                 "id": "with_country",
                 "whenEn": "Learner gave their name AND said their country or nationality.",
                 "next": "n3",
-                "exampleJa": "はじめまして。リンです。ベトナムから きました。"
+                "exampleJa": "はじめまして。リンです。カンボジアから きました。"
               },
               {
                 "id": "name_only",
@@ -316,7 +316,7 @@
             ],
             "hintJa": "はい、アメリカじんです。／いいえ、アメリカじんじゃ ありません。＿＿じんです。",
             "modelAnswers": [
-              "いいえ、アメリカじんじゃ ありません。ベトナムじんです。",
+              "いいえ、アメリカじんじゃ ありません。カンボジアじんです。",
               "はい、アメリカじんです。"
             ],
             "branches": [
@@ -330,7 +330,7 @@
                 "id": "not_american",
                 "whenEn": "Learner said no, and/or named a different country or nationality.",
                 "next": "n2c",
-                "exampleJa": "いいえ、アメリカじんじゃ ありません。ベトナムじんです。"
+                "exampleJa": "いいえ、アメリカじんじゃ ありません。カンボジアじんです。"
               }
             ],
             "fallback": "n3"
@@ -508,7 +508,7 @@
             ],
             "hintJa": "はじめまして。＿＿です。＿＿から きました。どうぞ よろしく おねがいします。",
             "modelAnswers": [
-              "はじめまして。リンです。ベトナムから きました。どうぞ よろしく おねがいします。"
+              "はじめまして。リンです。カンボジアから きました。どうぞ よろしく おねがいします。"
             ],
             "branches": [
               {
@@ -521,7 +521,7 @@
                 "id": "no_closing",
                 "whenEn": "Learner introduced themselves (name, maybe country) but did not say a よろしく closing.",
                 "next": "n7b",
-                "exampleJa": "はじめまして。リンです。ベトナムから きました。"
+                "exampleJa": "はじめまして。リンです。カンボジアから きました。"
               }
             ],
             "fallback": "n7b"
@@ -663,7 +663,7 @@
             ],
             "hintJa": "はじめまして。＿＿です。＿＿から きました。どうぞ よろしく。",
             "modelAnswers": [
-              "はじめまして。リンです。ちゅうごくから きました。どうぞ よろしく おねがいします。"
+              "はじめまして。リンです。カンボジアから きました。どうぞ よろしく おねがいします。"
             ],
             "branches": [
               {
@@ -673,10 +673,10 @@
                 "exampleJa": "ブラジルから きました。"
               },
               {
-                "id": "vietnam",
-                "whenEn": "Learner said they are from Vietnam / are Vietnamese.",
-                "next": "n1_vn",
-                "exampleJa": "ベトナムじんです。"
+                "id": "cambodia",
+                "whenEn": "Learner said they are from Cambodia / are Cambodian.",
+                "next": "n1_kh",
+                "exampleJa": "カンボジアじんです。"
               },
               {
                 "id": "other_country",
@@ -711,8 +711,8 @@
             ],
             "hintJa": "＿＿です。／＿＿から きました。",
             "modelAnswers": [
-              "ちゅうごくです。",
-              "インドから きました。"
+              "カンボジアです。",
+              "カンボジアから きました。"
             ],
             "branches": [
               {
@@ -722,10 +722,10 @@
                 "exampleJa": "ブラジルから きました。"
               },
               {
-                "id": "vietnam",
-                "whenEn": "Learner said they are from Vietnam / are Vietnamese.",
-                "next": "n1_vn",
-                "exampleJa": "ベトナムじんです。"
+                "id": "cambodia",
+                "whenEn": "Learner said they are from Cambodia / are Cambodian.",
+                "next": "n1_kh",
+                "exampleJa": "カンボジアじんです。"
               },
               {
                 "id": "other_country",
@@ -751,13 +751,13 @@
           "next": "n2"
         },
         {
-          "id": "n1_vn",
+          "id": "n1_kh",
           "say": [
             {
               "who": "minh",
-              "ja": "あ、わたしも ベトナムじんです。",
-              "kana": "あ、わたしも ベトナムじんです。",
-              "en": "Oh, I'm Vietnamese too.",
+              "ja": "カンボジアの かたですか。わたしは ミンです。ベトナムじんです。",
+              "kana": "カンボジアの かたですか。わたしは ミンです。ベトナムじんです。",
+              "en": "Oh, you're from Cambodia? I'm Minh. I'm Vietnamese.",
               "gesture": "wave"
             }
           ],
