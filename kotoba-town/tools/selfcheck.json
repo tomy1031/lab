@@ -27,15 +27,15 @@
     "listen": {
       "promptEn": "Introduce yourself: your name and your country.",
       "grammar": ["g1"],
-      "modelAnswers": ["はじめまして。わたしは リンです。ベトナムじんです。どうぞ よろしく おねがいします。"],
+      "modelAnswers": ["はじめまして。わたしは リンです。カンボジアじんです。どうぞ よろしく おねがいします。"],
       "branches": [
-        { "id": "full", "whenEn": "Learner said their name AND their nationality or country.", "exampleJa": "わたしは リンです。ベトナムじんです。" },
+        { "id": "full", "whenEn": "Learner said their name AND their nationality or country.", "exampleJa": "わたしは リンです。カンボジアじんです。" },
         { "id": "name_only", "whenEn": "Learner said only their name.", "exampleJa": "リンです。" }
       ]
     }
   },
   "cases": [
-    { "say": "はじめまして。わたしは リンです。ベトナムじんです。どうぞ よろしく おねがいします。", "voice": "Puck", "expect": ["full"], "decide": "nothing" },
+    { "say": "はじめまして。わたしは リンです。カンボジアじんです。どうぞ よろしく おねがいします。", "voice": "Puck", "expect": ["full"], "decide": "nothing" },
     { "say": "リンです。よろしく おねがいします。", "voice": "Kore", "expect": ["name_only"], "decide": "nothing" },
     { "say": "すみません、もう いちど おねがいします。", "voice": "Puck", "expect": ["repeat"], "decide": "nothing" },
     { "say": "あおきさんは デザイナーですか。", "voice": "Kore", "expect": ["asks_npc", "off_topic"], "decide": "react" }

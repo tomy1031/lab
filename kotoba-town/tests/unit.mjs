@@ -31,7 +31,7 @@ await test('readJudge normalises and rejects unknown branches', () => {
 });
 
 await test('offline judge picks the nearest branch example', () => {
-  assert.equal(offlineJudge('わたしは リンです。ベトナムじんです。', listen).branch, 'full');
+  assert.equal(offlineJudge('わたしは リンです。カンボジアじんです。', listen).branch, 'full');
   assert.equal(offlineJudge('リンです。', listen).branch, 'name_only');
   assert.equal(offlineJudge('もう いちど おねがいします', listen).branch, 'repeat');
   assert.equal(offlineJudge('I am Lin', listen).branch, 'english');

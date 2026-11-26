@@ -639,7 +639,7 @@
                 "id": "no_time",
                 "whenEn": "Learner answered without any time, e.g. only said which country they came from or just that they came to Japan.",
                 "next": "n1b",
-                "exampleJa": "ベトナムから きました。"
+                "exampleJa": "カンボジアから きました。"
               }
             ],
             "fallback": "n1b"
