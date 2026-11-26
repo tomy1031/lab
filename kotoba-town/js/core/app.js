@@ -2,7 +2,12 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-export const EYE_HEIGHT = 1.6;
+/**
+ * Standing eye height, matched to the townspeople (their eyes are at 1.45–1.71 m, about 1.6 m on average),
+ * so the learner looks at faces straight on. In VR the real head height is measured and the world is
+ * shifted to this height (a tall learner would otherwise look down on everyone).
+ */
+export const EYE_HEIGHT = 1.57;
 /** Eye height when the learner sits on a chair (interviews). */
 export const SEATED_EYE = 1.18;
 
@@ -34,6 +39,8 @@ export class App {
     this.updaters = new Set();
     this.yaw = 0; this.pitch = 0; // desktop look
     this.inXR = false;
+    this.eyeOffset = 0; // VR: world shift that puts the learner's eyes at EYE_HEIGHT
+    this.calibrateIn = 0; // VR: frames until the head height is measured
 
     this.raycaster = new THREE.Raycaster();
     this.interactive = new Set(); // objects with userData.onClick / onHover
@@ -86,6 +93,7 @@ export class App {
     this.seatOffset = 0;
     this._tweens?.seat?.();
     if (!this.inXR) this.camera.position.y = EYE_HEIGHT;
+    else { this.calibrateEyes(); this._applyRigY(); } // a new place: measure the head height again
     this.yaw = 0; this.pitch = 0;
     this._applyLook();
   }
@@ -96,16 +104,32 @@ export class App {
    * really sits down needs no change).
    */
   setSeated(on, ms = 900) {
-    const target = !on ? 0 : this.inXR
-      ? Math.max(-0.6, Math.min(0, SEATED_EYE - this.camera.position.y))
-      : SEATED_EYE - EYE_HEIGHT;
+    // in VR the eyes are already brought to EYE_HEIGHT (calibrateEyes), so the same drop works for both
+    const target = on ? SEATED_EYE - EYE_HEIGHT : 0;
     const from = this.seatOffset || 0;
     return this.tween(ms, (k) => {
       const e = k * k * (3 - 2 * k);
       this.seatOffset = from + (target - from) * e;
-      if (this.inXR) this.rig.position.y = (this.rigBaseY || 0) + this.seatOffset;
+      if (this.inXR) this._applyRigY();
       else { this.rig.position.y = this.rigBaseY || 0; this.camera.position.y = EYE_HEIGHT + this.seatOffset; }
     }, 'seat');
+  }
+
+  /** VR: the rig height = the spot + the eye-height shift + sitting. */
+  _applyRigY() {
+    this.rig.position.y = (this.rigBaseY || 0) + (this.inXR ? this.eyeOffset : 0) + (this.seatOffset || 0) * (this.inXR ? 1 : 0);
+  }
+
+  /**
+   * VR: measure the learner's real eye height (local-floor) and shift the world so their eyes are at
+   * EYE_HEIGHT, the townspeople's eye level. Done when the session starts and at every new place, so a
+   * learner who sits down or stands up in the real room is matched again at the next scene.
+   */
+  calibrateEyes() {
+    const y = this.camera.position.y; // head height above the real floor (pose from the headset)
+    if (!this.inXR || !(y > 0.5 && y < 2.4)) { this.calibrateIn = Math.max(this.calibrateIn, 10); return false; } // no pose yet
+    this.eyeOffset = Math.max(-0.7, Math.min(0.6, EYE_HEIGHT - y));
+    return true;
   }
 
   /** World position of the learner's eyes. */
@@ -194,12 +218,15 @@ export class App {
     }
     r.xr.addEventListener('sessionstart', () => {
       this.inXR = true;
+      this.eyeOffset = 0;
+      this.calibrateIn = 20; // the headset pose settles over the first frames
       this.camera.rotation.set(0, 0, 0);
       document.body.classList.add('xr');
       this.onXRChange?.(true);
     });
     r.xr.addEventListener('sessionend', () => {
       this.inXR = false;
+      this.eyeOffset = 0;
       this.rig.position.y = this.rigBaseY || 0;
       this.camera.position.set(0, EYE_HEIGHT + (this.seatOffset || 0), 0);
       document.body.classList.remove('xr');
@@ -247,6 +274,7 @@ export class App {
 
   _frame(t, frame) {
     const dt = Math.min(this.clock.getDelta(), 0.05);
+    if (this.inXR && this.calibrateIn > 0 && --this.calibrateIn === 0 && this.calibrateEyes()) this._applyRigY();
     // hover for mouse + controllers
     const sources = [];
     if (this.inXR) for (const c of this.controllers) { if (c.userData.gamepad || c.userData.hand) sources.push([c, this._rayFrom(c).ray.clone()]); }
