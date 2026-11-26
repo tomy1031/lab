@@ -12,9 +12,10 @@ import { bakeSky, skyDome, SKY_UV } from './sky.js';
 import { fbm2, ridged2, noise2, smoothstep, lerp, clamp, rng, colored, mergeGeos, canvasTexture } from './util.js';
 
 export const LAKE_Y = -4.2;
-const az0 = THREE.MathUtils.degToRad(64), el0 = THREE.MathUtils.degToRad(31);
+const az0 = THREE.MathUtils.degToRad(58), el0 = THREE.MathUtils.degToRad(24); // late afternoon, to the right
 export const SUN = new THREE.Vector3(Math.sin(az0) * Math.cos(el0), Math.sin(el0), -Math.cos(az0) * Math.cos(el0));
-const HAZE = new THREE.Color('#bfd2e2');
+const HAZE = new THREE.Color('#c6d4e0');
+const WARM = new THREE.Color('#ffc896');
 
 // ground height in metres at (x, z); the player stands at the origin, looking down -z
 export function heightAt(x, z) {
@@ -56,8 +57,8 @@ export class World {
     scene.add(this.sky);
     scene.fog = new THREE.Fog(HAZE, 45, 900);
     scene.background = HAZE.clone();
-    const hemi = new THREE.HemisphereLight('#d8ecff', '#62743c', 1.35);
-    const sun = new THREE.DirectionalLight('#fff1d9', 2.3);
+    const hemi = new THREE.HemisphereLight('#d6e8ff', '#6d7a3e', 1.3);
+    const sun = new THREE.DirectionalLight('#ffe4bd', 2.6);
     sun.position.copy(SUN).multiplyScalar(100);
     scene.add(hemi, sun);
     this.R = rng(20261109);
@@ -71,6 +72,7 @@ export class World {
     this.addDeck();
     this.addBirds();
     this.addPollen(hi ? 260 : 160);
+    this.addButterflies(hi ? 18 : 10);
   }
 
   addTerrain() {
@@ -177,6 +179,7 @@ export class World {
           c.lerp(snow, smoothstep(sl, sl + L.hMax * 0.08, y) * (0.55 + 0.45 * Math.max(0, n3.dot(SUN))));
         }
         c.multiplyScalar(light);
+        c.lerp(WARM, Math.max(0, n3.dot(SUN)) * 0.16 * f); // warm light on the sunlit ridges
         const mist = (1 - f) * 0.4 * (L.haze + 0.2);
         c.lerp(HAZE, clamp(L.haze + mist, 0, 0.95));
         void top;
@@ -272,7 +275,7 @@ export class World {
         p.set(pt[0], pt[1] - 0.2, pt[2]);
         im.setMatrixAt(i, m4.compose(p, q, s));
         c.setHSL(tint[0] + (R() - 0.5) * tint[1], 0.9, 0.5 + (R() - 0.5) * 0.12);
-        c.lerp(new THREE.Color(1, 1, 1), 0.55);
+        c.lerp(new THREE.Color(1, 1, 1), tint[2] ?? 0.55);
         im.setColorAt(i, c);
       });
       im.computeBoundingSphere();
@@ -285,6 +288,14 @@ export class World {
     // trees that frame the view near the clearing
     brdPts.push([-11, heightAt(-11, -12), -12], [12, heightAt(12, -8.5), -8.5], [-11, heightAt(-11, 4), 4], [10, heightAt(10, 7), 7], [-5.8, heightAt(-5.8, 9), 9]);
     place(brd, brdPts, 0.9, 1.7, [0.26, 0.05]);
+    // a few flowering trees for colour, along the meadow's edge
+    const bloom = mergeGeos([
+      colored(new THREE.CylinderGeometry(0.13, 0.22, 2.4, 6).translate(0, 1.2, 0), '#5d3f30'),
+      leaf(1.5, 0, 3.2, 0, '#f4b8cf'), leaf(1.1, 0.9, 2.8, 0.4, '#f7c9d8'), leaf(1.05, -0.8, 2.9, -0.3, '#eeaac4'), leaf(0.95, 0.1, 4.0, 0.2, '#fbd6e2'),
+    ]);
+    const bloomPts = this.scatter(Math.round(26 * k), 14, 70, (x, z) => (Math.abs(x) > 12 && z > -60 && z < 30 ? 0.6 : 0) * (heightAt(x, z) > LAKE_Y + 1 ? 1 : 0), 1.2);
+    bloomPts.push([-14, heightAt(-14, -18), -18], [16, heightAt(16, -20), -20]);
+    place(bloom, bloomPts, 0.85, 1.35, [0.95, 0.03, 0.88]);
     // bushes
     const bush = mergeGeos([leaf(0.6, 0, 0.35, 0, '#4f8030'), leaf(0.45, 0.45, 0.3, 0.1, '#5e9139'), leaf(0.42, -0.4, 0.28, -0.1, '#4a782d')]);
     const bushPts = this.scatter(Math.round(160 * k), 6, 60, (x, z) => (Math.abs(x) < 3 && z < 2 && z > -22 ? 0 : 0.25 + forestAt(x, z) * 0.6), 1.2);
@@ -378,7 +389,7 @@ export class World {
 
   addRocks() {
     const R = this.R;
-    const g = colored(new THREE.DodecahedronGeometry(1, 0), '#9a9789');
+    const g = colored(new THREE.DodecahedronGeometry(1, 0), '#b4b09c');
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
     const pts = [];
     for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2 + 0.2; if (Math.abs(Math.sin(a)) < 0.3 && Math.cos(a) > 0) continue; pts.push([Math.sin(a) * 1.75, 0, -Math.cos(a) * 1.75, 0.09 + R() * 0.07]); }
@@ -391,7 +402,7 @@ export class World {
       s.set(pt[3] * (1 + R() * 0.5), pt[3] * (0.55 + R() * 0.3), pt[3] * (1 + R() * 0.5));
       p.set(pt[0], pt[1] + pt[3] * 0.15, pt[2]);
       im.setMatrixAt(i, m4.compose(p, q, s));
-      c.setHSL(0.15 + R() * 0.1, 0.12, 0.75 + R() * 0.2);
+      c.setHSL(0.12 + R() * 0.16, 0.18 + R() * 0.12, 0.8 + R() * 0.15);
       im.setColorAt(i, c);
     });
     this.scene.add(im);
@@ -473,6 +484,50 @@ export class World {
     this.scene.add(this.pollen);
   }
 
+  // butterflies drifting over the meadow (two flapping wings each, one draw call)
+  addButterflies(n) {
+    const pos = [];
+    for (const sx of [-1, 1]) pos.push(0, 0, 0, sx * 0.05, 0.004, -0.03, sx * 0.045, 0.004, 0.03, 0, 0, 0, sx * 0.045, 0.004, 0.03, sx * 0.02, 0.002, 0.05);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.computeVertexNormals();
+    const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const U = this.u;
+    mat.onBeforeCompile = (sh) => {
+      sh.uniforms.uTime = U.time;
+      sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>', `
+        vec3 transformed = vec3(position);
+        float fl = sin(uTime * 22.0 + float(gl_InstanceID) * 2.3);
+        transformed.y += abs(position.x) * fl * 1.4;
+        transformed.x *= 0.55 + 0.45 * abs(cos(uTime * 22.0 + float(gl_InstanceID) * 2.3));
+      `);
+    };
+    this.flies = new THREE.InstancedMesh(g, mat, n);
+    const R = this.R;
+    const cols = ['#ffd84a', '#ffffff', '#ff9f43', '#9fd3ff', '#ffb3d9'].map((h) => new THREE.Color(h));
+    this.flyData = Array.from({ length: n }, (_, i) => {
+      const a = R() * Math.PI * 2, r = 3 + R() * 12;
+      this.flies.setColorAt(i, cols[i % cols.length]);
+      return { x: Math.sin(a) * r, z: -Math.cos(a) * r * 0.8 - 2, ph: R() * 10, sp: 0.25 + R() * 0.3, rad: 1 + R() * 2.5, h: 0.4 + R() * 0.8 };
+    });
+    this.flies.frustumCulled = false;
+    this.scene.add(this.flies);
+  }
+
+  updateButterflies(t) {
+    if (!this.flies) return;
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(1.4, 1.4, 1.4), up = new THREE.Vector3(0, 1, 0);
+    this.flyData.forEach((b, i) => {
+      const a = t * b.sp + b.ph;
+      let x = b.x + Math.cos(a) * b.rad, z = b.z + Math.sin(a * 1.3) * b.rad;
+      if (Math.abs(x) < 1.6 && z < 0.5 && z > -14) x = Math.sign(x || 1) * (1.6 + Math.abs(x)); // stay off the lane
+      p.set(x, heightAt(x, z) + b.h + Math.sin(t * 2.1 + b.ph) * 0.15, z);
+      q.setFromAxisAngle(up, -a * 1.3 + Math.PI / 2);
+      this.flies.setMatrixAt(i, m4.compose(p, q, s));
+    });
+    this.flies.instanceMatrix.needsUpdate = true;
+  }
+
   // per frame: time, the beat pulse (1 on a beat, decaying), the head position
   update(t, pulse, headPos, viewportH = 1000) {
     this.u.time.value = t;
@@ -488,5 +543,6 @@ export class World {
       this.birds.setMatrixAt(i, m4.compose(p, q, s));
     });
     this.birds.instanceMatrix.needsUpdate = true;
+    this.updateButterflies(t);
   }
 }

@@ -63,6 +63,22 @@ export class PlaySession {
   }
 
   dist(tau) { const { v0, k } = this.speed; return tau >= 0 ? v0 * tau + k * tau * tau : v0 * tau; }
+  speedAt(tau) { const { v0, k } = this.speed; return tau >= 0 ? v0 + 2 * k * tau : v0; }
+
+  // which explanation (js/targets.js HINTS) to put on this target: the first two of each kind, while hints are on
+  hintFor(n) {
+    const mode = this.app.store.data.hints || 'auto';
+    if (mode === 'off' || (mode === 'auto' && this.app.store.data.plays >= 3)) return null;
+    this.hintCount = this.hintCount || {};
+    const keys = n.kind === 'duck' ? ['duck']
+      : [n.kind === 'hook' ? 'hook' + n.hand : n.kind === 'upper' ? 'upper' + n.hand : null, n.sub, n.kind === 'straight' || n.kind === 'body' ? 'straight' + n.hand : null, 'ring'];
+    for (const k of keys) {
+      if (!k) continue;
+      const c = this.hintCount[k] || 0;
+      if (c < (k === 'ring' ? 1 : 2)) { this.hintCount[k] = c + 1; return k; }
+    }
+    return null;
+  }
 
   // after a pause the song restarts at fromT (after a count-in): targets come in again from far away
   rewind(fromT) {
@@ -114,9 +130,11 @@ export class PlaySession {
     while (this.next < this.notes.length && this.notes[this.next].t - songT <= this.speed.lead) {
       const n = this.notes[this.next++];
       if (n.state !== 'wait') continue;
-      app.targets.spawn(n);
+      const o = app.targets.spawn(n);
       n.spawnT = songT;
       this.active.push(n);
+      const hk = this.hintFor(n);
+      if (hk) app.targets.hint(o, hk);
     }
     // autoplay: move the gloves (PC) so they really hit, through the same collision code
     if (this.auto) this.bot(songT);
@@ -130,21 +148,14 @@ export class PlaySession {
       const tau = n.t - songT;
       if (!o) { this.active.splice(i, 1); continue; }
       this.posAt(n, songT, p);
-      o.g.position.copy(p);
-      o.shadow.position.set(p.x, 0.013, p.z);
+      app.targets.place(o, p, tau, songT - n.spawnT, this.speedAt(tau), songT);
       if (n.kind === 'duck') {
         if (n.state === 'wait' && tau <= 0) this.judgeDuck(n);
         if (tau < -0.7) { app.targets.release(o); this.active.splice(i, 1); }
         continue;
       }
-      const age = songT - n.spawnT;
       if (n.state === 'wait') {
-        o.g.scale.setScalar(Math.min(1, 0.05 + age * 4));
-        const near = 1 - Math.min(1, Math.max(0, tau) / 0.5);
-        o.pad.material.emissive.set(HAND_COLOR[n.hand]).multiplyScalar(0.4 + near * 0.5);
-        o.ring.visible = tau > -0.03 && tau < 0.6;
-        o.ring.scale.setScalar(1 + Math.max(0, tau) * 2.6);
-        o.g.rotation.z = Math.sin(songT * 2 + n.id) * 0.08;
+        o.g.rotation.z = Math.sin(songT * 2 + n.id) * 0.06;
         if (tau < -this.win.ok / 1000 - 0.05) this.miss(n);
       } else if (n.state === 'miss') {
         o.g.scale.multiplyScalar(Math.exp(-dt * 4));
@@ -253,7 +264,7 @@ export class PlaySession {
     this.lastTiming = `${ms > 0 ? '+' : ''}${ms}ms ${ms < -this.win.p ? 'はやい' : ms > this.win.p ? 'おそい' : 'ジャスト'}`;
     // feedback
     const col = HAND_COLOR[n.hand];
-    app.fx.burst(cLocal, col, g === 'perfect' ? 30 : 20, g === 'perfect' ? 2.2 : 1.7, [n.dir[0] * 0.6, n.dir[1] * 0.6, n.dir[2] * 0.6]);
+    app.fx.burst(cLocal, col, g === 'perfect' ? 18 : 12, g === 'perfect' ? 1.5 : 1.2, [n.dir[0] * 0.5, n.dir[1] * 0.5, n.dir[2] * 0.5]);
     app.fx.ring(cLocal, g === 'perfect' ? '#fff6c8' : col);
     app.fx.pop(cLocal, WORD[g], early);
     app.targets.release(n.obj);
@@ -273,9 +284,7 @@ export class PlaySession {
     n.missT = this.prevT;
     n.grade = 'miss';
     this.combo = 0;
-    n.obj.pad.material.color.set('#7a807c');
-    n.obj.pad.material.emissive.set('#000');
-    n.obj.ring.visible = false;
+    this.app.targets.miss(n.obj);
     this.app.fx.pop(n.obj.g.position, WORD.miss);
     this.app.audio.play('whiff', this.app.audio.now(), 0.35);
     this.judged.push(n);

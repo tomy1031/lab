@@ -65,6 +65,7 @@
   .stepper button { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 800; }
   .stepper output { min-width: 6em; text-align: center; }
   details { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 10px; }
+  details.legend canvas { display: block; width: 100%; height: auto; margin-top: 8px; border-radius: 14px; background: rgba(12,28,22,0.86); border: 1px solid var(--line); }
   summary { cursor: pointer; font-weight: 800; color: var(--muted); letter-spacing: .06em; }
   .field { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 14px; }
   .field input[type="range"] { flex: 1; max-width: 220px; accent-color: var(--leaf); }
@@ -138,6 +139,11 @@
     <p id="vr-note">VR の対応を確認しています…</p>
   </div>
 
+  <details class="legend" open>
+    <summary>的の見かた</summary>
+    <canvas id="legend" width="900" height="900" aria-label="的の見かた：色はどちらの手か（青緑＝左手、オレンジ＝右手）、まん中の印は打ち方（◎まっすぐ、曲がった矢印＝フック、上向き矢印＝アッパー）、上の札はいつ打つか（数字＝その拍、ウラ＝拍と拍のまん中、16ウラ＝もっと細かいウラ）。外の輪が的に重なった瞬間に打ち、枝はしゃがんでくぐる。"></canvas>
+  </details>
+
   <h2>曲</h2>
   <div class="songs" id="songs"></div>
   <p class="tip" id="song-tip"></p>
@@ -188,7 +194,8 @@
     <div class="field"><span>ガイド音の音量</span><input type="range" id="vol-guide" min="0" max="1" step="0.05"></div>
     <div class="field"><span>効果音の音量</span><input type="range" id="vol-sfx" min="0" max="1" step="0.05"></div>
     <div class="field"><span>座って遊ぶ（枝くぐりなし）</span><input type="checkbox" id="seated"></div>
-    <div class="field"><span>レーンにカウント「1 & 2 &」を表示</span><input type="checkbox" id="labels"></div>
+    <div class="field"><span>レーンにカウント「1 ウラ 2 ウラ」を表示</span><input type="checkbox" id="labels"></div>
+    <div class="field"><span>的の上のヒント（自動＝最初の3回だけ）</span><span class="seg" id="hintsSeg" style="flex:0 0 auto"></span></div>
     <div class="field"><span>画質（軽量は草木を減らします。次回の起動から）</span><span class="seg" id="quality" style="flex:0 0 auto"></span></div>
   </details>
 
@@ -197,9 +204,9 @@
     <ol class="how">
       <li>Quest のブラウザでこのページを開き「VR で遊ぶ」。まわりに 2m×2m ほどの空間をあけて、正面を向いて立ちます。</li>
       <li>目の前のパネルで曲とリズムを選び、コントローラーのトリガー（ハンドトラッキングなら指でつまむ）で START。</li>
-      <li>青緑は左手、オレンジは右手。的の数字が着く拍です：白い縁と「1 2 3 4」は表拍、金の縁と「&」は裏拍、ピンクの「e・a」は16分の裏。</li>
-      <li>外側のリングが縁に重なった瞬間がジャスト。足元のレーンの線も同じタイミングで流れてきます（実線＝表拍、破線＝裏拍）。</li>
-      <li>矢印つきはフック（横から）とアッパー（下から）。枝が来たら、ひざを曲げてくぐります。いつも小節の頭（1拍目）です。</li>
+      <li>的の色は手（青緑＝左手、オレンジ＝右手）、まん中の印は打ち方（◎まっすぐ、曲がった矢印＝フック、上向き矢印＝アッパー）、上の札はいつ打つか（「1〜4」＝その拍、「ウラ」＝拍と拍のまん中、「16ウラ」＝もっと細かいウラ）。上の「的の見かた」の図も見てください。</li>
+      <li>外側の輪が縮んで的に重なった瞬間がジャスト。足もとのレーンの線も同じタイミングで流れてきます（実線＝拍、破線＝ウラ）。宙に浮かぶ2つの輪が、まっすぐのパンチが当たる場所です。</li>
+      <li>枝が来たら、ひざを曲げてくぐります。いつも小節の頭（1拍目）です。最初の数回は、的の上に「左フック：左から横に振る」などのヒントが出ます。</li>
       <li>一時停止は Meta ボタン（右コントローラーのメタのマーク）。Quest のメニューが開くと止まり、閉じると一時停止パネルが出ます。A・B・X・Y ボタンでは止まりません。終わると、表拍と裏拍それぞれのずれ（早い・遅い・ばらつき）とアドバイスが出ます。</li>
     </ol>
     <p class="small">PC・スマホ：<kbd>F</kbd>・<kbd>D</kbd>＝左、<kbd>J</kbd>・<kbd>K</kbd>＝右、<kbd>Space</kbd>＝くぐる、<kbd>Esc</kbd>＝一時停止。スマホは画面下のボタンをタップ。</p>

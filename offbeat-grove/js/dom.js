@@ -5,6 +5,7 @@ import { SONGS, songById } from './songs.js';
 import { MODES, DIFFS } from './chart.js';
 import { decodeFile, analyze, trackBars, saveTrack, loadTrack, clearTrack } from './beat.js';
 import { SUB_COLOR } from './targets.js';
+import { drawLegend } from './vrui.js';
 import { TrackPlayer } from './player.js';
 import { fmtTime } from './util.js';
 
@@ -28,6 +29,7 @@ export class DomUI {
     seg('guides', [['on', 'あり'], ['fade', 'だんだん消える'], ['off', 'なし']], 'guide');
     seg('lengths', [['full', 'フル 約2分半'], ['short', 'ショート 約1分']], 'length');
     seg('quality', [['high', '標準'], ['low', '軽量']], 'quality');
+    seg('hintsSeg', [['auto', '自動'], ['on', 'いつも'], ['off', 'なし']], 'hints');
     this.renderSongs();
   }
 
@@ -149,7 +151,7 @@ export class DomUI {
     $('res-rank').textContent = r.rank;
     $('res-score').textContent = r.score.toLocaleString();
     $('res-meta').textContent = `正確さ ${r.acc}%・最大コンボ ${r.maxCombo}・パンチ ${r.hits}/${r.punches}・枝 ${r.dodged}/${r.ducks}・${fmtTime(r.duration)}・目安 ${r.kcal} kcal`;
-    const names = { on: '表拍「1 2 3 4」', and: '裏拍「&」', six: '16分「e・a」' };
+    const names = { on: '表拍「1 2 3 4」', and: '裏拍「ウラ」', six: '16ウラ' };
     $('res-cats').innerHTML = Object.entries(r.cat).filter(([, c]) => c.n).map(([k, c]) => {
       const m = Math.max(1, ...c.hist);
       return `<div class="cat"><b style="color:${SUB_COLOR[k]}">${names[k]}</b><span>${c.hit}/${c.n}・平均 ${c.mean > 0 ? '+' : ''}${c.mean}ms・ばらつき ±${c.sd}ms</span>
@@ -168,6 +170,8 @@ export class DomUI {
 
   async ready() {
     $('loading').classList.add('hidden');
+    const lc = $('legend');
+    if (lc) drawLegend(lc.getContext('2d'), lc.width, lc.height);
     const note = $('vr-note');
     let vr = false;
     try { vr = !!(navigator.xr && (await navigator.xr.isSessionSupported('immersive-vr'))); } catch { vr = false; }

@@ -8,10 +8,10 @@ import { Lane } from './lane.js';
 import { Targets } from './targets.js';
 import { FX } from './fx.js';
 import { Input, DeskGloves } from './gloves.js';
-import { MenuPanel, PausePanel, ResultsPanel, Hud } from './vrui.js';
+import { MenuPanel, PausePanel, ResultsPanel, Hud, LegendPanel } from './vrui.js';
 import { songById } from './songs.js';
 import { GenPlayer, TrackPlayer } from './player.js';
-import { buildChart } from './chart.js';
+import { buildChart, POS } from './chart.js';
 import { PlaySession } from './game.js';
 import { DomUI } from './dom.js';
 import { clamp, smoothstep } from './util.js';
@@ -49,7 +49,8 @@ class App {
     this.pausePanel = new PausePanel(this);
     this.resultsPanel = new ResultsPanel(this);
     this.hud = new Hud();
-    this.scene.add(this.menu.mesh, this.pausePanel.mesh, this.resultsPanel.mesh);
+    this.legend = new LegendPanel();
+    this.scene.add(this.menu.mesh, this.pausePanel.mesh, this.resultsPanel.mesh, this.legend.mesh);
     this.playRoot.add(this.hud.mesh);
     this.state = 'menu';
     this.xr = false;
@@ -148,6 +149,7 @@ class App {
     }
     // the scoreboard floats above the approach path, where your eyes already are
     this.hud.mesh.position.set(0, eyeY + 0.6, -3.1);
+    this.targets.showZones(eyeY, POS.straight);
     this.hud.mesh.rotation.set(0.12, 0, 0);
     this.session = new PlaySession(this, { notes, player, opts: { ...s }, title, eyeY, auto: this.auto && !this.xr, keys: !this.xr && !this.auto });
     this.player = player;
@@ -210,20 +212,21 @@ class App {
   panels() {
     const xr = this.xr;
     const st = this.state;
-    const place = (panel, dist, dy) => {
+    const place = (panel, dist, dy, yaw = 0) => {
       const h = this.input.head;
       const f = new THREE.Vector3(0, 0, -1).applyQuaternion(this.input.headQuat);
       f.y = 0;
       if (f.lengthSq() < 1e-4) f.set(0, 0, -1);
-      f.normalize();
+      f.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
       panel.mesh.position.set(h.x + f.x * dist, h.y + dy, h.z + f.z * dist);
       panel.mesh.lookAt(h.x, h.y + dy * 0.4, h.z);
     };
     const want = { menu: xr && st === 'menu', pause: xr && st === 'paused', results: xr && st === 'results' };
-    if (want.menu && !this.menu.visible) place(this.menu, 1.45, -0.12);
+    if (want.menu && !this.menu.visible) { place(this.menu, 1.45, -0.12); place(this.legend, 1.4, -0.1, 0.92); }
     if (want.pause && !this.pausePanel.visible) place(this.pausePanel, 0.95, -0.05);
     if (want.results && !this.resultsPanel.visible) place(this.resultsPanel, 1.45, -0.12);
     this.menu.show(want.menu);
+    this.legend.show(want.menu);
     this.pausePanel.show(want.pause);
     this.resultsPanel.show(want.results);
     this.hud.show(st === 'play' || st === 'paused');
@@ -379,6 +382,7 @@ class App {
       this.hud.set(sess.hud(this.songT));
       const bar = sess.player.bars[Math.floor(beat / 4)];
       if (beat >= 0 && bar) pulse = Math.exp(-(beat - Math.floor(beat)) * 5) * (bar.e >= 1 ? 1 : 0.4);
+      this.targets.pulseZones(beat >= 0 ? Math.exp(-(beat - Math.floor(beat)) * 6) : 0);
     } else this.lane.fade(0, dt);
     for (const s of ['L', 'R']) this.input.gloves[s].update(dt);
 

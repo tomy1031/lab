@@ -30,7 +30,9 @@ void main() {
   vec3 col = mix(horizon, mid, smoothstep(0.0, 0.16, h));
   col = mix(col, zenith, smoothstep(0.14, 0.8, h));
   float sd = max(dot(d, uSun), 0.0);
-  col += lin(vec3(1.0, 0.86, 0.62)) * (pow(sd, 5.0) * 0.28 + pow(sd, 48.0) * 0.6);
+  col += lin(vec3(1.0, 0.8, 0.55)) * (pow(sd, 4.0) * 0.32 + pow(sd, 48.0) * 0.7);
+  // a warmer band along the horizon toward the late sun
+  col = mix(col, lin(vec3(1.0, 0.84, 0.66)), (1.0 - smoothstep(0.0, 0.2, h)) * pow(max(dot(normalize(vec3(d.x, 0.0, d.z)), normalize(vec3(uSun.x, 0.0, uSun.z))), 0.0), 2.0) * 0.45);
   col = mix(col, lin(vec3(0.96, 0.92, 0.84)), (1.0 - smoothstep(0.0, 0.07, h)) * 0.4);
   if (d.y < 0.0) col = mix(horizon, lin(vec3(0.64, 0.72, 0.70)), smoothstep(0.0, -0.25, d.y));
   if (d.y > -0.03) {
@@ -41,7 +43,7 @@ void main() {
     float ci = fbm(vec2(cp.x * 0.45, cp.y * 2.2) * 0.55 + 7.0);
     float cir = smoothstep(0.56, 0.82, ci) * smoothstep(0.1, 0.35, d.y) * (1.0 - smoothstep(0.7, 1.0, d.y)) * 0.5;
     float shade = fbm(cp * 0.85 + vec2(3.0, 1.0) + uSun.xz * 0.35);
-    vec3 lit = lin(vec3(1.0, 0.98, 0.95)) * (0.85 + 0.45 * pow(sd, 3.0));
+    vec3 lit = mix(lin(vec3(1.0, 0.98, 0.95)), lin(vec3(1.0, 0.86, 0.7)), pow(sd, 2.0) * 0.7) * (0.85 + 0.45 * pow(sd, 3.0));
     vec3 dark = lin(vec3(0.60, 0.66, 0.77));
     vec3 cc = mix(dark, lit, smoothstep(0.38, 0.72, n - (shade - n) * 1.6));
     col = mix(col, cc, cov * 0.95);
