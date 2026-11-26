@@ -81,8 +81,8 @@ export function iceGeometry() {
 
 export function logGeometry(len) {
   return merge([
-    [new THREE.CylinderGeometry(0.28, 0.3, len, 8), '#6b4a32', M(0, 0.28, 0, 0, 0, Math.PI / 2)],
-    [new THREE.BoxGeometry(len * 0.98, 0.08, 0.36), '#f4f8ff', M(0, 0.56, 0)],
+    [new THREE.CylinderGeometry(0.2, 0.22, len, 8), '#6b4a32', M(0, 0.2, 0, 0, 0, Math.PI / 2)],
+    [new THREE.BoxGeometry(len * 0.98, 0.06, 0.26), '#f4f8ff', M(0, 0.4, 0)],
   ]);
 }
 
