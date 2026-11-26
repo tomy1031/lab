@@ -117,6 +117,12 @@
   #yt-box .grid button { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 700; font-size: 13px; }
   #yt-box .tap { display: grid; place-items: center; height: 120px; margin-top: 10px; border-radius: 14px; border: 2px dashed var(--gold); font-size: 20px; font-weight: 900; user-select: none; -webkit-user-select: none; cursor: pointer; touch-action: manipulation; }
   #yt-box .tap.flash { background: rgba(255, 201, 74, .2); }
+  #yt-box .yt-auto { display: block; width: 100%; margin-top: 8px; padding: 12px; border-radius: 12px; border: 0; background: var(--leaf); color: var(--sel-ink); font-weight: 900; font-size: 16px; }
+  #yt-box .yt-auto:disabled { opacity: .55; }
+  #yt-box .yt-bar { height: 6px; margin-top: 8px; border-radius: 3px; background: var(--chip); overflow: hidden; }
+  #yt-box .yt-bar span { display: block; height: 100%; width: 0; background: var(--gold); transition: width .2s; }
+  #yt-box .yt-manual { margin-top: 6px; }
+  #yt-box .yt-manual summary { cursor: pointer; font-size: 13px; color: var(--muted); }
   #yt-dock { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: min(380px, 46vw); z-index: 15; background: rgba(10,25,18,.85); border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
   #yt-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; }
   #yt-frame iframe, #yt-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
@@ -171,12 +177,18 @@
 
   <div id="yt-box" class="hidden" aria-label="YouTube の曲">
     <div id="yt-status" class="small"></div>
-    <div class="grid">
-      <button id="yt-calib">拍あわせ（タップ）</button><button id="yt-check">▶ クリック付きで確認</button>
-      <button data-yts="swap">表と裏を入れかえる</button><button data-yts="beat">「1」を1拍ずらす</button><button data-yts="-10">−10ms</button><button data-yts="+10">+10ms</button>
-    </div>
-    <div id="yt-tap" class="tap hidden" tabindex="0" role="button">ここをタップ（Space）</div>
-    <p class="small">拍あわせ：動画が最初から流れます。ドラムが入ったら「ドン・タン」に合わせて 16 回タップ（Space キー、クリック、または Quest のトリガー）。ゲームが拍の位置と、音が耳に届くまでの遅れを覚えます。この動画では最初の1回だけで OK。</p>
+    <button id="yt-auto" class="yt-auto">🎤 自動で拍あわせ（待つだけ・約20秒）</button>
+    <div class="yt-bar hidden" id="yt-bar"><span></span></div>
+    <p class="small">最初の1回だけ、ゲームが曲を聞いて拍の位置を自分で見つけます。<b>押したら待つだけ</b>で、タップもリズム感もいりません。動画がスピーカーから流れ、マイクで聞きます（「マイクの使用を許可」と聞かれたら許可。録音は保存も送信もしません）。<b>ヘッドホン・イヤホンは外して</b>、音量は大きめに。START や「VR で遊ぶ」を押したときにまだなら、自動で始まります。</p>
+    <details class="yt-manual">
+      <summary>うまくいかないとき（手動で合わせる）</summary>
+      <div class="grid">
+        <button id="yt-calib">タップで合わせる</button><button id="yt-check">▶ クリック付きで確認</button>
+        <button data-yts="swap">表と裏を入れかえる</button><button data-yts="beat">「1」を1拍ずらす</button><button data-yts="-10">−10ms</button><button data-yts="+10">+10ms</button>
+      </div>
+      <div id="yt-tap" class="tap hidden" tabindex="0" role="button">ここをタップ（Space）</div>
+      <p class="small">タップで合わせる：動画が最初から流れます。ドラムが入ったら、その「ドン」に合わせて 16 回タップ（Space キー、クリック、または Quest のトリガー）。「クリック付きで確認」で、クリックがドラムと重なっているか聞けます。</p>
+    </details>
     <p class="small">動画は YouTube から流れるので、インターネットが必要です（動画を端末に保存することはできません）。購入した音源ファイルを持っていれば「じぶんの曲で遊ぶ」で読み込むと、オフラインでも遊べます。同じテンポのオリジナル曲「Summer Night Run」はオフラインでも遊べます。</p>
   </div>
 

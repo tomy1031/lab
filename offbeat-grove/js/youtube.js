@@ -1,8 +1,8 @@
 // js/youtube.js — songs played from YouTube (needs the internet; the video is never stored).
 //
-// The page cannot hear a YouTube video (it plays in YouTube's own frame), so the beat cannot be found
-// automatically. Instead you tap along once ("拍あわせ"): from your taps the game learns where the beats
-// are on the video's clock — including how late the sound reaches your ears — and keeps that per video.
+// The page cannot read the sound of a YouTube video (it plays in YouTube's own frame), so the beat is found
+// once by listening to the speakers with the microphone (js/autosync.js), or, as a fallback, from 16 taps.
+// Either way it is kept per video, on the video's clock as heard.
 // Song time = the video's playback time, read from the player every frame and smoothed into a steady clock.
 
 // the song's own tempo (songBpm) and the tempo the punches follow (bpm): 220 BPM rock is boxed at half
@@ -11,7 +11,7 @@ export const YT_SONGS = [
   {
     id: 'yt-hachigatsu', video: 'Vs5NViM8TSY', title: '八月、某、月明かり', artist: 'ヨルシカ', channel: 'ヨルシカ / n-buna Official',
     songBpm: 220, bpm: 110, genre: 'YouTube・公式 MV',
-    tip: 'ヨルシカの公式 MV（YouTube）を流しながら遊びます。BPM 220 の曲を半分の 110 で打つので、キック「ドン」が拍、スネア「タン」がウラ。インターネットが必要です。',
+    tip: 'ヨルシカの公式 MV（YouTube）を流しながら遊びます。BPM 220 の速い曲を、半分の 110 の拍で打ちます（ドラムの「ドン」が表拍、その間がウラ）。インターネットが必要です。',
   },
 ];
 export const ytById = (id) => YT_SONGS.find((s) => s.id === id) || null;

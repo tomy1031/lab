@@ -128,7 +128,7 @@ export class MenuPanel extends Panel {
     if (a.menuMsg) this.wrap(x, a.menuMsg, X, 704, W, 22, C.gold);
     this.button(x, 'start', X, 738, W, 120, '▶  START', { sel: true, color: C.accent, big: true, onClick: () => a.start() });
     // footer: the tip for this song and mode, and the best score
-    const tip = ys ? ys.tip + (a.ytSync(ys) ? '' : '最初の1回は、VR に入る前のページで「拍あわせ」を。')
+    const tip = ys ? ys.tip + (a.ytSync(ys) ? '' : '最初の1回は START で曲を約20秒聞いて、拍の位置を自分で調べます（マイクを使います）。')
       : s.song === 'track' ? 'じぶんの曲：テンポは自動で検出しました。ずれる場合はPC画面で調整できます。' : song.tip;
     this.wrap(x, tip, 44, 166 + songs.length * rh + 14, 640, 22, C.muted);
     const best = a.store.best({ song: s.song, mode: s.mode, diff: s.diff, length: s.length });
