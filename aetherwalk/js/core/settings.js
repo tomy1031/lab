@@ -20,6 +20,7 @@ export const SETTING_DEFS = {
   edgeGuard: { def: true, label: '崖の縁で止まる', en: 'EDGE GUARD' },
   knockback: { def: true, label: 'ノックバック', en: 'KNOCKBACK' },
   gripToggle: { def: false, label: 'グリップ切り替え式', en: 'GRIP TOGGLE' },
+  stickyGear: { def: true, label: '武器は手から離れない', en: 'STICKY GEAR' },
   dominantHand: { def: 'right', options: ['right', 'left'], label: '利き手', en: 'HAND', names: { right: '右', left: '左' } },
   hudMode: { def: 'float', options: ['float', 'wrist'], label: 'HUD', en: 'HUD' },
   quality: { def: 'auto', options: ['auto', 'low', 'mid', 'high'], label: '画質', en: 'QUALITY' },

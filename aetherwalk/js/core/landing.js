@@ -6,7 +6,7 @@ import { SETTING_DEFS } from './settings.js';
 import { errMsg } from './util.js';
 
 const SHOWN = ['stepSensitivity', 'strideScale', 'moveDirection', 'turnMode', 'snapAngle', 'vignette', 'seated',
-  'duckDepth', 'armAssist', 'armOnlyWalk', 'stickMove', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand',
+  'duckDepth', 'armAssist', 'armOnlyWalk', 'stickMove', 'edgeGuard', 'knockback', 'stickyGear', 'gripToggle', 'dominantHand',
   'jumpView', 'climbAssist', 'parryWindow', 'quality', 'weightKg', 'haptics', 'volMaster'];
 
 export function setupLanding(ctx) {

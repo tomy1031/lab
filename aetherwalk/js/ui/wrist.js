@@ -15,7 +15,7 @@ const HIDDEN_PAGES = ['smith'];
 const SLOTS = ['backR', 'backL', 'hipR', 'hipL', 'chest', 'belt'];
 const SLOT_NAMES = { backR: '右肩', backL: '左肩', hipR: '右腰', hipL: '左腰', chest: '胸', belt: '腹' };
 const SETTING_ORDER = ['turnMode', 'snapAngle', 'smoothTurnSpeed', 'vignette', 'moveDirection', 'stepSensitivity', 'strideScale', 'armAssist',
-  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'combatFreq', 'parryWindow', 'talkGesture', 'jumpView', 'climbAssist', 'edgeGuard', 'knockback', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
+  'armOnlyWalk', 'stickMove', 'seated', 'duckDepth', 'combatFreq', 'parryWindow', 'talkGesture', 'jumpView', 'climbAssist', 'edgeGuard', 'knockback', 'stickyGear', 'gripToggle', 'dominantHand', 'hudMode', 'quality',
   'weightKg', 'volMaster', 'volSfx', 'volMusic', 'runBeat', 'haptics'];
 const STEP_OVERRIDE = { strideScale: 0.1, weightKg: 5, volMaster: 0.1, volSfx: 0.1, volMusic: 0.1, haptics: 0.25, smoothTurnSpeed: 30 };
 const FALLBACK_DEFS = {
@@ -24,7 +24,7 @@ const FALLBACK_DEFS = {
   moveDirection: { options: ['head', 'hands'], label: '進む向き', en: 'DIRECTION' }, stepSensitivity: { options: ['mid', 'low', 'high'], label: '足踏みの感度', en: 'STEP SENS.' },
   strideScale: { min: 0.7, max: 1.5, label: '速さの倍率', en: 'STRIDE' }, armAssist: { label: '腕ふりアシスト', en: 'ARM ASSIST' }, armOnlyWalk: { label: '腕ふりだけで歩く', en: 'ARM ONLY' },
   stickMove: { label: 'スティックで歩く', en: 'STICK' }, seated: { label: '座って遊ぶ', en: 'SEATED' }, duckDepth: { options: ['normal', 'shallow'], label: 'しゃがみの深さ', en: 'DUCK' },
-  edgeGuard: { label: '崖の縁で止まる', en: 'EDGE GUARD' }, knockback: { label: 'ノックバック', en: 'KNOCKBACK' }, gripToggle: { label: 'グリップ切り替え式', en: 'GRIP TOGGLE' },
+  edgeGuard: { label: '崖の縁で止まる', en: 'EDGE GUARD' }, knockback: { label: 'ノックバック', en: 'KNOCKBACK' }, gripToggle: { label: 'グリップ切り替え式', en: 'GRIP TOGGLE' }, stickyGear: { label: '武器は手から離れない', en: 'STICKY GEAR' },
   dominantHand: { options: ['right', 'left'], label: '利き手', en: 'HAND' }, hudMode: { options: ['float', 'wrist'], label: 'HUD', en: 'HUD' },
   quality: { options: ['auto', 'low', 'mid', 'high'], label: '画質', en: 'QUALITY' }, weightKg: { min: 25, max: 200, label: '体重 kg', en: 'WEIGHT' },
   volMaster: { min: 0, max: 1, label: '音量', en: 'VOLUME' }, volSfx: { min: 0, max: 1, label: '効果音', en: 'SFX' }, volMusic: { min: 0, max: 1, label: '音楽', en: 'MUSIC' },
