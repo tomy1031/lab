@@ -44,7 +44,7 @@ const res = await page.evaluate(async () => {
     const an = analyze(buf);
     const t0err = Math.min(...[0, 1, 2].map((k) => Math.abs(an.t0 - k * p.barDur)));
     const beat = p.grid.spb, phaseErr = Math.abs(((an.t0 % beat) + beat + beat / 2) % beat - beat / 2);
-    out.push({ id: song.id, bpm: song.bpm, found: an.bpm, alts: an.alts, t0: +an.t0.toFixed(3), t0err: +t0err.toFixed(3), phaseErr: +phaseErr.toFixed(3), peak: +peak.toFixed(3), rms: +Math.sqrt(sum / d.length).toFixed(3), nan, minBarRms: +Math.min(...perBar).toFixed(3) });
+    out.push({ id: song.id, bpm: song.bpm, songBpm: song.songBpm || song.bpm, found: an.bpm, alts: an.alts, t0: +an.t0.toFixed(3), t0err: +t0err.toFixed(3), phaseErr: +phaseErr.toFixed(3), peak: +peak.toFixed(3), rms: +Math.sqrt(sum / d.length).toFixed(3), nan, minBarRms: +Math.min(...perBar).toFixed(3) });
   }
   return out;
 });
@@ -52,8 +52,9 @@ let ok = errors.length === 0;
 for (const r of res) {
   const good = r.nan === 0 && r.rms > 0.03 && r.peak <= 1.0 && r.minBarRms > 0.01;
   const plain = !['funk', 'breaks'].includes(r.id);
-  const tempoOk = [r.found, ...r.alts].some((b) => Math.abs(b - r.bpm) <= 1);
-  const phaseOk = r.phaseErr < 0.03 && Math.abs(r.found - r.bpm) <= 1;
+  // a song played at half time (220 BPM boxed at 110) may be found at either tempo
+  const tempoOk = [r.found, ...r.alts].some((b) => Math.abs(b - r.bpm) <= 1 || Math.abs(b - r.songBpm) <= 1);
+  const phaseOk = r.phaseErr < 0.03 && (Math.abs(r.found - r.bpm) <= 1 || Math.abs(r.found - r.songBpm) <= 1);
   const tempo = tempoOk && (phaseOk || !plain);
   ok = ok && good && tempo;
   console.log(`${good ? 'ok ' : 'BAD'} ${r.id.padEnd(7)} rms ${r.rms}  peak ${r.peak}  quietest bar ${r.minBarRms}  NaN ${r.nan}   ${tempo ? (phaseOk ? 'ok ' : 'ok*') : 'BAD'} tempo ${r.bpm} → found ${r.found} (alternatives ${r.alts.join(', ')}), first "1" at ${r.t0}s (beat phase off by ${r.phaseErr}s, downbeat off by ${r.t0err}s)`);

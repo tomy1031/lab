@@ -118,7 +118,7 @@ export class PlaySession {
     const prevT = this.prevT === null ? songT : this.prevT;
     this.prevT = songT;
     // guide clicks, scheduled a little ahead on the audio clock
-    if (this.player.seg) {
+    if (this.player.seg && (!this.player.clockReady || this.player.clockReady())) {
       this.gNext = this.gNext || 0;
       while (this.gNext < this.notes.length && this.notes[this.gNext].t - songT <= 1.0) {
         const n = this.notes[this.gNext++];

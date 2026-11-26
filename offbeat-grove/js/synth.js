@@ -200,6 +200,36 @@ export class Synth {
     for (const m of midis) for (const d of [-14, 0, 14]) this._osc(dest, 'sawtooth', mtof(m), t, end + 1, d);
   }
 
+  // distorted power chord (root + fifth + octave); `mute` makes it a short palm-muted chug
+  guitar(seg, t, midi, dur, o = {}) {
+    if (t == null) return;
+    const ctx = this.ctx, end = t + dur, vel = o.vel ?? 0.3;
+    if (!this.dist) {
+      const n = 1024, c = new Float32Array(n);
+      for (let i = 0; i < n; i++) { const x = (i / (n - 1)) * 2 - 1; c[i] = Math.tanh(3.2 * x); }
+      this.dist = c;
+    }
+    const pre = ctx.createGain();
+    pre.gain.value = 1.6;
+    const sh = ctx.createWaveShaper();
+    sh.curve = this.dist;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.Q.value = 0.9;
+    lp.frequency.value = o.mute ? 1300 : 3000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vel, t + 0.004);
+    g.gain.setTargetAtTime(vel * (o.mute ? 0.15 : 0.6), t + 0.005, o.mute ? 0.04 : 0.35);
+    g.gain.setTargetAtTime(0, end, 0.04);
+    pre.connect(sh); sh.connect(lp); lp.connect(g);
+    let out = g;
+    if (o.pan) { const p = ctx.createStereoPanner(); p.pan.value = o.pan; g.connect(p); out = p; }
+    out.connect(seg.music);
+    if (!o.mute) { const w = ctx.createGain(); w.gain.value = 0.12; out.connect(w); w.connect(seg.wet); }
+    for (const iv of o.mute ? [0, 7] : [0, 7, 12]) this._osc(pre, 'sawtooth', mtof(midi + iv), t, end + 0.3, iv ? 4 : -4);
+  }
+
   reese(seg, t, midi, dur, o = {}) {
     if (t == null) return;
     const ctx = this.ctx, end = t + dur, vel = o.vel ?? 0.5;

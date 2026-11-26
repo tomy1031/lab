@@ -112,6 +112,21 @@
   .hist::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,.4); }
   .hist i { flex: 1; background: currentColor; opacity: .85; border-radius: 2px 2px 0 0; }
   .advice { margin-top: 14px; line-height: 1.8; font-size: 14.5px; }
+  #yt-box { margin-top: 10px; padding: 10px 12px; border-radius: 12px; border: 1px dashed var(--line); }
+  #yt-box .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  #yt-box .grid button { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--chip); font-weight: 700; font-size: 13px; }
+  #yt-box .tap { display: grid; place-items: center; height: 120px; margin-top: 10px; border-radius: 14px; border: 2px dashed var(--gold); font-size: 20px; font-weight: 900; user-select: none; -webkit-user-select: none; cursor: pointer; touch-action: manipulation; }
+  #yt-box .tap.flash { background: rgba(255, 201, 74, .2); }
+  #yt-dock { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: min(380px, 46vw); z-index: 15; background: rgba(10,25,18,.85); border: 1px solid var(--line); border-radius: 12px; padding: 6px; }
+  #yt-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; }
+  #yt-frame iframe, #yt-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 8px; }
+  #yt-dock .cap { font-size: 12px; color: var(--muted); padding: 4px 2px 0; }
+  /* phones: under the menu (which scrolls clear of it); while playing, at the top, away from the touch buttons */
+  @media (max-width: 700px) {
+    #yt-dock { width: min(300px, 64vw); }
+    body.playing #yt-dock { bottom: auto; top: max(12px, env(safe-area-inset-top)); }
+    body.yt-on:not(.playing) .sheet { padding-bottom: 290px; }
+  }
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: rgba(10,25,18,.92); border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; z-index: 40; font-size: 14px; max-width: calc(100% - 32px); }
   #calib .big { display: grid; place-items: center; height: 160px; border-radius: 16px; border: 2px dashed var(--line); font-size: 22px; font-weight: 900; margin-top: 12px; user-select: none; }
   #calib .big.flash { background: rgba(255,255,255,.12); }
@@ -152,6 +167,17 @@
     <button data-bpm="-5" aria-label="5 遅く">−5</button>
     <output id="drill-bpm">BPM 100</output>
     <button data-bpm="5" aria-label="5 速く">＋5</button>
+  </div>
+
+  <div id="yt-box" class="hidden" aria-label="YouTube の曲">
+    <div id="yt-status" class="small"></div>
+    <div class="grid">
+      <button id="yt-calib">拍あわせ（タップ）</button><button id="yt-check">▶ クリック付きで確認</button>
+      <button data-yts="swap">表と裏を入れかえる</button><button data-yts="beat">「1」を1拍ずらす</button><button data-yts="-10">−10ms</button><button data-yts="+10">+10ms</button>
+    </div>
+    <div id="yt-tap" class="tap hidden" tabindex="0" role="button">ここをタップ（Space）</div>
+    <p class="small">拍あわせ：動画が最初から流れます。ドラムが入ったら「ドン・タン」に合わせて 16 回タップ（Space キー、クリック、または Quest のトリガー）。ゲームが拍の位置と、音が耳に届くまでの遅れを覚えます。この動画では最初の1回だけで OK。</p>
+    <p class="small">動画は YouTube から流れるので、インターネットが必要です（動画を端末に保存することはできません）。購入した音源ファイルを持っていれば「じぶんの曲で遊ぶ」で読み込むと、オフラインでも遊べます。同じテンポのオリジナル曲「Summer Night Run」はオフラインでも遊べます。</p>
   </div>
 
   <h2>リズム</h2>
@@ -217,7 +243,7 @@
   <footer>
     <span id="offline"><i></i><span id="offline-text">オフライン対応を準備中…</span></span><br>
     <button class="btn hidden" id="update-btn" style="margin:6px 0">新しいバージョンに更新</button>
-    曲はすべて Web Audio でその場で生成しています（オリジナル）。記録と設定はこの端末だけに保存されます。<br>
+    YouTube の曲のほかは、Web Audio でその場で生成したオリジナル曲です。記録と設定はこの端末だけに保存されます。<br>
     <a href="../">lab にもどる</a>
   </footer>
 </main>
@@ -266,6 +292,7 @@
   </div>
 </div>
 
+<div id="yt-dock" class="hidden" aria-label="YouTube の動画"><div id="yt-frame"><div id="yt-player"></div></div><div class="cap" id="yt-cap"></div></div>
 <div id="toast" class="hidden" role="status"></div>
 <script type="module" src="js/main.js"></script>
 </body>
