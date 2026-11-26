@@ -101,6 +101,13 @@ export class DomUI {
     $('labels').onchange = () => store.set({ labels: $('labels').checked });
     $('btn-calib').onclick = () => this.startCalib();
     $('yt-calib').onclick = () => this.startYTCalib();
+    $('yt-auto').onclick = () => {
+      const ys = ytById(app.store.data.song);
+      if (!ys) return;
+      const why = app.ytBlocker(ys);
+      if (why && why !== 'sync') { this.toast(why, 5000); return; }
+      app.ytAutoSync(ys);
+    };
     $('yt-check').onclick = () => this.ytCheck();
     $('yt-tap').addEventListener('pointerdown', (e) => { e.preventDefault(); this.ytTap(e); });
     window.addEventListener('online', () => this.sync());
@@ -394,9 +401,16 @@ export class DomUI {
     const sync = a.ytSync(ys);
     const parts = [];
     parts.push(!yt || (!yt.ready && !yt.error) ? '動画を読み込んでいます…' : yt.error ? yt.error : '動画の準備OK');
-    parts.push(sync ? `拍あわせ済み：BPM ${sync.songBpm}・最初の「1」${sync.t0.toFixed(3)} 秒` : '拍あわせ：まだ（最初に1回してください）');
+    const sp = a.syncProgress;
+    if (sp) parts.push(sp.text);
+    else parts.push(sync ? `拍の位置：OK（${sync.how === 'mic' ? '自動' : '手動'}・最初の「1」は ${sync.t0.toFixed(2)} 秒）` : '拍の位置：まだ（下のボタンを押すか、START で自動で調べます）');
     if (this.ytCal) parts.push(`タップ ${this.ytCal.taps.length}/16`);
     el.textContent = parts.join('　/　');
+    const btn = $('yt-auto');
+    btn.disabled = !!a.syncing || !yt || !yt.ready;
+    btn.textContent = a.syncing ? '🎤 曲を聞いています…（そのまま待ってください）' : sync ? '🎤 もう一度、自動で拍あわせ' : '🎤 自動で拍あわせ（待つだけ・約20秒）';
+    $('yt-bar').classList.toggle('hidden', !sp);
+    if (sp) $('yt-bar').firstElementChild.style.width = `${Math.round(sp.f * 100)}%`;
   }
 
   startYTCalib() {
@@ -436,7 +450,7 @@ export class DomUI {
       this.toast('タップのばらつきが大きかったので、覚えませんでした。もう一度どうぞ（ドラムの「ドン・タン」に合わせて）', 6000);
     } else {
       const all = { ...(a.store.data.ytSync || {}) };
-      all[c.song.video] = { t0: +fit.t0.toFixed(3), songBpm: c.song.songBpm };
+      all[c.song.video] = { t0: +fit.t0.toFixed(3), songBpm: c.song.songBpm, how: 'tap' };
       a.store.set({ ytSync: all });
       this.toast('拍の位置を覚えました。「クリック付きで確認」で、クリックがドラムと重なるか聞いてみてください', 6000);
     }
@@ -448,7 +462,7 @@ export class DomUI {
     const a = this.app;
     const ys = ytById(a.store.data.song);
     const sync = ys && a.ytSync(ys);
-    if (!sync) { this.toast('先に「拍あわせ」をしてください'); return; }
+    if (!sync) { this.toast('先に「🎤 自動で拍あわせ」をしてください'); return; }
     const P = 60 / sync.songBpm;
     let t0 = sync.t0;
     if (kind === 'swap') t0 = t0 - P >= 0 ? t0 - P : t0 + P; // the other 220 beat becomes the 110 beat: kicks and snares change places
@@ -465,7 +479,7 @@ export class DomUI {
     const a = this.app, yt = a.yt;
     const ys = ytById(a.store.data.song);
     const sync = ys && a.ytSync(ys);
-    if (!sync || !yt || !yt.ready) { this.toast('先に「拍あわせ」をしてください'); return; }
+    if (!sync || !yt || !yt.ready) { this.toast('先に「🎤 自動で拍あわせ」をしてください'); return; }
     a.audio.ensure();
     const spb = 60 / (sync.songBpm * (ys.bpm / ys.songBpm));
     const from = sync.t0 + spb * 4 * 4;

@@ -10,6 +10,7 @@ import { FX } from './fx.js';
 import { Input, DeskGloves } from './gloves.js';
 import { MenuPanel, PausePanel, ResultsPanel, Hud, LegendPanel } from './vrui.js';
 import { songById } from './songs.js';
+import { autoSync, micPermission } from './autosync.js';
 import { GenPlayer, TrackPlayer, YTPlayer } from './player.js';
 import { ytById, ytBars } from './youtube.js';
 import { buildChart, POS } from './chart.js';
@@ -127,12 +128,45 @@ class App {
     return k && typeof k.t0 === 'number' ? k : null;
   }
 
-  // why a YouTube song cannot start yet (or null)
+  // why a YouTube song cannot start yet (or null); 'sync' = its beat is not known yet (found by listening)
   ytBlocker(song) {
     if (!navigator.onLine) return 'インターネットにつながっていません（YouTube の曲はオンラインのときだけ）';
     if (!this.yt || this.yt.song.id !== song.id || !this.yt.ready) return this.yt && this.yt.error ? this.yt.error : 'YouTube のプレーヤーを準備中です。少し待ってからもう一度';
-    if (!this.ytSync(song)) return '先にページの「拍あわせ」をしてください（最初の1回だけ）';
+    if (this.syncing) return 'いま曲を聞いて拍を探しています。終わるまで待ってください';
+    if (!this.ytSync(song)) return 'sync';
     return null;
+  }
+
+  // listen to the YouTube song once with the microphone to find its beat (js/autosync.js); no tapping
+  async ytAutoSync(ys) {
+    if (this.syncing) return false;
+    this.syncing = true;
+    this.stopPreview();
+    let shown = '';
+    const report = (text, f) => {
+      this.syncProgress = { text, f };
+      const msg = `${text}…（${Math.round(f * 20) * 5}%）`;
+      if (msg !== shown) { shown = msg; this.menuMsg = msg; this.menu.redraw(); this.dom.ytStatus(); }
+    };
+    try {
+      const r = await autoSync({ audio: this.audio, yt: this.yt, songBpm: ys.songBpm, onProgress: report });
+      const all = { ...(store.data.ytSync || {}) };
+      all[ys.video] = { t0: +r.t0.toFixed(3), songBpm: ys.songBpm, how: 'mic' };
+      store.set({ ytSync: all });
+      this.menuMsg = '';
+      this.dom.toast('拍の位置が分かりました', 3000);
+      return true;
+    } catch (e) {
+      this.lastSyncError = e; // (for the tests)
+      this.menuMsg = e.message || String(e);
+      this.dom.toast(this.menuMsg, 8000);
+      return false;
+    } finally {
+      this.syncing = false;
+      this.syncProgress = null;
+      this.menu.redraw();
+      this.dom.ytStatus();
+    }
   }
 
   start() {
@@ -142,6 +176,19 @@ class App {
     const ys = ytById(s.song);
     if (ys) {
       const why = this.ytBlocker(ys);
+      if (why === 'sync') {
+        // first time with this video: listen to it, then start by itself. In VR the microphone question
+        // could not be seen, so there it only goes ahead when the microphone is already allowed.
+        const go = () => this.ytAutoSync(ys).then((ok) => { if (ok && this.state === 'menu') this.start(); });
+        if (!this.xr) go();
+        else {
+          micPermission().then((p) => {
+            if (p === 'granted') go();
+            else { this.menuMsg = '最初の1回は VR を出て、ページの「自動で拍あわせ」を押してください（待つだけ・約20秒）'; this.menu.redraw(); }
+          });
+        }
+        return;
+      }
       if (why) { this.menuMsg = why; this.menu.redraw(); this.dom.toast(why, 5000); return; }
     }
     this.menuMsg = '';
@@ -268,6 +315,13 @@ class App {
   async enterVR() {
     if (this.xr || !navigator.xr) return;
     this.audio.ensure();
+    // a YouTube song whose beat is not known yet: listen to it here first (the microphone question shows
+    // on the page), then VR needs one more press (the browser only opens VR right after a press)
+    const ys = ytById(store.data.song);
+    if (ys && !this.ytSync(ys) && this.ytBlocker(ys) === 'sync') {
+      if (await this.ytAutoSync(ys)) this.dom.toast('拍の位置が分かりました。もう一度「VR で遊ぶ」を押してください', 8000);
+      return;
+    }
     let session;
     try {
       session = await navigator.xr.requestSession('immersive-vr', { requiredFeatures: ['local-floor'], optionalFeatures: ['hand-tracking'] });
