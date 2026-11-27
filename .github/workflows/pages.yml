@@ -15,6 +15,7 @@ on:
       - 'yokohama-roll/manifest.webmanifest'
       - 'yokohama-roll/nexmax/**'
       - 'nextmake-mv/output/**'
+      - 'self-intro/output/**'
       - 'aetherwalk/index.html'
       - 'aetherwalk/js/**'
       - 'aetherwalk/img/**'
