@@ -12,3 +12,15 @@ sky-atlas/dist/
 anakata/dist/
 powder-line/dist/
 kotei-duel/dist/
+# self-intro: class videos/photos, models, fonts, BGM source and work files are fetched/generated, not committed
+self-intro/dlorig/
+self-intro/dl360/
+self-intro/dlphoto/
+self-intro/wav/
+self-intro/tx/
+self-intro/faces/
+self-intro/models/
+self-intro/fonts/
+self-intro/music_src/
+self-intro/meta/
+self-intro/work/
