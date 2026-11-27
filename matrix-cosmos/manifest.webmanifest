@@ -1,0 +1,11 @@
+{
+  "name": "THE MATRIX : COSMOS",
+  "short_name": "MATRIX COSMOS",
+  "description": "マトリックスの世界観で相対性理論・量子力学・高次元時空・超弦理論を体感するWebXR VR教育アプリ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#010402",
+  "theme_color": "#010402",
+  "orientation": "landscape"
+}
