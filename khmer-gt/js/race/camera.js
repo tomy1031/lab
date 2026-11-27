@@ -9,7 +9,7 @@ export class CameraRig {
     this.scene = scene;
     this.camera = camera;
     this.modeIndex = 0; // 0 = chase, 1 = cockpit, 2 = hood
-    this.showroomAngle = 0.65;
+    this.showroomAngle = 2.45; // Hero front-3/4 angle showing sculpted nose, LED DRLs & door livery
 
     // VR seat rig: sits in the driver's cockpit and stabilizes horizon to prevent motion sickness
     this.vrRig = new THREE.Group();

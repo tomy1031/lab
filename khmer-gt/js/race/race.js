@@ -57,10 +57,11 @@ export class RaceManager {
 
     // Build 7 AI rivals + 1 Player (starting P6 on an 8-car staggered GT grid for exciting overtakes!)
     const gridOrder = [];
+    const AI_NUMBERS = ['01', '12', '23', '44', '55', '77', '88'];
     for (let i = 0; i < 7; i++) {
       const drv = AI_DRIVERS[i];
       const spec = getCarById(drv.carId);
-      const visual = buildCarModel(spec, { color: drv.color, accent: drv.accent });
+      const visual = buildCarModel(spec, { color: drv.color, accent: drv.accent }, AI_NUMBERS[i]);
       this.group.add(visual.root);
       const car = new RaceCar({
         id: `ai_${i}`,
@@ -77,7 +78,7 @@ export class RaceManager {
 
     // Player car
     const pSpec = getCarById(playerCarId);
-    const pVisual = buildCarModel(pSpec);
+    const pVisual = buildCarModel(pSpec, null, '07');
     this.group.add(pVisual.root);
     this.player = new RaceCar({
       id: 'player',
