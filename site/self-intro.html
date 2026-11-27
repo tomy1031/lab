@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>じこしょうかい 11人</title>
+<meta name="description" content="日本語クラスの学生 11 人の自己紹介スピーチから、名前と人となりが出るところを 1 人約 27 秒ずつつないだ動画">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* The video's own notebook: grid paper, a red margin line, polaroids with tape, a navy "pen" and a pink wavy underline. */
+  :root {
+    --paper: #faf6ec; --grid: #e2e8f0; --margin: #f5bebe; --card: #ffffff; --ink: #283260; --text: #3a3d4a; --muted: #6b6878;
+    --pill: #ffffff; --pill-line: #e8dccc; --pill-ink: #78604f; --wave: #f59696; --tape: rgba(255, 214, 140, .8); --shadow: rgba(80, 60, 40, .18);
+    --hand: "Klee One", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+    --round: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --paper: #1b1d24; --grid: #262a33; --margin: #5a3337; --card: #252832; --ink: #c9d2ff; --text: #e4e2dc; --muted: #a7a4b2;
+      --pill: #2b2f3a; --pill-line: #3b3f4b; --pill-ink: #e6cdb6; --wave: #e88a8a; --tape: rgba(200, 160, 90, .55); --shadow: rgba(0, 0, 0, .45); color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --paper: #1b1d24; --grid: #262a33; --margin: #5a3337; --card: #252832; --ink: #c9d2ff; --text: #e4e2dc; --muted: #a7a4b2;
+    --pill: #2b2f3a; --pill-line: #3b3f4b; --pill-ink: #e6cdb6; --wave: #e88a8a; --tape: rgba(200, 160, 90, .55); --shadow: rgba(0, 0, 0, .45); color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background-color: var(--paper);
+    background-image: linear-gradient(90deg, transparent 0 calc(min(6vw, 64px) - 2px), var(--margin) calc(min(6vw, 64px) - 2px) min(6vw, 64px), transparent min(6vw, 64px)),
+      linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 100% 100%, 24px 24px, 24px 24px;
+    color: var(--text); font-family: var(--round); font-weight: 500; line-height: 1.8;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  a { color: var(--ink); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding-block: 24px 56px; }
+  .back { font-size: 14px; font-weight: 700; }
+  header { margin: 18px 0 22px; }
+  .pill { display: inline-block; background: var(--pill); border: 2px solid var(--pill-line); color: var(--pill-ink); border-radius: 999px; padding: 2px 16px; font-weight: 700; font-size: 15px; }
+  h1 { font-family: var(--hand); font-weight: 600; color: var(--ink); font-size: clamp(38px, 8vw, 72px); line-height: 1.2; margin: 10px 0 6px; letter-spacing: .04em;
+    text-decoration: underline wavy var(--wave); text-decoration-thickness: 3px; text-underline-offset: 14px; text-wrap: balance; }
+  header p { margin: 18px 0 0; max-width: 44em; }
+  video { width: 100%; aspect-ratio: 16 / 9; background: #000; display: block; border-radius: 6px; border: 10px solid var(--card); border-bottom-width: 26px;
+    box-shadow: 0 10px 28px var(--shadow); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .btn { display: inline-flex; align-items: center; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 999px; padding: 7px 18px;
+    border: 2px solid var(--ink); color: var(--ink); background: var(--card); }
+  .btn.primary { background: var(--ink); color: var(--card); }
+  h2 { font-family: var(--hand); font-weight: 600; color: var(--ink); font-size: 28px; margin: 40px 0 6px; }
+  .hint { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  .people { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 18px; }
+  .people button { all: unset; cursor: pointer; display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%;
+    background: var(--card); border-radius: 4px; padding: 10px 12px; box-shadow: 0 4px 14px var(--shadow); box-sizing: border-box; }
+  .people li:nth-child(odd) button { transform: rotate(-.6deg); }
+  .people li:nth-child(even) button { transform: rotate(.6deg); }
+  .people button:hover { transform: translateY(-2px); }
+  .people img { width: 84px; height: 84px; object-fit: cover; display: block; border: 5px solid #fff; box-shadow: 0 2px 6px var(--shadow); }
+  .people .no { font-size: 12px; color: var(--pill-ink); font-weight: 700; }
+  .people .name { display: block; font-family: var(--hand); font-weight: 600; color: var(--ink); font-size: 21px; line-height: 1.3; }
+  .people .what { display: block; font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+  .people .t { font-variant-numeric: tabular-nums; }
+  .notes { font-size: 14.5px; padding-left: 1.2em; max-width: 50em; }
+  .notes li { margin: 6px 0; }
+  footer { margin-top: 44px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--grid); padding-top: 14px; }
+  @media (prefers-reduced-motion: reduce) { .people button, .people button:hover { transform: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← lab にもどる</a>
+  <header>
+    <span class="pill">Self Introduction</span>
+    <h1>じこしょうかい</h1>
+    <p>日本語クラスの学生 11 人が、日本語で自己紹介をしました。そのスピーチから、<b>名前を言うところ</b>と、<b>その人らしさが出るところ</b>（好きなもの・デート・猫・きらいな食べもの…）を 1 人約 27 秒ずつ選んでつないだ 5 分の動画です。</p>
+  </header>
+
+  <video id="v" controls playsinline preload="metadata" poster="media/poster.jpg" src="media/self_intro_720p.mp4"></video>
+  <div class="actions">
+    <a class="btn primary" href="media/self_intro_720p.mp4" download>動画をダウンロード（720p）</a>
+  </div>
+
+  <h2>11人</h2>
+  <p class="hint">押すと、その人のところから再生します。</p>
+  <ul class="people" id="people">
+<!--PEOPLE-->
+  </ul>
+
+  <h2>つくりかた</h2>
+  <ul class="notes">
+    <li>iPhone で撮ったスピーチ 11 本を文字起こし（Whisper）し、名前はスライドの文字と音声の両方で確かめました。</li>
+    <li>顔のアップは、スピーチ動画の中から正面で笑顔の 1 コマを選んで切り抜き、AI で拡大（Real-ESRGAN）しています。</li>
+    <li>教室が暗めだったので、1 人ずつ明るさと色合いを整え、声は雑音を減らして聞きやすい大きさにそろえました。切れ目は声の終わりに合わせています。</li>
+    <li>字幕は話した日本語のままですが、助詞などの小さな言いまちがいは直してあります。</li>
+    <li>BGM：「パステルハウス」かずち（<a href="https://opentracks.com/bgm/detail/1021">OpenTracks（旧 DOVA-SYNDROME）</a>）。カードの音は自作です。フォント：Klee One・Zen Maru Gothic（SIL Open Font License）。</li>
+    <li>作り方・スクリプト：<a href="https://github.com/tomy1031/lab/tree/HEAD/self-intro">self-intro（GitHub）</a></li>
+  </ul>
+
+  <footer>
+    リポジトリ：<a href="https://github.com/tomy1031/lab">github.com/tomy1031/lab</a>
+  </footer>
+</div>
+<script>
+  // chapter buttons: jump to that student's name card and play
+  const v = document.getElementById('v');
+  document.getElementById('people').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-t]');
+    if (!b) return;
+    v.currentTime = parseFloat(b.dataset.t);
+    v.play().catch(() => {});
+    v.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+  });
+</script>
+</body>
+</html>

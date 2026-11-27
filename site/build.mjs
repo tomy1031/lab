@@ -20,6 +20,7 @@
 //   ANAKATA_REF   ANAKATA (anakata/)                           default: HEAD if it has anakata/, else origin/claude/determined-turing-o80o1n
 //   POWDER_REF    POWDER LINE (powder-line/)                   default: HEAD if it has powder-line/, else origin/claude/stoic-maxwell-eaq1nw
 //   KOTEI_REF     KOTEI DUEL (kotei-duel/)                      default: HEAD if it has kotei-duel/, else origin/claude/it-manufacturing-card-game-2qkhxb
+//   SELFINTRO_REF じこしょうかい (self-intro/output)               default: HEAD if it has self-intro/, else origin/claude/great-sagan-2ophg4
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -49,6 +50,7 @@ const refs = {
   anakata: process.env.ANAKATA_REF || 'HEAD',
   powder: process.env.POWDER_REF || 'HEAD',
   kotei: process.env.KOTEI_REF || 'HEAD',
+  selfintro: process.env.SELFINTRO_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -65,6 +67,7 @@ if (!process.env.SKYATLAS_REF && !hasDir(refs.skyatlas, 'sky-atlas')) refs.skyat
 if (!process.env.ANAKATA_REF && !hasDir(refs.anakata, 'anakata')) refs.anakata = 'origin/claude/determined-turing-o80o1n';
 if (!process.env.POWDER_REF && !hasDir(refs.powder, 'powder-line')) refs.powder = 'origin/claude/stoic-maxwell-eaq1nw';
 if (!process.env.KOTEI_REF && !hasDir(refs.kotei, 'kotei-duel')) refs.kotei = 'origin/claude/it-manufacturing-card-game-2qkhxb';
+if (!process.env.SELFINTRO_REF && !hasDir(refs.selfintro, 'self-intro')) refs.selfintro = 'origin/claude/great-sagan-2ophg4';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -441,6 +444,25 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 17 じこしょうかい — 11 students' self-introduction speeches cut to ~27 s each; the page gets the 720p video,
+// the poster and the face thumbnails for its chapter buttons
+{
+  const dest = path.join(out, 'self-intro');
+  fs.mkdirSync(path.join(dest, 'media'), { recursive: true });
+  try {
+    const src = exportDir(refs.selfintro, 'self-intro/output');
+    copy(path.join(siteSrc, 'self-intro.html'), path.join(dest, 'index.html'));
+    for (const f of ['self_intro_720p.mp4', 'poster.jpg']) copy(path.join(src, f), path.join(dest, 'media', f));
+    copy(path.join(src, 'faces'), path.join(dest, 'media', 'faces'));
+    copy(path.join(src, 'poster.jpg'), path.join(out, 'img', 'self-intro.jpg'));
+  } catch (e) {
+    console.warn(`self-intro not found at ${refs.selfintro}; publishing a link page instead:`, e.message);
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>じこしょうかい</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro}`);
