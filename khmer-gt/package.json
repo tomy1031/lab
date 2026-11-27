@@ -1,0 +1,11 @@
+{
+  "name": "khmer-gt",
+  "private": true,
+  "description": "KHMER GT — Gran Turismo inspired VR & hand-gesture racing across iconic Cambodia locations including Cyber Angkor Wat",
+  "type": "module",
+  "scripts": {
+    "serve": "node tests/serve.mjs",
+    "test:gestures": "node tests/gestures.mjs",
+    "test": "node tests/gestures.mjs"
+  }
+}

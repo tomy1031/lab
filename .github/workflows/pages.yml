@@ -80,6 +80,11 @@ on:
       - 'kotei-duel/img/**'
       - 'kotei-duel/docs/preview.jpg'
       - 'kotei-duel/tools/bundle.mjs'
+      - 'khmer-gt/index.html'
+      - 'khmer-gt/css/**'
+      - 'khmer-gt/js/**'
+      - 'khmer-gt/img/**'
+      - 'khmer-gt/docs/preview.jpg'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches

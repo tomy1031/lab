@@ -51,6 +51,7 @@ const refs = {
   powder: process.env.POWDER_REF || 'HEAD',
   kotei: process.env.KOTEI_REF || 'HEAD',
   selfintro: process.env.SELFINTRO_REF || 'HEAD',
+  khmergt: process.env.KHMERGT_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -463,6 +464,25 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 18 KHMER GT — Gran Turismo inspired Cambodia VR & hand-gesture racing (three.js / WebXR / MediaPipe).
+{
+  const dest = path.join(out, 'khmer-gt');
+  try {
+    const src = exportDir(refs.khmergt, 'khmer-gt');
+    fs.mkdirSync(dest, { recursive: true });
+    for (const f of ['index.html', 'css', 'js', 'img']) if (fs.existsSync(path.join(src, f))) copy(path.join(src, f), path.join(dest, f));
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'khmer-gt.jpg'));
+  } catch (e) {
+    console.warn(`khmer-gt not found at ${refs.khmergt}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KHMER GT</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro} khmergt=${refs.khmergt}`);
