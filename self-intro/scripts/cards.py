@@ -241,18 +241,24 @@ def style_note(info, t, dur):
                           outline=(232, 220, 204, 255), width=3)
     pill.paste(tag, (17, -1), tag)
     reveal_up(base, pill, 975, 290, (t - 0.35) / 0.4, 24)
+    # fit long names (e.g. two-part names) into the space right of the photo
+    nsize = 180
     nl = text_layer(name, font('KleeOne-SemiBold.ttf', nsize), (40, 50, 90), spacing=6)
-    reveal_up(base, nl, 970, 380, (t - 0.55) / 0.45, 40)
+    while nl.width > 860 and nsize > 80:
+        nsize -= 6
+        nl = text_layer(name, font('KleeOne-SemiBold.ttf', nsize), (40, 50, 90), spacing=6)
+    ny = 380 + (text_layer('ア', font('KleeOne-SemiBold.ttf', 180), (0, 0, 0)).height - nl.height) // 2
+    reveal_up(base, nl, 970, ny, (t - 0.55) / 0.45, 40)
     lp = ease_out((t - 0.85) / 0.6)
     if lp > 0:
         dd = ImageDraw.Draw(base, 'RGBA')
-        x0, y0 = 990, 380 + nl.height - 10
+        x0, y0 = 990, ny + nl.height - 10
         pts = [(x0 + i, y0 + math.sin(i / 22) * 6) for i in range(0, int((nl.width - 30) * lp), 4)]
         if len(pts) > 1:
             dd.line(pts, fill=(250, 150, 150, 230), width=10, joint='curve')
     if info.get('full'):
         fl = text_layer(info['full'], font('KleeOne-SemiBold.ttf', 52), (100, 100, 120), spacing=2)
-        reveal_up(base, fl, 975, 380 + nl.height + 30, (t - 0.95) / 0.45, 20)
+        reveal_up(base, fl, 975, ny + nl.height + 30, (t - 0.95) / 0.45, 20)
     return base.convert('RGB')
 
 

@@ -52,6 +52,8 @@ pip install faster-whisper opencv-python-headless pillow numpy spandrel
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 python3 scripts/make_all.py plan.json work      # → work/final.mp4
 python3 scripts/verify.py plan.json work work/final.mp4
+python3 scripts/publish_files.py plan.json work output ../site/self-intro.html   # サイト用の 720p・ポスター・顔・目次
+python3 scripts/deliver.py plan.json work 納品                                  # 1080p・720p・1人ずつの動画
 ```
 
 (文字起こしと顔さがしは `scripts/transcribe.py` と `scripts/findfaces.py`。結果は `plan.json` に反映済みなので、作り直すだけなら不要です。)
