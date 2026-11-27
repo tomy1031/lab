@@ -6,11 +6,17 @@
 <title>RALLY COURT — リアル VR テニス</title>
 <meta name="description" content="Meta Quest で本物のようにテニスができる WebXR ゲーム。足踏み・腕振り／自動／十字キーの3つの移動方法。">
 <meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RALLY COURT">
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/examples/jsm/"
   }
 }
 </script>
@@ -36,6 +42,11 @@
   #play-pc { background: #1f4e8c; color: #fff; }
   .start a { background: var(--chip); color: var(--ink); }
   .note { color: var(--muted); font-size: 13px; margin: -8px 0 16px; min-height: 1em; }
+  .offline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: -10px 0 16px; }
+  .offline .note { margin: 0; }
+  .offline.hidden, #update-btn.hidden { display: none; }
+  .offline .note.ok::before { content: "✓ "; color: var(--accent); font-weight: 800; }
+  #update-btn { appearance: none; border: 0; border-radius: 10px; padding: 8px 12px; background: var(--gold); color: var(--accent-ink); font: 800 14px var(--font); cursor: pointer; }
   .panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .tab { flex: 1 1 auto; appearance: none; border: 0; border-radius: 10px; padding: 10px 12px; background: var(--chip); color: var(--ink); font: 700 15px var(--font); cursor: pointer; }
@@ -76,6 +87,7 @@
       <a href="?demo">デモを見る</a>
     </div>
     <p class="note" id="xr-note">VR に対応しているか確認しています…</p>
+    <div class="offline hidden" id="offline"><p class="note" id="offline-note"></p><button id="update-btn" class="hidden">新しいバージョンに更新</button></div>
     <div class="panel">
       <div class="tabs"></div>
       <div class="items"></div>
@@ -94,5 +106,6 @@
 <button id="pc-menu-btn" class="hidden">メニュー</button>
 <div id="pc-hud" class="hidden"></div>
 <script type="module" src="js/main.js"></script>
+<script type="module" src="js/pwa.js"></script>
 </body>
 </html>

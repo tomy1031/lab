@@ -1,0 +1,19 @@
+{
+  "name": "ことばタウン — Kotoba Town",
+  "short_name": "ことばタウン",
+  "description": "VR の まちで 日本語を 声に 出して 練習する（みんなの日本語編・ITビジネス編・フリートーク）。例文を 読む オフライン練習は ネットなしでも できます",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#cfe9f3",
+  "theme_color": "#7cc5a0",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "img/icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -57,10 +57,12 @@ export async function loadVoiceIndex() {
   return voiceIndex;
 }
 
-/** URL of a pre-generated line, or null if it has not been recorded (yet). */
+/** URL of a pre-generated line, or null if it has not been recorded (yet).
+ *  ?v=<hash of the recording>: a re-recorded line gets a new address, so a stored copy (offline / PWA) is never stale. */
 export function voiceUrl(lineId) {
-  if (!voiceIndex?.[lineId]) return null;
-  return new URL(audioPath(lineId), base).href;
+  const v = voiceIndex?.[lineId];
+  if (!v) return null;
+  return new URL(audioPath(lineId) + (v.h ? `?v=${v.h}` : ''), base).href;
 }
 
 export function charactersOf(variant) {
