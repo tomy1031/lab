@@ -52,6 +52,7 @@ const refs = {
   kotei: process.env.KOTEI_REF || 'HEAD',
   selfintro: process.env.SELFINTRO_REF || 'HEAD',
   khmergt: process.env.KHMERGT_REF || 'HEAD',
+  matrixcosmos: process.env.MATRIX_COSMOS_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -483,6 +484,27 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 19 THE MATRIX : COSMOS — Matrix-styled WebXR VR physics sensory lab (Relativity, Quantum, Gravity, Higher Dimensions, Superstrings).
+{
+  const dest = path.join(out, 'matrix-cosmos');
+  try {
+    const src = exportDir(refs.matrixcosmos, 'matrix-cosmos');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.matrixcosmos}:matrix-cosmos"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'matrix-cosmos.jpg'));
+    console.log(`matrix-cosmos build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`matrix-cosmos not found at ${refs.matrixcosmos}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>THE MATRIX : COSMOS</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro} khmergt=${refs.khmergt}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro} khmergt=${refs.khmergt} matrixcosmos=${refs.matrixcosmos}`);

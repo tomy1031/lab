@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>THE MATRIX : COSMOS — 量子・相対性理論・高次元・超弦理論 体感VR</title>
+<meta name="description" content="マトリックスの世界観で、光速で止まる時間、量子力学の観測崩壊、ブラックホールの重力レンズ、4次元時空・10次元カラビ・ヤウ多様体、超弦理論をVRで体感するWebXRアプリ。">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#010402">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="importmap">
+{ "imports": { "three": "./js/vendor/three.module.min.js" } }
+</script>
+<style>
+  :root {
+    --void: #010402;
+    --glass: rgba(2, 12, 6, 0.78);
+    --glass-strong: rgba(2, 10, 5, 0.9);
+    --green: #00ff55;
+    --green-soft: #7cffaa;
+    --green-dim: rgba(0, 255, 85, 0.28);
+    --cyan: #00f0ff;
+    --red: #ff1e42;
+    --ink: #e4ffee;
+    --muted: #7cb891;
+    --mono: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, "Noto Sans JP", "Hiragino Kaku Gothic ProN", monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--mono);
+    -webkit-tap-highlight-color: transparent;
+  }
+  #stage, #stage canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Subtle CRT scanlines */
+  .scanlines {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 85, 0.025) 0px,
+      rgba(0, 255, 85, 0.025) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  /* ---- CINEMATIC START PORTAL ---- */
+  #start-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: radial-gradient(circle at 50% 45%, rgba(0, 22, 10, 0.58) 0%, rgba(1, 5, 2, 0.88) 78%);
+    backdrop-filter: blur(3px);
+    overflow-y: auto;
+  }
+  .portal {
+    width: min(760px, 100%);
+    padding: clamp(22px, 4vw, 38px);
+    background: var(--glass-strong);
+    border: 1px solid rgba(0, 255, 85, 0.42);
+    border-radius: 16px;
+    box-shadow: 0 0 60px rgba(0, 255, 85, 0.14), inset 0 0 30px rgba(0, 255, 85, 0.05);
+    position: relative;
+  }
+  .portal::before, .portal::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-color: var(--green);
+    border-style: solid;
+    pointer-events: none;
+  }
+  .portal::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+  .portal::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+  .sys-tag {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .portal h1 {
+    margin: 0;
+    font-size: clamp(28px, 5.8vw, 52px);
+    line-height: 1.05;
+    letter-spacing: 0.08em;
+    font-weight: 900;
+    color: #e8fff0;
+    text-shadow: 0 0 22px rgba(0, 255, 85, 0.55);
+  }
+  .portal h1 span { color: var(--green); }
+  .subtitle {
+    margin: 10px 0 0;
+    font-size: clamp(13.5px, 2vw, 15.5px);
+    line-height: 1.75;
+    color: #b7ebd0;
+  }
+  .subtitle b { color: var(--cyan); font-weight: 700; }
+
+  .pill-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .btn-pill {
+    padding: 15px 18px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    transition: transform 0.14s ease, box-shadow 0.16s ease, background 0.16s ease;
+  }
+  .btn-pill:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn-red {
+    background: linear-gradient(135deg, rgba(255, 30, 66, 0.92), rgba(190, 12, 46, 0.92));
+    border: 1px solid #ff5c77;
+    color: #fff;
+    box-shadow: 0 0 24px rgba(255, 30, 66, 0.35);
+  }
+  .btn-red:disabled {
+    background: rgba(255, 30, 66, 0.12);
+    border-color: rgba(255, 30, 66, 0.3);
+    color: rgba(255, 190, 200, 0.45);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .btn-green {
+    background: rgba(0, 255, 85, 0.14);
+    border: 1px solid var(--green);
+    color: #e8fff0;
+    box-shadow: 0 0 22px rgba(0, 255, 85, 0.18);
+  }
+  .btn-green:hover { background: rgba(0, 255, 85, 0.25); }
+
+  #vr-status {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .section-label {
+    margin: 22px 0 10px;
+    font-size: 11.5px;
+    letter-spacing: 0.2em;
+    color: var(--green);
+    opacity: 0.85;
+  }
+  #start-realms {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .realm-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(0, 255, 85, 0.28);
+    background: rgba(0, 28, 12, 0.55);
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, transform 0.14s;
+  }
+  .realm-chip:hover {
+    background: rgba(0, 255, 85, 0.18);
+    border-color: var(--green);
+    transform: translateY(-2px);
+  }
+  .realm-chip .num { font-size: 11px; color: var(--cyan); font-weight: 800; }
+  .realm-chip .name { font-size: 13px; font-weight: 700; color: var(--ink); }
+
+  .vr-hints {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 255, 85, 0.2);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .vr-hints b { color: var(--green-soft); }
+
+  /* ---- IN-EXPERIENCE HUD (PC / MOBILE) ---- */
+  #hud {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  #hud .interactive { pointer-events: auto; }
+
+  .hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .telemetry-box {
+    max-width: min(760px, 72vw);
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--glass);
+    border: 1px solid rgba(0, 255, 85, 0.34);
+    backdrop-filter: blur(6px);
+  }
+  #realm-title {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--green);
+    font-weight: 800;
+  }
+  #telemetry-text {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--cyan);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  #insight-text {
+    margin-top: 5px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .top-btns {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .sys-btn {
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 85, 0.36);
+    background: var(--glass);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green-soft);
+    backdrop-filter: blur(6px);
+  }
+  .sys-btn:hover { background: rgba(0, 255, 85, 0.2); color: #fff; }
+  .sys-btn.vr-hot {
+    background: rgba(255, 30, 66, 0.85);
+    border-color: #ff6680;
+    color: #fff;
+  }
+
+  /* Bottom Glass Console Dock */
+  .hud-dock {
+    width: min(920px, 100%);
+    margin: 0 auto;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--glass-strong);
+    border: 1px solid rgba(0, 255, 85, 0.38);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  #hud.minimal .telemetry-box,
+  #hud.minimal .hud-dock {
+    display: none;
+  }
+
+  #realm-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .tab-btn {
+    padding: 7px 6px;
+    border-radius: 7px;
+    border: 1px solid rgba(0, 255, 85, 0.24);
+    background: rgba(0, 28, 12, 0.5);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tab-btn:hover { border-color: var(--green); color: var(--ink); }
+  .tab-btn.active {
+    background: rgba(0, 255, 85, 0.22);
+    border-color: var(--green);
+    color: #fff;
+    box-shadow: 0 0 14px rgba(0, 255, 85, 0.24);
+  }
+
+  .slider-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+  #slider-label { font-size: 12.5px; font-weight: 700; color: var(--green-soft); white-space: nowrap; }
+  #slider-readout {
+    min-width: 82px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  #param-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #00ff55, #00f0ff 72%, #ff1e42);
+    outline: none;
+    cursor: pointer;
+  }
+  #param-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e8fff0;
+    border: 2.5px solid #00ff55;
+    box-shadow: 0 0 12px rgba(0, 255, 85, 0.8);
+  }
+  #param-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e8fff0;
+    border: 2.5px solid #00ff55;
+  }
+
+  #realm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .act-btn {
+    flex: 1 1 140px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 85, 0.35);
+    background: rgba(0, 32, 14, 0.65);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--ink);
+    transition: background 0.14s, border-color 0.14s;
+  }
+  .act-btn:hover { background: rgba(0, 255, 85, 0.22); border-color: var(--green); }
+  .act-btn.active { background: rgba(0, 240, 255, 0.22); border-color: var(--cyan); color: #fff; }
+  .act-btn.hot {
+    background: rgba(255, 30, 66, 0.26);
+    border-color: var(--red);
+    color: #ffdce3;
+  }
+  .act-btn.hot:hover { background: rgba(255, 30, 66, 0.45); }
+
+  #toast {
+    position: fixed;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    z-index: 40;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: rgba(20, 4, 8, 0.94);
+    border: 1px solid var(--red);
+    color: #ffd8df;
+    font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+    .pill-row { grid-template-columns: 1fr; }
+    #start-realms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .telemetry-box { max-width: 100%; }
+    .hud-top { flex-direction: column; }
+    .top-btns { width: 100%; justify-content: flex-start; }
+    #realm-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .slider-row { grid-template-columns: 1fr auto; }
+    #slider-label { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div class="scanlines"></div>
+
+<section id="start-screen" aria-label="THE MATRIX COSMOS 開始画面">
+  <div class="portal">
+    <div class="sys-tag">SYSTEM // SENSORY PHYSICS ENGINE v1.0 [WEBXR]</div>
+    <h1>THE MATRIX <span>: COSMOS</span></h1>
+    <p class="subtitle">
+      数式ではなく、<b>体感で宇宙のコードを知るVR</b>。<br>
+      光速で止まる時間、観測で崩れる量子波、曲がる時空、10次元のカラビ・ヤウ空間、そして手で弾く超弦の世界へ。
+    </p>
+
+    <div class="pill-row">
+      <button id="btn-vr" class="btn-pill btn-red" disabled>🔴 VR で覚醒する (ENTER VR)</button>
+      <button id="btn-pc" class="btn-pill btn-green">🟢 PC・スマホで接続する</button>
+    </div>
+    <p id="vr-status">WebXR デバイスを確認中…</p>
+
+    <div class="section-label">5 SENSORY REALMS // 体感領域を直接選ぶ</div>
+    <div id="start-realms"></div>
+
+    <div class="vr-hints">
+      <b>Quest VR 操作:</b> スティック上下で物理パラメータ（光速・質量・次元ズーム等）を操作 ／ トリガーで光線発射・観測崩壊・モード切替 ／ 手を伸ばして超弦や量子に直接タッチ ／ <b>A/X</b> 領域切替 ／ <b>B/Y</b> コンソール表示切替<br>
+      <b>PC・スマホ操作:</b> ドラッグで360°見回す ／ <b>1–5</b> 領域切替 ／ <b>Space</b> 主要アクション ／ <b>WASD</b> 空間移動 ／ <b>H</b> HUD最小化
+    </div>
+  </div>
+</section>
+
+<div id="hud" class="hidden">
+  <div class="hud-top">
+    <div class="telemetry-box interactive">
+      <div id="realm-title">RELATIVITY // 光速と止まる時間</div>
+      <div id="telemetry-text">v = 0.0000 c | γ = 1.00</div>
+      <div id="insight-text">速度を上げて光速 c へ近づけてみよう。</div>
+    </div>
+    <div class="top-btns interactive">
+      <button id="btn-vr-top" class="sys-btn vr-hot hidden">ENTER VR</button>
+      <button id="btn-mute" class="sys-btn">AUDIO ON</button>
+      <button id="btn-hide-hud" class="sys-btn">HUD 最小</button>
+      <button id="btn-menu" class="sys-btn">MENU</button>
+    </div>
+  </div>
+
+  <div class="hud-dock interactive">
+    <div id="realm-tabs"></div>
+    <div class="slider-row">
+      <label id="slider-label" for="param-slider">速度 (v / c)</label>
+      <input id="param-slider" type="range" min="0" max="1" step="0.002" value="0">
+      <span id="slider-readout">0.000 c</span>
+    </div>
+    <div id="realm-actions"></div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

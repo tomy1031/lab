@@ -85,6 +85,12 @@ on:
       - 'khmer-gt/js/**'
       - 'khmer-gt/img/**'
       - 'khmer-gt/docs/preview.jpg'
+      - 'matrix-cosmos/index.html'
+      - 'matrix-cosmos/manifest.webmanifest'
+      - 'matrix-cosmos/sw.js'
+      - 'matrix-cosmos/js/**'
+      - 'matrix-cosmos/docs/preview.jpg'
+      - 'matrix-cosmos/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
