@@ -54,6 +54,13 @@ const state = {
   showroomForward: new THREE.Vector3(0, 0, -1),
 };
 
+function disposeGroup(group) {
+  if (!group) return;
+  group.traverse((obj) => {
+    if (obj.geometry && !obj.userData.cachedGeo) obj.geometry.dispose();
+  });
+}
+
 // Load a Cambodia course into the 3D scene
 function loadCourse(courseId) {
   const course = getCourseById(courseId);
@@ -62,6 +69,7 @@ function loadCourse(courseId) {
 
   if (state.trackObj) {
     renderer.scene.remove(state.trackObj.group);
+    disposeGroup(state.trackObj.group);
     state.trackObj = null;
   }
   if (state.sceneryObj) {
@@ -455,6 +463,7 @@ window.KHMER_GT = {
   startRace,
   returnToLobby,
   cycleCamera: () => cameraRig.cycleMode(),
+  getPerfStats: () => renderer.getPerfStats(),
   getRaceInfo: () => ({
     mode: state.mode,
     courseId: state.courseId,

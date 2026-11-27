@@ -1,36 +1,238 @@
-// js/track/scenery.js — Iconic Cambodian 3D landmarks for all 5 courses + Sky Dome + Animated Cyberpunk Angkor Wat 2099
+// js/track/scenery.js — Commercial-grade Cambodian 3D Landmarks, Instanced Tropical Vegetation, Animated Water & Cyberpunk Angkor 2099
+// Engineered for Meta Quest 3S (72fps) using InstancedMesh batching and procedural PBR textures.
 import * as THREE from 'three';
+import {
+  getAngkorStoneTextures,
+  getBuildingFacadeTexture,
+  getFoliageClusterTexture,
+  getGlowTexture,
+  getKhmerRoofTexture,
+  getPalmFrondTexture,
+  getSkyEquirectTexture,
+  getWaterBumpTexture,
+} from '../engine/textures.js';
+import { buildTerrain } from './terrain.js';
 
-function makeSkyDome(course) {
-  const s = course.sky;
-  const cv = document.createElement('canvas');
-  cv.width = 64;
-  cv.height = 512;
-  const ctx = cv.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, 0, 512);
-  g.addColorStop(0.0, s.top);
-  g.addColorStop(0.35, s.mid);
-  g.addColorStop(0.50, s.horizon);
-  g.addColorStop(0.54, s.ground);
-  g.addColorStop(1.0, s.ground);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 512);
+function isClearOfTrack(spline, x, z, minClearance = 23) {
+  const minD2 = minClearance * minClearance;
+  for (let i = 0; i < spline.N; i += 4) {
+    const p = spline.samples[i].pos;
+    const dx = x - p.x;
+    const dz = z - p.z;
+    if (dx * dx + dz * dz < minD2) return false;
+  }
+  return true;
+}
 
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(1250, 32, 20),
-    new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false, depthWrite: false })
-  );
-  return dome;
+// Authentic Khmer Lotus-Bud Prasat Tower via smooth LatheGeometry (replaces blocky boxes!)
+function createLotusPrasatGeometry(scale = 1) {
+  const pts = [];
+  const steps = 28;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps; // 0 = base, 1 = spire tip
+    const y = t * 38 * scale;
+    // Authentic Angkor tier-stepped lotus curve: broad plinth -> 6 scalloped tiers curving inward -> needle finial
+    const envelope = Math.pow(1 - t, 0.72) * 8.2;
+    const tierScallop = t < 0.86 ? (0.86 + 0.14 * Math.abs(Math.sin(t * Math.PI * 7.5))) : (1 - (t - 0.86) / 0.14) * 0.45;
+    const r = Math.max(0.15, envelope * tierScallop) * scale;
+    pts.push(new THREE.Vector2(r, y));
+  }
+  return new THREE.LatheGeometry(pts, 12);
+}
+
+// Full 5-Tower Angkor Wat Temple Complex (both Historic Sandstone AND Cyber Obsidian 2099!)
+function buildAngkorComplex(scale = 1.0, cyber = false) {
+  const g = new THREE.Group();
+  const stoneTex = getAngkorStoneTextures(cyber);
+  const stoneMat = new THREE.MeshStandardMaterial({
+    map: stoneTex.map,
+    bumpMap: stoneTex.bumpMap,
+    bumpScale: 0.25,
+    color: cyber ? '#1a2742' : '#c2b094',
+    roughness: cyber ? 0.24 : 0.86,
+    metalness: cyber ? 0.82 : 0.06,
+  });
+  const glowCyan = cyber ? new THREE.MeshBasicMaterial({ color: '#00f0ff' }) : null;
+  const glowPink = cyber ? new THREE.MeshBasicMaterial({ color: '#ff1f7a' }) : null;
+
+  // 3-Tiered Gallery Plinth with Colonade Pilasters
+  const tiers = [
+    [104, 7.5, 68, 3.75],
+    [76, 8.0, 50, 11.2],
+    [52, 7.0, 36, 18.2],
+  ];
+  tiers.forEach(([w, h, d, y], idx) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w * scale, h * scale, d * scale), stoneMat);
+    m.position.y = y * scale;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+    if (cyber) {
+      const trim = new THREE.Mesh(
+        new THREE.BoxGeometry((w + 1.2) * scale, 0.75 * scale, (d + 1.2) * scale),
+        idx % 2 === 0 ? glowCyan : glowPink
+      );
+      trim.position.y = (y + h * 0.48) * scale;
+      g.add(trim);
+    }
+  });
+
+  // Grand Central Lotus Spire + 4 Corner Lotus Spires
+  const centerGeo = createLotusPrasatGeometry(1.38 * scale);
+  const centerTower = new THREE.Mesh(centerGeo, stoneMat);
+  centerTower.position.y = 20 * scale;
+  centerTower.castShadow = true;
+  g.add(centerTower);
+
+  if (cyber) {
+    // Glowing rings wrapping the central Cyber-Angkor spire
+    for (let k = 0; k < 5; k++) {
+      const r = (9.8 - k * 1.65) * scale;
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(r, 0.35 * scale, 6, 20),
+        k % 2 === 0 ? glowCyan : glowPink
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = (25 + k * 7.8) * scale;
+      g.add(ring);
+    }
+  }
+
+  const cornerGeo = createLotusPrasatGeometry(0.95 * scale);
+  const corners = [[-22, -13], [22, -13], [-22, 13], [22, 13]];
+  for (const [cx, cz] of corners) {
+    const t = new THREE.Mesh(cornerGeo, stoneMat);
+    t.position.set(cx * scale, 18 * scale, cz * scale);
+    t.castShadow = true;
+    g.add(t);
+    if (cyber) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(5.8 * scale, 0.28 * scale, 6, 16), glowPink);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(cx * scale, 26 * scale, cz * scale);
+      g.add(ring);
+    }
+  }
+
+  return g;
+}
+
+// High-efficiency Instanced Palm Grove (2 draw calls total for dozens of rich alpha-frond palms!)
+function addInstancedPalms(group, placements) {
+  if (!placements.length) return;
+  const trunkGeo = new THREE.CylinderGeometry(0.18, 0.42, 1, 7);
+  trunkGeo.translate(0, 0.5, 0);
+  const trunkMat = new THREE.MeshStandardMaterial({ color: '#5c4734', roughness: 0.92 });
+  const trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, placements.length);
+
+  // Curved palm frond card (6 fronds per palm)
+  const frondGeo = new THREE.PlaneGeometry(3.4, 5.2, 1, 3);
+  const fPos = frondGeo.attributes.position;
+  for (let i = 0; i < fPos.count; i++) {
+    const y = fPos.getY(i);
+    // Arch frond gracefully outward & drooping at tip
+    const t = (y + 2.6) / 5.2; // 0 at base, 1 at tip
+    fPos.setZ(i, -Math.sin(t * Math.PI * 0.82) * 1.15);
+  }
+  frondGeo.translate(0, 2.4, 0);
+  frondGeo.computeVertexNormals();
+
+  const frondMat = new THREE.MeshStandardMaterial({
+    map: getPalmFrondTexture(),
+    alphaTest: 0.35,
+    side: THREE.DoubleSide,
+    roughness: 0.72,
+  });
+  const frondsPerPalm = 6;
+  const fronds = new THREE.InstancedMesh(frondGeo, frondMat, placements.length * frondsPerPalm);
+
+  const dummy = new THREE.Object3D();
+  let fi = 0;
+  placements.forEach((p, i) => {
+    const leanX = ((i * 37) % 10 - 5) * 0.025;
+    const leanZ = ((i * 53) % 10 - 5) * 0.025;
+    dummy.position.set(p.x, p.y, p.z);
+    dummy.rotation.set(leanX, p.rot || 0, leanZ);
+    dummy.scale.set(1, p.h, 1);
+    dummy.updateMatrix();
+    trunks.setMatrixAt(i, dummy.matrix);
+
+    const topX = p.x + Math.sin(leanZ) * -p.h;
+    const topZ = p.z + Math.sin(leanX) * p.h;
+    const topY = p.y + p.h * 0.96;
+    for (let k = 0; k < frondsPerPalm; k++) {
+      const yaw = (k / frondsPerPalm) * Math.PI * 2 + (p.rot || 0);
+      dummy.position.set(topX, topY, topZ);
+      dummy.rotation.set(0.82 + (k % 2) * 0.18, yaw, 0, 'YXZ');
+      dummy.scale.setScalar(0.85 + (p.h / 12) * 0.3);
+      dummy.updateMatrix();
+      fronds.setMatrixAt(fi++, dummy.matrix);
+    }
+  });
+
+  trunks.instanceMatrix.needsUpdate = true;
+  fronds.instanceMatrix.needsUpdate = true;
+  group.add(trunks, fronds);
+}
+
+// High-efficiency Instanced Tropical Broadleaf Forest (cross-card organic foliage, 2 draw calls total!)
+function addInstancedForest(group, placements) {
+  if (!placements.length) return;
+  const trunkGeo = new THREE.CylinderGeometry(0.45, 0.95, 1, 7);
+  trunkGeo.translate(0, 0.5, 0);
+  const trunkMat = new THREE.MeshStandardMaterial({ color: '#4f3f2f', roughness: 0.95 });
+  const trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, placements.length);
+
+  // 3 tilted intersecting foliage planes per canopy crown + per-tree green variation (no flat horizontal edge!)
+  const cardGeo = new THREE.PlaneGeometry(1, 1);
+  const cardMat = new THREE.MeshStandardMaterial({
+    map: getFoliageClusterTexture(),
+    alphaTest: 0.36,
+    side: THREE.DoubleSide,
+    roughness: 0.84,
+  });
+  const cardsPerTree = 3;
+  const crowns = new THREE.InstancedMesh(cardGeo, cardMat, placements.length * cardsPerTree);
+  const tint = new THREE.Color();
+
+  const dummy = new THREE.Object3D();
+  let ci = 0;
+  placements.forEach((p, i) => {
+    dummy.position.set(p.x, p.y - 0.8, p.z);
+    dummy.rotation.set(0, (i * 1.7) % 6.28, 0);
+    dummy.scale.set(p.scale * 0.72, p.h, p.scale * 0.72);
+    dummy.updateMatrix();
+    trunks.setMatrixAt(i, dummy.matrix);
+
+    const cy = p.y + p.h * 0.82;
+    const crownSize = p.scale * 11.2;
+    const shade = 0.82 + ((i * 29) % 10) * 0.036;
+    tint.setRGB(shade * 0.94, shade * 1.04, shade * 0.88);
+    for (let k = 0; k < cardsPerTree; k++) {
+      dummy.position.set(
+        p.x + Math.cos(k * 2.094) * crownSize * 0.12,
+        cy + (k - 1) * 0.5,
+        p.z + Math.sin(k * 2.094) * crownSize * 0.12
+      );
+      dummy.rotation.set(0.18, (k / 3) * Math.PI + i * 0.5, 0);
+      dummy.scale.set(crownSize, crownSize * 0.88, 1);
+      dummy.updateMatrix();
+      crowns.setMatrixAt(ci, dummy.matrix);
+      crowns.setColorAt(ci, tint);
+      ci++;
+    }
+  });
+
+  trunks.instanceMatrix.needsUpdate = true;
+  crowns.instanceMatrix.needsUpdate = true;
+  if (crowns.instanceColor) crowns.instanceColor.needsUpdate = true;
+  group.add(trunks, crowns);
 }
 
 function makeNeonSign(text, subtext, colorA = '#00f0ff', colorB = '#ff1f7a') {
   const cv = document.createElement('canvas');
-  cv.width = 512;
-  cv.height = 256;
+  cv.width = 512; cv.height = 256;
   const ctx = cv.getContext('2d');
-  ctx.fillStyle = 'rgba(5, 10, 22, 0.88)';
+  ctx.fillStyle = 'rgba(4, 10, 22, 0.88)';
   ctx.fillRect(8, 8, 496, 240);
   ctx.strokeStyle = colorA;
   ctx.lineWidth = 8;
@@ -42,14 +244,14 @@ function makeNeonSign(text, subtext, colorA = '#00f0ff', colorB = '#ff1f7a') {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = colorA;
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 20;
   ctx.fillStyle = colorA;
   ctx.font = '900 58px "Orbitron", "Noto Sans JP", sans-serif';
-  ctx.fillText(text, 256, 108);
+  ctx.fillText(text, 256, 106);
 
   ctx.shadowColor = colorB;
   ctx.fillStyle = '#ffffff';
-  ctx.font = '700 32px "Noto Sans JP", sans-serif';
+  ctx.font = '700 30px "Noto Sans JP", sans-serif';
   ctx.fillText(subtext, 256, 178);
 
   const tex = new THREE.CanvasTexture(cv);
@@ -57,123 +259,26 @@ function makeNeonSign(text, subtext, colorA = '#00f0ff', colorB = '#ff1f7a') {
   return new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
 }
 
-// Reusable stylized Angkor Lotus Tower (Prasat)
-function buildPrasatTower(scale = 1, mat, glowMat = null) {
-  const g = new THREE.Group();
-  const tiers = [
-    [14, 7, 14, 3.5],
-    [11, 6, 11, 9.5],
-    [8.2, 5.5, 8.2, 15.0],
-    [5.8, 5.0, 5.8, 20.0],
-    [3.8, 4.8, 3.8, 24.6],
-    [2.1, 4.4, 2.1, 28.8],
-  ];
-  for (const [w, h, d, y] of tiers) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w * scale, h * scale, d * scale), mat);
-    m.position.y = y * scale;
-    m.castShadow = true;
-    g.add(m);
-    if (glowMat) {
-      const strip = new THREE.Mesh(new THREE.BoxGeometry(w * scale * 1.03, 0.38 * scale, d * scale * 1.03), glowMat);
-      strip.position.y = (y + h * 0.45) * scale;
-      g.add(strip);
-    }
-  }
-  const spire = new THREE.Mesh(new THREE.ConeGeometry(1.4 * scale, 6.5 * scale, 6), glowMat || mat);
-  spire.position.y = 33.8 * scale;
-  g.add(spire);
-  return g;
-}
-
-// Full 5-Tower Angkor Wat Temple Complex (both classic sandstone AND cyber obsidian+neon!)
-function buildAngkorComplex(scale = 1.0, cyber = false) {
-  const g = new THREE.Group();
-  const stoneMat = cyber
-    ? new THREE.MeshStandardMaterial({ color: '#0c1322', roughness: 0.25, metalness: 0.85 })
-    : new THREE.MeshStandardMaterial({ color: '#7d6e58', roughness: 0.9, metalness: 0.05 });
-  const glowCyan = cyber
-    ? new THREE.MeshBasicMaterial({ color: '#00f0ff' })
-    : null;
-  const glowPink = cyber
-    ? new THREE.MeshBasicMaterial({ color: '#ff1f7a' })
-    : null;
-
-  // Stepped gallery base
-  const base1 = new THREE.Mesh(new THREE.BoxGeometry(92 * scale, 8 * scale, 56 * scale), stoneMat);
-  base1.position.y = 4 * scale;
-  const base2 = new THREE.Mesh(new THREE.BoxGeometry(66 * scale, 8 * scale, 42 * scale), stoneMat);
-  base2.position.y = 11 * scale;
-  g.add(base1, base2);
-
-  if (cyber) {
-    const trim1 = new THREE.Mesh(new THREE.BoxGeometry(93 * scale, 0.8 * scale, 57 * scale), glowCyan);
-    trim1.position.y = 8.1 * scale;
-    const trim2 = new THREE.Mesh(new THREE.BoxGeometry(67 * scale, 0.8 * scale, 43 * scale), glowPink);
-    trim2.position.y = 15.1 * scale;
-    g.add(trim1, trim2);
-  }
-
-  // Central tallest lotus tower
-  const center = buildPrasatTower(1.32 * scale, stoneMat, glowCyan);
-  center.position.y = 14 * scale;
-  g.add(center);
-
-  // 4 flanking lotus towers
-  const offsets = [
-    [-22, 0, -11], [22, 0, -11], [-22, 0, 11], [22, 0, 11],
-  ];
-  for (const [ox, oy, oz] of offsets) {
-    const t = buildPrasatTower(0.92 * scale, stoneMat, cyber ? glowPink : null);
-    t.position.set(ox * scale, (14 + oy) * scale, oz * scale);
-    g.add(t);
-  }
-
-  return g;
-}
-
-// Palm tree helper
-function makePalmTree(h = 11) {
-  const g = new THREE.Group();
-  const trunkMat = new THREE.MeshStandardMaterial({ color: '#5c4632', roughness: 0.9 });
-  const leafMat = new THREE.MeshStandardMaterial({ color: '#275c28', roughness: 0.8 });
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.45, h, 7), trunkMat);
-  trunk.position.y = h * 0.5;
-  trunk.rotation.z = (Math.random() - 0.5) * 0.14;
-  g.add(trunk);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    const frond = new THREE.Mesh(new THREE.ConeGeometry(0.75, 4.8, 4), leafMat);
-    frond.position.set(Math.cos(a) * 1.9, h - 0.2, Math.sin(a) * 1.9);
-    frond.rotation.z = -Math.PI * 0.36;
-    frond.rotation.y = -a;
-    g.add(frond);
-  }
-  return g;
-}
-
-// Check distance from track so scenery never clips into the road
-function isClearOfTrack(spline, x, z, minClearance = 24) {
-  const minD2 = minClearance * minClearance;
-  for (let i = 0; i < spline.N; i += 4) {
-    const p = spline.samples[i].pos;
-    const dx = x - p.x;
-    const dz = z - p.z;
-    if (dx * dx + dz * dz < minD2) return false;
-  }
-  return true;
-}
-
 export function buildScenery(scene, spline, course) {
   const group = new THREE.Group();
   group.name = `Scenery_${course.id}`;
   const animators = [];
-
-  // Fog & Sky
   const s = course.sky;
-  scene.fog = new THREE.Fog(s.fogColor, s.fogNear, s.fogFar);
-  group.add(makeSkyDome(course));
 
-  // Directional Sun/Moon + Hemisphere Ambient
+  // 1. Atmospheric Distance Fog + High-Resolution Procedural Sky/Cloud Dome
+  scene.fog = new THREE.FogExp2(s.fogColor, course.theme === 'bokor' ? 0.0024 : course.isCyber ? 0.00145 : 0.00095);
+  const skyDome = new THREE.Mesh(
+    new THREE.SphereGeometry(1450, 36, 20),
+    new THREE.MeshBasicMaterial({
+      map: getSkyEquirectTexture(course),
+      side: THREE.BackSide,
+      fog: false,
+      depthWrite: false,
+    })
+  );
+  group.add(skyDome);
+
+  // 2. Physically-Balanced Lighting (Hemisphere + Shadow-Casting Sun + Rim Fill)
   const hemi = new THREE.HemisphereLight(s.ambientColor, s.ground, s.ambientInt);
   group.add(hemi);
 
@@ -181,388 +286,496 @@ export function buildScenery(scene, spline, course) {
   sun.position.set(s.sunPos[0], s.sunPos[1], s.sunPos[2]);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.bias = -0.0006;
   sun.shadow.camera.near = 20;
-  sun.shadow.camera.far = 900;
-  const d = 260;
+  sun.shadow.camera.far = 950;
+  const d = 240;
   sun.shadow.camera.left = -d; sun.shadow.camera.right = d;
   sun.shadow.camera.top = d; sun.shadow.camera.bottom = -d;
   group.add(sun);
 
-  // Visible sun disk (non-cyber)
-  if (!course.isCyber) {
-    const sunDisc = new THREE.Mesh(
-      new THREE.SphereGeometry(28, 20, 16),
-      new THREE.MeshBasicMaterial({ color: s.sunColor, fog: false })
-    );
-    sunDisc.position.set(s.sunPos[0] * 2.2, s.sunPos[1] * 2.2, s.sunPos[2] * 2.2);
-    group.add(sunDisc);
-  }
-
-  // Stars for Twilight & Cyber
+  // Twinkling Stars for Twilight & Cyber
   if (s.stars > 0) {
-    const count = Math.round(500 * s.stars);
+    const count = Math.round(650 * s.stars);
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const th = Math.random() * Math.PI * 2;
       const ph = Math.random() * Math.PI * 0.44;
-      const r = 1050;
+      const r = 1250;
       pos[i * 3] = Math.sin(ph) * Math.cos(th) * r;
       pos[i * 3 + 1] = Math.cos(ph) * r;
       pos[i * 3 + 2] = Math.sin(ph) * Math.sin(th) * r;
     }
     const sg = new THREE.BufferGeometry();
     sg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const sm = new THREE.PointsMaterial({ color: course.isCyber ? '#7ff6ff' : '#fff7e0', size: 3.2, fog: false });
-    group.add(new THREE.Points(sg, sm));
+    group.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: course.isCyber ? '#8ef6ff' : '#fff7e0', size: 3.4, fog: false })));
   }
 
-  // Base terrain plane
-  const groundMat = new THREE.MeshStandardMaterial({
-    color: s.ground,
-    roughness: course.isCyber ? 0.35 : 0.95,
-    metalness: course.isCyber ? 0.4 : 0.0,
-  });
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2800, 2800), groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -1.2;
-  ground.receiveShadow = true;
-  group.add(ground);
+  // 3. Sculpted Continuous 3D Terrain Mesh (replaces flat ground plane!)
+  const terrain = buildTerrain(spline, course);
+  group.add(terrain);
+
+  // Shared animated water bump texture
+  const waterBump = getWaterBumpTexture();
 
   // =========================================================================
-  // COURSE-SPECIFIC CAMBODIAN LANDMARKS
+  // COURSE-SPECIFIC COMMERCIAL-GRADE CAMBODIAN LANDMARKS
   // =========================================================================
   if (course.theme === 'phnompenh') {
-    // 1. Mekong & Tonle Sap River (wide shimmering water to the west/left of start straight)
+    // 1. Shimmering Animated Mekong & Tonle Sap River
     const waterMat = new THREE.MeshStandardMaterial({
-      color: '#1b3e5c',
-      roughness: 0.16,
-      metalness: 0.72,
-      emissive: '#1e1620',
-      emissiveIntensity: 0.25,
+      color: '#183d5e',
+      bumpMap: waterBump,
+      bumpScale: 0.45,
+      roughness: 0.14,
+      metalness: 0.78,
+      emissive: '#1e1622',
+      emissiveIntensity: 0.22,
     });
-    const river = new THREE.Mesh(new THREE.PlaneGeometry(520, 1800), waterMat);
+    const river = new THREE.Mesh(new THREE.PlaneGeometry(580, 1900), waterMat);
     river.rotation.x = -Math.PI / 2;
-    river.position.set(-295, -0.65, -40);
+    river.position.set(-325, -0.7, -40);
     group.add(river);
+    animators.push((t) => {
+      waterBump.offset.set(t * 0.015, t * 0.04);
+    });
 
-    // 2. Royal Palace (Golden Khmer tiered roofs + white walls) inside the circuit
+    // 2. Royal Palace of Cambodia (Tiered Khmer Golden Tile Roofs + White Colonnades + Golden Prasat Spire)
     const palace = new THREE.Group();
-    palace.position.set(145, -1, -150);
-    const wallMat = new THREE.MeshStandardMaterial({ color: '#f2e8cf', roughness: 0.7 });
-    const goldRoof = new THREE.MeshStandardMaterial({ color: '#e8b63a', roughness: 0.25, metalness: 0.72, emissive: '#593b08', emissiveIntensity: 0.35 });
-    const hall = new THREE.Mesh(new THREE.BoxGeometry(46, 12, 24), wallMat);
-    hall.position.y = 6;
-    const roof1 = new THREE.Mesh(new THREE.ConeGeometry(28, 12, 4), goldRoof);
-    roof1.rotation.y = Math.PI / 4;
-    roof1.scale.set(1.3, 1, 0.72);
-    roof1.position.y = 17.5;
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(3.2, 24, 6), goldRoof);
-    spire.position.y = 31;
-    palace.add(hall, roof1, spire);
-    // Flanking pavilions
-    for (const sx of [-32, 32]) {
-      const pav = new THREE.Mesh(new THREE.BoxGeometry(16, 9, 16), wallMat);
-      pav.position.set(sx, 4.5, 4);
-      const pr = new THREE.Mesh(new THREE.ConeGeometry(12, 9, 4), goldRoof);
-      pr.rotation.y = Math.PI / 4;
-      pr.position.set(sx, 13.5, 4);
+    palace.position.set(148, -0.5, -155);
+    const wallMat = new THREE.MeshStandardMaterial({ color: '#f5ecd4', roughness: 0.65 });
+    const roofTex = getKhmerRoofTexture();
+    const goldRoof = new THREE.MeshStandardMaterial({
+      map: roofTex,
+      roughness: 0.26,
+      metalness: 0.62,
+      emissive: '#4d3206',
+      emissiveIntensity: 0.3,
+    });
+    const goldSpireMat = new THREE.MeshStandardMaterial({ color: '#f5c74c', roughness: 0.2, metalness: 0.85, emissive: '#664308', emissiveIntensity: 0.35 });
+
+    // Throne Hall Base + Colonnade Pillars
+    const hall = new THREE.Mesh(new THREE.BoxGeometry(52, 11, 24), wallMat);
+    hall.position.y = 5.5;
+    hall.castShadow = true;
+    palace.add(hall);
+    for (let x = -22; x <= 22; x += 5.5) {
+      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 11, 8), wallMat);
+      col.position.set(x, 5.5, 13);
+      palace.add(col);
+    }
+    // Triple-tiered sweeping Khmer roofs + Lotus Throne Spire
+    const r1 = new THREE.Mesh(new THREE.ConeGeometry(34, 11, 4), goldRoof);
+    r1.rotation.y = Math.PI / 4; r1.scale.set(1.25, 1, 0.68); r1.position.y = 16;
+    const r2 = new THREE.Mesh(new THREE.ConeGeometry(24, 9, 4), goldRoof);
+    r2.rotation.y = Math.PI / 4; r2.scale.set(1.2, 1, 0.65); r2.position.y = 22.5;
+    const spire = new THREE.Mesh(createLotusPrasatGeometry(0.55), goldSpireMat);
+    spire.position.y = 24;
+    palace.add(r1, r2, spire);
+
+    // Flanking Moonlight Pavilion & Palace Wall Gates
+    for (const sx of [-38, 38]) {
+      const pav = new THREE.Mesh(new THREE.BoxGeometry(18, 9, 18), wallMat);
+      pav.position.set(sx, 4.5, 6);
+      const pr = new THREE.Mesh(new THREE.ConeGeometry(14, 9.5, 4), goldRoof);
+      pr.rotation.y = Math.PI / 4; pr.position.set(sx, 13.5, 6);
       palace.add(pav, pr);
     }
     group.add(palace);
 
-    // 3. Independence Monument (Vimean Ekareach — crimson lotus stupa)
+    // 3. Independence Monument (Vimean Ekareach — Crimson Sculpted Lotus Stupa)
     const indep = new THREE.Group();
-    indep.position.set(140, -1, 130);
-    const lotusMat = new THREE.MeshStandardMaterial({ color: '#9c2d31', roughness: 0.55, metalness: 0.15 });
-    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, 3.5, 16), wallMat);
-    plinth.position.y = 1.75;
-    indep.add(plinth);
-    const stupa = buildPrasatTower(0.95, lotusMat);
-    stupa.position.y = 3.2;
-    indep.add(stupa);
+    indep.position.set(140, -0.5, 130);
+    const lotusMat = new THREE.MeshStandardMaterial({
+      map: getAngkorStoneTextures(false).map,
+      color: '#a82c32',
+      roughness: 0.55,
+      metalness: 0.18,
+    });
+    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(18, 21, 3.2, 20), wallMat);
+    plinth.position.y = 1.6;
+    const stupa = new THREE.Mesh(createLotusPrasatGeometry(0.95), lotusMat);
+    stupa.position.y = 3.0;
+    indep.add(plinth, stupa);
     group.add(indep);
 
-    // 4. Phnom Penh Skyline / Koh Pich Modern Towers
-    const bldMat = new THREE.MeshStandardMaterial({ color: '#222b3d', roughness: 0.35, metalness: 0.65 });
-    const winMat = new THREE.MeshBasicMaterial({ color: '#ffd994' });
-    const skylinePositions = [
-      [440, -290, 26, 95, 26], [465, -180, 22, 130, 22], [430, -50, 28, 82, 24],
-      [420, 120, 24, 112, 24], [360, 280, 26, 75, 24], [190, -520, 30, 118, 28],
-      [85, -510, 24, 88, 24], [320, -490, 28, 104, 26],
+    // 4. Phnom Penh / Koh Pich Glass Curtain-Wall Skyline
+    const glassFacade = getBuildingFacadeTexture('twilight');
+    const bldMat = new THREE.MeshStandardMaterial({
+      map: glassFacade,
+      roughness: 0.25,
+      metalness: 0.72,
+      emissiveMap: glassFacade,
+      emissive: '#ffcf86',
+      emissiveIntensity: 0.45,
+    });
+    const skyline = [
+      [440, -290, 28, 105, 28], [468, -175, 24, 148, 24], [435, -45, 30, 88, 26],
+      [422, 125, 26, 124, 26], [365, 285, 28, 82, 24], [195, -525, 32, 134, 28],
+      [88, -515, 26, 94, 24], [322, -495, 28, 114, 26], [-560, -180, 32, 92, 30],
     ];
-    for (const [bx, bz, bw, bh, bd] of skylinePositions) {
+    for (const [bx, bz, bw, bh, bd] of skyline) {
       const tower = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), bldMat);
       tower.position.set(bx, bh * 0.5 - 1, bz);
       group.add(tower);
-      // Warm illuminated office bands
-      for (let y = 14; y < bh - 8; y += 14) {
-        const band = new THREE.Mesh(new THREE.BoxGeometry(bw + 0.4, 2.2, bd + 0.4), winMat);
-        band.position.set(bx, y, bz);
-        group.add(band);
-      }
     }
 
-    // 5. Riverfront Palms & Warm Streetlights along track
-    const poleMat = new THREE.MeshStandardMaterial({ color: '#2b303a', metalness: 0.6 });
-    const lampGlow = new THREE.MeshBasicMaterial({ color: '#ffcb7d' });
-    for (let i = 0; i < spline.N; i += 15) {
+    // 5. Instanced Riverfront Palms + Warm Twilight Streetlamps with Additive Glow Halos
+    const palms = [];
+    const poleMat = new THREE.MeshStandardMaterial({ color: '#242934', metalness: 0.75, roughness: 0.3 });
+    const glowTex = getGlowTexture('#ffbe66');
+    const poles = [];
+
+    for (let i = 0; i < spline.N; i += 14) {
       const smp = spline.samples[i];
-      const side = (i % 30 === 0) ? -1 : 1;
-      const pos = smp.pos.clone().addScaledVector(smp.right, side * (smp.width * 0.5 + 5.8));
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.24, 8.5, 6), poleMat);
-      pole.position.set(pos.x, pos.y + 4.2, pos.z);
-      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), lampGlow);
-      bulb.position.set(pos.x, pos.y + 8.6, pos.z);
-      group.add(pole, bulb);
+      const side = (i % 28 === 0) ? -1 : 1;
+      const pos = smp.pos.clone().addScaledVector(smp.right, side * (smp.width * 0.5 + 5.2));
+      poles.push({ x: pos.x, y: pos.y, z: pos.z });
 
-      const palmPos = smp.pos.clone().addScaledVector(smp.right, -side * (smp.width * 0.5 + 11));
+      const halo = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: glowTex, transparent: true, opacity: 0.78, blending: THREE.AdditiveBlending, depthWrite: false })
+      );
+      halo.scale.set(4.5, 4.5, 1);
+      halo.position.set(pos.x, pos.y + 8.6, pos.z);
+      group.add(halo);
+
+      const palmPos = smp.pos.clone().addScaledVector(smp.right, -side * (smp.width * 0.5 + 11.5));
       if (isClearOfTrack(spline, palmPos.x, palmPos.z, 19)) {
-        const palm = makePalmTree(10 + (i % 5));
-        palm.position.set(palmPos.x, palmPos.y - 0.5, palmPos.z);
-        group.add(palm);
+        palms.push({ x: palmPos.x, y: palmPos.y - 0.5, z: palmPos.z, h: 10 + (i % 5), rot: i * 0.7 });
       }
     }
+    if (poles.length) {
+      const pGeo = new THREE.CylinderGeometry(0.14, 0.22, 8.6, 6);
+      pGeo.translate(0, 4.3, 0);
+      const pInst = new THREE.InstancedMesh(pGeo, poleMat, poles.length);
+      const m = new THREE.Matrix4();
+      poles.forEach((p, idx) => { m.makeTranslation(p.x, p.y, p.z); pInst.setMatrixAt(idx, m); });
+      pInst.instanceMatrix.needsUpdate = true;
+      group.add(pInst);
+    }
+    addInstancedPalms(group, palms);
+
   } else if (course.theme === 'angkor') {
-    // 1. Grand Angkor Wat 5-Tower Temple Complex overlooking the circuit
-    const angkor = buildAngkorComplex(1.85, false);
-    angkor.position.set(175, -1, -175);
+    // 1. Grand Sculpted 5-Tower Angkor Wat Temple Complex
+    const angkor = buildAngkorComplex(1.9, false);
+    angkor.position.set(175, -0.5, -175);
     angkor.rotation.y = -0.35;
     group.add(angkor);
 
-    // 2. Reflective Angkor Moat encircling the temple
+    // 2. Reflective Animated Angkor Moat surrounding the Temple
     const moatMat = new THREE.MeshStandardMaterial({
-      color: '#2c4c57',
-      roughness: 0.14,
-      metalness: 0.65,
+      color: '#254a54',
+      bumpMap: waterBump,
+      bumpScale: 0.35,
+      roughness: 0.12,
+      metalness: 0.72,
     });
-    const moat = new THREE.Mesh(new THREE.PlaneGeometry(280, 230), moatMat);
+    const moat = new THREE.Mesh(new THREE.PlaneGeometry(290, 235), moatMat);
     moat.rotation.x = -Math.PI / 2;
-    moat.position.set(175, -0.55, -175);
+    moat.position.set(175, -0.6, -175);
     group.add(moat);
+    animators.push((t) => { waterBump.offset.set(t * 0.01, t * 0.02); });
 
-    // 3. Bayon-style Ancient Stone Arches spanning the circuit at key straights
-    const stoneMat = new THREE.MeshStandardMaterial({ color: '#786a55', roughness: 0.92 });
-    const goldAccent = new THREE.MeshStandardMaterial({ color: '#c99c42', roughness: 0.5, metalness: 0.3 });
+    // 3. Authentic Sandstone Bayon Stone Arches spanning the circuit
+    const stoneTex = getAngkorStoneTextures(false);
+    const stoneMat = new THREE.MeshStandardMaterial({
+      map: stoneTex.map,
+      bumpMap: stoneTex.bumpMap,
+      bumpScale: 0.2,
+      color: '#baa88c',
+      roughness: 0.88,
+    });
     for (const idx of [75, 290, 470]) {
       const smp = spline.samples[idx % spline.N];
       const gate = new THREE.Group();
-      const gm = new THREE.Matrix4().makeBasis(smp.right, smp.normal, smp.tangent.clone().negate());
       gate.position.copy(smp.pos);
-      gate.quaternion.setFromRotationMatrix(gm);
-      const hw = smp.width * 0.5 + 4.0;
-      const pL = new THREE.Mesh(new THREE.BoxGeometry(3.4, 12, 4.2), stoneMat); pL.position.set(-hw, 6, 0);
-      const pR = new THREE.Mesh(new THREE.BoxGeometry(3.4, 12, 4.2), stoneMat); pR.position.set(hw, 6, 0);
-      const top = new THREE.Mesh(new THREE.BoxGeometry(hw * 2 + 4.4, 3.6, 4.8), stoneMat); top.position.set(0, 12.2, 0);
-      const crown = buildPrasatTower(0.32, stoneMat, goldAccent);
-      crown.position.set(0, 13.8, 0);
-      gate.add(pL, pR, top, crown);
+      gate.quaternion.setFromRotationMatrix(
+        new THREE.Matrix4().makeBasis(smp.right, smp.normal, smp.tangent.clone().negate())
+      );
+      const hw = smp.width * 0.5 + 4.2;
+      const pL = new THREE.Mesh(new THREE.BoxGeometry(3.6, 12.5, 4.4), stoneMat); pL.position.set(-hw, 6.2, 0);
+      const pR = new THREE.Mesh(new THREE.BoxGeometry(3.6, 12.5, 4.4), stoneMat); pR.position.set(hw, 6.2, 0);
+      const lintel = new THREE.Mesh(new THREE.BoxGeometry(hw * 2 + 4.8, 3.6, 4.8), stoneMat); lintel.position.set(0, 12.4, 0);
+      const crown = new THREE.Mesh(createLotusPrasatGeometry(0.32), stoneMat); crown.position.set(0, 13.8, 0);
+      gate.add(pL, pR, lintel, crown);
       group.add(gate);
     }
 
-    // 4. Ta Prohm Ancient Jungle Trees & Laterite Ruins along the perimeter
-    const canopyMat = new THREE.MeshStandardMaterial({ color: '#244721', roughness: 0.88 });
-    const trunkMat = new THREE.MeshStandardMaterial({ color: '#5c4b39', roughness: 0.95 });
-    for (let i = 0; i < 85; i++) {
-      const ang = (i / 85) * Math.PI * 2;
-      const rad = 240 + (i % 7) * 55;
+    // 4. Lush Instanced Ta Prohm Tropical Jungle Forest + Palms (NO blocky spheres!)
+    const trees = [];
+    const palms = [];
+    for (let i = 0; i < 120; i++) {
+      const ang = (i / 120) * Math.PI * 2;
+      const rad = 225 + (i % 7) * 52;
       const tx = 180 + Math.cos(ang) * rad;
       const tz = -50 + Math.sin(ang) * rad;
       if (!isClearOfTrack(spline, tx, tz, 25)) continue;
-      const h = 14 + (i % 6) * 3.5;
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 2.2, h, 7), trunkMat);
-      trunk.position.set(tx, h * 0.5 - 1, tz);
-      const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(6 + (i % 4) * 2.2, 1), canopyMat);
-      crown.position.set(tx, h + 1.5, tz);
-      group.add(trunk, crown);
+      if (i % 4 === 0) palms.push({ x: tx, y: -0.5, z: tz, h: 12 + (i % 4) * 2, rot: i });
+      else trees.push({ x: tx, y: -0.5, z: tz, h: 13 + (i % 5) * 3, scale: 1.0 + (i % 4) * 0.3 });
     }
+    // Add roadside jungle canopy framing the track
+    for (let i = 0; i < spline.N; i += 14) {
+      const smp = spline.samples[i];
+      for (const side of [-1, 1]) {
+        const p = smp.pos.clone().addScaledVector(smp.right, side * (smp.width * 0.5 + 15 + (i % 3) * 5));
+        if (!isClearOfTrack(spline, p.x, p.z, 21)) continue;
+        // Don't block view of Angkor Wat temple inside moat
+        if (Math.abs(p.x - 175) < 145 && Math.abs(p.z + 175) < 120) continue;
+        trees.push({ x: p.x, y: p.y - 0.6, z: p.z, h: 11 + (i % 4) * 2.5, scale: 0.9 + (i % 3) * 0.25 });
+      }
+    }
+    addInstancedForest(group, trees);
+    addInstancedPalms(group, palms);
+
   } else if (course.theme === 'cyber') {
     // =========================================================================
-    // URA-ANGKOR WAT 2099 — CYBERPUNK MASTERPIECE
+    // URA-ANGKOR WAT 2099 — COMMERCIAL CYBERPUNK MASTERPIECE
     // =========================================================================
-    // 1. Colossal Cyber-Angkor Spire Complex at the heart of the circuit
-    const cyberAngkor = buildAngkorComplex(2.3, true);
-    cyberAngkor.position.set(195, -1, -155);
+    // 1. Colossal Sculpted Cyber-Angkor 5-Spire Megastructure
+    const cyberAngkor = buildAngkorComplex(2.35, true);
+    cyberAngkor.position.set(195, -2.5, -155);
     cyberAngkor.rotation.y = -0.35;
     group.add(cyberAngkor);
 
-    // Sky-piercing Quantum Laser Beam from the central Cyber Angkor spire
+    // Sky-piercing Quantum Plasma Beam + Triple Rotating Holographic Mandala Rings
     const laserMat = new THREE.MeshBasicMaterial({
       color: '#00f0ff',
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.58,
       blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
-    const laser = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 4.5, 480, 12, 1, true), laserMat);
-    laser.position.set(195, 290, -155);
+    const laser = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 5.2, 540, 14, 1, true), laserMat);
+    laser.position.set(195, 310, -155);
     group.add(laser);
 
-    // Rotating Giant Hologram Halo Rings around Cyber Angkor
-    const haloMat1 = new THREE.MeshBasicMaterial({ color: '#00f0ff', transparent: true, opacity: 0.72, side: THREE.DoubleSide });
-    const haloMat2 = new THREE.MeshBasicMaterial({ color: '#ff1f7a', transparent: true, opacity: 0.65, side: THREE.DoubleSide });
-    const halo1 = new THREE.Mesh(new THREE.TorusGeometry(95, 1.4, 8, 64), haloMat1);
-    halo1.position.set(195, 92, -155);
-    halo1.rotation.x = Math.PI * 0.44;
-    const halo2 = new THREE.Mesh(new THREE.TorusGeometry(74, 1.1, 8, 64), haloMat2);
-    halo2.position.set(195, 126, -155);
-    halo2.rotation.x = Math.PI * 0.56;
-    group.add(halo1, halo2);
+    const halo1 = new THREE.Mesh(
+      new THREE.TorusGeometry(102, 1.4, 8, 64),
+      new THREE.MeshBasicMaterial({ color: '#00f0ff', transparent: true, opacity: 0.78 })
+    );
+    halo1.position.set(195, 98, -155); halo1.rotation.x = Math.PI * 0.44;
+    const halo2 = new THREE.Mesh(
+      new THREE.TorusGeometry(78, 1.1, 8, 64),
+      new THREE.MeshBasicMaterial({ color: '#ff1f7a', transparent: true, opacity: 0.72 })
+    );
+    halo2.position.set(195, 134, -155); halo2.rotation.x = Math.PI * 0.56;
+    const halo3 = new THREE.Mesh(
+      new THREE.TorusGeometry(54, 0.9, 8, 48),
+      new THREE.MeshBasicMaterial({ color: '#ffd000', transparent: true, opacity: 0.65 })
+    );
+    halo3.position.set(195, 168, -155); halo3.rotation.x = Math.PI * 0.48;
+    group.add(halo1, halo2, halo3);
+
+    // 2. Animated Futuristic Neon Skytrain soaring through the city skyline!
+    const trainGroup = new THREE.Group();
+    const trainBody = new THREE.Mesh(
+      new THREE.BoxGeometry(3.8, 3.2, 46),
+      new THREE.MeshStandardMaterial({ color: '#0d172a', metalness: 0.9, roughness: 0.15 })
+    );
+    const trainGlow = new THREE.Mesh(
+      new THREE.BoxGeometry(4.0, 0.55, 45),
+      new THREE.MeshBasicMaterial({ color: '#00f0ff' })
+    );
+    trainGroup.add(trainBody, trainGlow);
+    group.add(trainGroup);
+
     animators.push((t) => {
-      halo1.rotation.z = t * 0.35;
+      halo1.rotation.z = t * 0.34;
       halo2.rotation.z = -t * 0.52;
-      laserMat.opacity = 0.42 + Math.sin(t * 3.5) * 0.16;
+      halo3.rotation.z = t * 0.75;
+      laserMat.opacity = 0.44 + Math.sin(t * 3.8) * 0.16;
+      const a = t * 0.22;
+      trainGroup.position.set(195 + Math.cos(a) * 265, 58, -155 + Math.sin(a) * 265);
+      trainGroup.rotation.y = -a;
     });
 
-    // 2. Glowing Cyber Naga Tunnel Arches spanning the highway
-    const archDark = new THREE.MeshStandardMaterial({ color: '#0c1324', metalness: 0.85, roughness: 0.2 });
+    // 3. Instanced Cyber-Naga Highway Portal Arches (3 draw calls total instead of 150!)
+    const archSamples = [];
+    for (let i = 18; i < spline.N; i += 22) archSamples.push(spline.samples[i]);
+    const archDark = new THREE.MeshStandardMaterial({ color: '#0a1222', metalness: 0.88, roughness: 0.18 });
     const archCyan = new THREE.MeshBasicMaterial({ color: '#00f0ff' });
     const archPink = new THREE.MeshBasicMaterial({ color: '#ff1f7a' });
-    for (let i = 20; i < spline.N; i += 24) {
-      const smp = spline.samples[i];
-      const arch = new THREE.Group();
-      const gm = new THREE.Matrix4().makeBasis(smp.right, smp.normal, smp.tangent.clone().negate());
-      arch.position.copy(smp.pos);
-      arch.quaternion.setFromRotationMatrix(gm);
-      const hw = smp.width * 0.5 + 3.8;
-      const isPink = (i / 24) % 2 === 1;
-      const stripMat = isPink ? archPink : archCyan;
 
-      const pL = new THREE.Mesh(new THREE.BoxGeometry(1.1, 10.5, 1.4), archDark); pL.position.set(-hw, 5.2, 0);
-      const pR = new THREE.Mesh(new THREE.BoxGeometry(1.1, 10.5, 1.4), archDark); pR.position.set(hw, 5.2, 0);
-      const top = new THREE.Mesh(new THREE.BoxGeometry(hw * 2 + 2.4, 1.1, 1.4), archDark); top.position.set(0, 10.4, 0);
-      const neonL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 9.8, 0.28), stripMat); neonL.position.set(-hw + 0.6, 5.2, 0.72);
-      const neonR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 9.8, 0.28), stripMat); neonR.position.set(hw - 0.6, 5.2, 0.72);
-      const neonT = new THREE.Mesh(new THREE.BoxGeometry(hw * 2, 0.32, 0.32), stripMat); neonT.position.set(0, 9.9, 0.72);
-      arch.add(pL, pR, top, neonL, neonR, neonT);
-      group.add(arch);
-    }
+    const pInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1.1, 10.6, 1.5), archDark, archSamples.length * 2);
+    const tInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1.2, 1.5), archDark, archSamples.length);
+    const nCInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.36, 0.36), archCyan, Math.ceil(archSamples.length / 2));
+    const nPInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.36, 0.36), archPink, Math.floor(archSamples.length / 2));
+    const ao = new THREE.Object3D();
+    const qBase = new THREE.Quaternion();
+    let pi = 0, ci = 0, pki = 0;
 
-    // 3. Floating Khmer-Cyberpunk Neon Hologram Billboards
+    archSamples.forEach((smp, idx) => {
+      qBase.setFromRotationMatrix(new THREE.Matrix4().makeBasis(smp.right, smp.normal, smp.tangent.clone().negate()));
+      const hw = smp.width * 0.5 + 3.9;
+      for (const side of [-1, 1]) {
+        ao.position.copy(smp.pos).addScaledVector(smp.right, side * hw).addScaledVector(smp.normal, 5.3);
+        ao.quaternion.copy(qBase);
+        ao.scale.set(1, 1, 1);
+        ao.updateMatrix();
+        pInst.setMatrixAt(pi++, ao.matrix);
+      }
+      ao.position.copy(smp.pos).addScaledVector(smp.normal, 10.5);
+      ao.quaternion.copy(qBase);
+      ao.scale.set(hw * 2 + 2.4, 1, 1);
+      ao.updateMatrix();
+      tInst.setMatrixAt(idx, ao.matrix);
+
+      ao.position.copy(smp.pos).addScaledVector(smp.normal, 9.8).addScaledVector(smp.tangent, -0.78);
+      ao.scale.set(hw * 2, 1, 1);
+      ao.updateMatrix();
+      if (idx % 2 === 0 && ci < nCInst.count) nCInst.setMatrixAt(ci++, ao.matrix);
+      else if (pki < nPInst.count) nPInst.setMatrixAt(pki++, ao.matrix);
+    });
+    for (const im of [pInst, tInst, nCInst, nPInst]) { im.instanceMatrix.needsUpdate = true; group.add(im); }
+
+    // 4. Floating Khmer-Cyberpunk Neon Hologram Billboards
     const billboards = [
-      { idx: 48, side: -1, t: 'អង្គរ 2099', s: 'URA-ANGKOR SECTOR 09', ca: '#00f0ff', cb: '#ff1f7a' },
-      { idx: 155, side: 1, t: 'NEO KHMER', s: 'HYPERDRIVE CIRCUIT', ca: '#ff1f7a', cb: '#ffd000' },
-      { idx: 265, side: -1, t: 'ភ្នំពេញ GT', s: 'PLASMA TURBO LAB', ca: '#00f0ff', cb: '#a6ff00' },
-      { idx: 390, side: 1, t: 'GARUDA-X', s: 'QUANTUM OVERDRIVE', ca: '#ffd000', cb: '#00f0ff' },
-      { idx: 505, side: -1, t: 'CYBER NAGA', s: 'APEX TERMINAL', ca: '#ff1f7a', cb: '#00f0ff' },
+      { idx: 44, side: -1, t: 'អង្គរ 2099', s: 'URA-ANGKOR SECTOR 09', ca: '#00f0ff', cb: '#ff1f7a' },
+      { idx: 150, side: 1, t: 'NEO KHMER', s: 'HYPERDRIVE CIRCUIT', ca: '#ff1f7a', cb: '#ffd000' },
+      { idx: 262, side: -1, t: 'ភ្នំពេញ GT', s: 'PLASMA TURBO LAB', ca: '#00f0ff', cb: '#a6ff00' },
+      { idx: 386, side: 1, t: 'GARUDA-X', s: 'QUANTUM OVERDRIVE', ca: '#ffd000', cb: '#00f0ff' },
+      { idx: 500, side: -1, t: 'CYBER NAGA', s: 'APEX TERMINAL', ca: '#ff1f7a', cb: '#00f0ff' },
     ];
     for (const b of billboards) {
       const smp = spline.samples[b.idx % spline.N];
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(24, 12), makeNeonSign(b.t, b.s, b.ca, b.cb));
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(25, 12.5), makeNeonSign(b.t, b.s, b.ca, b.cb));
       sign.position.copy(smp.pos)
-        .addScaledVector(smp.right, b.side * (smp.width * 0.5 + 17))
-        .addScaledVector(smp.normal, 12.5);
+        .addScaledVector(smp.right, b.side * (smp.width * 0.5 + 18))
+        .addScaledVector(smp.normal, 13);
       sign.lookAt(smp.pos.x, smp.pos.y + 8, smp.pos.z);
       group.add(sign);
       const baseY = sign.position.y;
-      animators.push((t) => {
-        sign.position.y = baseY + Math.sin(t * 2.1 + b.idx) * 0.9;
-      });
+      animators.push((t) => { sign.position.y = baseY + Math.sin(t * 2.0 + b.idx) * 0.9; });
     }
 
-    // 4. Cyberpunk Megastructure Towers + Vertical Data Streams
-    const megaMat = new THREE.MeshStandardMaterial({ color: '#090f1d', roughness: 0.22, metalness: 0.85 });
-    for (let i = 0; i < 42; i++) {
-      const ang = (i / 42) * Math.PI * 2;
-      const rad = 310 + (i % 5) * 68;
+    // 5. Instanced High-Density Cyber Megastructure City (1 draw call for 48 neon skyscrapers!)
+    const cyberFacade = getBuildingFacadeTexture('cyber');
+    const megaMat = new THREE.MeshStandardMaterial({
+      map: cyberFacade,
+      emissiveMap: cyberFacade,
+      emissive: '#ffffff',
+      emissiveIntensity: 0.72,
+      roughness: 0.2,
+      metalness: 0.85,
+    });
+    const megaList = [];
+    for (let i = 0; i < 48; i++) {
+      const ang = (i / 48) * Math.PI * 2;
+      const rad = 295 + (i % 5) * 65;
       const mx = 200 + Math.cos(ang) * rad;
       const mz = -50 + Math.sin(ang) * rad;
-      if (!isClearOfTrack(spline, mx, mz, 36)) continue;
-      const bw = 20 + (i % 4) * 8;
-      const bh = 75 + (i % 7) * 28;
-      const tower = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bw), megaMat);
-      tower.position.set(mx, bh * 0.5 - 2, mz);
-      group.add(tower);
-
-      const stripeMat = i % 2 === 0 ? archCyan : archPink;
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(bw + 0.8, 1.6, bw + 0.8), stripeMat);
-      stripe.position.set(mx, bh - 8, mz);
-      const vBar = new THREE.Mesh(new THREE.BoxGeometry(1.1, bh * 0.85, 1.1), stripeMat);
-      vBar.position.set(mx + bw * 0.51, bh * 0.45, mz + bw * 0.51);
-      group.add(stripe, vBar);
+      if (!isClearOfTrack(spline, mx, mz, 35)) continue;
+      megaList.push({ x: mx, z: mz, w: 22 + (i % 4) * 8, h: 85 + (i % 7) * 32 });
+    }
+    if (megaList.length) {
+      const mInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), megaMat, megaList.length);
+      const mo = new THREE.Object3D();
+      megaList.forEach((b, idx) => {
+        mo.position.set(b.x, b.h * 0.5 - 6, b.z);
+        mo.scale.set(b.w, b.h, b.w);
+        mo.updateMatrix();
+        mInst.setMatrixAt(idx, mo.matrix);
+      });
+      mInst.instanceMatrix.needsUpdate = true;
+      group.add(mInst);
     }
 
-    // Glowing Grid Floor reflection accents
-    const gridHelper = new THREE.GridHelper(1600, 80, '#00f0ff', '#162b52');
-    gridHelper.position.y = -1.0;
-    group.add(gridHelper);
   } else if (course.theme === 'bokor') {
-    // 1. Sea of Clouds below the mountain pass
-    const cloudMat = new THREE.MeshBasicMaterial({
-      color: '#dce6ed',
-      transparent: true,
-      opacity: 0.58,
-    });
-    const clouds = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), cloudMat);
-    clouds.rotation.x = -Math.PI / 2;
-    clouds.position.y = 4.5;
-    group.add(clouds);
+    // 1. Multi-layered Drifting Sea of Clouds below the mountain pass
+    const cloudMat1 = new THREE.MeshBasicMaterial({ color: '#d8e4ec', transparent: true, opacity: 0.52 });
+    const cloud1 = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), cloudMat1);
+    cloud1.rotation.x = -Math.PI / 2;
+    cloud1.position.y = 5.5;
+    group.add(cloud1);
 
-    // 2. Old Bokor Palace Hotel & Casino (Historic French Colonial mountain landmark at summit)
+    // 2. Old Bokor Palace Hotel & Casino (French Colonial Historic Ruin with Arches & Weathered Stone)
     const palace = new THREE.Group();
-    palace.position.set(315, 34, 82);
+    palace.position.set(315, 34.5, 82);
     palace.rotation.y = -0.6;
-    const oldWall = new THREE.MeshStandardMaterial({ color: '#9c8f7d', roughness: 0.92 });
-    const oldRoof = new THREE.MeshStandardMaterial({ color: '#6b3b2d', roughness: 0.85 });
-    const darkWin = new THREE.MeshStandardMaterial({ color: '#1b2026', roughness: 0.4 });
-    const mainB = new THREE.Mesh(new THREE.BoxGeometry(44, 15, 18), oldWall); mainB.position.y = 7.5;
-    const roofB = new THREE.Mesh(new THREE.BoxGeometry(46, 4.5, 20), oldRoof); roofB.position.y = 17;
-    const wingL = new THREE.Mesh(new THREE.BoxGeometry(14, 18, 22), oldWall); wingL.position.set(-22, 9, 2);
-    const wingR = new THREE.Mesh(new THREE.BoxGeometry(14, 18, 22), oldWall); wingR.position.set(22, 9, 2);
+    const oldWall = new THREE.MeshStandardMaterial({
+      map: getAngkorStoneTextures(false).map,
+      color: '#b8a894',
+      roughness: 0.92,
+    });
+    const oldRoof = new THREE.MeshStandardMaterial({ color: '#6e3628', roughness: 0.85 });
+    const darkArch = new THREE.MeshStandardMaterial({ color: '#171c22', roughness: 0.5 });
+
+    const mainB = new THREE.Mesh(new THREE.BoxGeometry(48, 16, 18), oldWall); mainB.position.y = 8;
+    const roofB = new THREE.Mesh(new THREE.ConeGeometry(34, 7.5, 4), oldRoof);
+    roofB.rotation.y = Math.PI / 4; roofB.scale.set(1.25, 1, 0.52); roofB.position.y = 19.5;
+    const wingL = new THREE.Mesh(new THREE.BoxGeometry(15, 19, 23), oldWall); wingL.position.set(-24, 9.5, 2);
+    const wingR = new THREE.Mesh(new THREE.BoxGeometry(15, 19, 23), oldWall); wingR.position.set(24, 9.5, 2);
     palace.add(mainB, roofB, wingL, wingR);
-    for (let x = -16; x <= 16; x += 6.4) {
-      const w = new THREE.Mesh(new THREE.BoxGeometry(2.6, 4.5, 0.5), darkWin);
-      w.position.set(x, 8, 9.2);
+    for (let x = -18; x <= 18; x += 6) {
+      const w = new THREE.Mesh(new THREE.BoxGeometry(2.8, 5.2, 0.6), darkArch);
+      w.position.set(x, 8.5, 9.2);
       palace.add(w);
     }
     group.add(palace);
 
-    // 3. Old Catholic Church spire on the ridge
+    // 3. Old Bokor Catholic Church & Lok Yeay Mao Highland Monument
     const church = new THREE.Group();
     church.position.set(165, 23, -155);
-    const chBody = new THREE.Mesh(new THREE.BoxGeometry(12, 11, 22), oldWall); chBody.position.y = 5.5;
-    const chTower = new THREE.Mesh(new THREE.BoxGeometry(6, 22, 6), oldWall); chTower.position.set(0, 11, -11);
-    const chSpire = new THREE.Mesh(new THREE.ConeGeometry(4.2, 9, 4), oldRoof); chSpire.position.set(0, 26.5, -11);
+    const chBody = new THREE.Mesh(new THREE.BoxGeometry(13, 12, 24), oldWall); chBody.position.y = 6;
+    const chTower = new THREE.Mesh(new THREE.BoxGeometry(6.5, 24, 6.5), oldWall); chTower.position.set(0, 12, -12);
+    const chSpire = new THREE.Mesh(new THREE.ConeGeometry(4.5, 10, 4), oldRoof); chSpire.position.set(0, 29, -12);
     church.add(chBody, chTower, chSpire);
     group.add(church);
 
-    // 4. Lok Yeay Mao Monument Silhouette overlooking the valley
-    const mao = new THREE.Group();
-    mao.position.set(95, 14, 70);
-    const maoMat = new THREE.MeshStandardMaterial({ color: '#3b4240', roughness: 0.75 });
-    const ped = new THREE.Mesh(new THREE.BoxGeometry(14, 10, 14), oldWall); ped.position.y = 5;
-    const body = new THREE.Mesh(new THREE.ConeGeometry(6.5, 24, 8), maoMat); body.position.y = 21;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(3.2, 10, 10), maoMat); head.position.y = 33;
-    mao.add(ped, body, head);
-    group.add(mao);
-
-    // 5. Mountain Cliffs & Highland Pine/Cloud-Forest Trees
-    const rockMat = new THREE.MeshStandardMaterial({ color: '#424b46', roughness: 0.95 });
-    const treeMat = new THREE.MeshStandardMaterial({ color: '#213d2a', roughness: 0.9 });
-    for (let i = 0; i < 60; i++) {
-      const smp = spline.samples[(i * 10) % spline.N];
-      const side = i % 2 === 0 ? 1 : -1;
-      const p = smp.pos.clone().addScaledVector(smp.right, side * (smp.width * 0.5 + 14 + (i % 4) * 6));
-      if (!isClearOfTrack(spline, p.x, p.z, 19)) continue;
-      if (i % 3 === 0) {
-        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(9 + (i % 5) * 3, 0), rockMat);
-        rock.position.set(p.x, p.y - 2, p.z);
-        group.add(rock);
-      } else {
-        const pine = new THREE.Mesh(new THREE.ConeGeometry(4.2, 14 + (i % 4) * 3, 7), treeMat);
-        pine.position.set(p.x, p.y + 5, p.z);
-        group.add(pine);
+    // 4. Misty Highland Cloud-Forest Trees + Warm Amber Mountain Fog Lamps
+    const trees = [];
+    const glowAmber = getGlowTexture('#ffaa44');
+    for (let i = 0; i < spline.N; i += 14) {
+      const smp = spline.samples[i];
+      const side = i % 28 === 0 ? 1 : -1;
+      const p = smp.pos.clone().addScaledVector(smp.right, side * (smp.width * 0.5 + 14 + (i % 3) * 5));
+      if (isClearOfTrack(spline, p.x, p.z, 19)) {
+        trees.push({ x: p.x, y: p.y - 1.0, z: p.z, h: 10 + (i % 5) * 2.5, scale: 0.95 + (i % 3) * 0.25 });
+      }
+      if (i % 28 === 0) {
+        const lp = smp.pos.clone().addScaledVector(smp.right, -side * (smp.width * 0.5 + 4.4));
+        const halo = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: glowAmber, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        halo.scale.set(5.2, 5.2, 1);
+        halo.position.set(lp.x, lp.y + 6.5, lp.z);
+        group.add(halo);
       }
     }
-  } else if (course.theme === 'kampot') {
-    // 1. Praek Tuek Chhu River + Old French Steel Truss Bridge
-    const riverMat = new THREE.MeshStandardMaterial({ color: '#1b89a8', roughness: 0.14, metalness: 0.55 });
-    const river = new THREE.Mesh(new THREE.PlaneGeometry(160, 1600), riverMat);
-    river.rotation.x = -Math.PI / 2;
-    river.position.set(-140, -0.5, -20);
-    group.add(river);
+    addInstancedForest(group, trees);
 
-    // 2. White Gleaming Salt Fields (Salt Pans + Pyramids of Kampot Sea Salt)
-    const saltWater = new THREE.MeshStandardMaterial({ color: '#ccebf5', roughness: 0.12, metalness: 0.45 });
-    const saltPileMat = new THREE.MeshStandardMaterial({ color: '#f7f7f2', roughness: 0.85 });
+  } else if (course.theme === 'kampot') {
+    // 1. Animated Sparkling Praek Tuek Chhu River + Steel Truss Old French Bridge
+    const riverMat = new THREE.MeshStandardMaterial({
+      color: '#1888ab',
+      bumpMap: waterBump,
+      bumpScale: 0.32,
+      roughness: 0.12,
+      metalness: 0.62,
+    });
+    const river = new THREE.Mesh(new THREE.PlaneGeometry(175, 1800), riverMat);
+    river.rotation.x = -Math.PI / 2;
+    river.position.set(-142, -0.55, -20);
+    group.add(river);
+    animators.push((t) => { waterBump.offset.set(t * 0.01, t * 0.03); });
+
+    // Steel Truss Bridge Landmark spanning river near start straight
+    const bridge = new THREE.Group();
+    bridge.position.set(-142, 4.5, -180);
+    const steelMat = new THREE.MeshStandardMaterial({ color: '#45505c', metalness: 0.78, roughness: 0.35 });
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(178, 1.4, 11), steelMat);
+    bridge.add(deck);
+    for (let x = -72; x <= 72; x += 24) {
+      const arch = new THREE.Mesh(new THREE.TorusGeometry(11.5, 0.55, 6, 12, Math.PI), steelMat);
+      arch.position.set(x, 0.5, -5.2);
+      const arch2 = arch.clone(); arch2.position.z = 5.2;
+      bridge.add(arch, arch2);
+    }
+    group.add(bridge);
+
+    // 2. Gleaming Kampot Salt Fields (Reflective Salt Pans + White Sea Salt Pyramids)
+    const saltWater = new THREE.MeshStandardMaterial({ color: '#d4f0fa', roughness: 0.08, metalness: 0.55 });
+    const saltPileMat = new THREE.MeshStandardMaterial({ color: '#f8f8f4', roughness: 0.82 });
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < 3; c++) {
         const sx = 120 + c * 62;
@@ -570,66 +783,51 @@ export function buildScenery(scene, spline, course) {
         if (!isClearOfTrack(spline, sx, sz, 28)) continue;
         const pan = new THREE.Mesh(new THREE.PlaneGeometry(48, 42), saltWater);
         pan.rotation.x = -Math.PI / 2;
-        pan.position.set(sx, -0.8, sz);
+        pan.position.set(sx, -0.65, sz);
         group.add(pan);
-        const pyramid = new THREE.Mesh(new THREE.ConeGeometry(5.5, 4.2, 4), saltPileMat);
-        pyramid.position.set(sx + 10, 1.2, sz + 8);
+        const pyramid = new THREE.Mesh(new THREE.ConeGeometry(5.8, 4.5, 4), saltPileMat);
+        pyramid.position.set(sx + 10, 1.5, sz + 8);
         group.add(pyramid);
       }
     }
 
-    // 3. Famous Kampot Giant Durian Roundabout Monument
+    // 3. Iconic Kampot Giant Durian Roundabout Monument
     const durianGroup = new THREE.Group();
-    durianGroup.position.set(175, -1, 145);
-    const ped = new THREE.Mesh(
-      new THREE.CylinderGeometry(12, 14, 3.2, 18),
-      new THREE.MeshStandardMaterial({ color: '#e6dfd1', roughness: 0.7 })
-    );
+    durianGroup.position.set(175, -0.6, 145);
+    const ped = new THREE.Mesh(new THREE.CylinderGeometry(13, 15, 3.2, 20), new THREE.MeshStandardMaterial({ color: '#ece5d8', roughness: 0.65 }));
     ped.position.y = 1.6;
     const durian = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(7.2, 1),
-      new THREE.MeshStandardMaterial({ color: '#9ab33b', roughness: 0.7, flatShading: true })
+      new THREE.IcosahedronGeometry(7.5, 2),
+      new THREE.MeshStandardMaterial({ color: '#9eb83b', roughness: 0.68, flatShading: true })
     );
-    durian.scale.set(0.85, 1.22, 0.85);
-    durian.position.y = 11.5;
+    durian.scale.set(0.84, 1.24, 0.84);
+    durian.position.y = 11.8;
     durianGroup.add(ped, durian);
     group.add(durianGroup);
 
-    // 4. Pastel French Colonial Shophouses along the riverfront & town
-    const pastelColors = ['#f2d479', '#f0b89c', '#e8e2d0', '#b8dcd4', '#e5c17d'];
-    const terracotta = new THREE.MeshStandardMaterial({ color: '#a8482f', roughness: 0.82 });
-    for (let i = 0; i < spline.N; i += 28) {
+    // 4. Pastel French Colonial Shophouses with Green Shutters Texture
+    const colonialTex = getBuildingFacadeTexture('colonial');
+    const colMat = new THREE.MeshStandardMaterial({ map: colonialTex, roughness: 0.72 });
+    const terracotta = new THREE.MeshStandardMaterial({ color: '#a8462c', roughness: 0.82 });
+    const palms = [];
+    for (let i = 0; i < spline.N; i += 24) {
       const smp = spline.samples[i];
-      const pos = smp.pos.clone().addScaledVector(smp.right, -(smp.width * 0.5 + 15));
-      if (!isClearOfTrack(spline, pos.x, pos.z, 20)) continue;
-      const house = new THREE.Group();
-      const bMat = new THREE.MeshStandardMaterial({ color: pastelColors[i % pastelColors.length], roughness: 0.75 });
-      const body = new THREE.Mesh(new THREE.BoxGeometry(12, 9.5, 10), bMat); body.position.y = 4.75;
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(9.2, 4.2, 4), terracotta); roof.rotation.y = Math.PI / 4; roof.position.y = 11.5;
-      house.add(body, roof);
-      house.position.set(pos.x, pos.y - 0.8, pos.z);
-      house.lookAt(smp.pos.x, pos.y, smp.pos.z);
-      group.add(house);
+      const pos = smp.pos.clone().addScaledVector(smp.right, -(smp.width * 0.5 + 15.5));
+      if (isClearOfTrack(spline, pos.x, pos.z, 20)) {
+        const house = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(13, 10, 11), colMat); body.position.y = 5;
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(10, 4.6, 4), terracotta); roof.rotation.y = Math.PI / 4; roof.position.y = 12.2;
+        house.add(body, roof);
+        house.position.set(pos.x, pos.y - 0.6, pos.z);
+        house.lookAt(smp.pos.x, pos.y, smp.pos.z);
+        group.add(house);
+      }
+      const pp = smp.pos.clone().addScaledVector(smp.right, smp.width * 0.5 + 13);
+      if (isClearOfTrack(spline, pp.x, pp.z, 19)) {
+        palms.push({ x: pp.x, y: pp.y - 0.5, z: pp.z, h: 11 + (i % 4) * 2, rot: i });
+      }
     }
-
-    // 5. Kampot Pepper Plantation Green Trellis Rows & Distant Elephant Mountains
-    const pepperMat = new THREE.MeshStandardMaterial({ color: '#2b6b33', roughness: 0.85 });
-    for (let i = 0; i < 36; i++) {
-      const px = 420 + (i % 6) * 16;
-      const pz = -260 + Math.floor(i / 6) * 28;
-      if (!isClearOfTrack(spline, px, pz, 26)) continue;
-      const trellis = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.4, 5.2, 6), pepperMat);
-      trellis.position.set(px, 2.2, pz);
-      group.add(trellis);
-    }
-
-    const mtnMat = new THREE.MeshStandardMaterial({ color: '#3b646e', roughness: 0.95 });
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      const mtn = new THREE.Mesh(new THREE.ConeGeometry(160 + (i % 3) * 50, 120 + (i % 4) * 35, 6), mtnMat);
-      mtn.position.set(160 + Math.cos(a) * 680, 50, -40 + Math.sin(a) * 680);
-      group.add(mtn);
-    }
+    addInstancedPalms(group, palms);
   }
 
   scene.add(group);
@@ -639,6 +837,9 @@ export function buildScenery(scene, spline, course) {
       for (const fn of animators) fn(t);
     },
     dispose() {
+      group.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+      });
       scene.remove(group);
     },
   };
