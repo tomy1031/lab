@@ -1,0 +1,516 @@
+// data/guide.js — the island field guide (島の図鑑, DESIGN §20). One entry per thing the player can learn.
+//
+// cat:        'plant' 🌿 / 'mushroom' 🍄 / 'sea' 🐟 / 'animal' 🦌 / 'danger' 🐍 / 'stone' 🪨
+// name:       the true name (shown from K2 with ？, from K3 with （毒）／（薬） for poison and medicine)
+// provisional: the K1 name the player sees ("赤い実"). Look-alikes share a provisional name, so they land in one bundle.
+// verdict:    'food' | 'food_cook' (eat only cooked) | 'poison' | 'medicine' | 'danger' | 'material'
+// features:   K2 text: how to tell it from its look-alike (1–3 sentences)
+// uses:       K3 text: what it is good for, or how to handle it
+// lookalike:  id of the look-alike, or null
+// where:      habitat, shown from K2
+// when:       season or time hints, shown from K2, or null
+// icon:       one emoji for the sketch frame
+// color:      CSS colour used for the sketch
+import { HOWTO_MORE } from './fieldcraft.js';
+
+export const GUIDE_CATS = {
+  plant: '🌿 植物',
+  mushroom: '🍄 キノコ',
+  sea: '🐟 魚・貝・海の生き物',
+  animal: '🦌 動物・鳥',
+  danger: '🐍 虫・危険な生き物',
+  stone: '🪨 石・素材',
+};
+
+export const GUIDE = {
+  // ── 手順の 項目（§25.4 解体の 手順：K0〜K3。やって 覚える・図鑑・仲間に 教わる） ──────────
+  howto_fire_lay: {
+    cat: 'stone', name: '火の 組み方', provisional: '薪の 組み方', verdict: 'other', howto: true,
+    features: '下に 火口（枯れ草・ヤシの 繊維）、その まわりに 小枝を 三角に 立てかけ（ティピー）、外側に 太い 薪。空気の 通り道を 残す。',
+    uses: 'よく 組むと 火が つきやすい（×0.8〜1.2）。順を まちがえると 空気が 通らない。',
+    lookalike: null, where: 'たき火・炉', when: '火を おこす 前に',
+    icon: '🔥', color: '#e8743b',
+  },
+  howto_trap_snare: {
+    cat: 'animal', name: 'くくり罠の 仕掛け方', provisional: '罠の 仕掛け方（くくり罠）', verdict: 'food', howto: true,
+    features: '獣道（踏まれた 草の 筋・ふん・足跡）の 上に。杭を 打ち、しなる 木を 曲げて、輪を 獲物の 頭の 高さに。引き金は そっと かける。',
+    uses: '野鶏・海鳥・大ネズミが かかる。獣道の 上なら かかりやすさ ×1.5。仕掛けて 6 時間は 人の においで かかりにくい。',
+    lookalike: null, where: '草原・密林・ヤシ林・浜（海鳥は 小魚の エサで）', when: '夕方に 仕掛けて 朝 見回る。12 時間 以内に 回収',
+    icon: '🪤', color: '#8a6a3e',
+  },
+  howto_trap_deadfall: {
+    cat: 'animal', name: '石落としの 組み方', provisional: '罠の 組み方（石落とし）', verdict: 'food', howto: true,
+    features: '3 本の 棒に 切り欠きを 入れて「4 の 字」に 組み、平たい 石を そっと あずける。エサが 必須。',
+    uses: '大ネズミ・ヤシガニ・小さな トカゲが かかる。組みが 甘いと 空で 落ちる。手元で 落とすと 指を 打つ。',
+    lookalike: null, where: '草原・密林・ヤシ林', when: '夜に 動く 獲物 向け',
+    icon: '🪨', color: '#7d7a72',
+  },
+  howto_trap_fish: {
+    cat: 'sea', name: 'かごの 仕掛け方（魚かご・カニかご）', provisional: '罠の 仕掛け方（かご）', verdict: 'food', howto: true,
+    features: '浅い 流れに、口を 下手（しもて）に 向けて 沈め、石で 重しを する。カニかごは 磯の 潮だまりに エサを 入れて。',
+    uses: '川の ハゼ・ウナギ、海の 小魚・ベラ、カニが 入る。',
+    lookalike: null, where: '川・池・浅い 磯', when: '仕掛けて 半日〜1 日',
+    icon: '🧺', color: '#4a8fb0',
+  },
+  howto_butcher_beast: {
+    cat: 'animal', name: 'けものの 下ごしらえ（解体の 手順）', provisional: '解体の 手順（けもの）', verdict: 'food', howto: true,
+    features: '① 下じまい（のどの 線）→ ② 腹の 線に そって 浅く 開く → ③ 中身を そっと 取り出す → ④ 皮を 外す → ⑤ 関節で 切り分ける。',
+    uses: '手順を 知って いるほど 線と 印が 見え、まちがいが 減る。K3 で「さわらない 所」が 分かり、肉が 傷みにくい（B ×0.85）。',
+    lookalike: null, where: 'しとめた けもの（ヤギ・イノシシ・小さい けもの）', when: '倒して 30 分 以内に 下じまい、1 時間 以内に 中身を 出す',
+    icon: '🔪', color: '#8c8570',
+  },
+  howto_butcher_fish: {
+    cat: 'sea', name: '魚の 下ごしらえ', provisional: '下ごしらえの 手順（魚）', verdict: 'food', howto: true,
+    features: '① 釣って すぐ 下じまい（目の 後ろ）→ ② うろこを 尾から 頭へ → ③ 腹を 開いて 中身を 取る。',
+    uses: '締めると 傷みが ×0.7、中身を 取ると さらに ×0.8。毒の ある 魚は K3 で ないと 毒の 場所が 分からない。',
+    lookalike: null, where: '釣った 魚・網の 魚', when: '釣った その 場で',
+    icon: '🐟', color: '#4a8fb0',
+  },
+  howto_butcher_bird: {
+    cat: 'animal', name: '鳥の 下ごしらえ', provisional: '下ごしらえの 手順（鳥）', verdict: 'food', howto: true,
+    features: '① 羽を つまんで 引く（湯に つけると 楽）→ ② 腹を 短く 開いて 中身を 取る。',
+    uses: '羽根は 矢羽根・ウキ・詰め物に 使える。',
+    lookalike: null, where: '海鳥・野鶏', when: 'しとめて すぐ',
+    icon: '🪶', color: '#c9a96a',
+  },
+  // ── 🌿 植物 ─────────────────────────────────────────────
+  berry: {
+    cat: 'plant', name: '野イチゴ', provisional: '赤い実', verdict: 'food',
+    features: '実が下向きにつく。葉はギザギザで3枚1組。つぶすと甘いにおいがする。',
+    uses: '生で食べる。干して保存もできる。鳥やネズミのエサにもなる。',
+    lookalike: 'red_berry_toxic', where: '草原・川べり', when: '夏ごろ、実が赤く色づく',
+    icon: '🍓', color: '#c0304a',
+  },
+  red_berry_toxic: {
+    cat: 'plant', name: 'ドクベニの実', provisional: '赤い実', verdict: 'poison',
+    features: '実が上向きにつく。葉はつるつるで1枚ずつ。つぶすと青くさいにおいがする。',
+    uses: '毒のペーストにする。ネズミを捕る毒エサの材料になる。',
+    lookalike: 'berry', where: '草原・ヤシ林のふち', when: '夏ごろ',
+    icon: '🍒', color: '#8e2438',
+  },
+  yomogi: {
+    cat: 'plant', name: 'ヨモギ', provisional: '切れこみの葉の草', verdict: 'medicine',
+    features: '葉の裏が白い綿毛でおおわれている。もむと強い香りがする。',
+    uses: '止血に当てる。包帯に混ぜる。蚊よけの煙や茶にもなる。',
+    lookalike: 'numb_weed', where: '草原・川べり', when: '一年中（若葉は春）',
+    icon: '🌿', color: '#6a9a4a',
+  },
+  numb_weed: {
+    cat: 'plant', name: 'シビレ草', provisional: '切れこみの葉の草', verdict: 'poison',
+    features: '葉の裏も緑色で、香りがない。茎が紫がかっている。',
+    uses: '毒矢や毒エサに塗る毒の素材になる。食べると吐く。傷に当てると悪化するので使わない。',
+    lookalike: 'yomogi', where: '草原・やぶのかげ', when: '一年中',
+    icon: '🌱', color: '#5f7a3a',
+  },
+  taro: {
+    cat: 'plant', name: 'タロイモ', provisional: '大きなハート形の葉', verdict: 'food_cook',
+    features: '葉はつや消しで水をはじく。葉柄は葉の内側につく。生で食べると口がしびれるので、必ず加熱する。',
+    uses: '焼く・煮る。葉は包み焼きや雨水受けに使える。',
+    lookalike: 'false_taro', where: '湿地・川べり（地下の球根を掘る）', when: '一年中',
+    icon: '🍠', color: '#7a8a50',
+  },
+  false_taro: {
+    cat: 'plant', name: 'クワズイモ', provisional: '大きなハート形の葉', verdict: 'poison',
+    features: '葉がつやつやしている。葉柄は葉のふちにつく。湿地と密林に生える。加熱しても口がしびれることがある。',
+    uses: '葉は傘や屋根材（防水）にだけ使う。食べない。',
+    lookalike: 'taro', where: '湿地・密林', when: '雨季に葉が広がる',
+    icon: '🥬', color: '#3f6a3a',
+  },
+  banana: {
+    cat: 'plant', name: '野生のバナナ', provisional: '房の実', verdict: 'food',
+    features: '房になった実で、似た毒の実はない。青い実は未熟で、熟すまで3日ほどかかる。',
+    uses: '実を食べる。葉は皿・包み・屋根に。幹の繊維は紐になり、切り口からは水が1杯取れる。',
+    lookalike: null, where: 'ヤシ林の奥', when: '実は3日ほどで熟す',
+    icon: '🍌', color: '#d8b830',
+  },
+  coconut: {
+    cat: 'plant', name: 'ヤシの実', provisional: '大きな丸い実', verdict: 'food',
+    features: '緑の若い実は水が多い。茶色の熟した実は果肉が多い。振って音がしない実は腐っている。',
+    uses: '水・果肉・殻・繊維・油が取れる。割るには鋭い物か石がいる。',
+    lookalike: null, where: 'ヤシ林', when: '一年中',
+    icon: '🥥', color: '#7a8a3a',
+  },
+  breadfruit: {
+    cat: 'plant', name: 'パンノキの実', provisional: 'でこぼこの緑の実', verdict: 'food_cook',
+    features: '黄緑色で、押すと少しへこむのが食べごろ。切ると白い樹液が出る。',
+    uses: '焼いて食べる。生は腹を壊す。樹液はねばねばしていて、接着や罠に使える。',
+    lookalike: null, where: '密林のふち', when: '雨季の終わりごろ',
+    icon: '🍈', color: '#8a9a40',
+  },
+  ginger: {
+    cat: 'plant', name: '野生のショウガ', provisional: '細長い葉の草', verdict: 'medicine',
+    features: '根を折ると黄色くて、辛い香りがする。',
+    uses: '茶や料理に入れる。風邪の薬になる。吐き気もおさえる。',
+    lookalike: 'turmeric', where: '密林', when: '一年中',
+    icon: '🌱', color: '#c9a23a',
+  },
+  turmeric: {
+    cat: 'plant', name: 'ウコン', provisional: '細長い葉の草', verdict: 'medicine',
+    features: '根を折ると濃いオレンジ色で、土のような香りがする。',
+    uses: '炭と混ぜて湿布にする。毒の害を和らげる。布の染めにも使える。',
+    lookalike: 'ginger', where: '密林・湿地のふち', when: '一年中',
+    icon: '🌾', color: '#d98a1c',
+  },
+  dokudami: {
+    cat: 'plant', name: 'ドクダミ', provisional: 'ハート形の小さい葉', verdict: 'medicine',
+    features: '生ぐさい独特のにおいがする。白い十字の花が咲く。',
+    uses: '化膿止めの湿布にする。茶にもなる。',
+    lookalike: null, where: '密林の日陰・川べり', when: '雨季に花が咲く',
+    icon: '🌿', color: '#5e8a5e',
+  },
+  aloe: {
+    cat: 'plant', name: 'アロエ', provisional: '厚い葉の草', verdict: 'medicine',
+    features: '葉が厚く、折ると透明なゼリーが出る。皮のすぐ下の黄色い汁は苦く、飲むと下痢をする。',
+    uses: 'やけどや日焼けに、ゼリーをそのまま塗る。',
+    lookalike: null, where: '浜の奥・岩場', when: '一年中',
+    icon: '🌵', color: '#6fb08a',
+  },
+  lemongrass: {
+    cat: 'plant', name: 'レモングラス', provisional: '細長い葉の草', verdict: 'medicine',
+    features: '葉をもむとレモンの香りがする。ふちで手を切ることがある。',
+    uses: '体にこすると蚊よけになる。脂と練ると長持ちする。茶は気力が出る。',
+    lookalike: 'ginger', where: '草原', when: '一年中',
+    icon: '🌿', color: '#b8c25a',
+  },
+  guava_leaf: {
+    cat: 'plant', name: 'グァバ', provisional: '幹の皮がまだらの木', verdict: 'food',
+    features: '幹の皮がまだらにはがれる。実は黄緑色で、甘い香りがする。',
+    uses: '実は食べられる。葉を煮て茶にすると、下痢に効く。',
+    lookalike: null, where: 'ヤシ林の奥・川べり', when: '実は夏',
+    icon: '🍐', color: '#8aa84a',
+  },
+  neem_fruit: {
+    cat: 'plant', name: 'センダンの実', provisional: '黄色い小さい実', verdict: 'medicine',
+    features: '冬でも枝に残る黄色い実。鳥は食べるが、人がそのまま食べると中毒する。',
+    uses: '炭と一緒に煎じて、虫くだしにする。',
+    lookalike: null, where: '草原', when: '冬',
+    icon: '🟡', color: '#d4c040',
+  },
+  cinchona: {
+    cat: 'plant', name: 'キナの木', provisional: '樹皮の赤い木', verdict: 'medicine',
+    features: '樹皮の内側が赤茶色で、ひどく苦い。山の中腹に数本だけ生える。',
+    uses: '煎じ薬にする。島熱の治療に使う。',
+    lookalike: null, where: '岩山の中腹（数本だけ）', when: '一年中',
+    icon: '🌲', color: '#8a4a30',
+  },
+
+  // ── 🍄 キノコ ───────────────────────────────────────────
+  mushroom_a: {
+    cat: 'mushroom', name: 'キクラゲ', provisional: '茶色い耳の形のキノコ', verdict: 'food_cook',
+    features: '倒木に生え、ぷるぷるしている。似た毒のキノコはない。',
+    uses: '煮込みに入れる。干して保存する。',
+    lookalike: null, where: '倒木・朽ち木（密林）', when: '雨季の後',
+    icon: '🍄', color: '#6b4a3a',
+  },
+  mushroom_b: {
+    cat: 'mushroom', name: 'ヒラタケ', provisional: '灰色の重なるかさ', verdict: 'food_cook',
+    features: '木に重なって生える。柄は短く、横につく。',
+    uses: '焼く・煮る。',
+    lookalike: null, where: '木の幹（密林）', when: '雨季の後',
+    icon: '🍄', color: '#7a7a78',
+  },
+  mushroom_c: {
+    cat: 'mushroom', name: 'シロカサタケ', provisional: '白いキノコ', verdict: 'food_cook',
+    features: '地面に生える。柄の根元がそのまま細い。ひだは薄いピンクから茶色。ドクツボタケに似るので、根元を掘って確かめる。',
+    uses: '焼く・煮る。',
+    lookalike: 'mushroom_toxic', where: '密林の地面', when: '雨季の後',
+    icon: '🍄', color: '#e8dcd0',
+  },
+  mushroom_toxic: {
+    cat: 'mushroom', name: 'ドクツボタケ', provisional: '白いキノコ', verdict: 'poison',
+    features: 'シロカサタケにそっくり。柄の根元にふくろ（つぼ）があり、柄につばがあり、ひだが真っ白。掘って根元を見ないと分からない。',
+    uses: '使わない。食べると2時間後に吐き、幻覚が出る。',
+    lookalike: 'mushroom_c', where: '密林の地面（シロカサタケと同じ場所）', when: '雨季の後',
+    icon: '☠️', color: '#f2f0ea',
+  },
+
+  // ── 🐟 魚・貝・海の生き物 ───────────────────────────────
+  shellfish: {
+    cat: 'sea', name: 'カサガイ・二枚貝', provisional: '岩の貝', verdict: 'food_cook',
+    features: '口が開いたまま閉じない貝は死んでいる。海が赤茶色の日は、貝に毒がある。',
+    uses: '焼いて食べる。生は当たりやすい。エサや殻にも使える。',
+    lookalike: null, where: '岩礁（干潮）', when: '干潮',
+    icon: '🐚', color: '#b89a7a',
+  },
+  urchin: {
+    cat: 'sea', name: 'ウニ', provisional: 'トゲの丸い生き物', verdict: 'food',
+    features: 'トゲが動いていれば生きている。素手で触ると刺さる。',
+    uses: '中の黄色い身を食べる。棒で返して拾う。',
+    lookalike: null, where: '岩礁・サンゴ礁', when: null,
+    icon: '🦔', color: '#3a3040',
+  },
+  puffer: {
+    cat: 'sea', name: 'ハリセン魚', provisional: '丸くふくらむ魚', verdict: 'poison',
+    features: '釣ると丸くふくらむ。体中にトゲがあり、歯がくちばし状。',
+    uses: '皮を干して飾りにする（気力が上がる）。肝には毒がある。',
+    lookalike: null, where: '入り江（釣れる魚の6%）', when: '昼',
+    icon: '🐡', color: '#d8b04a',
+  },
+  sardine: {
+    cat: 'sea', name: 'イワシ風の小魚', provisional: '銀色の小さい魚', verdict: 'food',
+    features: '群れで泳ぐ銀色の小魚。練りエサや貝の身をよく食う。',
+    uses: '食べる・干す。大きい魚のエサにもなる。',
+    lookalike: null, where: '入り江・河口', when: '朝・昼',
+    icon: '🐟', color: '#8fb4c8',
+  },
+  wrasse: {
+    cat: 'sea', name: 'ベラ・スズメダイ風', provisional: '岩のきわの小さい魚', verdict: 'food',
+    features: '岩礁のきわにいる、小さくて色の鮮やかな魚。昼によく釣れ、夜はいない。',
+    uses: '食べる。カニや貝の身をエサにする。',
+    lookalike: null, where: '岩礁・サンゴのきわ', when: '昼（夜はいない）',
+    icon: '🐠', color: '#d06a4a',
+  },
+  jack: {
+    cat: 'sea', name: 'アジ風', provisional: '入り江の中くらいの魚', verdict: 'food',
+    features: '入り江の口で群れる、体がしまった中くらいの魚。朝と夕方の「まずめ」によく釣れる。',
+    uses: '切り身やルアーで釣る。干物にする。',
+    lookalike: 'trevally', where: '入り江の口', when: '朝まずめ・夕まずめ',
+    icon: '🐟', color: '#6a8aa8',
+  },
+  seabream: {
+    cat: 'sea', name: 'ブダイ・クロダイ風', provisional: '岩礁の横長の魚', verdict: 'food',
+    features: '岩礁の底にいる。上げ潮のときに岸へ寄る。カニや貝を食べる。',
+    uses: '焼く・煮る。',
+    lookalike: null, where: '岩礁（底）', when: '朝・夕（上げ潮）',
+    icon: '🐠', color: '#9a8a6a',
+  },
+  grouper: {
+    cat: 'sea', name: 'ハタ', provisional: '大きな斑の魚', verdict: 'food',
+    features: '岩礁の沖の深みにいる大きな魚。夜によく釣れ、生きた小魚を泳がせて釣る。',
+    uses: '切り身にして焼く。大きいので数切れに分けて保存する。',
+    lookalike: null, where: '岩礁の沖の深み', when: '夜',
+    icon: '🐟', color: '#7a6a4a',
+  },
+  trevally: {
+    cat: 'sea', name: 'カスミアジ風', provisional: '大きな回遊魚', verdict: 'food',
+    features: '岩礁の先端や沖を回遊する大きな魚。潮が動くとき、光る物を引くと釣れる。アジに似るが、ずっと大きい。',
+    uses: '切り身や干物にする。大物なので保存に向く。',
+    lookalike: 'jack', where: '岩礁の先端・沖', when: '朝まずめ・潮が動くとき',
+    icon: '🐟', color: '#4a7a9a',
+  },
+  goby: {
+    cat: 'sea', name: 'ハゼ', provisional: '川の小魚', verdict: 'food_cook',
+    features: '川の河口やよどみにいる。底にいて、ミミズや幼虫によく食いつく。',
+    uses: '焼いて食べる。エサにもなる。',
+    lookalike: null, where: '川・河口', when: '夕方・夜',
+    icon: '🐟', color: '#7a8a6a',
+  },
+  eel: {
+    cat: 'sea', name: '滝つぼの大ウナギ', provisional: '長い蛇のような魚', verdict: 'food_cook',
+    features: '滝つぼの底に潜み、夜だけ釣れる。雨の後によく釣れる。ウツボに似るが、ウツボは海の岩穴にいる。',
+    uses: '焼いて食べる。脂が多く、体力がつく。',
+    lookalike: 'moray', where: '滝つぼ（川）', when: '夜・雨の後',
+    icon: '🐍', color: '#4a5a3a',
+  },
+  octopus: {
+    cat: 'sea', name: 'タコ', provisional: '足の多い生き物', verdict: 'food_cook',
+    features: '岩穴や潮だまりに隠れる。色を変えて岩に紛れる。',
+    uses: '焼く・煮る。',
+    lookalike: null, where: 'サンゴ礁・潮だまり（潜って取る）', when: null,
+    icon: '🐙', color: '#c07a6a',
+  },
+  lobster: {
+    cat: 'sea', name: '伊勢エビ', provisional: '赤くてトゲのあるエビ', verdict: 'food_cook',
+    features: '夜にサンゴ礁の岩陰にいる。潜って取る。',
+    uses: '焼いて食べる。食べると気力が上がる。',
+    lookalike: null, where: 'サンゴ礁（夜・潜る）', when: '夜',
+    icon: '🦞', color: '#b03a2a',
+  },
+  crab: {
+    cat: 'sea', name: 'カニ', provisional: '横に歩く生き物', verdict: 'food_cook',
+    features: '岩の隙間に逃げ込む。つかむと、はさみで挟まれることがある。ヤシガニに似るが、ずっと小さい。',
+    uses: '焼く・煮る。エサにもなる。',
+    lookalike: 'coconut_crab', where: '岩礁・マングローブ・浜', when: '潮ごと',
+    icon: '🦀', color: '#c0603a',
+  },
+  coconut_crab: {
+    cat: 'sea', name: 'ヤシガニ', provisional: '大きな赤いカニ', verdict: 'food_cook',
+    features: '夜にヤシ林を歩く大きなカニ。はさまれると切り傷になる。',
+    uses: '焼いて食べる。大きな身がとれる。',
+    lookalike: 'crab', where: 'ヤシ林（夜）', when: '夜',
+    icon: '🦀', color: '#a04a30',
+  },
+  river_fish: {
+    cat: 'sea', name: '川魚', provisional: '川の魚', verdict: 'food_cook',
+    features: '川や滝つぼにいる魚。生は寄生虫が多いので、焼いて食べる。',
+    uses: '焼く・煮る。',
+    lookalike: null, where: '川', when: null,
+    icon: '🐟', color: '#6a8a9a',
+  },
+  seaweed: {
+    cat: 'sea', name: '海藻', provisional: '海の草', verdict: 'food',
+    features: '岩礁や浜に流れつく。干すと塩気のある保存食になる。',
+    uses: '干して保存する。煮ると塩味が少しつく。',
+    lookalike: null, where: '岩礁・浜', when: null,
+    icon: '🌊', color: '#3a7a5a',
+  },
+
+  // ── 🦌 動物・鳥 ─────────────────────────────────────────
+  egg: {
+    cat: 'animal', name: '海鳥の卵', provisional: '白い卵', verdict: 'food',
+    features: '岩山の巣や浜の草むらにある。取ると親鳥につつかれる。',
+    uses: '食べる。',
+    lookalike: null, where: '岩山の巣・浜の草むら', when: '春〜夏',
+    icon: '🥚', color: '#e8dcc0',
+  },
+  seabird: {
+    cat: 'animal', name: '海鳥', provisional: '白い鳥', verdict: 'food_cook',
+    features: '浜や岩山で休む。近づくと一斉に飛ぶ。夕方に浜へ戻って休むところがねらい目。',
+    uses: '肉・羽根（4〜8枚）・骨が取れる。弓やスリングで狙う。',
+    lookalike: null, where: '浜・岩山', when: '夕方に戻って休む',
+    icon: '🐦', color: '#d8d8d0',
+  },
+  junglefowl: {
+    cat: 'animal', name: '野鶏', provisional: '朝に鳴く鳥', verdict: 'food_cook',
+    features: '朝に大きく鳴く。危なくなると草むらやヤブの中へ逃げる。',
+    uses: '肉・羽根（6枚）が取れる。巣の卵も食べられる。',
+    lookalike: null, where: '草原・密林のふち', when: '朝',
+    icon: '🐓', color: '#b04a2a',
+  },
+  goat: {
+    cat: 'animal', name: 'ヤギ', provisional: '草を食べる大きな動物', verdict: 'food',
+    features: '群れで草を食べる。見張り役の1頭が、食べずに頭を上げている。風上から近づくと見つかりやすい。',
+    uses: '肉8切れ、皮、骨、腱、脂、角が取れる。',
+    lookalike: null, where: '草原・岩山（夜明けは川べりの水場）', when: '夜明け・日中の木陰',
+    icon: '🐐', color: '#b8a890',
+  },
+  boar: {
+    cat: 'animal', name: 'イノシシ', provisional: '黒い毛の大きな動物', verdict: 'food_cook',
+    features: '鼻がとても良い。夜明けと夕方に動く。10m以内で目が合うと、突進してくることがある。足跡には後ろに副蹄の点が2つ残る。',
+    uses: '肉12切れ、皮、骨、牙が取れる。生は寄生虫がいるので、必ず焼く。',
+    lookalike: null, where: '密林・やぶの奥・川べりの泥', when: '夜明け・夕方、夜も活発',
+    icon: '🐗', color: '#5a4030',
+  },
+  rat: {
+    cat: 'animal', name: '大ネズミ・トカゲ', provisional: '夜に食べ物を盗む小さな動物', verdict: 'food_cook',
+    features: '夜に食料を盗みに来る。耳と鼻がよく、草むらや巣穴に隠れる。',
+    uses: '肉は焼けば食べられる。エサで罠に誘うと捕まえやすい。',
+    lookalike: null, where: '草原・ヤシ林・基地の周り', when: '夜',
+    icon: '🐀', color: '#8a7a6a',
+  },
+  bee: {
+    cat: 'animal', name: 'ミツバチの巣', provisional: '木の穴の巣', verdict: 'food',
+    features: '密林の木の中にある巣。煙を使わずに取ると、何度も刺される。',
+    uses: 'ハチミツ・蜜ろうが取れる。蜜ろうは防水やろうそくに使える。',
+    lookalike: null, where: '密林', when: '一年中',
+    icon: '🐝', color: '#e0b030',
+  },
+  honey: {
+    cat: 'animal', name: 'ハチミツ', provisional: 'とろとろの甘いもの', verdict: 'food',
+    features: '腐りにくい。傷に塗ると化膿しにくい。',
+    uses: '食べると満腹になり、気力も出る。傷にぬる。',
+    lookalike: null, where: 'ミツバチの巣', when: null,
+    icon: '🍯', color: '#d9a020',
+  },
+
+  // ── 🐍 虫・危険な生き物 ────────────────────────────────
+  grub: {
+    cat: 'danger', name: '幼虫', provisional: '白い芋虫', verdict: 'food_cook',
+    features: '朽ち木やヤシの幹の中にいる白い虫。生で食べるとお腹がつらくなる。',
+    uses: '焼くと食べやすい。釣りの最高級のエサになる。',
+    lookalike: null, where: '朽ち木・ヤシの幹', when: null,
+    icon: '🐛', color: '#e8e0c8',
+  },
+  snake_np: {
+    cat: 'danger', name: '無毒のヘビ', provisional: '長い大きいヘビ', verdict: 'food_cook',
+    features: '頭が丸く、体は細長い。毒はないが、かまれると痛い。ハブとは頭の形が違う。',
+    uses: '肉は焼けば食べられる。皮は素材になる。',
+    lookalike: 'viper', where: '竹やぶ・草原', when: null,
+    icon: '🐍', color: '#7a8a50',
+  },
+  viper: {
+    cat: 'danger', name: 'ハブ', provisional: '三角の頭のヘビ', verdict: 'danger',
+    features: '頭が三角で、体は太く短い。無毒の大ヘビは頭が丸く細長い。',
+    uses: '肉と皮が取れる。ただし咬まれると、ひどい毒にやられる。棒で草むらを叩いてから探る。',
+    lookalike: 'snake_np', where: '密林・竹やぶ・草原のやぶ', when: '夜と雨上がり',
+    icon: '🐍', color: '#6a6a30',
+  },
+  jellyfish: {
+    cat: 'danger', name: 'クラゲ', provisional: '透けた白い影', verdict: 'danger',
+    features: '風が沖から吹く午後に、岸へ寄ってくる。水面に白い影が見える。',
+    uses: '取れる物はない。刺されたら海水で洗う。朝に泳ぐと出会いにくい。',
+    lookalike: null, where: '入り江', when: '午後・風が沖から吹く日',
+    icon: '🎐', color: '#c8d8e8',
+  },
+  moray: {
+    cat: 'danger', name: 'ウツボ', provisional: '岩穴の細長い魚', verdict: 'danger',
+    features: '岩穴の中にいる。かまれると深い傷になる。岩穴の貝やタコを取るときは要注意。',
+    uses: '岩穴に手を入れる前に、棒で先に突く。銛で仕留めれば、体の脂が取れる。',
+    lookalike: 'eel', where: '入り江・岩礁の岩穴', when: null,
+    icon: '🐍', color: '#5a6a3a',
+  },
+  shark: {
+    cat: 'danger', name: 'サメ', provisional: '背びれの大きな影', verdict: 'danger',
+    features: '夕方から夜に、血のにおいに寄ってくる。背びれが見えたら岸へ上がる。浅瀬（深さ1m未満）には来ない。',
+    uses: '銛や槍で鼻先を突けば追い払える。魚を岸の近くでさばかない。',
+    lookalike: null, where: '入り江の沖・難破船の周り', when: '夕方〜夜',
+    icon: '🦈', color: '#6a7a8a',
+  },
+  centipede: {
+    cat: 'danger', name: 'ムカデ', provisional: '赤茶色の細長いむし', verdict: 'danger',
+    features: '竹やぶや朽ち木、地面で寝ると出てくる。刺されると痛みが長く続く。',
+    uses: 'ハンモックや高床の寝台で寝れば出会わない。寝る前に寝床をはたく。',
+    lookalike: null, where: '竹やぶ・朽ち木・地面', when: '夜',
+    icon: '🐛', color: '#a0402a',
+  },
+  mosquito: {
+    cat: 'danger', name: '蚊', provisional: '耳元で鳴くむし', verdict: 'danger',
+    features: '湿地・密林・川に多く、夕方から夜明けにかけて出る。雨季に増える。',
+    uses: '火の近くの煙、レモングラス、泥で防ぐ。風通しの良い浜で寝る。島熱を運ぶ。',
+    lookalike: null, where: '湿地・密林・川', when: '夕方〜夜明け・雨季',
+    icon: '🦟', color: '#4a4a5a',
+  },
+  monitor: {
+    cat: 'danger', name: 'オオトカゲ', provisional: '大きいトカゲ', verdict: 'danger',
+    features: '湿地で縄張りを持つ。近づくと威嚇し、しばらく居続けると咬む。',
+    uses: '離れる。干し肉を投げると去る。倒すと肉6・皮が取れる。',
+    lookalike: null, where: '湿地', when: null,
+    icon: '🦎', color: '#6a7a4a',
+  },
+  stonefish: {
+    cat: 'danger', name: 'オニダルマオコゼ', provisional: '岩みたいな魚', verdict: 'danger',
+    features: '岩礁の浅瀬で、岩に化けている。踏むと毒のトゲで激しく痛む。',
+    uses: '靴を履く。棒で前を探りながら、すり足で歩く。',
+    lookalike: null, where: '岩礁の浅瀬', when: null,
+    icon: '🐠', color: '#8a6a4a',
+  },
+
+  // ── 🪨 石・素材 ─────────────────────────────────────────
+  flint: {
+    cat: 'stone', name: '火打ち石', provisional: '白っぽい割れる石', verdict: 'material',
+    features: '割ると鋭い割れ口ができる。白や灰色の表面で、叩くと火花が出る。',
+    uses: '刃物や火おこし（火打ち）に使う。',
+    lookalike: 'obsidian', where: '岩山・海岸の石', when: null,
+    icon: '🪨', color: '#9a9a9a',
+  },
+  obsidian: {
+    cat: 'stone', name: '黒曜石', provisional: '黒くてつややかな石', verdict: 'material',
+    features: '黒くてガラスのようなつやがあり、割れ口がとても鋭い。',
+    uses: '最も鋭い刃物になる。矢じりやナイフの刃に。',
+    lookalike: 'flint', where: '火山の岩場・川原', when: null,
+    icon: '🪨', color: '#2a2a30',
+  },
+  clay: {
+    cat: 'stone', name: '粘土', provisional: 'ねばねばする土', verdict: 'material',
+    features: '水で練るとねばねばして、形になる。乾くと白っぽくなる。',
+    uses: '土器・かまど・壁の材料になる。焼くと固くなる。',
+    lookalike: null, where: '川べり・湿地', when: null,
+    icon: '🧱', color: '#b07a5a',
+  },
+  coral_stone: {
+    cat: 'stone', name: 'サンゴ石', provisional: '白いもろい石', verdict: 'material',
+    features: '軽くてもろく、穴が多い。海のサンゴが固まったもの。',
+    uses: '砕いて石灰にする。壁の材料にも使える。',
+    lookalike: null, where: '浜・サンゴ礁が陸に上がった所', when: null,
+    icon: '🪸', color: '#e8dcd0',
+  },
+  charcoal_powder: {
+    cat: 'stone', name: '炭の粉', provisional: '黒い粉', verdict: 'medicine',
+    features: '炭を砕いたもの。水で飲むと、食中毒や毒を吸着する。',
+    uses: '食中毒・毒の吸着に使う。煎じ薬と混ぜることもある。',
+    lookalike: null, where: '焚き火のあと（炭を砕く）', when: null,
+    icon: '⚫', color: '#2a2a2a',
+  },
+};
+// §26 how-to entries for the other knowledge-based acts (tracks, coconut, knots, signals, first aid, …)
+for (const [id, e] of Object.entries(HOWTO_MORE)) if (!GUIDE[id]) GUIDE[id] = e;

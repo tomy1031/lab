@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Notes — Starlight Lake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0a1028; --card: rgba(20, 30, 66, 0.72); --ink: #eef4ff; --ink-2: #c4d2ee; --line: rgba(170, 210, 255, 0.22); --accent: #8fd3ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: radial-gradient(120% 80% at 50% 0%, #1c2b5e 0%, var(--bg) 60%) fixed, var(--bg); color: var(--ink);
+    font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif; line-height: 1.85; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+  nav a { color: var(--accent); font-size: 14px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 8px 22px 28px; margin-top: 14px; }
+  h1 { font-size: clamp(24px, 5vw, 34px); line-height: 1.4; margin: 22px 0 10px; }
+  h2 { font-size: 21px; margin: 36px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 26px 0 6px; color: #dbe8ff; }
+  p, li { color: var(--ink-2); font-size: 15px; }
+  strong { color: var(--ink); }
+  a { color: var(--accent); }
+  hr { display: none; }   /* each h2 already draws its own divider */
+  .table { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; color: var(--ink-2); }
+  th { background: rgba(255, 255, 255, 0.06); color: var(--ink); }
+  code { background: rgba(255, 255, 255, 0.08); border-radius: 4px; padding: 0 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><a href="../">← Starlight Lake にもどる</a></nav>
+  <article id="doc"><p>読み込み中…</p></article>
+</div>
+<script type="module">
+  import { marked } from 'https://cdn.jsdelivr.net/npm/marked@17.0.6/lib/marked.esm.js';
+  const doc = document.getElementById('doc');
+  try {
+    const md = await (await fetch('research.md')).text();
+    doc.innerHTML = marked.parse(md);
+    for (const t of doc.querySelectorAll('table')) {          // let wide tables scroll on phones
+      const w = document.createElement('div'); w.className = 'table';
+      t.replaceWith(w); w.appendChild(t);
+    }
+    for (const a of doc.querySelectorAll('a[href^="http"]')) { a.target = '_blank'; a.rel = 'noopener'; }
+  } catch (e) {
+    doc.innerHTML = '<p>研究ノートを読み込めませんでした。<a href="research.md">research.md</a> を直接開いてください。</p>';
+  }
+</script>
+</body>
+</html>

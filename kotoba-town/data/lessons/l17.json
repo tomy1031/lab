@@ -1,0 +1,1341 @@
+{
+  "lesson": 17,
+  "titleJa": "しんぱいしないで ください",
+  "titleEn": "Musts, needn'ts and please-don'ts",
+  "summaryEn": "Use the ない-form to say what someone must not do (～ないで ください), what has to be done (～なければ なりません) and what need not be done (～なくても いいです). Set deadlines with ～までに and tell a doctor what is wrong.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Vないで ください",
+      "meaningEn": "please don't do V (ない-form + で ください); also a kind 'you needn't worry'",
+      "exampleJa": "こんばんは おふろに はいらないで ください。",
+      "exampleEn": "Please don't take a bath tonight."
+    },
+    {
+      "id": "g2",
+      "pattern": "Vなければ なりません",
+      "meaningEn": "must / have to do V (ない-form without い + ければ なりません)",
+      "exampleJa": "まいにち くすりを のまなければ なりません。",
+      "exampleEn": "I have to take medicine every day."
+    },
+    {
+      "id": "g3",
+      "pattern": "Vなくても いいです",
+      "meaningEn": "don't have to do V (ない-form without い + くても いいです)",
+      "exampleJa": "あしたは こなくても いいです。",
+      "exampleEn": "You don't have to come tomorrow."
+    },
+    {
+      "id": "g4",
+      "pattern": "N(time)までに V",
+      "meaningEn": "do V by a deadline (までに = no later than; まで = continuously until)",
+      "exampleJa": "もくようびの 5じまでに しりょうを だします。",
+      "exampleEn": "I will hand in the document by five on Thursday."
+    },
+    {
+      "id": "g5",
+      "pattern": "N(object)は Vなければ なりません",
+      "meaningEn": "the object becomes the topic with は (を → は) when you talk about that thing",
+      "exampleJa": "ごみは あさ ださなければ なりません。",
+      "exampleEn": "Rubbish has to be put out in the morning."
+    },
+    {
+      "id": "g6",
+      "pattern": "N(body)が いたいです／ねつが あります",
+      "meaningEn": "saying what is wrong: N hurts / I have a fever",
+      "exampleJa": "のどが いたいです。ねつも あります。",
+      "exampleEn": "My throat hurts. I have a fever too."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "どう しましたか",
+      "kana": "どう しましたか",
+      "en": "what's the matter?"
+    },
+    {
+      "ja": "のど",
+      "kana": "のど",
+      "en": "throat"
+    },
+    {
+      "ja": "痛い",
+      "kana": "いたい",
+      "en": "painful, sore"
+    },
+    {
+      "ja": "熱",
+      "kana": "ねつ",
+      "en": "fever"
+    },
+    {
+      "ja": "かぜ",
+      "kana": "かぜ",
+      "en": "a cold"
+    },
+    {
+      "ja": "薬",
+      "kana": "くすり",
+      "en": "medicine"
+    },
+    {
+      "ja": "おふろに 入ります",
+      "kana": "おふろに はいります",
+      "en": "take a bath"
+    },
+    {
+      "ja": "お大事に",
+      "kana": "おだいじに",
+      "en": "take care, get well soon"
+    },
+    {
+      "ja": "心配します",
+      "kana": "しんぱいします",
+      "en": "worry"
+    },
+    {
+      "ja": "出かけます",
+      "kana": "でかけます",
+      "en": "go out"
+    },
+    {
+      "ja": "残業します",
+      "kana": "ざんぎょうします",
+      "en": "work overtime"
+    },
+    {
+      "ja": "住所",
+      "kana": "じゅうしょ",
+      "en": "address"
+    },
+    {
+      "ja": "電話番号",
+      "kana": "でんわばんごう",
+      "en": "phone number"
+    },
+    {
+      "ja": "資料",
+      "kana": "しりょう",
+      "en": "document, materials"
+    },
+    {
+      "ja": "会議",
+      "kana": "かいぎ",
+      "en": "meeting"
+    },
+    {
+      "ja": "出します",
+      "kana": "だします",
+      "en": "hand in; put out (rubbish)"
+    },
+    {
+      "ja": "～までに",
+      "kana": "～までに",
+      "en": "by (a deadline)"
+    },
+    {
+      "ja": "全部",
+      "kana": "ぜんぶ",
+      "en": "all of it"
+    },
+    {
+      "ja": "電気を 消します",
+      "kana": "でんきを けします",
+      "en": "switch off the light"
+    },
+    {
+      "ja": "忘れます",
+      "kana": "わすれます",
+      "en": "forget"
+    },
+    {
+      "ja": "持って 来ます",
+      "kana": "もって きます",
+      "en": "bring"
+    },
+    {
+      "ja": "ごみ",
+      "kana": "ごみ",
+      "en": "rubbish, garbage"
+    },
+    {
+      "ja": "もえる ごみ",
+      "kana": "もえる ごみ",
+      "en": "burnable rubbish"
+    },
+    {
+      "ja": "ふくろ",
+      "kana": "ふくろ",
+      "en": "bag"
+    },
+    {
+      "ja": "置きます",
+      "kana": "おきます",
+      "en": "put, leave (a thing somewhere)"
+    }
+  ],
+  "tipsEn": [
+    "Doctors and nurses in Japan send you off with お大事に (take care). You can simply answer ありがとう ございます.",
+    "Rubbish rules are local and strict: the right day, the right bag, and usually by 8 in the morning — not the night before.",
+    "5時までに means 'by five' (a deadline). 5時まで means 'until five' (the whole time). Mixing them up changes the promise you make."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/summary-of-minna-no-nihongo-coursebook-lesson-17.html",
+      "https://jpdb.io/textbook/9/minna-no-nihongo-i/17/lesson-17/vocabulary-list",
+      "https://ysc52.thu.edu.tw/wp-content/uploads/2022/08/第十七課學校規則.pdf"
+    ],
+    "notesEn": "Lesson 17 introduces the ない-form (group I: the い-row sound before ます becomes the あ-row, with い→わ; group II: ます→ない; します→しない, きます→こない) and three patterns built on it: Vないで ください (please don't), Vなければ なりません (must) and Vなくても いいです (need not). It also teaches the deadline particle ～までに (contrast with ～まで), making the object the topic with は, and clinic language (どう しましたか, のどが いたいです, ねつが あります, おだいじに). Natural situations are a doctor's instructions, deadlines at work and house or neighbourhood rules. Typical mistakes are building the ない-form from the ます-stem (✗かきない), ✗かわない said as ✗かあない, ✗きない for こない, shortening なければ なりません wrongly, answering a ～なければ なりませんか question with ✗いいえ、～ないで ください instead of ～なくても いいです, and using まで for a deadline. The three scenes are original: a winter-morning visit to the town clinic, a Thursday deadline from the department manager on a rainy evening, and the neighbour explaining garbage day at night."
+  },
+  "variants": [
+    {
+      "id": "l17a",
+      "titleJa": "のどが いたいです",
+      "titleEn": "At the town clinic",
+      "scene": "clinic",
+      "setup": {
+        "time": "morning",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "You woke up feeling awful on a grey winter morning, so you have come to the town clinic. Tell the nurse at reception what is wrong; then Dr Ishida will see you.",
+      "roleEn": "You work at an office in town and you seem to have a cold. Decide for yourself: where does it hurt, and do you have to go to work tomorrow?",
+      "missionsEn": [
+        {
+          "text": "Tell the nurse what is wrong",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Ask whether you have to fill in another box on the form",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Tell the doctor whether you have to go to work tomorrow",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Ask the doctor one question about what you must do",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        }
+      ],
+      "characters": [
+        "ishida",
+        {
+          "id": "kubo",
+          "nameJa": "久保 ゆい",
+          "kana": "くぼ ゆい",
+          "roleEn": "Nurse and receptionist at the town clinic",
+          "voice": "Leda",
+          "personaJa": "20代後半の 看護師。町の クリニックの 受付も して いる。明るくて てきぱき、患者に やさしい。",
+          "styleJa": "明るく、やさしく、はっきり、ていねいに。",
+          "look": {
+            "sex": "f",
+            "age": 28,
+            "height": 1.58,
+            "build": 0.95,
+            "skin": "#f3d2b8",
+            "hair": {
+              "style": "ponytail",
+              "color": "#2a1c14"
+            },
+            "outfit": {
+              "type": "blouse",
+              "top": "#f6dfe3",
+              "bottom": "#f4f4f0",
+              "accent": "#7fb3c8"
+            },
+            "extras": [
+              "badge"
+            ]
+          }
+        }
+      ],
+      "positions": {
+        "ishida": "doctor",
+        "kubo": "reception"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "おはよう ございます。きょうは どう しましたか。",
+              "kana": "おはよう ございます。きょうは どう しましたか。",
+              "en": "Good morning. What seems to be the trouble today?",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the nurse what is wrong: where it hurts, and whether you have a fever.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "＿＿が いたいです。ねつが あります。",
+            "modelAnswers": [
+              "のどが いたいです。ねつも あります。",
+              "きのうから あたまが いたいです。"
+            ],
+            "branches": [
+              {
+                "id": "with_fever",
+                "whenEn": "Learner mentions having a fever (alone or together with another symptom).",
+                "next": "n3",
+                "exampleJa": "のどが いたいです。ねつも あります。"
+              },
+              {
+                "id": "no_fever_mentioned",
+                "whenEn": "Learner describes pain or another symptom but says nothing about a fever.",
+                "next": "n2",
+                "exampleJa": "きのうから のどが いたいです。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "そうですか。熱も ありますか。",
+              "kana": "そうですか。ねつも ありますか。",
+              "en": "I see. Do you have a fever too?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Answer her: do you have a fever or not?",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "はい、ねつも あります。／いいえ、ねつは ありません。",
+            "modelAnswers": [
+              "はい、すこし ねつが あります。",
+              "いいえ、ねつは ありません。"
+            ],
+            "branches": [
+              {
+                "id": "has_fever",
+                "whenEn": "Learner says they have a fever (or probably have one).",
+                "next": "n3",
+                "exampleJa": "はい、すこし あります。"
+              },
+              {
+                "id": "no_fever",
+                "whenEn": "Learner says they have no fever.",
+                "next": "n3",
+                "exampleJa": "いいえ、ねつは ありません。"
+              }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n3",
+          "focus": "questionnaire",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "わかりました。じゃ、ここに 名前と 住所を 書いて ください。",
+              "kana": "わかりました。じゃ、ここに なまえと じゅうしょを かいて ください。",
+              "en": "All right. Then please write your name and address here.",
+              "gesture": "point",
+              "target": "questionnaire"
+            }
+          ],
+          "listen": {
+            "promptEn": "The form has more boxes: phone number, company name… Ask whether you have to fill in one of them too.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "＿＿も かかなければ なりませんか。",
+            "modelAnswers": [
+              "でんわばんごうも かかなければ なりませんか。",
+              "かいしゃの なまえも かかなければ なりませんか。"
+            ],
+            "branches": [
+              {
+                "id": "phone",
+                "whenEn": "Learner asks whether they have to write their phone number.",
+                "next": "n3_phone",
+                "exampleJa": "でんわばんごうも かかなければ なりませんか。"
+              },
+              {
+                "id": "other_box",
+                "whenEn": "Learner asks about any other box (company or school name, e-mail, age…).",
+                "next": "n3_other",
+                "exampleJa": "かいしゃの なまえも かかなければ なりませんか。"
+              }
+            ],
+            "fallback": "n3_phone"
+          }
+        },
+        {
+          "id": "n3_phone",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "はい、電話番号は 書かなければ なりません。",
+              "kana": "はい、でんわばんごうは かかなければ なりません。",
+              "en": "Yes, you have to write your phone number.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_other",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "いいえ、それは 書かなくても いいですよ。",
+              "kana": "いいえ、それは かかなくても いいですよ。",
+              "en": "No, you don't have to write that.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "learner": "walk",
+          "focus": "door",
+          "say": [
+            {
+              "who": "kubo",
+              "ja": "ありがとう ございます。じゃ、中へ 入って ください。",
+              "kana": "ありがとう ございます。じゃ、なかへ はいって ください。",
+              "en": "Thank you. Now please go in.",
+              "gesture": "beckon",
+              "tts": "ありがとう ございます。じゃ、なかへ はいって ください。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "こんにちは。石田です。どうぞ、すわって ください。",
+              "kana": "こんにちは。いしだです。どうぞ、すわって ください。",
+              "en": "Hello, I'm Ishida. Please have a seat.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "learner": "sit",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "口を あけて ください。……のどが 赤いですね。かぜです。",
+              "kana": "くちを あけて ください。……のどが あかいですね。かぜです。",
+              "en": "Open your mouth, please. … Your throat is red. It's a cold.",
+              "gesture": "think"
+            },
+            {
+              "who": "ishida",
+              "ja": "あしたは 仕事が ありますか。",
+              "kana": "あしたは しごとが ありますか。",
+              "en": "Do you have work tomorrow?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell the doctor about tomorrow: do you have to go to work (or school), or don't you have to?",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "はい、＿＿へ いかなければ なりません。／いいえ、いかなくても いいです。",
+            "modelAnswers": [
+              "はい。あしたは かいぎが ありますから、かいしゃへ いかなければ なりません。",
+              "いいえ。あしたは やすみですから、いかなくても いいです。"
+            ],
+            "branches": [
+              {
+                "id": "must_go",
+                "whenEn": "Learner says they have to go to work or school tomorrow (or have work to do).",
+                "next": "n7_work",
+                "exampleJa": "はい、かいしゃへ いかなければ なりません。"
+              },
+              {
+                "id": "free",
+                "whenEn": "Learner says they don't have to go tomorrow, or that tomorrow is a day off.",
+                "next": "n7_free",
+                "exampleJa": "いいえ、あしたは いかなくても いいです。"
+              }
+            ],
+            "fallback": "n7_work"
+          }
+        },
+        {
+          "id": "n7_work",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "そうですか。でも、残業は しないで ください。早く 帰って ください。",
+              "kana": "そうですか。でも、ざんぎょうは しないで ください。はやく かえって ください。",
+              "en": "I see. But please don't work overtime. Go home early.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_free",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "よかったです。あしたは 出かけないで ください。うちで 休んで ください。",
+              "kana": "よかったです。あしたは でかけないで ください。うちで やすんで ください。",
+              "en": "That's good. Please don't go out tomorrow. Rest at home.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "focus": "medicine",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "薬を 出します。朝と 晩、食べてから 飲んで ください。",
+              "kana": "くすりを だします。あさと ばん、たべてから のんで ください。",
+              "en": "I'll give you some medicine. Take it morning and evening, after you eat.",
+              "gesture": "point",
+              "target": "medicine"
+            },
+            {
+              "who": "ishida",
+              "ja": "それから、今日は おふろに 入らないで ください。",
+              "kana": "それから、きょうは おふろに はいらないで ください。",
+              "en": "Also, please don't take a bath today.",
+              "gesture": "shake_head"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask the doctor one thing you want to know: Do you have to come again? Do you have to take the medicine every day? No bath tomorrow either?",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "＿＿なければ なりませんか。",
+            "modelAnswers": [
+              "また こなければ なりませんか。",
+              "くすりは まいにち のまなければ なりませんか。",
+              "あしたも おふろに はいっては いけませんか。"
+            ],
+            "branches": [
+              {
+                "id": "come_again",
+                "whenEn": "Learner asks whether they have to come to the clinic again.",
+                "next": "n9_come",
+                "exampleJa": "また こなければ なりませんか。"
+              },
+              {
+                "id": "medicine",
+                "whenEn": "Learner asks about the medicine (every day? how long? must they take it?).",
+                "next": "n9_med",
+                "exampleJa": "くすりは まいにち のまなければ なりませんか。"
+              },
+              {
+                "id": "bath",
+                "whenEn": "Learner asks about the bath or shower (tomorrow too? until when?).",
+                "next": "n9_bath",
+                "exampleJa": "あしたも おふろに はいっては いけませんか。"
+              }
+            ],
+            "fallback": "n9_med"
+          }
+        },
+        {
+          "id": "n9_come",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "いいえ、もう 来なくても いいですよ。心配しないで ください。",
+              "kana": "いいえ、もう こなくても いいですよ。しんぱいしないで ください。",
+              "en": "No, you don't have to come again. Please don't worry.",
+              "gesture": "shake_head",
+              "tts": "いいえ、もう こなくても いいですよ。しんぱいしないで ください。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n9_med",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "はい。金曜日まで 毎日 飲まなければ なりません。",
+              "kana": "はい。きんようびまで まいにち のまなければ なりません。",
+              "en": "Yes. You have to take it every day until Friday.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n9_bath",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "あしたまで 入らないで ください。あさっては 入っても いいですよ。",
+              "kana": "あしたまで はいらないで ください。あさっては はいっても いいですよ。",
+              "en": "Please don't until tomorrow. The day after tomorrow you may.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "ishida",
+              "ja": "じゃ、お大事に。",
+              "kana": "じゃ、おだいじに。",
+              "en": "Well then, take care of yourself.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l17b",
+      "titleJa": "もくようびの 5じまでに",
+      "titleEn": "By Thursday at five",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "summer",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy summer evening at the office. Manager Ogawa stops at your desk with a job that has a deadline — and a little later Aoki is about to switch off the lights.",
+      "roleEn": "You are on Ogawa's team. Decide for yourself how busy you are this week, and whether you stay late tonight.",
+      "missionsEn": [
+        {
+          "text": "Tell him what you have to finish this week (or that you are free)",
+          "grammar": [
+            "g2",
+            "g4"
+          ]
+        },
+        {
+          "text": "Find out by when you have to hand the document in",
+          "grammar": [
+            "g4",
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Check what you do NOT have to do",
+          "grammar": [
+            "g3",
+            "g2"
+          ]
+        },
+        {
+          "text": "Ask Aoki not to do something",
+          "grammar": [
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "ogawa",
+        "aoki"
+      ],
+      "positions": {
+        "ogawa": "npc1",
+        "aoki": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "ちょっと いいですか。今週は 忙しいですか。",
+              "kana": "ちょっと いいですか。こんしゅうは いそがしいですか。",
+              "en": "Do you have a moment? Are you busy this week?",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him about your week: is there something you have to finish by a certain day? Or are you not so busy?",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "はい。＿＿までに ＿＿なければ なりません。／いいえ、あまり いそがしくないです。",
+            "modelAnswers": [
+              "はい。あしたまでに レポートを かかなければ なりません。",
+              "いいえ、あまり いそがしくないです。"
+            ],
+            "branches": [
+              {
+                "id": "busy",
+                "whenEn": "Learner says they are busy or names something they have to do or finish.",
+                "next": "n2_busy",
+                "exampleJa": "はい。あしたまでに レポートを ださなければ なりません。"
+              },
+              {
+                "id": "not_busy",
+                "whenEn": "Learner says they are not (so) busy.",
+                "next": "n2_free",
+                "exampleJa": "いいえ、あまり いそがしくないです。"
+              }
+            ],
+            "fallback": "n2_busy"
+          }
+        },
+        {
+          "id": "n2_busy",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。すみませんが、もう 一つ おねがいします。",
+              "kana": "そうですか。すみませんが、もう ひとつ おねがいします。",
+              "en": "I see. I'm sorry, but I have one more thing to ask of you.",
+              "gesture": "bow_light"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_free",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "それは よかったです。じゃ、一つ おねがいします。",
+              "kana": "それは よかったです。じゃ、ひとつ おねがいします。",
+              "en": "That's good. Then I have one thing to ask of you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "calendar",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "この 資料を 英語で 書いて ください。金曜日の 会議で 使います。",
+              "kana": "この しりょうを えいごで かいて ください。きんようびの かいぎで つかいます。",
+              "en": "Please write this document in English. We'll use it at Friday's meeting.",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask by when you have to hand it in — or offer a day yourself.",
+            "grammar": [
+              "g4",
+              "g2",
+              "g5"
+            ],
+            "hintJa": "しりょうは いつまでに ださなければ なりませんか。",
+            "modelAnswers": [
+              "しりょうは いつまでに ださなければ なりませんか。",
+              "わかりました。もくようびまでに だします。"
+            ],
+            "branches": [
+              {
+                "id": "asks_deadline",
+                "whenEn": "Learner asks by when it is due, accepts without naming a day, or offers Thursday or earlier.",
+                "next": "n4_thu",
+                "exampleJa": "いつまでに ださなければ なりませんか。"
+              },
+              {
+                "id": "offers_friday",
+                "whenEn": "Learner offers to hand it in on Friday or later (next week, etc.).",
+                "next": "n4_fri",
+                "exampleJa": "きんようびの あさまでに だします。"
+              }
+            ],
+            "fallback": "n4_thu"
+          }
+        },
+        {
+          "id": "n4_thu",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "木曜日の 5時までに 出して ください。",
+              "kana": "もくようびの ごじまでに だして ください。",
+              "en": "Please hand it in by five o'clock on Thursday.",
+              "gesture": "point",
+              "target": "calendar"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_fri",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "金曜日は ちょっと……。木曜日の 5時までに おねがいします。",
+              "kana": "きんようびは ちょっと……。もくようびの ごじまでに おねがいします。",
+              "en": "Friday is a little… By five on Thursday, please.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "10ページ ありますが、だいじょうぶですか。",
+              "kana": "じゅっページ ありますが、だいじょうぶですか。",
+              "en": "It's ten pages. Will that be all right?",
+              "gesture": "think",
+              "tts": "じゅっページ ありますが、だいじょうぶですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ten pages! Ask whether you have to write all of it (ぜんぶ) — or whether you also have to make copies for the meeting.",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "ぜんぶ ＿＿なければ なりませんか。",
+            "modelAnswers": [
+              "ぜんぶ かかなければ なりませんか。",
+              "コピーも しなければ なりませんか。"
+            ],
+            "branches": [
+              {
+                "id": "all_pages",
+                "whenEn": "Learner asks whether they have to write/translate all of it.",
+                "next": "n6_all",
+                "exampleJa": "ぜんぶ かかなければ なりませんか。"
+              },
+              {
+                "id": "copies",
+                "whenEn": "Learner asks about copying, printing or how to send it.",
+                "next": "n6_copy",
+                "exampleJa": "コピーも しなければ なりませんか。"
+              }
+            ],
+            "fallback": "n6_all"
+          }
+        },
+        {
+          "id": "n6_all",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "いいえ、全部 書かなくても いいです。5ページまで おねがいします。",
+              "kana": "いいえ、ぜんぶ かかなくても いいです。ごページまで おねがいします。",
+              "en": "No, you don't have to write all of it. Up to page five, please.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_copy",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "いいえ、コピーは しなくても いいです。メールで 送って ください。",
+              "kana": "いいえ、コピーは しなくても いいです。メールで おくって ください。",
+              "en": "No, you don't have to make copies. Please send it by e-mail.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "じゃ、よろしく おねがいします。",
+              "kana": "じゃ、よろしく おねがいします。",
+              "en": "Well then, I'm counting on you.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "aoki",
+              "ja": "わたしは もう 帰ります。電気を 消しても いいですか。",
+              "kana": "わたしは もう かえります。でんきを けしても いいですか。",
+              "en": "I'm heading home now. May I switch off the lights?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "You still have work to do. Ask her not to switch the lights off — or, if you are leaving too, tell her it is fine.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "すみません、＿＿ないで ください。まだ しごとが ありますから。",
+            "modelAnswers": [
+              "すみません、けさないで ください。まだ しごとが ありますから。",
+              "はい、いいですよ。わたしも かえります。"
+            ],
+            "branches": [
+              {
+                "id": "keep_on",
+                "whenEn": "Learner asks her not to switch the lights off, or says they are still working.",
+                "next": "n8_stay",
+                "exampleJa": "すみません、けさないで ください。"
+              },
+              {
+                "id": "lights_off",
+                "whenEn": "Learner says it is fine to switch them off, or that they are leaving too.",
+                "next": "end_home",
+                "exampleJa": "はい、いいですよ。わたしも かえります。"
+              }
+            ],
+            "fallback": "n8_stay"
+          }
+        },
+        {
+          "id": "n8_stay",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あ、すみません。残業ですか。手伝いましょうか。",
+              "kana": "あ、すみません。ざんぎょうですか。てつだいましょうか。",
+              "en": "Oh, sorry! Working late? Shall I help you?",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept her help — or tell her kindly that she doesn't have to help and shouldn't worry.",
+            "grammar": [
+              "g3",
+              "g1"
+            ],
+            "hintJa": "だいじょうぶです。＿＿なくても いいです。／しんぱいしないで ください。",
+            "modelAnswers": [
+              "だいじょうぶです。てつだわなくても いいですよ。しんぱいしないで ください。",
+              "ありがとう ございます。じゃ、おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts her help.",
+                "next": "end_help",
+                "exampleJa": "ありがとう ございます。おねがいします。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines: she doesn't have to help, they are fine, she shouldn't worry or wait.",
+                "next": "end_alone",
+                "exampleJa": "だいじょうぶです。てつだわなくても いいですよ。"
+              }
+            ],
+            "fallback": "end_alone"
+          }
+        },
+        {
+          "id": "end_help",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい。じゃ、コーヒーを 持って 来ますね。",
+              "kana": "はい。じゃ、コーヒーを もって きますね。",
+              "en": "Sure. I'll bring us some coffee, then.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_alone",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。じゃ、失礼します。早く 帰って くださいね。",
+              "kana": "そうですか。じゃ、しつれいします。はやく かえって くださいね。",
+              "en": "All right. I'll be going, then. Do go home early, okay?",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_home",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "じゃ、いっしょに 帰りましょう。あ、かさを 忘れないで ください。",
+              "kana": "じゃ、いっしょに かえりましょう。あ、かさを わすれないで ください。",
+              "en": "Then let's leave together. Oh, don't forget your umbrella.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l17c",
+      "titleJa": "ごみの ひ",
+      "titleEn": "Garbage day rules",
+      "scene": "apartment",
+      "setup": {
+        "time": "night",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A clear autumn night. You step out of your flat with a bag of rubbish — just as your neighbour Aya comes home.",
+      "roleEn": "You moved into this building recently and don't know the rules yet. The bicycle by the entrance may or may not be yours — you decide.",
+      "missionsEn": [
+        {
+          "text": "Ask when you have to put the rubbish out",
+          "grammar": [
+            "g2",
+            "g4",
+            "g5"
+          ]
+        },
+        {
+          "text": "Check whether you have to write your name or buy a special bag",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Tell her whether you have to get up early",
+          "grammar": [
+            "g2",
+            "g3"
+          ]
+        },
+        {
+          "text": "Sort out the bicycle: where do you have to leave it?",
+          "grammar": [
+            "g2",
+            "g1"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya"
+      ],
+      "positions": {
+        "mori_aya": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "こんばんは。あ、それは ごみですか。",
+              "kana": "こんばんは。あ、それは ごみですか。",
+              "en": "Good evening. Oh, is that rubbish?",
+              "gesture": "surprised"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "すみません、夜は ごみを 出さないで ください。",
+              "kana": "すみません、よるは ごみを ださないで ください。",
+              "en": "I'm sorry, but please don't put rubbish out at night.",
+              "gesture": "shake_head"
+            }
+          ],
+          "listen": {
+            "promptEn": "Oops. Apologise and ask when you have to put the rubbish out.",
+            "grammar": [
+              "g2",
+              "g4",
+              "g5"
+            ],
+            "hintJa": "すみません。ごみは いつ ださなければ なりませんか。",
+            "modelAnswers": [
+              "すみません。ごみは いつ ださなければ なりませんか。",
+              "すみません。なんじまでに ださなければ なりませんか。"
+            ],
+            "branches": [
+              {
+                "id": "asks_when",
+                "whenEn": "Learner asks when (which day, what time, by when) the rubbish has to go out.",
+                "next": "n2_when",
+                "exampleJa": "ごみは いつ ださなければ なりませんか。"
+              },
+              {
+                "id": "only_sorry",
+                "whenEn": "Learner only apologises or says they understand, without asking when.",
+                "next": "n2_sorry",
+                "exampleJa": "すみません。わかりました。"
+              }
+            ],
+            "fallback": "n2_sorry"
+          }
+        },
+        {
+          "id": "n2_when",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "もえる ごみは 月曜日と 木曜日です。朝 8時までに 出して ください。",
+              "kana": "もえる ごみは げつようびと もくようびです。あさ はちじまでに だして ください。",
+              "en": "Burnable rubbish is Monday and Thursday. Please put it out by eight in the morning.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_sorry",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいえ。もえる ごみは 月曜日と 木曜日の 朝 8時までですよ。",
+              "kana": "いいえ。もえる ごみは げつようびと もくようびの あさ はちじまでですよ。",
+              "en": "That's all right. Burnable rubbish goes out by 8 a.m. on Mondays and Thursdays.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "ほかに 質問は ありますか。",
+              "kana": "ほかに しつもんは ありますか。",
+              "en": "Do you have any other questions?"
+            }
+          ],
+          "listen": {
+            "promptEn": "In some towns you must write your name on the bag, or buy a special bag. Ask whether you have to do that here.",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "ふくろに なまえを ＿＿なければ なりませんか。",
+            "modelAnswers": [
+              "ふくろに なまえを かかなければ なりませんか。",
+              "ごみの ふくろを かわなければ なりませんか。"
+            ],
+            "branches": [
+              {
+                "id": "name",
+                "whenEn": "Learner asks whether they have to write their name (or room number) on the bag.",
+                "next": "n4_name",
+                "exampleJa": "ふくろに なまえを かかなければ なりませんか。"
+              },
+              {
+                "id": "buy_bag",
+                "whenEn": "Learner asks whether they have to buy or use a special bag.",
+                "next": "n4_bag",
+                "exampleJa": "ごみの ふくろを かわなければ なりませんか。"
+              }
+            ],
+            "fallback": "n4_name"
+          }
+        },
+        {
+          "id": "n4_name",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいえ、名前は 書かなくても いいですよ。",
+              "kana": "いいえ、なまえは かかなくても いいですよ。",
+              "en": "No, you don't have to write your name.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_bag",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "はい。この 町の ふくろを 買わなければ なりません。コンビニに あります。",
+              "kana": "はい。この まちの ふくろを かわなければ なりません。コンビニに あります。",
+              "en": "Yes. You have to buy this town's bags. The convenience store has them.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "朝 8時は 早いですね。毎朝 早く 起きますか。",
+              "kana": "あさ はちじは はやいですね。まいあさ はやく おきますか。",
+              "en": "Eight in the morning is early, isn't it? Do you get up early every morning?",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her about your mornings: do you have to get up early (work, class…), or don't you have to?",
+            "grammar": [
+              "g2",
+              "g3"
+            ],
+            "hintJa": "はい、＿＿じに おきなければ なりません。／いいえ、はやく おきなくても いいです。",
+            "modelAnswers": [
+              "はい。かいしゃは 8じからですから、6じに おきなければ なりません。",
+              "いいえ。しごとは 10じからですから、はやく おきなくても いいです。"
+            ],
+            "branches": [
+              {
+                "id": "early",
+                "whenEn": "Learner says they get up early or have to get up early.",
+                "next": "n6_early",
+                "exampleJa": "はい、まいあさ 6じに おきなければ なりません。"
+              },
+              {
+                "id": "late",
+                "whenEn": "Learner says they don't have to get up early or usually get up late.",
+                "next": "n6_late",
+                "exampleJa": "いいえ、はやく おきなくても いいです。"
+              }
+            ],
+            "fallback": "n6_late"
+          }
+        },
+        {
+          "id": "n6_early",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "たいへんですね。でも、ごみの 日は だいじょうぶですね。",
+              "kana": "たいへんですね。でも、ごみの ひは だいじょうぶですね。",
+              "en": "That's tough. But then garbage day will be no problem.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_late",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですね。でも、木曜日は 早く 起きなければ なりませんよ。",
+              "kana": "いいですね。でも、もくようびは はやく おきなければ なりませんよ。",
+              "en": "Lucky you. But on Thursday you'll have to get up early!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "bicycle",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "それから、あの 自転車は あなたのですか。",
+              "kana": "それから、あの じてんしゃは あなたのですか。",
+              "en": "One more thing — is that bicycle yours?",
+              "gesture": "point",
+              "target": "bicycle"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "あそこは 入口ですから、置かないで ください。",
+              "kana": "あそこは いりぐちですから、おかないで ください。",
+              "en": "That's the entrance, so please don't leave it there."
+            }
+          ],
+          "listen": {
+            "promptEn": "If it is yours: apologise and ask where you have to put it. If it isn't: tell her it is not yours.",
+            "grammar": [
+              "g2",
+              "g1"
+            ],
+            "hintJa": "すみません。どこに おかなければ なりませんか。",
+            "modelAnswers": [
+              "すみません。じてんしゃは どこに おかなければ なりませんか。",
+              "いいえ、わたしのじゃ ありません。"
+            ],
+            "branches": [
+              {
+                "id": "asks_where",
+                "whenEn": "Learner says it is theirs, apologises, or asks where to put it.",
+                "next": "end_bike",
+                "exampleJa": "すみません。どこに おかなければ なりませんか。"
+              },
+              {
+                "id": "not_mine",
+                "whenEn": "Learner says the bicycle is not theirs.",
+                "next": "end_notmine",
+                "exampleJa": "いいえ、わたしのじゃ ありません。"
+              }
+            ],
+            "fallback": "end_bike"
+          }
+        },
+        {
+          "id": "end_bike",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "1階の 階段の 後ろに 置いて ください。おねがいしますね。",
+              "kana": "いっかいの かいだんの うしろに おいて ください。おねがいしますね。",
+              "en": "Please put it behind the stairs on the ground floor. Thank you!",
+              "gesture": "point",
+              "target": "stairs",
+              "tts": "いっかいの かいだんの うしろに おいて ください。おねがいしますね。"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_notmine",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "あ、そうですか。すみません。だれのですか……。",
+              "kana": "あ、そうですか。すみません。だれのですか……。",
+              "en": "Oh, I see. I'm sorry. Whose is it, then…?",
+              "gesture": "think"
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "お国では、ごみを いつ 出しますか。",
+        "openerKana": "おくにでは、ごみを いつ だしますか。",
+        "openerEn": "In your country, when do people put the rubbish out?",
+        "topicEn": "Compare everyday rules at home and here (rubbish, bicycles, noise at night). Use しなければ なりません／しなくても いいです／しないで ください and までに; stay within lessons 1–17 (no dictionary form, no た-form, no plain style).",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXTMAKE Films</title>
+<meta name="description" content="株式会社ネクストメイクの公開情報からつくったショートフィルム4本">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Noto+Sans+JP:wght@300;500&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a screening programme — one film per row, the player first, credits beside it. Deliberately one dark look (the films' own ink & paper). */
+  :root {
+    --ink: #0b0e14; --paper: #f2f0eb; --dim: #a9a69e; --rule: #2a2e37; --blue: #5b9be6;
+    --serif: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+    --sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+    --num: "Montserrat", "Helvetica Neue", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--ink); color: var(--paper); font-family: var(--sans); font-weight: 300; line-height: 1.8;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  a { color: var(--blue); }
+  a:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 56px; }
+  .back { font-size: 13px; letter-spacing: .1em; }
+  header { margin: 18px 0 8px; }
+  .eyebrow { font-family: var(--num); font-weight: 400; font-size: 12px; letter-spacing: .4em; color: var(--dim); text-transform: uppercase; }
+  h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(32px, 6vw, 56px); line-height: 1.2; margin: 6px 0 10px; text-wrap: balance; }
+  header p { margin: 0; color: var(--dim); max-width: 40em; font-size: 15px; }
+  .film { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; border-top: 1px solid var(--rule); padding-block: 28px; align-items: start; }
+  video { width: 100%; aspect-ratio: 16 / 9; background: #000; display: block; max-width: 100%; }
+  .num { font-family: var(--num); font-weight: 200; font-size: 44px; line-height: 1; color: var(--dim); }
+  h2 { font-family: var(--serif); font-weight: 500; font-size: 24px; line-height: 1.4; margin: 6px 0 4px; text-wrap: balance; }
+  .meta { font-size: 14px; color: var(--dim); margin: 0 0 10px; }
+  .meta b { font-family: var(--num); font-weight: 400; color: var(--paper); }
+  .info p { margin: 0 0 8px; font-size: 14.5px; }
+  .links { list-style: none; padding: 0; margin: 10px 0 0; font-size: 14px; display: grid; gap: 2px; }
+  .credit { font-size: 12.5px; color: var(--dim); }
+  footer { border-top: 1px solid var(--rule); padding-top: 14px; font-size: 13px; color: var(--dim); }
+  @media (max-width: 760px) { .film { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../">← lab にもどる</a>
+  <header>
+    <div class="eyebrow">Nextmake Films</div>
+    <h1>ショートフィルム 4 本</h1>
+    <p>株式会社ネクストメイク（大阪）の公開情報をもとにつくった映像です。映像とレンダリングは、すべてリポジトリのコードから生成しています。ここでは共有用の 720p 版を流しています。</p>
+  </header>
+
+  <section class="film" id="film-01">
+    <video controls playsinline preload="none" poster="media/01_poster.jpg" src="media/01_invest_in_the_next_720p.mp4"></video>
+    <div class="info">
+      <div class="num">01</div>
+      <h2>Invest in the Next</h2>
+      <p class="meta">投資家向け MV ・ <b>100</b> 秒</p>
+      <p>2030 年の IT 人材不足から始めて、「大阪から、日本と世界の才能をつなぐ」という会社の考えを、曲の拍に合わせて見せる MV。</p>
+      <ul class="links">
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/storyboard.md">絵コンテ</a></li>
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/output/01_invest_in_the_next.mp4">フル画質（GitHub）</a></li>
+      </ul>
+      <p class="credit">音楽：オリジナル（リポジトリで合成）</p>
+    </div>
+  </section>
+
+  <section class="film" id="film-02">
+    <video controls playsinline preload="none" poster="media/02_poster.jpg" src="media/02_yaruka_yaranaika_720p.mp4"></video>
+    <div class="info">
+      <div class="num">02</div>
+      <h2>やるか、やらないか。</h2>
+      <p class="meta">代表・松井亮のポートレート ・ <b>154</b> 秒</p>
+      <p>公式 YouTube での本人の言葉だけで構成した、ドキュメンタリー調のポートレート。</p>
+      <ul class="links">
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/ceo_film.md">構成</a></li>
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/output/02_yaruka_yaranaika.mp4">フル画質（GitHub）</a></li>
+      </ul>
+      <p class="credit">音楽：「スイングバイ」のる（OpenTracks。映像に合わせて編集）</p>
+    </div>
+  </section>
+
+  <section class="film" id="film-03">
+    <video controls playsinline preload="none" poster="media/03_poster.jpg" src="media/03_nmclaw_promo_720p.mp4"></video>
+    <div class="info">
+      <div class="num">03</div>
+      <h2>NMClaw</h2>
+      <p class="meta">AI 業務基盤のプロモーション ・ <b>86</b> 秒</p>
+      <p>「話すだけで、会社の情報が整理される。」AI 業務基盤 NMClaw のしくみを、動く図で一つずつ見せます。</p>
+      <ul class="links">
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/promos.md">構成</a></li>
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/output/03_nmclaw_promo.mp4">フル画質（GitHub）</a></li>
+      </ul>
+      <p class="credit">音楽：「Future Next」FLASH☆BEAT（OpenTracks。映像に合わせて編集）</p>
+    </div>
+  </section>
+
+  <section class="film" id="film-04">
+    <video controls playsinline preload="none" poster="media/04_poster.jpg" src="media/04_ido_promo_720p.mp4"></video>
+    <div class="info">
+      <div class="num">04</div>
+      <h2>IDO（観光 DX）</h2>
+      <p class="meta">観光 DX のプロモーション ・ <b>100</b> 秒</p>
+      <p>「ひとつの QR から、街の物語がひらく。」観光 DX の IDO を、現地で QR を読み取るところから見せます。</p>
+      <ul class="links">
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/promos.md">構成</a></li>
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/output/04_ido_promo.mp4">フル画質（GitHub）</a></li>
+        <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/promos.md#写真クレジットwikimedia-commons">写真クレジット</a></li>
+      </ul>
+      <p class="credit">音楽：オリジナル（リポジトリで合成、3 曲を切り替え）</p>
+    </div>
+  </section>
+
+  <footer>
+    ソースコード・調査メモ：<a href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv">github.com/tomy1031/lab/nextmake-mv</a>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,1380 @@
+{
+  "lesson": 20,
+  "titleJa": "友だちの ことば",
+  "titleEn": "Talking like friends",
+  "summaryEn": "Speak in plain style with friends: 行く／行かない／行った, おいしい, ひまだ, うん／ううん and questions without か — and switch back to です／ます for your manager or teacher.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Plain style: verbs (いく／いかない／いった／いかなかった)",
+      "meaningEn": "plain forms of verbs replace 〜ます／〜ません／〜ました／〜ませんでした between friends",
+      "exampleJa": "きのう どこも いかなかった。",
+      "exampleEn": "I didn't go anywhere yesterday."
+    },
+    {
+      "id": "g2",
+      "pattern": "Plain style: adjectives and nouns (おいしい／ひまだ／テストだった／ひまじゃ ない)",
+      "meaningEn": "い-adjectives just drop です; な-adjectives and nouns use だ／だった／じゃ ない",
+      "exampleJa": "きょうは ひまじゃ ない。",
+      "exampleEn": "I'm not free today."
+    },
+    {
+      "id": "g3",
+      "pattern": "Casual questions: no か, rising intonation (だ is dropped)",
+      "meaningEn": "ask by raising your voice at the end: いく？ ひま？ どうだった？",
+      "exampleJa": "こんばん、ひま？",
+      "exampleEn": "Are you free tonight?"
+    },
+    {
+      "id": "g4",
+      "pattern": "うん／ううん and dropped particles (は・を・へ)",
+      "meaningEn": "casual yes / no; は, を and へ are often left out when the meaning is clear",
+      "exampleJa": "うん、ビール のむ。",
+      "exampleEn": "Yeah, I'll have a beer."
+    },
+    {
+      "id": "g5",
+      "pattern": "〜けど",
+      "meaningEn": "but (casual counterpart of 〜が)",
+      "exampleJa": "むずかしいけど、たのしい。",
+      "exampleEn": "It's hard, but it's fun."
+    },
+    {
+      "id": "g6",
+      "pattern": "Choosing the style: plain with friends, です／ます with seniors",
+      "meaningEn": "plain style is for close friends and family; with a manager, teacher, staff or a stranger keep です／ます",
+      "exampleJa": "（ぶちょうに）はい、もう かきました。",
+      "exampleEn": "(to the manager) Yes, I have already written it."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "うん",
+      "kana": "うん",
+      "en": "yes (casual)"
+    },
+    {
+      "ja": "ううん",
+      "kana": "ううん",
+      "en": "no (casual)"
+    },
+    {
+      "ja": "僕",
+      "kana": "ぼく",
+      "en": "I (used by men, casual)"
+    },
+    {
+      "ja": "こっち",
+      "kana": "こっち",
+      "en": "here, this way (casual)"
+    },
+    {
+      "ja": "要ります",
+      "kana": "いります",
+      "en": "to need"
+    },
+    {
+      "ja": "言葉",
+      "kana": "ことば",
+      "en": "word, language"
+    },
+    {
+      "ja": "〜けど",
+      "kana": "〜けど",
+      "en": "but (casual)"
+    },
+    {
+      "ja": "暇[な]",
+      "kana": "ひま[な]",
+      "en": "free, not busy"
+    },
+    {
+      "ja": "用事",
+      "kana": "ようじ",
+      "en": "something to do, errand"
+    },
+    {
+      "ja": "終わります",
+      "kana": "おわります",
+      "en": "to finish"
+    },
+    {
+      "ja": "電話します",
+      "kana": "でんわします",
+      "en": "to phone"
+    },
+    {
+      "ja": "おなかが すきます",
+      "kana": "おなかが すきます",
+      "en": "to get hungry"
+    },
+    {
+      "ja": "アルバイト",
+      "kana": "アルバイト",
+      "en": "part-time job"
+    },
+    {
+      "ja": "店員",
+      "kana": "てんいん",
+      "en": "shop clerk"
+    },
+    {
+      "ja": "部長",
+      "kana": "ぶちょう",
+      "en": "department manager"
+    },
+    {
+      "ja": "会議",
+      "kana": "かいぎ",
+      "en": "meeting"
+    },
+    {
+      "ja": "強い",
+      "kana": "つよい",
+      "en": "strong"
+    },
+    {
+      "ja": "残念[な]",
+      "kana": "ざんねん[な]",
+      "en": "a pity, too bad"
+    },
+    {
+      "ja": "今晩",
+      "kana": "こんばん",
+      "en": "tonight"
+    },
+    {
+      "ja": "みんなで",
+      "kana": "みんなで",
+      "en": "all together"
+    },
+    {
+      "ja": "どう",
+      "kana": "どう",
+      "en": "how"
+    },
+    {
+      "ja": "北海道",
+      "kana": "ほっかいどう",
+      "en": "Hokkaido"
+    }
+  ],
+  "tipsEn": [
+    "Plain style is not 'rude Japanese' — it is friend-and-family Japanese. Used with a manager, a teacher or a stranger it does sound rude, so when in doubt stay with です／ます.",
+    "Sticking to です／ます with a close friend is never wrong, but it keeps a little distance. When a friend switches to plain style, try answering うん instead of はい.",
+    "Casual questions have no か: just raise your voice at the end — 行く？ ひま？ Saying ひまだ？ or 行くか？ sounds odd or rough."
+  ],
+  "research": {
+    "sources": [
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-20.html/2",
+      "https://blog.gokigen.jp/?p=365",
+      "https://open-exam-prep.com/study-guides/jlpt-n5/grammar-in-depth-1/plain-casual-forms"
+    ],
+    "notesEn": "Lesson 20 introduces plain style (普通体): the plain forms of verbs (dictionary, ない, た, なかった), い-adjectives (drop です), and な-adjectives and nouns (だ, だった, じゃ ない, じゃ なかった), used with close friends and family while です／ます stays the safe choice for seniors, staff and strangers. In conversation か is dropped and the question is carried by rising intonation, だ is dropped in questions (ひま？) and often in answers, は／を／へ are frequently omitted (で, に, から, まで, と are not), うん／ううん replace はい／いいえ, and けど is the casual 'but'. The natural situations are meals, picnics and plans with friends, plus the moment a senior joins and the style has to change. Typical mistakes are keeping か or だ in questions (行くか？ ひまだ？), wrong plain forms (いいた for いった, あらない for ない, いくない for よくない, おいしいだ), dropping particles that must stay, using plain style to a manager or teacher, and the opposite — never leaving です／ます with friends, which sounds distant. The three scenes are original: a cherry-blossom picnic with Fujita and Ana, a night at the izakaya with Minh and off-duty Noguchi, and an evening at the office where the learner talks casually with Fujita, politely with Mr Ogawa, and casually again."
+  },
+  "variants": [
+    {
+      "id": "l20a",
+      "titleJa": "こうえんで おはなみ",
+      "titleEn": "Cherry-blossom picnic with friends",
+      "scene": "park",
+      "setup": {
+        "time": "noon",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A sunny Sunday under the cherry blossoms. Fujita and Ana are already on the picnic sheet — and Fujita says it is time to drop です／ます between friends.",
+      "roleEn": "You are their friend. Talk the way friends talk: plain forms, うん／ううん, and questions without か.",
+      "missionsEn": [
+        {
+          "text": "Answer your friends casually with うん／ううん and plain forms",
+          "grammar": [
+            "g1",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say what you think of Ana's food — try 〜けど",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask Ana a casual question (no か)",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Accept or turn down Fujita's invitation",
+          "grammar": [
+            "g1",
+            "g3"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita",
+        "ana"
+      ],
+      "positions": {
+        "fujita": "npc1",
+        "ana": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おーい、こっち、こっち！",
+              "kana": "おーい、こっち、こっち！",
+              "en": "Hey, over here, over here!",
+              "gesture": "wave"
+            },
+            {
+              "who": "fujita",
+              "ja": "もう 友だちだから、「です・ます」は いらないよ。",
+              "kana": "もう ともだちだから、「です・ます」は いらないよ。",
+              "en": "We're friends now, so you don't need です and ます.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "fujita",
+              "ja": "おなか、すいた？",
+              "kana": "おなか、すいた？",
+              "en": "Are you hungry?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita wants you to talk like a friend. Are you hungry? Answer with うん／ううん and a plain form.",
+            "grammar": [
+              "g1",
+              "g4"
+            ],
+            "hintJa": "うん、＿＿。／ううん、まだ ＿＿。",
+            "modelAnswers": [
+              "うん、すいた。",
+              "うん、すごく すいた！",
+              "ううん、まだ だいじょうぶ。"
+            ],
+            "branches": [
+              {
+                "id": "hungry",
+                "whenEn": "Learner says they are hungry. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n2_yes",
+                "exampleJa": "うん、すいた。"
+              },
+              {
+                "id": "not_yet",
+                "whenEn": "Learner says they are not hungry (yet).",
+                "next": "n2_no",
+                "exampleJa": "ううん、まだ だいじょうぶ。"
+              }
+            ],
+            "fallback": "n2_yes"
+          }
+        },
+        {
+          "id": "n2_yes",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ぼくも！じゃ、すぐ 食べない？",
+              "kana": "ぼくも！じゃ、すぐ たべない？",
+              "en": "Me too! Shall we eat right away?",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ほんとう？ぼくは すごく すいた。",
+              "kana": "ほんとう？ぼくは すごく すいた。",
+              "en": "Really? I'm starving.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "bento",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "これ、ブラジルの 料理。わたしが 作った。",
+              "kana": "これ、ブラジルの りょうり。わたしが つくった。",
+              "en": "This is a Brazilian dish. I made it.",
+              "gesture": "offer"
+            },
+            {
+              "who": "ana",
+              "ja": "どう？おいしい？",
+              "kana": "どう？おいしい？",
+              "en": "How is it? Good?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Taste Ana's food and tell her what you think, casually. If you have a 'but', use 〜けど.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "うん、＿＿！／ちょっと ＿＿けど、おいしい。",
+            "modelAnswers": [
+              "うん、おいしい！",
+              "ちょっと からいけど、おいしい。",
+              "あまいね。すごく おいしい。"
+            ],
+            "branches": [
+              {
+                "id": "simply_good",
+                "whenEn": "Learner just says it is good / delicious / they like it. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n4_good",
+                "exampleJa": "うん、すごく おいしい！"
+              },
+              {
+                "id": "has_but",
+                "whenEn": "Learner adds a reservation (a bit spicy, sweet or salty, but good) or says it is not to their taste.",
+                "next": "n4_kedo",
+                "exampleJa": "ちょっと からいけど、おいしい。"
+              }
+            ],
+            "fallback": "n4_good"
+          }
+        },
+        {
+          "id": "n4_good",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "よかった！まだ たくさん あるよ。",
+              "kana": "よかった！まだ たくさん あるよ。",
+              "en": "I'm glad! There's still plenty.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_kedo",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "あ、ごめん！水、ここに あるよ。",
+              "kana": "あ、ごめん！みず、ここに あるよ。",
+              "en": "Oh, sorry! There's water here.",
+              "gesture": "point",
+              "target": "drinks"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "きのうの 土曜日、何 した？",
+              "kana": "きのうの どようび、なに した？",
+              "en": "What did you do yesterday, Saturday?",
+              "tts": "きのうの どようび、なに した？"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell them what you did yesterday in the plain past: 行った, 見た, 行かなかった…",
+            "grammar": [
+              "g1",
+              "g4"
+            ],
+            "hintJa": "＿＿た。／どこも ＿＿なかった。",
+            "modelAnswers": [
+              "ともだちと かいものに いった。",
+              "うちで えいがを みた。どこも いかなかった。",
+              "せんたくしたり、ねたり した。"
+            ],
+            "branches": [
+              {
+                "id": "went_out",
+                "whenEn": "Learner did something outside the home (shopping, friends, sport, a trip…). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n6_out",
+                "exampleJa": "ともだちと かいものに いった。"
+              },
+              {
+                "id": "at_home",
+                "whenEn": "Learner stayed at home (TV, games, cleaning, sleeping, study) or went nowhere.",
+                "next": "n6_home",
+                "exampleJa": "うちで えいがを みた。どこも いかなかった。"
+              }
+            ],
+            "fallback": "n6_home"
+          }
+        },
+        {
+          "id": "n6_out",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいね。ぼくは どこも 行かなかった。",
+              "kana": "いいね。ぼくは どこも いかなかった。",
+              "en": "Nice. I didn't go anywhere.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_home",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ぼくも。うちで ゲームを したり、ねたり した。",
+              "kana": "ぼくも。うちで ゲームを したり、ねたり した。",
+              "en": "Same here. I played games at home, slept and so on.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "わたしは きのう、アルバイトだった。",
+              "kana": "わたしは きのう、アルバイトだった。",
+              "en": "I had my part-time job yesterday.",
+              "gesture": "think"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask Ana about her part-time job casually — no か, just raise your voice at the end. Was it busy? Is it fun? Where is it?",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "アルバイト、＿＿？（いそがしかった？／たのしい？／どこ？）",
+            "modelAnswers": [
+              "アルバイト、いそがしかった？",
+              "アルバイト、たのしい？",
+              "アルバイトは どこ？"
+            ],
+            "branches": [
+              {
+                "id": "how",
+                "whenEn": "Learner asks how the job was or is (busy, tiring, hard, fun…). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n8_how",
+                "exampleJa": "アルバイト、いそがしかった？"
+              },
+              {
+                "id": "where_what",
+                "whenEn": "Learner asks where she works, what kind of job it is, or another factual question.",
+                "next": "n8_where",
+                "exampleJa": "アルバイトは どこ？"
+              }
+            ],
+            "fallback": "n8_how"
+          }
+        },
+        {
+          "id": "n8_how",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "うん、いそがしかった。でも、楽しいよ。",
+              "kana": "うん、いそがしかった。でも、たのしいよ。",
+              "en": "Yeah, it was busy. But it's fun.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_where",
+          "say": [
+            {
+              "who": "ana",
+              "ja": "駅の 前の レストラン。いそがしいけど、楽しいよ。",
+              "kana": "えきの まえの レストラン。いそがしいけど、たのしいよ。",
+              "en": "A restaurant in front of the station. It's busy, but fun.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ねえ、来週の 土曜日、みんなで カラオケ 行かない？",
+              "kana": "ねえ、らいしゅうの どようび、みんなで カラオケ いかない？",
+              "en": "Hey, shall we all go to karaoke next Saturday?",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "Accept or turn down the invitation — casually, like a friend.",
+            "grammar": [
+              "g1",
+              "g3",
+              "g4"
+            ],
+            "hintJa": "うん、＿＿！／ごめん、どようびは ちょっと……。",
+            "modelAnswers": [
+              "うん、いく！いきたい！",
+              "いいね。なんじから？",
+              "ごめん、どようびは ようじが ある。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts (or shows interest, e.g. asks what time). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "end_go",
+                "exampleJa": "うん、いく！"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines or says they are busy that day.",
+                "next": "end_no",
+                "exampleJa": "ごめん、どようびは ようじが ある。"
+              }
+            ],
+            "fallback": "end_go"
+          }
+        },
+        {
+          "id": "end_go",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "やった！じゃ、土曜日の 6時、駅の 前でね。",
+              "kana": "やった！じゃ、どようびの ろくじ、えきの まえでね。",
+              "en": "Great! Then Saturday at six, in front of the station.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうか、ざんねん。じゃ、また こんどね。",
+              "kana": "そうか、ざんねん。じゃ、また こんどね。",
+              "en": "Oh, that's a shame. Next time, then.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l20b",
+      "titleJa": "ともだちと いざかや",
+      "titleEn": "A night out with friends",
+      "scene": "izakaya",
+      "setup": {
+        "time": "night",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy autumn night at the izakaya Daichi. Your classmate Minh and Noguchi — off duty from the convenience store tonight — are waiting at the table.",
+      "roleEn": "You are their friend. Tonight nobody is a customer or a clerk: answer and ask in plain style.",
+      "missionsEn": [
+        {
+          "text": "Order and answer casually: 飲む, 見た, 見なかった",
+          "grammar": [
+            "g1",
+            "g4"
+          ]
+        },
+        {
+          "text": "Say how your Japanese study is going — try 〜けど",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask Minh about his trip with a casual question",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Answer Noguchi's invitation",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "noguchi",
+        "minh"
+      ],
+      "positions": {
+        "noguchi": "npc1",
+        "minh": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "learner": "sit",
+          "focus": "menu",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "あ、来た。こっち、こっち！",
+              "kana": "あ、きた。こっち、こっち！",
+              "en": "Oh, you're here. Over here!",
+              "gesture": "beckon"
+            },
+            {
+              "who": "noguchi",
+              "ja": "きょうは 店員じゃ ないよ。友だちの ことばで 話すね。",
+              "kana": "きょうは てんいんじゃ ないよ。ともだちの ことばで はなすね。",
+              "en": "I'm not a clerk today. I'll talk the way friends do.",
+              "gesture": "laugh"
+            },
+            {
+              "who": "noguchi",
+              "ja": "何 飲む？ビール？ジュース？",
+              "kana": "なに のむ？ビール？ジュース？",
+              "en": "What'll you drink? Beer? Juice?",
+              "gesture": "point",
+              "target": "menu",
+              "tts": "なに のむ？ビール？ジュース？"
+            }
+          ],
+          "listen": {
+            "promptEn": "Say what you will drink — friend style, no です／ます (を can drop).",
+            "grammar": [
+              "g1",
+              "g4"
+            ],
+            "hintJa": "＿＿ のむ。／＿＿が いい。",
+            "modelAnswers": [
+              "ビール のむ。",
+              "ジュースが いい。",
+              "おちゃ、ある？"
+            ],
+            "branches": [
+              {
+                "id": "alcohol",
+                "whenEn": "Learner chooses beer, sake or another alcoholic drink. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n2_beer",
+                "exampleJa": "ビール のむ。"
+              },
+              {
+                "id": "soft",
+                "whenEn": "Learner chooses juice, tea, cola, water or says they do not drink alcohol.",
+                "next": "n2_soft",
+                "exampleJa": "ジュースが いい。"
+              }
+            ],
+            "fallback": "n2_soft"
+          }
+        },
+        {
+          "id": "n2_beer",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "いいね。ぼくも ビール！",
+              "kana": "いいね。ぼくも ビール！",
+              "en": "Nice. Beer for me too!",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_soft",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "うん、わかった。ミンさんも ジュースだよ。",
+              "kana": "うん、わかった。ミンさんも ジュースだよ。",
+              "en": "OK, got it. Minh is having juice too.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "ねえ、きのうの サッカー、見た？",
+              "kana": "ねえ、きのうの サッカー、みた？",
+              "en": "Hey, did you watch the football yesterday?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Did you watch yesterday's football match? うん、見た／ううん、見なかった — and add a word why or how it was.",
+            "grammar": [
+              "g1",
+              "g4"
+            ],
+            "hintJa": "うん、＿＿。／ううん、＿＿なかった。",
+            "modelAnswers": [
+              "うん、みた。すごかった！",
+              "ううん、みなかった。アルバイトが あった。",
+              "ううん、みなかった。サッカーは あまり みない。"
+            ],
+            "branches": [
+              {
+                "id": "watched",
+                "whenEn": "Learner watched it. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n4_saw",
+                "exampleJa": "うん、みた。すごかった！"
+              },
+              {
+                "id": "didnt",
+                "whenEn": "Learner did not watch it.",
+                "next": "n4_no",
+                "exampleJa": "ううん、みなかった。"
+              }
+            ],
+            "fallback": "n4_no"
+          }
+        },
+        {
+          "id": "n4_saw",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "日本、強かったね！すごく おもしろかった。",
+              "kana": "にほん、つよかったね！すごく おもしろかった。",
+              "en": "Japan was strong, weren't they! It was really exciting.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_no",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "えー、見なかった？日本、すごく 強かったよ。",
+              "kana": "えー、みなかった？にほん、すごく つよかったよ。",
+              "en": "What, you didn't watch? Japan was really strong.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "ぼくは きょう テストだった。むずかしかった……。",
+              "kana": "ぼくは きょう テストだった。むずかしかった……。",
+              "en": "I had a test today. It was hard…",
+              "gesture": "think"
+            },
+            {
+              "who": "minh",
+              "ja": "日本語の 勉強、どう？楽しい？",
+              "kana": "にほんごの べんきょう、どう？たのしい？",
+              "en": "How's your Japanese study going? Fun?"
+            }
+          ],
+          "listen": {
+            "promptEn": "How is your Japanese study going? Answer casually; 〜けど is perfect for 'hard but fun'.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "＿＿けど、＿＿。／ううん、あまり ＿＿ない。",
+            "modelAnswers": [
+              "むずかしいけど、たのしい。",
+              "うん、たのしい。でも、かんじは たいへん。",
+              "ううん、あまり たのしくない。むずかしい。"
+            ],
+            "branches": [
+              {
+                "id": "fun",
+                "whenEn": "Learner says it is fun or interesting (including 'hard but fun'). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n6_fun",
+                "exampleJa": "むずかしいけど、たのしい。"
+              },
+              {
+                "id": "hard",
+                "whenEn": "Learner says mainly that it is hard, tiring or not fun.",
+                "next": "n6_hard",
+                "exampleJa": "ううん、あまり たのしくない。むずかしい。"
+              }
+            ],
+            "fallback": "n6_fun"
+          }
+        },
+        {
+          "id": "n6_fun",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "すごい！日本語、ほんとうに 上手に なったね。",
+              "kana": "すごい！にほんご、ほんとうに じょうずに なったね。",
+              "en": "Wow! Your Japanese really has got good.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_hard",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "ぼくも。漢字が ぜんぜん わからない。",
+              "kana": "ぼくも。かんじが ぜんぜん わからない。",
+              "en": "Me too. I don't understand kanji at all.",
+              "gesture": "shake_head"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "ミンさんは 先週 北海道へ 行ったよ。",
+              "kana": "ミンさんは せんしゅう ほっかいどうへ いったよ。",
+              "en": "Minh went to Hokkaido last week, you know.",
+              "gesture": "nod"
+            }
+          ],
+          "listen": {
+            "promptEn": "Ask Minh about his trip, casually (no か): How was it? Was it cold? What did you eat?",
+            "grammar": [
+              "g3",
+              "g2"
+            ],
+            "hintJa": "ほっかいどう、＿＿？（どうだった？／さむかった？／なに たべた？）",
+            "modelAnswers": [
+              "ほっかいどう、どうだった？",
+              "さむかった？",
+              "なに たべた？"
+            ],
+            "branches": [
+              {
+                "id": "how",
+                "whenEn": "Learner asks how it was: good, fun, cold, pretty… (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n8_how",
+                "exampleJa": "ほっかいどう、どうだった？"
+              },
+              {
+                "id": "what",
+                "whenEn": "Learner asks what he did, ate or saw, or where he went.",
+                "next": "n8_what",
+                "exampleJa": "ほっかいどうで なに たべた？"
+              }
+            ],
+            "fallback": "n8_how"
+          }
+        },
+        {
+          "id": "n8_how",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "寒かったけど、すごく 楽しかった。",
+              "kana": "さむかったけど、すごく たのしかった。",
+              "en": "It was cold, but really fun.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8_what",
+          "say": [
+            {
+              "who": "minh",
+              "ja": "魚を 食べたり、温泉に 入ったり した。",
+              "kana": "さかなを たべたり、おんせんに はいったり した。",
+              "en": "I ate fish, went in a hot spring and so on.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "こんどの 日曜日、ひま？みんなで えいが 見ない？",
+              "kana": "こんどの にちようび、ひま？みんなで えいが みない？",
+              "en": "Are you free this Sunday? Shall we all watch a film?",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "Are you free on Sunday? Accept or decline, casually (ひま／ひまじゃ ない, 行く／行かない).",
+            "grammar": [
+              "g1",
+              "g2",
+              "g3"
+            ],
+            "hintJa": "うん、ひま。＿＿！／ごめん、にちようびは ＿＿。",
+            "modelAnswers": [
+              "うん、ひま。いく！",
+              "いいね。なんの えいが？",
+              "ごめん、にちようびは ひまじゃ ない。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner is free and accepts (or shows interest, e.g. asks which film). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "end_go",
+                "exampleJa": "うん、ひま。いく！"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner is not free or declines.",
+                "next": "end_no",
+                "exampleJa": "ごめん、にちようびは ひまじゃ ない。"
+              }
+            ],
+            "fallback": "end_go"
+          }
+        },
+        {
+          "id": "end_go",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "やった！じゃ、時間は あとで 電話するね。",
+              "kana": "やった！じゃ、じかんは あとで でんわするね。",
+              "en": "Great! I'll call you later about the time.",
+              "gesture": "phone"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "noguchi",
+              "ja": "そうか、ざんねん。じゃ、また 電話するね。",
+              "kana": "そうか、ざんねん。じゃ、また でんわするね。",
+              "en": "Oh, too bad. I'll call you again, then.",
+              "gesture": "nod"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l20c",
+      "titleJa": "ともだちと ぶちょう",
+      "titleEn": "A friend, then the manager",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "summer",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "Six o'clock at the office. Fujita chats with you like a friend — then Mr Ogawa, your manager, walks over. Watch who you are talking to.",
+      "roleEn": "You are Fujita's friend and Mr Ogawa's junior. Plain style with Fujita, です／ます with the manager, then back again.",
+      "missionsEn": [
+        {
+          "text": "Chat with Fujita in plain style",
+          "grammar": [
+            "g1",
+            "g2",
+            "g4"
+          ]
+        },
+        {
+          "text": "Switch to です／ます when the manager speaks to you",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Switch back and answer Fujita's invitation casually",
+          "grammar": [
+            "g1",
+            "g3",
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "fujita",
+        "ogawa"
+      ],
+      "positions": {
+        "fujita": "npc1",
+        "ogawa": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "おつかれ！仕事、もう 終わった？",
+              "kana": "おつかれ！しごと、もう おわった？",
+              "en": "Good work! Have you finished already?",
+              "gesture": "wave"
+            }
+          ],
+          "listen": {
+            "promptEn": "Fujita is your friend: answer in plain style. Have you finished work?",
+            "grammar": [
+              "g1",
+              "g4",
+              "g6"
+            ],
+            "hintJa": "うん、＿＿。／ううん、まだ。",
+            "modelAnswers": [
+              "うん、おわった。",
+              "ううん、まだ。もう すこし。"
+            ],
+            "branches": [
+              {
+                "id": "done",
+                "whenEn": "Learner has finished. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n2_done",
+                "exampleJa": "うん、おわった。"
+              },
+              {
+                "id": "not_yet",
+                "whenEn": "Learner has not finished yet.",
+                "next": "n2_notyet",
+                "exampleJa": "ううん、まだ。"
+              }
+            ],
+            "fallback": "n2_notyet"
+          }
+        },
+        {
+          "id": "n2_done",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "早いね！ぼくも 今 終わった。",
+              "kana": "はやいね！ぼくも いま おわった。",
+              "en": "That was quick! I've just finished too.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_notyet",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうか。ぼくは 今 終わった。",
+              "kana": "そうか。ぼくは いま おわった。",
+              "en": "I see. I've just finished.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "きょう、いそがしかった？",
+              "kana": "きょう、いそがしかった？",
+              "en": "Were you busy today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Were you busy today? Answer with the plain past of the adjective: いそがしかった／いそがしくなかった.",
+            "grammar": [
+              "g2",
+              "g4"
+            ],
+            "hintJa": "うん、＿＿かった。／ううん、あまり ＿＿くなかった。",
+            "modelAnswers": [
+              "うん、すごく いそがしかった。",
+              "ううん、あまり いそがしくなかった。"
+            ],
+            "branches": [
+              {
+                "id": "busy",
+                "whenEn": "Learner was busy / it was a hard day. (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "n4_busy",
+                "exampleJa": "うん、すごく いそがしかった。"
+              },
+              {
+                "id": "not_busy",
+                "whenEn": "Learner was not very busy.",
+                "next": "n4_calm",
+                "exampleJa": "ううん、あまり いそがしくなかった。"
+              }
+            ],
+            "fallback": "n4_busy"
+          }
+        },
+        {
+          "id": "n4_busy",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "たいへんだったね。ぼくも 会議が 3つ あった。",
+              "kana": "たいへんだったね。ぼくも かいぎが みっつ あった。",
+              "en": "That sounds tough. I had three meetings myself.",
+              "gesture": "nod",
+              "tts": "たいへんだったね。ぼくも かいぎが みっつ あった。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_calm",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "いいなあ。ぼくは 会議が 3つ あった。",
+              "kana": "いいなあ。ぼくは かいぎが みっつ あった。",
+              "en": "Lucky you. I had three meetings.",
+              "gesture": "laugh",
+              "tts": "いいなあ。ぼくは かいぎが みっつ あった。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "あ、部長だ。",
+              "kana": "あ、ぶちょうだ。",
+              "en": "Oh, it's the manager.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "おつかれさまです。きょうの レポートは もう 書きましたか。",
+              "kana": "おつかれさまです。きょうの レポートは もう かきましたか。",
+              "en": "Good work today. Have you written today's report yet?",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "This is your manager — switch to です／ます! Have you written today's report?",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "はい、もう ＿＿ました。／いいえ、まだです。",
+            "modelAnswers": [
+              "はい、もう かきました。",
+              "いいえ、まだです。すみません、あした かきます。"
+            ],
+            "branches": [
+              {
+                "id": "written",
+                "whenEn": "Learner has written the report. (Polite です／ます is expected here; if the learner used plain style, still take the branch but tip that it is rude to a manager.)",
+                "next": "n7_yes",
+                "exampleJa": "はい、もう かきました。"
+              },
+              {
+                "id": "not_yet",
+                "whenEn": "Learner has not written it yet.",
+                "next": "n7_no",
+                "exampleJa": "いいえ、まだです。あした かきます。"
+              }
+            ],
+            "fallback": "n7_no"
+          }
+        },
+        {
+          "id": "n7_yes",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。ありがとう。あした 読みます。",
+              "kana": "そうですか。ありがとう。あした よみます。",
+              "en": "I see. Thank you. I'll read it tomorrow.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7_no",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。じゃ、あしたまでに お願いします。",
+              "kana": "そうですか。じゃ、あしたまでに おねがいします。",
+              "en": "I see. Then by tomorrow, please.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "focus": "clock",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "わたしは もう 帰ります。きょうは 何時ごろ 帰りますか。",
+              "kana": "わたしは もう かえります。きょうは なんじごろ かえりますか。",
+              "en": "I'm going home now. Around what time will you leave today?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Still the manager: stay polite. Say when you will go home — soon, or a later time.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "もう すぐ ＿＿ます。／＿＿じごろ かえります。",
+            "modelAnswers": [
+              "もう すぐ かえります。",
+              "8じごろ かえります。もう すこし しごとを します。"
+            ],
+            "branches": [
+              {
+                "id": "soon",
+                "whenEn": "Learner will leave soon / right now. (Polite です／ます is expected here; if the learner used plain style, still take the branch but tip that it is rude to a manager.)",
+                "next": "n9_soon",
+                "exampleJa": "もう すぐ かえります。"
+              },
+              {
+                "id": "later",
+                "whenEn": "Learner will stay and work longer or names a later time.",
+                "next": "n9_late",
+                "exampleJa": "8じごろ かえります。"
+              }
+            ],
+            "fallback": "n9_soon"
+          }
+        },
+        {
+          "id": "n9_soon",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。じゃ、お先に 失礼します。",
+              "kana": "そうですか。じゃ、おさきに しつれいします。",
+              "en": "I see. Well, excuse me for leaving first.",
+              "gesture": "bow_light"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n9_late",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "むりを しないで くださいね。じゃ、お先に。",
+              "kana": "むりを しないで くださいね。じゃ、おさきに。",
+              "en": "Don't overdo it. Well, I'll be off.",
+              "gesture": "bow_light"
+            }
+          ],
+          "next": "n10"
+        },
+        {
+          "id": "n10",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "ねえ、今晩 ひま？ラーメン 食べに 行かない？",
+              "kana": "ねえ、こんばん ひま？ラーメン たべに いかない？",
+              "en": "Hey, are you free tonight? Want to go for ramen?",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "The manager has gone — back to friend talk. Accept or decline Fujita's invitation in plain style.",
+            "grammar": [
+              "g1",
+              "g3",
+              "g6"
+            ],
+            "hintJa": "うん、＿＿！／ごめん、こんばんは ＿＿。",
+            "modelAnswers": [
+              "うん、いく！おなか すいた。",
+              "いいね。どこの みせ？",
+              "ごめん、こんばんは ようじが ある。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts (or shows interest, e.g. asks which shop). (A polite です／ます answer with this meaning also takes this branch — it is not wrong, but tip that it sounds distant to a close friend.)",
+                "next": "end_go",
+                "exampleJa": "うん、いく！"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines or is busy tonight.",
+                "next": "end_no",
+                "exampleJa": "ごめん、こんばんは ようじが ある。"
+              }
+            ],
+            "fallback": "end_go"
+          }
+        },
+        {
+          "id": "end_go",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "やった！駅の 前の 新しい 店、おいしいよ。",
+              "kana": "やった！えきの まえの あたらしい みせ、おいしいよ。",
+              "en": "Great! The new place in front of the station is good.",
+              "gesture": "laugh"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_no",
+          "say": [
+            {
+              "who": "fujita",
+              "ja": "そうか、ざんねん。じゃ、また 来週！",
+              "kana": "そうか、ざんねん。じゃ、また らいしゅう！",
+              "en": "Oh, too bad. Next week, then!",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

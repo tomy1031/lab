@@ -1,0 +1,1266 @@
+{
+  "lesson": 3,
+  "titleJa": "どこですか・いくらですか",
+  "titleEn": "Where is it? How much is it?",
+  "summaryEn": "Find places (here / there / over there, which floor), ask where things are made, ask prices and buy or order something.",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "ここ／そこ／あそこ・こちら／そちら／あちら",
+      "meaningEn": "here (by me) / there (by you) / over there (far from both); the こちら set is the polite version and also means \"this way\"",
+      "exampleJa": "あそこは かいぎしつです。",
+      "exampleEn": "That place over there is the meeting room."
+    },
+    {
+      "id": "g2",
+      "pattern": "N1は N2(ばしょ)です",
+      "meaningEn": "N1 (a thing, place or person) is at/in N2",
+      "exampleJa": "しょくどうは ちか 1かいです。",
+      "exampleEn": "The cafeteria is on basement floor 1."
+    },
+    {
+      "id": "g3",
+      "pattern": "Nは どこ／どちらですか",
+      "meaningEn": "Where is N? (どちら is politer)",
+      "exampleJa": "トイレは どこですか。",
+      "exampleEn": "Where is the restroom?"
+    },
+    {
+      "id": "g4",
+      "pattern": "N1(くに・かいしゃ)の N2／どこの N",
+      "meaningEn": "N2 made in / made by N1; どこの asks where something is from",
+      "exampleJa": "それは どこの ワインですか。…イタリアの ワインです。",
+      "exampleEn": "Where is that wine from? …It is Italian wine."
+    },
+    {
+      "id": "g5",
+      "pattern": "Nは いくらですか／～えんです",
+      "meaningEn": "How much is N? / It is … yen",
+      "exampleJa": "この ワインは いくらですか。…2,500えんです。",
+      "exampleEn": "How much is this wine? …It is 2,500 yen."
+    },
+    {
+      "id": "g6",
+      "pattern": "おくに／うち／かいしゃは どちらですか",
+      "meaningEn": "Polite \"where\" for someone's country, home or company",
+      "exampleJa": "おくには どちらですか。…ブラジルです。",
+      "exampleEn": "Which country are you from? …Brazil."
+    },
+    {
+      "id": "g7",
+      "pattern": "Nを ください",
+      "meaningEn": "Please give me N (buying or ordering)",
+      "exampleJa": "じゃ、これを ください。",
+      "exampleEn": "Then I'll take this one, please."
+    },
+    {
+      "id": "g8",
+      "pattern": "～かい／なんがい／ちか",
+      "meaningEn": "Floors: 1st floor, which floor, basement",
+      "exampleJa": "くつうりばは なんがいですか。…4かいです。",
+      "exampleEn": "Which floor is the shoe department? …The 4th floor."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "ここ／そこ／あそこ",
+      "kana": "ここ／そこ／あそこ",
+      "en": "here / there / over there"
+    },
+    {
+      "ja": "こちら／そちら／あちら",
+      "kana": "こちら／そちら／あちら",
+      "en": "this way / that way / that way over there (polite)"
+    },
+    {
+      "ja": "どこ／どちら",
+      "kana": "どこ／どちら",
+      "en": "where / where (polite), which way"
+    },
+    {
+      "ja": "売り場",
+      "kana": "うりば",
+      "en": "sales counter, department"
+    },
+    {
+      "ja": "地下",
+      "kana": "ちか",
+      "en": "basement"
+    },
+    {
+      "ja": "何階",
+      "kana": "なんがい",
+      "en": "which floor"
+    },
+    {
+      "ja": "お手洗い／トイレ",
+      "kana": "おてあらい／トイレ",
+      "en": "restroom"
+    },
+    {
+      "ja": "エレベーター",
+      "kana": "エレベーター",
+      "en": "elevator"
+    },
+    {
+      "ja": "エスカレーター",
+      "kana": "エスカレーター",
+      "en": "escalator"
+    },
+    {
+      "ja": "会議室",
+      "kana": "かいぎしつ",
+      "en": "meeting room"
+    },
+    {
+      "ja": "食堂",
+      "kana": "しょくどう",
+      "en": "cafeteria"
+    },
+    {
+      "ja": "ロビー",
+      "kana": "ロビー",
+      "en": "lobby"
+    },
+    {
+      "ja": "机",
+      "kana": "つくえ",
+      "en": "desk"
+    },
+    {
+      "ja": "国",
+      "kana": "くに",
+      "en": "country"
+    },
+    {
+      "ja": "うち",
+      "kana": "うち",
+      "en": "home, house"
+    },
+    {
+      "ja": "ワイン",
+      "kana": "ワイン",
+      "en": "wine"
+    },
+    {
+      "ja": "靴",
+      "kana": "くつ",
+      "en": "shoes"
+    },
+    {
+      "ja": "いくら",
+      "kana": "いくら",
+      "en": "how much"
+    },
+    {
+      "ja": "～円",
+      "kana": "～えん",
+      "en": "… yen"
+    },
+    {
+      "ja": "百／千／万",
+      "kana": "ひゃく／せん／まん",
+      "en": "hundred / thousand / ten thousand"
+    },
+    {
+      "ja": "コーヒー",
+      "kana": "コーヒー",
+      "en": "coffee"
+    },
+    {
+      "ja": "紅茶",
+      "kana": "こうちゃ",
+      "en": "black tea"
+    },
+    {
+      "ja": "お茶",
+      "kana": "おちゃ",
+      "en": "green tea"
+    },
+    {
+      "ja": "ケーキ",
+      "kana": "ケーキ",
+      "en": "cake"
+    },
+    {
+      "ja": "～で ございます",
+      "kana": "～で ございます",
+      "en": "very polite です (shop staff)"
+    }
+  ],
+  "tipsEn": [
+    "Department store floors: B1 is ちか 1かい, and the wine and food halls (デパ地下) are usually down there.",
+    "Shop staff say こちら／あちら and ～で ございます. You can answer with plain ここ／あそこ and です.",
+    "Prices include no tipping. Just say これを ください and pay at the register."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-03/grammar/",
+      "https://jpdb.io/textbook/9/minna-no-nihongo-i/3/lesson-3/vocabulary-list",
+      "https://gogakueducation.com/2025/08/17/minna-no-nihongo-lesson-3-vocabulary-in-english/"
+    ],
+    "notesEn": "Lesson 3 teaches the place demonstratives ここ／そこ／あそこ and their polite set こちら／そちら／あちら, \"N is at place\" with です, the question words どこ／どちら (also used for someone's country, company or home), N1の N2 for origin or maker with どこの, prices with いくら and large numbers, floors (～かい, ちか) and the shopping chunk ～を ください. There are still no verbs, so every sentence ends in です. Real situations: finding a counter or restroom in a department store, being shown around a new workplace, asking prices and ordering in a shop or café. Typical slips: そこ vs あそこ, なんかい instead of なんがい, sound changes in 300/600/800 and 3,000/8,000, and using なん instead of どこ／どちら for a country or company."
+  },
+  "variants": [
+    {
+      "id": "l03a",
+      "titleJa": "デパートの ワイン",
+      "titleEn": "A bottle for the neighbours",
+      "scene": "depato",
+      "setup": {
+        "time": "evening",
+        "season": "autumn",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "Your neighbours, the Moris, have invited you to dinner tomorrow. You stop at the department store wine counter to choose a bottle.",
+      "roleEn": "You are a customer. The bottles stand on the clerk's side of the counter, so they are それ／その for you.",
+      "missionsEn": [
+        {
+          "text": "Ask where a wine is from",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Ask a price",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Buy a bottle",
+          "grammar": [
+            "g7"
+          ]
+        },
+        {
+          "text": "Ask where another place is",
+          "grammar": [
+            "g3",
+            "g8"
+          ]
+        }
+      ],
+      "characters": [
+        "nishimura"
+      ],
+      "positions": {
+        "nishimura": "clerk"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "wine_fr",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "いらっしゃいませ。",
+              "kana": "いらっしゃいませ。",
+              "en": "Welcome.",
+              "gesture": "bow_light"
+            }
+          ],
+          "listen": {
+            "promptEn": "Point at a bottle behind the counter and ask which country that wine is from.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "すみません。それは どこの ＿＿ですか。",
+            "modelAnswers": [
+              "すみません。それは どこの ワインですか。"
+            ],
+            "branches": [
+              {
+                "id": "origin",
+                "whenEn": "Learner asked where (which country) a wine is from.",
+                "next": "n2",
+                "exampleJa": "すみません。それは どこの ワインですか。"
+              },
+              {
+                "id": "show_me",
+                "whenEn": "Learner asked to be shown a wine (～を みせて ください) or only said they want wine.",
+                "next": "n2_show",
+                "exampleJa": "すみません。その ワインを みせて ください。"
+              }
+            ],
+            "fallback": "n2"
+          }
+        },
+        {
+          "id": "n2_show",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい、どうぞ。",
+              "kana": "はい、どうぞ。",
+              "en": "Certainly, here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n2"
+        },
+        {
+          "id": "n2",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "これは フランスの ワインです。",
+              "kana": "これは フランスの ワインです。",
+              "en": "This is French wine.",
+              "gesture": "point",
+              "target": "wine_fr"
+            },
+            {
+              "who": "nishimura",
+              "ja": "これは イタリアの ワインです。",
+              "kana": "これは イタリアの ワインです。",
+              "en": "This is Italian wine.",
+              "gesture": "point",
+              "target": "wine_it"
+            },
+            {
+              "who": "nishimura",
+              "ja": "これは 日本の ワインです。",
+              "kana": "これは にほんの ワインです。",
+              "en": "This is Japanese wine.",
+              "gesture": "point",
+              "target": "wine_jp",
+              "tts": "これは にほんの ワインです。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Choose the one that interests you and ask how much it is.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "その ＿＿の ワインは いくらですか。",
+            "modelAnswers": [
+              "その フランスの ワインは いくらですか。",
+              "にほんの ワインは いくらですか。"
+            ],
+            "branches": [
+              {
+                "id": "french",
+                "whenEn": "Learner asked the price of the French wine.",
+                "next": "n3_fr",
+                "exampleJa": "その フランスの ワインは いくらですか。"
+              },
+              {
+                "id": "italian",
+                "whenEn": "Learner asked the price of the Italian wine.",
+                "next": "n3_it",
+                "exampleJa": "その イタリアの ワインは いくらですか。"
+              },
+              {
+                "id": "japanese",
+                "whenEn": "Learner asked the price of the Japanese wine.",
+                "next": "n3_jp",
+                "exampleJa": "その にほんの ワインは いくらですか。"
+              }
+            ],
+            "fallback": "n3_it"
+          }
+        },
+        {
+          "id": "n3_fr",
+          "focus": "wine_fr",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "フランスの ワインは 4,800円で ございます。",
+              "kana": "フランスの ワインは よんせんはっぴゃくえんで ございます。",
+              "en": "The French wine is 4,800 yen."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_it",
+          "focus": "wine_it",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "イタリアの ワインは 2,500円で ございます。",
+              "kana": "イタリアの ワインは にせんごひゃくえんで ございます。",
+              "en": "The Italian wine is 2,500 yen."
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n3_jp",
+          "focus": "wine_jp",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "日本の ワインは 1,900円です。山梨の ワインです。",
+              "kana": "にほんの ワインは せんきゅうひゃくえんです。やまなしの ワインです。",
+              "en": "The Japanese wine is 1,900 yen. It is from Yamanashi.",
+              "tts": "にほんの ワインは せんきゅうひゃくえんです。やまなしの ワインです。"
+            }
+          ],
+          "next": "n4"
+        },
+        {
+          "id": "n4",
+          "listen": {
+            "promptEn": "Decide: buy that bottle, or ask the price of another one.",
+            "grammar": [
+              "g7",
+              "g5"
+            ],
+            "hintJa": "じゃ、＿＿を ください。",
+            "modelAnswers": [
+              "じゃ、その イタリアの ワインを ください。",
+              "じゃ、それを ください。"
+            ],
+            "branches": [
+              {
+                "id": "buy",
+                "whenEn": "Learner said they will take a wine (～を ください / おねがいします).",
+                "next": "n5",
+                "exampleJa": "じゃ、それを ください。"
+              },
+              {
+                "id": "ask_french",
+                "whenEn": "Learner did not buy yet and asked the price of the French wine.",
+                "next": "n3_fr",
+                "exampleJa": "フランスの ワインは いくらですか。"
+              },
+              {
+                "id": "ask_italian",
+                "whenEn": "Learner did not buy yet and asked the price of the Italian wine.",
+                "next": "n3_it",
+                "exampleJa": "イタリアの ワインは いくらですか。"
+              },
+              {
+                "id": "ask_japanese",
+                "whenEn": "Learner did not buy yet and asked the price of the Japanese wine.",
+                "next": "n3_jp",
+                "exampleJa": "にほんの ワインは いくらですか。"
+              }
+            ],
+            "fallback": "n5"
+          }
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "はい、ありがとう ございます。どうぞ。",
+              "kana": "はい、ありがとう ございます。どうぞ。",
+              "en": "Thank you very much. Here you are.",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "One more errand before you leave: ask where the restroom or the elevator is, or which floor the shoe department is on.",
+            "grammar": [
+              "g3",
+              "g8"
+            ],
+            "hintJa": "すみません。＿＿は どこですか。",
+            "modelAnswers": [
+              "すみません。トイレは どこですか。",
+              "エレベーターは どちらですか。",
+              "くつうりばは なんがいですか。"
+            ],
+            "branches": [
+              {
+                "id": "restroom",
+                "whenEn": "Learner asked where the restroom (トイレ / おてあらい) is.",
+                "next": "n6_wc",
+                "exampleJa": "すみません。トイレは どこですか。"
+              },
+              {
+                "id": "elevator",
+                "whenEn": "Learner asked where the elevator is.",
+                "next": "n6_ev",
+                "exampleJa": "すみません。エレベーターは どちらですか。"
+              },
+              {
+                "id": "shoes_floor",
+                "whenEn": "Learner asked which floor the shoe department (or another department) is on, or where the escalator is.",
+                "next": "n6_floor",
+                "exampleJa": "くつうりばは なんがいですか。"
+              }
+            ],
+            "fallback": "n6_ev"
+          }
+        },
+        {
+          "id": "n6_wc",
+          "focus": "toilet_sign",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "お手洗いは あちらで ございます。",
+              "kana": "おてあらいは あちらで ございます。",
+              "en": "The restroom is over that way.",
+              "gesture": "point",
+              "target": "toilet_sign"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6_ev",
+          "focus": "elevator",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "エレベーターは あちらで ございます。",
+              "kana": "エレベーターは あちらで ございます。",
+              "en": "The elevator is over that way.",
+              "gesture": "point",
+              "target": "elevator"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n6_floor",
+          "focus": "escalator",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "靴売り場は 4階です。エスカレーターは あちらです。",
+              "kana": "くつうりばは よんかいです。エスカレーターは あちらです。",
+              "en": "The shoe department is on the 4th floor. The escalator is that way.",
+              "gesture": "point",
+              "target": "escalator",
+              "tts": "くつうりばは よんかいです。エスカレーターは あちらです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "nishimura",
+              "ja": "ありがとう ございました。また どうぞ。",
+              "kana": "ありがとう ございました。また どうぞ。",
+              "en": "Thank you very much. Please come again.",
+              "gesture": "bow"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l03b",
+      "titleJa": "かいぎしつは どこですか",
+      "titleEn": "Finding your way around the office",
+      "scene": "office",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "It is your first week at the design company. Before work starts, Aoki-san shows you where everything is.",
+      "roleEn": "You are the new colleague from abroad. Use your own home town or area.",
+      "missionsEn": [
+        {
+          "text": "Ask what a place is, far away or beside her",
+          "grammar": [
+            "g1"
+          ]
+        },
+        {
+          "text": "Ask where a place is",
+          "grammar": [
+            "g3",
+            "g2",
+            "g8"
+          ]
+        },
+        {
+          "text": "Say where your home is",
+          "grammar": [
+            "g6"
+          ]
+        },
+        {
+          "text": "Ask for a drink",
+          "grammar": [
+            "g7"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki"
+      ],
+      "positions": {
+        "aoki": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "my_desk",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "おはよう ございます。こちらへ どうぞ。",
+              "kana": "おはよう ございます。こちらへ どうぞ。",
+              "en": "Good morning. This way, please.",
+              "gesture": "beckon"
+            },
+            {
+              "who": "aoki",
+              "ja": "机は ここです。",
+              "kana": "つくえは ここです。",
+              "en": "Your desk is here.",
+              "gesture": "point",
+              "target": "my_desk"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look around. Point at the glass room far away, or at the desk beside Aoki-san, and ask what that place is.",
+            "grammar": [
+              "g1"
+            ],
+            "hintJa": "あそこは ＿＿ですか。／そこは ＿＿ですか。",
+            "modelAnswers": [
+              "すみません。あそこは なんですか。",
+              "そこは だれの つくえですか。"
+            ],
+            "branches": [
+              {
+                "id": "far_room",
+                "whenEn": "Learner asked about the far place (あそこ / あちら), e.g. the glass room.",
+                "next": "n2_far",
+                "exampleJa": "すみません。あそこは なんですか。"
+              },
+              {
+                "id": "by_aoki",
+                "whenEn": "Learner asked about the place or desk next to Aoki (そこ / そちら / その つくえ).",
+                "next": "n2_npc",
+                "exampleJa": "そこは だれの つくえですか。"
+              }
+            ],
+            "fallback": "n2_far"
+          }
+        },
+        {
+          "id": "n2_far",
+          "focus": "whiteboard",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あそこは 会議室です。",
+              "kana": "あそこは かいぎしつです。",
+              "en": "That over there is the meeting room.",
+              "gesture": "point",
+              "target": "whiteboard"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_npc",
+          "focus": "phone_desk",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ここは 小川さんの 机です。",
+              "kana": "ここは おがわさんの つくえです。",
+              "en": "This is Ogawa-san's desk.",
+              "gesture": "point",
+              "target": "phone_desk"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "listen": {
+            "promptEn": "Ask where one more place is: the restroom, the elevator, or the cafeteria.",
+            "grammar": [
+              "g3",
+              "g2",
+              "g8"
+            ],
+            "hintJa": "すみません。＿＿は どこですか。",
+            "modelAnswers": [
+              "すみません。トイレは どこですか。",
+              "エレベーターは どこですか。",
+              "しょくどうは なんがいですか。"
+            ],
+            "branches": [
+              {
+                "id": "restroom",
+                "whenEn": "Learner asked where the restroom is.",
+                "next": "n4_wc",
+                "exampleJa": "すみません。トイレは どこですか。"
+              },
+              {
+                "id": "elevator",
+                "whenEn": "Learner asked where the elevator is.",
+                "next": "n4_ev",
+                "exampleJa": "エレベーターは どこですか。"
+              },
+              {
+                "id": "cafeteria",
+                "whenEn": "Learner asked where the cafeteria is or which floor it is on.",
+                "next": "n4_shoku",
+                "exampleJa": "しょくどうは なんがいですか。"
+              }
+            ],
+            "fallback": "n4_wc"
+          }
+        },
+        {
+          "id": "n4_wc",
+          "focus": "logo_wall",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "トイレは ロビーです。あちらです。",
+              "kana": "トイレは ロビーです。あちらです。",
+              "en": "The restroom is in the lobby. That way.",
+              "gesture": "point",
+              "target": "logo_wall"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_ev",
+          "focus": "logo_wall",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "エレベーターは あちらです。",
+              "kana": "エレベーターは あちらです。",
+              "en": "The elevator is that way.",
+              "gesture": "point",
+              "target": "logo_wall"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_shoku",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "食堂は 地下 1階です。",
+              "kana": "しょくどうは ちか いっかいです。",
+              "en": "The cafeteria is on basement floor 1.",
+              "tts": "しょくどうは ちか いっかいです。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "うちは どちらですか。",
+              "kana": "うちは どちらですか。",
+              "en": "Where do you live?"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell her where your home is (a town or area). You may ask about hers too.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "うちは ＿＿です。",
+            "modelAnswers": [
+              "うちは しんじゅくです。",
+              "うちは よこはまです。あおきさんの うちは どちらですか。"
+            ],
+            "branches": [
+              {
+                "id": "answered",
+                "whenEn": "Learner said where their home is and did not ask Aoki anything.",
+                "next": "n7",
+                "exampleJa": "うちは しんじゅくです。"
+              },
+              {
+                "id": "asked_back",
+                "whenEn": "Learner said where their home is and also asked where Aoki lives (あおきさんは？ counts).",
+                "next": "n6",
+                "exampleJa": "うちは しんじゅくです。あおきさんの うちは どちらですか。"
+              }
+            ],
+            "fallback": "n7"
+          }
+        },
+        {
+          "id": "n6",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "わたしの うちは 横浜です。",
+              "kana": "わたしの うちは よこはまです。",
+              "en": "My home is in Yokohama."
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "focus": "coffee_machine",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "コーヒーですか、お茶ですか。",
+              "kana": "コーヒーですか、おちゃですか。",
+              "en": "Coffee, or tea?",
+              "gesture": "point",
+              "target": "coffee_machine"
+            }
+          ],
+          "listen": {
+            "promptEn": "She is offering you a drink. Ask for the one you would like.",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "＿＿を ください。",
+            "modelAnswers": [
+              "コーヒーを ください。",
+              "おちゃを おねがいします。"
+            ],
+            "branches": [
+              {
+                "id": "coffee",
+                "whenEn": "Learner asked for coffee.",
+                "next": "n8_coffee",
+                "exampleJa": "コーヒーを ください。"
+              },
+              {
+                "id": "tea",
+                "whenEn": "Learner asked for tea.",
+                "next": "n8_tea",
+                "exampleJa": "おちゃを おねがいします。"
+              },
+              {
+                "id": "nothing",
+                "whenEn": "Learner politely declined both.",
+                "next": "n8_none",
+                "exampleJa": "いいえ。どうも ありがとう ございます。"
+              }
+            ],
+            "fallback": "n8_coffee"
+          }
+        },
+        {
+          "id": "n8_coffee",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、コーヒーです。どうぞ。",
+              "kana": "はい、コーヒーです。どうぞ。",
+              "en": "Here's your coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_tea",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "はい、お茶です。どうぞ。",
+              "kana": "はい、おちゃです。どうぞ。",
+              "en": "Here's your tea.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_none",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "そうですか。わかりました。",
+              "kana": "そうですか。わかりました。",
+              "en": "Oh, I see. All right.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "じゃ、これから よろしく おねがいします。",
+              "kana": "じゃ、これから よろしく おねがいします。",
+              "en": "Well then, I look forward to working with you.",
+              "gesture": "bow_light"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l03c",
+      "titleJa": "きっさてんの コーヒー",
+      "titleEn": "Coffee at Sakamoto's",
+      "scene": "cafe",
+      "setup": {
+        "time": "noon",
+        "season": "autumn",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy lunch break. You step into the little café near the office for the first time. The owner, Sakamoto-san, is behind the counter.",
+      "roleEn": "You are a first-time customer. Use your own country.",
+      "missionsEn": [
+        {
+          "text": "Ask a price from the menu",
+          "grammar": [
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask where the coffee or tea is from",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Order",
+          "grammar": [
+            "g7"
+          ]
+        },
+        {
+          "text": "Say which country you are from",
+          "grammar": [
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "sakamoto"
+      ],
+      "positions": {
+        "sakamoto": "counter"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "menu_board",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "いらっしゃいませ。",
+              "kana": "いらっしゃいませ。",
+              "en": "Welcome.",
+              "gesture": "bow_light"
+            },
+            {
+              "who": "sakamoto",
+              "ja": "こちらへ どうぞ。",
+              "kana": "こちらへ どうぞ。",
+              "en": "Come in, this way.",
+              "gesture": "beckon"
+            }
+          ],
+          "listen": {
+            "promptEn": "Look at the menu board. Ask how much the coffee, the tea or the cake is.",
+            "grammar": [
+              "g5"
+            ],
+            "hintJa": "すみません。＿＿は いくらですか。",
+            "modelAnswers": [
+              "すみません。コーヒーは いくらですか。",
+              "ケーキは いくらですか。"
+            ],
+            "branches": [
+              {
+                "id": "coffee",
+                "whenEn": "Learner asked the price of coffee.",
+                "next": "p_coffee",
+                "exampleJa": "すみません。コーヒーは いくらですか。"
+              },
+              {
+                "id": "tea",
+                "whenEn": "Learner asked the price of tea.",
+                "next": "p_tea",
+                "exampleJa": "こうちゃは いくらですか。"
+              },
+              {
+                "id": "cake",
+                "whenEn": "Learner asked the price of cake.",
+                "next": "p_cake",
+                "exampleJa": "ケーキは いくらですか。"
+              }
+            ],
+            "fallback": "p_coffee"
+          }
+        },
+        {
+          "id": "p_coffee",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "コーヒーは 480円です。",
+              "kana": "コーヒーは よんひゃくはちじゅうえんです。",
+              "en": "Coffee is 480 yen."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "p_tea",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "紅茶は 450円です。",
+              "kana": "こうちゃは よんひゃくごじゅうえんです。",
+              "en": "Tea is 450 yen."
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "p_cake",
+          "focus": "cake_case",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ケーキは 520円です。",
+              "kana": "ケーキは ごひゃくにじゅうえんです。",
+              "en": "Cake is 520 yen.",
+              "gesture": "point",
+              "target": "cake_case"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "listen": {
+            "promptEn": "It smells wonderful in here. Ask where the coffee (or the tea) is from.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "それは どこの ＿＿ですか。",
+            "modelAnswers": [
+              "それは どこの コーヒーですか。",
+              "こうちゃは どこの こうちゃですか。"
+            ],
+            "branches": [
+              {
+                "id": "coffee",
+                "whenEn": "Learner asked where the coffee is from.",
+                "next": "o_coffee",
+                "exampleJa": "それは どこの コーヒーですか。"
+              },
+              {
+                "id": "tea",
+                "whenEn": "Learner asked where the tea is from.",
+                "next": "o_tea",
+                "exampleJa": "こうちゃは どこの こうちゃですか。"
+              }
+            ],
+            "fallback": "o_coffee"
+          }
+        },
+        {
+          "id": "o_coffee",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "ブラジルの コーヒーです。",
+              "kana": "ブラジルの コーヒーです。",
+              "en": "It's Brazilian coffee.",
+              "alts": [
+                {
+                  "ja": "コロンビアの コーヒーです。",
+                  "kana": "コロンビアの コーヒーです。",
+                  "en": "It's Colombian coffee."
+                }
+              ]
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "o_tea",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "インドの 紅茶です。",
+              "kana": "インドの こうちゃです。",
+              "en": "It's Indian tea."
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "listen": {
+            "promptEn": "Order what you would like.",
+            "grammar": [
+              "g7"
+            ],
+            "hintJa": "＿＿を ください。",
+            "modelAnswers": [
+              "コーヒーを ください。",
+              "こうちゃを ください。",
+              "じゃ、ケーキを ください。"
+            ],
+            "branches": [
+              {
+                "id": "coffee",
+                "whenEn": "Learner ordered coffee (with or without cake).",
+                "next": "s_coffee",
+                "exampleJa": "コーヒーを ください。"
+              },
+              {
+                "id": "tea",
+                "whenEn": "Learner ordered tea (with or without cake).",
+                "next": "s_tea",
+                "exampleJa": "こうちゃを ください。"
+              },
+              {
+                "id": "cake_only",
+                "whenEn": "Learner ordered only cake.",
+                "next": "s_cake",
+                "exampleJa": "じゃ、ケーキを ください。"
+              }
+            ],
+            "fallback": "s_coffee"
+          }
+        },
+        {
+          "id": "s_coffee",
+          "focus": "coffee_cup",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、コーヒーです。どうぞ。",
+              "kana": "はい、コーヒーです。どうぞ。",
+              "en": "Here's your coffee.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "s_tea",
+          "focus": "tea_cup",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、紅茶です。どうぞ。",
+              "kana": "はい、こうちゃです。どうぞ。",
+              "en": "Here's your tea.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "s_cake",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "はい、ケーキです。どうぞ。",
+              "kana": "はい、ケーキです。どうぞ。",
+              "en": "Here's your cake.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "しつれいですが、お国は どちらですか。",
+              "kana": "しつれいですが、おくには どちらですか。",
+              "en": "Excuse me for asking, but which country are you from?",
+              "tts": "しつれいですが、おくには どちらですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Tell him which country you are from.",
+            "grammar": [
+              "g6"
+            ],
+            "hintJa": "くには ＿＿です。",
+            "modelAnswers": [
+              "ブラジルです。",
+              "わたしの くには カンボジアです。"
+            ],
+            "branches": [
+              {
+                "id": "coffee_country",
+                "whenEn": "The country the learner named is a well-known coffee-growing country (Brazil, Colombia, Vietnam, Indonesia, Ethiopia, Kenya, Guatemala …).",
+                "next": "r_coffee",
+                "exampleJa": "くには ブラジルです。"
+              },
+              {
+                "id": "other_country",
+                "whenEn": "The learner named any other country.",
+                "next": "r_other",
+                "exampleJa": "くには ドイツです。"
+              }
+            ],
+            "fallback": "r_other"
+          }
+        },
+        {
+          "id": "r_coffee",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか！コーヒーの 国です。",
+              "kana": "そうですか！コーヒーの くにです。",
+              "en": "Is that so! A coffee country.",
+              "gesture": "surprised"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "r_other",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "そうですか。どうぞ よろしく。",
+              "kana": "そうですか。どうぞ よろしく。",
+              "en": "I see. Pleased to meet you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "sakamoto",
+              "ja": "これは チョコレートです。どうぞ。",
+              "kana": "これは チョコレートです。どうぞ。",
+              "en": "Here's a chocolate. On the house.",
+              "gesture": "offer"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}

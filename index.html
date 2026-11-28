@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tomy1031 lab</title>
+<meta name="description" content="tomy1031/lab の作品集：3D ゲーム「ハマころ！」、NEXTMAKE のショートフィルム、AI社員の 3D バーチャルオフィス、運動会の Instagram リール、VR 視覚トレーニング「Starlight Lake」、VR リズムフィットネス「STAR WEAVER」、足踏みで旅するオープンワールド VR「AETHERWALK」、VR 裏拍ボクササイズ「OFFBEAT GROVE」、VR 日本語会話「ことばタウン」、ハンドジェスチャーや VR でも遊べるカートレース「DREAM DRIFT」、リアル VR テニス「RALLY COURT」、5次元を体でわかる VR「ANAKATA」">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: a workbench index — one wide row per project, picture left, notes right; stacks on phones. */
+  :root {
+    --bg: #f3f1ea; --card: #fffdf8; --ink: #17191f; --muted: #5c5f68; --line: #dcd7ca;
+    --accent: #2350c8; --tag: #e9e4d6;
+    --display: "Dela Gothic One", "Hiragino Kaku Gothic StdN", sans-serif;
+    --body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #14161b; --card: #1d2027; --ink: #eceae3; --muted: #a4a7b0; --line: #2e323b; --accent: #8fb0ff; --tag: #2a2e37; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #14161b; --card: #1d2027; --ink: #eceae3; --muted: #a4a7b0; --line: #2e323b; --accent: #8fb0ff; --tag: #2a2e37; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); line-height: 1.75;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding-block: 40px 56px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 8vw, 72px); line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+  h1 small { font-family: var(--body); font-size: .28em; font-weight: 700; color: var(--muted); letter-spacing: .12em; margin-left: .6em; vertical-align: middle; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; max-width: 34em; }
+  .works { display: grid; gap: 28px; margin-top: 30px; }
+  .work { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shot { position: relative; display: block; min-height: 220px; background: #000; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 16 / 9; }
+  .shot .no { position: absolute; left: 14px; top: 10px; font-family: var(--display); font-size: 40px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.45); line-height: 1; }
+  .notes { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags span { font-size: 12px; font-weight: 700; letter-spacing: .06em; background: var(--tag); border-radius: 999px; padding: 1px 10px; }
+  h2 { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  .lead { margin: 0; font-size: 15px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 10px; padding: 8px 16px; border: 2px solid var(--ink); color: var(--ink); }
+  .btn.primary { background: var(--ink); color: var(--card); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  details { border-top: 1px dashed var(--line); padding-top: 8px; font-size: 14px; }
+  summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  details ul { margin: 6px 0 0; padding-left: 1.1em; }
+  details li { margin: 2px 0; }
+  details code { font-size: 12.5px; background: var(--tag); border-radius: 4px; padding: 0 4px; }
+  .note { font-size: 13px; color: var(--muted); margin: 0; }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  @media (max-width: 760px) {
+    .work { grid-template-columns: minmax(0, 1fr); }
+    .shot { min-height: 0; }
+    .wrap { padding-block: 24px 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>lab<small>tomy1031</small></h1>
+    <p>つくったものの置き場です。遊べるものはこのページから開けます。中身（コード・調査メモ・絵コンテ）は GitHub のリポジトリにあります。</p>
+  </header>
+
+  <main class="works">
+    <article class="work" id="hamakoro">
+      <a class="shot" href="yokohama-roll/"><img src="img/hamakoro.jpg" alt="ネクマックスが玉を押して運河パークを転がる「ハマころ！」のプレイ画面" width="1200" height="675"><span class="no">01</span></a>
+      <div class="notes">
+        <div class="tags"><span>3D ゲーム</span><span>three.js</span><span>PC・スマホ・VR</span></div>
+        <h2>ハマころ！</h2>
+        <p class="lead">ネクマックスが玉を押して、みなとみらいから中華街までを転がし、ぶつかったものを巻き込んで大きくなります。横浜を丸めたら関東、日本、最後は地球ごと。</p>
+        <p class="note">モード：ストーリー／タイムアタック（5分）／おつかい／ステージをえらぶ。最初は直径 30cm です。主人公ネクマックスの 3D モデル（.glb・りんかく線・表情・モーション付き）もダウンロードできます。</p>
+        <div class="actions">
+          <a class="btn primary" href="yokohama-roll/">あそぶ</a>
+          <a class="btn" href="yokohama-roll/nexmax/">ネクマックスの3Dモデル</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/yokohama-roll/README.md">README</a>：遊び方、ステージ、モード、ファイル構成</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/models"><code>js/models</code></a>：横浜・関東・世界のローポリモデル（すべてコードで生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/yokohama-roll/yokohama-roll/js/engine"><code>js/engine</code></a>：ステージ生成、描画、当たり判定、3D カード</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/yokohama-roll/js/pusher.js"><code>js/pusher.js</code></a>：玉を押すネクマックス</li>
+            <li><a href="yokohama-roll/nexmax/">ネクマックスの 3D モデル</a>：glTF 2.0（.glb）のダウンロードとプレビュー。<a href="https://github.com/tomy1031/lab/blob/HEAD/yokohama-roll/tools/export-nexmax.mjs"><code>tools/export-nexmax.mjs</code></a> でゲームのモデルから作成</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/2">プルリクエスト #2</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="films">
+      <a class="shot" href="nextmake-mv/"><img src="img/films.jpg" alt="NEXTMAKE Films 01「Invest in the Next」のポスター" width="1920" height="1080"><span class="no">02</span></a>
+      <div class="notes">
+        <div class="tags"><span>映像</span><span>モーショングラフィックス</span><span>4 本</span></div>
+        <h2>NEXTMAKE Films</h2>
+        <p class="lead">株式会社ネクストメイクの公開情報からつくったショートフィルム 4 本。投資家向け MV、代表のポートレート、NMClaw と IDO のプロモーション。映像はすべてコードで描いています。</p>
+        <div class="actions">
+          <a class="btn primary" href="nextmake-mv/">映像を見る</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/README.md">README</a>：4 本の概要、音楽、デザインの決まりごと</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/storyboard.md">絵コンテ（01）</a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/ceo_film.md">02 の構成</a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/promos.md">03・04 の構成</a></li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/nextmake-mv/docs/research.md">調査メモ</a>：会社と事業</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv/src"><code>src</code></a>・<a href="https://github.com/tomy1031/lab/tree/HEAD/nextmake-mv/scripts"><code>scripts</code></a>：場面、共通デザイン、音楽、レンダリング</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="ai-company">
+      <a class="shot" href="ai-company/"><img src="img/ai-company.jpg" alt="大阪・東京・プノンペンのオフィスが並ぶ 3D バーチャルオフィス" width="2880" height="1296"><span class="no">03</span></a>
+      <div class="notes">
+        <div class="tags"><span>Web アプリ</span><span>3D</span><span>Claude Code</span></div>
+        <h2>NEXTMAKE AI COMPANY</h2>
+        <p class="lead">AI社員と人間が一緒に働く 3D バーチャルオフィス（大阪・東京・プノンペン）。統括 AI のネクマックスが仕事を分けて、AI社員を採用し、人間の仕事は人間へ渡します。</p>
+        <p class="note">ここで動くのは 3D オフィスのデモだけです。本体はサーバーと Claude が必要なので、README の手順で手元で動かします。</p>
+        <div class="actions">
+          <a class="btn primary" href="ai-company/">3D オフィスのデモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/README.md">README</a>：しくみ、動かし方、設定</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/space.md">3D 空間の説明</a>・<a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/design">画面デザイン</a></li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ai-employee-3d-visualization-bgkso0/ai-company/docs/deploy.md">動かし方とセキュリティ</a></li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/server"><code>server</code></a>・<a href="https://github.com/tomy1031/lab/tree/claude/ai-employee-3d-visualization-bgkso0/ai-company/client"><code>client</code></a>：サーバーと画面</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="undokai">
+      <a class="shot" href="undokai-reel/"><img src="img/undokai.jpg" alt="運動会リールの3場面：騎馬と筆文字タイトル、RED TEAM のカード、日時入りのエンドカード" width="1200" height="675"><span class="no">04</span></a>
+      <div class="notes">
+        <div class="tags"><span>映像</span><span>Instagram リール</span><span>30 秒・縦型</span></div>
+        <h2>運動会 絆</h2>
+        <p class="lead">Charity UNDOKAI 2026（AUPP × 大阪産業大学）の参加者募集リール。「日本の大学生がやって来る！」を軸に、大阪産業大学の学生の写真と去年の運動会の映像を BGM の拍に合わせてつなぎ、日本とカンボジアが「絆」で結ばれる流れで締めます。</p>
+        <p class="note">文字は英語、漢字は演出だけ。投稿用の 1080p はページからダウンロードできます。</p>
+        <div class="actions">
+          <a class="btn primary" href="undokai-reel/">映像を見る</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/ecstatic-thompson-v7ve2u/undokai-reel">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/README.md">README</a>：絵コンテ、音楽の編集、素材と権利</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/scripts/render.py"><code>scripts/render.py</code></a>：合成とレンダリング（OpenCV・Pillow・ffmpeg）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/ecstatic-thompson-v7ve2u/undokai-reel/scripts/make_assets.py"><code>scripts/make_assets.py</code></a>：バナーから筆文字・絆・飾りを切り出す</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/3">プルリクエスト #3</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="starlight">
+      <a class="shot" href="starlight-lake/"><img src="img/starlight-lake.jpg" alt="オーロラの夜の湖に灯籠と蓮が浮かぶ Starlight Lake のプレイ画面" width="1280" height="720"><span class="no">05</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>Starlight Lake</h2>
+        <p class="lead">夕暮れから夜明けまで、ひと晩の湖の旅で見る力を鍛える視覚トレーニング。近づく灯籠を読み取ってはじき返す遠近のピント運動（Lantern Drift）、淡い縞でコントラスト感度（Wisps）、瞬間視・立体視・周辺視（Star Gates・Floating Orbs・Shooting Stars）。どの章も論文の訓練法がもとになっています。</p>
+        <p class="note">Quest のブラウザで開いて「VRで旅する」。コントローラーでもハンドトラッキング（つまむ）でも遊べます。研究どおりの順番で全章をめぐる Full Night と、遊ぶ章をえらべる Custom。PC・TV を裸眼で見る Far Screen モードと視力チェック付き。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="starlight-lake/">あそぶ</a>
+          <a class="btn" href="starlight-lake/docs/research.html">研究ノート</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/jolly-faraday-yhmee4/starlight-lake/README.md">README</a>：章の構成、操作、Quest での開き方</li>
+            <li><a href="starlight-lake/docs/research.html">研究ノート</a>：論文ごとの結果と限界、40代・軽い近視向けの使い方</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake/src/games"><code>src/games</code></a>：各章（Lantern Drift・Wisps・Star Gates・Floating Orbs・Shooting Stars・Still Water）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/claude/jolly-faraday-yhmee4/starlight-lake/src/world"><code>src/world</code></a>：空・オーロラ・山・湖・蓮・星座</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/5">プルリクエスト #5</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="star-weaver">
+      <a class="shot" href="star-weaver/"><img src="img/star-weaver.jpg" alt="ホログラムのコーチが両腕を広げる WING のお手本を見せ、左右の手のリングと HUD が浮かぶ STAR WEAVER のプレイ画面" width="1280" height="720" loading="lazy"><span class="no">06</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>STAR WEAVER</h2>
+        <p class="lead">肩こりと腰痛に配慮したリズムフィットネスです。流れてくる星に手でタッチし、光の彗星を腕でなぞって肩甲骨から大きく動かします。光のカーテンは横ステップでよけ、光のバーはミニスクワットでくぐります。前後の移動はなく、左右に1歩動ければ遊べます。</p>
+        <p class="note">Quest のブラウザで開いて「ENTER VR」。初回は約1分半のチュートリアルから始まり、ホログラムのコーチが次の動きのお手本を見せます。音楽は WebAudio で自動生成。一度開けば、次からはオフラインでも遊べます（アプリとしてインストールも可）。PC ではプレビューとオートプレイが見られます。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="star-weaver/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/claude/upbeat-wozniak-itsh33/star-weaver">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/README.md">README</a>：遊び方、肩と腰への配慮、モードと設定、仕組み</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/chart.js"><code>js/chart.js</code></a>：1小節ごとの運動パターンから譜面を生成</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/coach.js"><code>js/coach.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/tutorial.js"><code>js/tutorial.js</code></a>：鏡像のコーチと、待ってくれるチュートリアル</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/claude/upbeat-wozniak-itsh33/star-weaver/js/audio.js"><code>js/audio.js</code></a>：コンボに合わせて楽器が増える音楽エンジン</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/4">プルリクエスト #4</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="aetherwalk">
+      <a class="shot" href="aetherwalk/"><img src="img/aetherwalk.jpg" alt="夜の目覚めの丘――オーロラと天環の下、目覚めた風見の鐘塔が光のらせんをまとい、天の錨へ光の柱を放つ。足もとは星形の花が咲く草原（AETHERWALK の景色）" width="1280" height="720" loading="lazy"><span class="no">07</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>AETHERWALK 風渡りの巡礼</h2>
+        <p class="lead">その場で足踏みすると歩き、駆け足をすると走るオープンワールドのフィットネス VR です。空に壊れた輪がかかる島ユラを足で旅して、4 本の鐘塔を足踏みで昇り、湖の小島のボス「凪の心臓」を鎮めます。剣・槍・盾・弓・爆弾・松明は腕を振って使い、敵の攻撃はしゃがむ・横へ 1 歩・盾でよけます。部屋の中を歩き回る必要はありません。</p>
+        <p class="note">Quest のブラウザで開いて「VR をはじめる」。アイテムは体のホルスター（背中・腰・胸・ベルト）から取り出し、投げる・火を移す・口元に運んで食べる、と自由に使えます。祠は駆け足・身かわし・剣舞などの短い運動の挑戦です。歩数・距離・推定消費カロリーを記録します。PC ではプレビュー（W で歩く・マウスで振る）。一度開けば、次からはオフラインでも遊べます。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="aetherwalk/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/aetherwalk/README.md">README</a>：遊び方、操作、運動としての使い方、スペースと安全</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/aetherwalk/docs/DESIGN.md">設計書</a>：足踏みの検出、アイテム、敵、島の地図、アートディレクション、モジュールの約束</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/world"><code>js/world</code></a>：島・空・水・草木・鐘塔・絶景（すべてコードで生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/player"><code>js/player</code></a>・<a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/items"><code>js/items</code></a>：足踏み移動、ホルスター、武器とアイテム</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/aetherwalk/js/game"><code>js/game</code></a>：敵、鐘塔、祠、クエスト、セーブ</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/8">プルリクエスト #8</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="kotoba-town">
+      <a class="shot" href="kotoba-town/"><img src="img/kotoba-town.jpg" alt="ことばタウンの 会社の 場面――同僚の 青木さんが 話しかけ、吹き出しと「あなたの ばん」の カードが 出て いる" width="1280" height="720" loading="lazy"><span class="no">08</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR アプリ</span><span>Meta Quest 2 / 3・PC</span><span>three.js・WebXR</span><span>Gemini Live</span></div>
+        <h2>ことばタウン — VR にほんご かいわ</h2>
+        <p class="lead">VR の まちで 日本語を 声に 出して 練習します。『みんなの日本語 初級I』第1〜10課の 文法に 合わせた 30 の 場面（会社・駅・デパート・カフェ・となりの 森さんの いえ……）と、IT の 会社の 新人として 報連相・要件ヒアリング・障害対応などを 一つの 話の 流れで 練習する「ITビジネス編」10 話で、まちの 人が 話しかけて きます。日本語で 答えると Gemini Live が 聞いて 判定し、答えに 合わせて 会話が 分かれます。台本に ない ことを 言うと、相手が その場で 返事を します。</p>
+        <p class="note">答えの 例が 出る「れんしゅう」と、何も 出ない「ほんばん」が えらべます。はじめる ときに マイクが オンに なり、会話の あいだ ずっと オンです。答える たびに ★・直した 文・英語の ヒント、さいごに ふりかえり（英語）。Gemini API キーは 「せってい」で 登録（ブラウザの 中だけに 保存）。キーが なくても、例文を 読んで 進む オフライン練習が できます。</p>
+        <div class="actions">
+          <a class="btn primary" href="kotoba-town/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/kotoba-town">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/kotoba-town/README.md">README</a>：遊び方、API キーの 登録、しくみ、声の 作り直し</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/kotoba-town/data/lessons"><code>data/lessons</code></a>：第1〜10課の 台本（各課 3 場面・分岐つき）と <a href="https://github.com/tomy1031/lab/tree/HEAD/kotoba-town/docs/research">調査メモ</a></li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/kotoba-town/js/talk"><code>js/talk</code></a>：Gemini Live との つなぎ方、判定（関数呼び出し）、会話の 進め方</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/kotoba-town/js/world/scenes"><code>js/world/scenes</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/kotoba-town/js/people/person.js"><code>js/people/person.js</code></a>：10 の 場面と、まちの 人（すべて コードで 生成）</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="offbeat-grove">
+      <a class="shot" href="offbeat-grove/"><img src="img/offbeat-grove.jpg" alt="森と湖に囲まれた草原で、左手の青緑と右手のオレンジの的が飛んでくる OFFBEAT GROVE のプレイ画面。足元のレーンには 2・ウラ・3 のカウント、奥に湖と山並みと桜の木" width="1280" height="720" loading="lazy"><span class="no">09</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR フィットネス</span><span>Meta Quest 3</span><span>オフライン対応</span></div>
+        <h2>OFFBEAT GROVE</h2>
+        <p class="lead">裏拍ボクササイズ。森と湖に囲まれた草原で、音楽に合わせて飛んでくる的をパンチします。的の色で左右の手、まん中の印で打ち方、縁のバッジで「拍（1・2・3・4）かウラか」が分かり、体（ひざ）で表拍、拳で裏拍を打つ練習ができます。打つたびにずれを測り、表拍・裏拍・16分ごとに「早い・遅い・ばらつき」とアドバイスを出します。</p>
+        <p class="note">Quest のブラウザで開いて「VR で遊ぶ」。リズムは表拍・裏拍・表裏ミックス・シンコペーションの4つ。曲はスカ・ハウス・ファンク・ギターロックなど7曲（すべて Web Audio で生成したオリジナル）に加えて、YouTube の公式 MV で流すヨルシカ「八月、某、月明かり」（BPM 220 を 110 で打つ。インターネットが必要。拍の位置は最初の1回にマイクで曲を聞いてゲームが自分で調べるので、タップはいりません）。自分の音楽ファイルでも遊べます（テンポを自動で検出）。一度開けば YouTube の曲以外はネットがなくても動きます。PC・スマホではキーボードやタップで遊べます。医療機器ではありません。</p>
+        <div class="actions">
+          <a class="btn primary" href="offbeat-grove/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/offbeat-grove">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/README.md">README</a>：遊び方、裏拍トレーニングのしくみ、曲、自分の曲、オフライン、テスト</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/chart.js"><code>js/chart.js</code></a>：リズムモード別の譜面（4小節ずつ同じパターンをくり返す）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/game.js"><code>js/game.js</code></a>：グローブの当たり判定と、表拍・裏拍別のタイミング分析</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/songs.js"><code>js/songs.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/synth.js"><code>js/synth.js</code></a>：曲と楽器（Web Audio）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/js/world.js"><code>js/world.js</code></a>：草原・森・湖・空気遠近法の4重の山並み</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/offbeat-grove/sw.js"><code>sw.js</code></a>：オフライン用のサービスワーカー</li>
+            <li><a href="https://github.com/tomy1031/lab/pull/7">プルリクエスト #7</a>：作業の経緯</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="dream-drift">
+      <a class="shot" href="dream-drift/"><img src="img/dream-drift.jpg" alt="DREAM DRIFT のレース画面――夕焼けの 雲の海に うかぶ ウエハースの 道を 8台の カートが 走り、キャンディの アーチと 気球が 見える" width="1280" height="720" loading="lazy"><span class="no">10</span></a>
+      <div class="notes">
+        <div class="tags"><span>ゲーム</span><span>PC・スマホ・タブレット・Meta Quest</span><span>three.js・WebXR</span><span>MediaPipe</span></div>
+        <h2>DREAM DRIFT ドリーム・ドリフト</h2>
+        <p class="lead">8台で 走る カートレースです。キャラクターを えらび、コンピュータ 7台（0〜7台で 変えられる）と 競います。8人の キャラクターは まばたきし、ミニターボで 笑い、スピンで「＞＜」、ドリフト中は きりっと 表情が 変わり、耳や しっぽ、マフラーが ゆれます。コースは 2 つの カップに 8 つ。ドリームカップは 幻想的な 4 コース――夕焼けの 雲の海に うかぶ「わたぐも キャンディ・スカイウェイ」、夜の「ほたる灯りの森」、海の底の「さんご礁の海底神殿」、8の字に 交差する「星海ギャラクシーハイウェイ」。カンボジアカップは、炎と ネオンの 夜の「アンコール・ネオン遺跡」、夕焼けの「プノンペン・リバーサイド」（王宮・日本橋・ワット・プノン）、霧の「ボコー山」、列車が 踏切を 横切る「バッタンバン」。カップの 4 コースを 続けて 走る グランプリと、フリーレースが あります。</p>
+        <p class="note">ゲームパッド（Xbox・PlayStation・Switch Pro など）、キーボード、スマホの タッチ、カメラの ハンドジェスチャー、そして VR（Meta Quest 2 / 3 の ブラウザで「VR」を えらぶと 運転席に すわり、両手の グリップで ハンドルを にぎって 走る。ハンドトラッキングも 可）で あそべます。ハンドジェスチャーは、見えない ハンドルを 両手で にぎって かたむけると 曲がり、ピースサインで アイテム、人さし指と 親指の つまみで メニューを 決定。カメラの 映像は 端末の 中だけで 使います。ドリフトの ミニターボ、ロケットスタート、ジャンプ台の トリック、7 種類の アイテム。音楽と 効果音は すべて その場で 合成。</p>
+        <div class="actions">
+          <a class="btn primary" href="dream-drift/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/dream-drift/README.md">README</a>：遊び方、操作（コントローラ・キーボード・タッチ・ハンドジェスチャー）、アイテム、コース、しくみ</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/courses"><code>js/courses</code></a>：4 コースの 道と 景色（すべて コードで 生成）</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/dream-drift/js/race"><code>js/race</code></a>：カートの 物理・CPU・アイテム・レースの 進行</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/dream-drift/js/engine/gesture-math.js"><code>js/engine/gesture-math.js</code></a>：手の 形と かたむきを ハンドル・アクセル・アイテムに 変える しくみ</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="rally-court">
+      <a class="shot" href="rally-court/"><img src="img/rally-court.jpg" alt="RALLY COURT の試合――青いハードコートのベースラインでラケットを引いて構える自分の後ろ姿、ネットの向こうに赤いシャツの CPU、満員のスタンドとスコアボード" width="1200" height="675" loading="lazy"><span class="no">11</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR ゲーム</span><span>Meta Quest 2 / 3</span><span>three.js・WebXR</span></div>
+        <h2>RALLY COURT リアル VR テニス</h2>
+        <p class="lead">本物と同じ寸法のコートで、CPU とテニスをする VR です。コントローラーがラケットになり、振ったとおりに当たります。ボールは空気抵抗・回転（マグヌス効果）・バウンドの摩擦まで計算して飛び、トップスピンは沈み、スライスは滑ります。部屋の中でダッシュはできないので、移動は 3 つから選べます――その場で<b>足踏み・腕振り</b>すると落下地点へまっすぐ進む、<b>自動</b>で落下地点へ（自分の最高速度まで）、<b>十字キー</b>。</p>
+        <p class="note">Quest のブラウザで開いて「VR をはじめる」。試合（1 / 3 セット、タイブレーク、ノーアド）・ラリー練習・球出し・サーブ練習。CPU は 5 段階。最高速度・加速・足踏みのテンポ・打点・ラケットの角度・アシストなど、数値はすべて最適な初期値から調整できます（VR の中でも）。ハード・クレー・芝。PC でもマウスで遊べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="rally-court/">あそぶ</a>
+          <a class="btn" href="rally-court/?demo">デモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/rally-court">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/README.md">README</a>：遊び方、操作、3 つの移動方法、初期値とその理由、物理の計算</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/physics.js"><code>js/physics.js</code></a>：ボールの飛行・バウンド・ネット・ラケットとの当たり</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/player.js"><code>js/player.js</code></a>：足踏み・腕振り／自動／十字キーの移動</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/rally-court/js/ai.js"><code>js/ai.js</code></a>：CPU（追いかける・ショットを選ぶ・ミスする）</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="island-survival">
+      <a class="shot" href="island-survival/"><img src="img/island-survival.jpg" alt="ひとつだけ島の 浜辺――一人称の 視点で 見わたす 熱帯の 砂浜と ヤシの木、海と 空。右には 仲間のキャラクターと、持ち物のホットバーと 体のパラメータの HUD" width="1200" height="675" loading="lazy"><span class="no">12</span></a>
+      <div class="notes">
+        <div class="tags"><span>サバイバル</span><span>一人称</span><span>three.js・MediaPipe・Gemini Live</span></div>
+        <h2>ひとつだけ島 — ONE THING ISLAND</h2>
+        <p class="lead">無人島に 持っていける 道具は ひとつだけ（0〜3 個・全部 も 選べる）。一人称の 視点で 島を 歩き、食べ物と 水を 探して、火をおこし、約束の 日まで 生きのびるサバイバルです。島は すべて コードで 生成し、Web カメラの ハンドジェスチャーでも あそべます。仲間との 声の 会話は Gemini Live です。</p>
+        <p class="note">PC はマウスとキーボード、スマホはタッチ、Web カメラがあれば ハンドジェスチャー。持ち物・日数・難易度・季節・島のシードを せっていで 決めて はじめます。</p>
+        <div class="actions">
+          <a class="btn primary" href="island-survival/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/island-survival">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/README.md">README</a>：遊び方、操作、ハンドジェスチャー、しくみ、開発</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/docs/DESIGN.md">docs/DESIGN.md</a>（企画書）：体・天候・病気・火・狩り・錬成・建築の 仕様</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/sim/body.js"><code>js/sim/body.js</code></a>：体のパラメータと 病気</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/world/fauna.js"><code>js/world/fauna.js</code></a>：動物の 感覚と 狩り</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/island-survival/js/companion/talk.js"><code>js/companion/talk.js</code></a>：Gemini Live の 会話</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="sky-atlas">
+      <a class="shot" href="sky-atlas/"><img src="img/sky-atlas.jpg" alt="SKY ATLAS で富士山に近づく空からの眺め――衛星写真と航空写真を貼った本物の地形の上に、雪の残る山頂と裾野の森、遠くに湖と山並み" width="1200" height="675" loading="lazy"><span class="no">13</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR</span><span>Meta Quest 2/3</span><span>オフライン対応</span><span>three.js・WebXR・オープンデータ</span></div>
+        <h2>SKY ATLAS — 世界の空を飛ぶ VR</h2>
+        <p class="lead">本物の地形と衛星写真で、世界中の空を飛べる VR です。名所は 47 か所（都市・名所と遺跡・自然）で、東京・京都・パリ・ニューヨーク、マチュピチュ・万里の長城・ピラミッド、富士山・グランドキャニオン・エベレストなどがあります。行きたいエリアをネットのある所でダウンロードしておけば、ネットのない所でも飛べます。飛び方は 9 種類：スーパーマン・空中浮遊・鳥（腕で羽ばたく）・ムササビ（ウイングスーツ）・ほうき・グライダー（上昇気流で高く）・気球（風まかせ）・ジェットパック・魔法のじゅうたん（体を傾けて）。日本・アメリカ・フランス・スイスでは高精細の航空写真、街では OpenStreetMap の建物も出ます。</p>
+        <p class="note">データはすべて保存してよいオープンデータ（Sentinel-2 cloudless・Terrain Tiles・国土地理院・USGS・IGN・swisstopo・OpenStreetMap）。Google Earth のデータは規約で保存が禁止されているため使っていません。PC やスマホの画面でも飛べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="sky-atlas/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/sky-atlas">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/README.md">README</a>：遊び方、操作、データの出典とライセンス、オフラインのしくみ</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/plan.js"><code>js/plan.js</code></a>：エリアに必要なタイル（ダウンロードと表示で共通）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/terrain.js"><code>js/terrain.js</code></a>：地形の四分木 LOD・航空写真の色合わせ・地球の丸み</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/modes.js"><code>js/modes.js</code></a>：9 種類の飛び方の物理と操作</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/air.js"><code>js/air.js</code></a>：風・上昇気流・斜面の上昇風</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/sky-atlas/js/buildings.js"><code>js/buildings.js</code></a>：OpenStreetMap の建物</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="anakata">
+      <a class="shot" href="anakata/"><img src="img/anakata.jpg" alt="ANAKATA の 6章――小さな 部屋の 30 秒を 0.5 秒ごとに 横へ 並べた 廊下。ボール（赤）・振り子（金）・かざぐるま（青）の 世界線が 部屋から 部屋へ 波や らせんと なって つながる" width="1280" height="720" loading="lazy"><span class="no">14</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR 科学体験</span><span>Meta Quest 3 / 3S</span><span>オフライン対応</span></div>
+        <h2>ANAKATA 5次元を体でわかる</h2>
+        <p class="lead">映画『インターステラー』の 5次元は、キップ・ソーンの 説明で「空間 4 ＋ 時間 1」。見えない 次元を、たとえ・切り口・影・重力・時間の 5つの 道具で 体感します。点を 押し出して 5次元立方体まで 登り、平面の国に 立体を 通し、超立方体の 切り口と 影を 手で 回し、4次元の 重力では 月が 回れないことを 投げて 確かめ、最後は 部屋の 時間を 横に 並べた 廊下を 歩いて、世界線と 過去の 一瞬に ふれます。</p>
+        <p class="note">Quest の ブラウザで 開いて「VR ではじめる」。操作ガイド（コントローラーの 上の 説明カード・いま やること・にぎる 物の 光る 輪）は A / X で 表示／非表示、B / Y で 目次。ハンドトラッキングと PC・スマホ（マウス・タッチ）でも 遊べます。説明には「確かな数学／確かな科学／有力な仮説／推測（SF）」の 印。一度 開けば ネットが なくても 動きます。</p>
+        <div class="actions">
+          <a class="btn primary" href="anakata/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/anakata">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/anakata/README.md">README</a>：遊び方、操作（Quest 3 / 3S・ハンドトラッキング・PC）、6つの 章、しくみ、テスト</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/anakata/docs/SCIENCE.md">研究ノート</a>：それぞれの 説明の たしかさと 文献（ソーン、アボット、ヒントン、エーレンフェスト、Eöt-Wash ほか）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/anakata/js/math4.js"><code>js/math4.js</code></a>：n 次元の 回転・正多胞体・切り口・投影</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/anakata/js/chapters/tesseract.js"><code>js/chapters/tesseract.js</code></a>：時間を 並べた 部屋と 世界線</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/anakata/js/guide.js"><code>js/guide.js</code></a>：操作ガイド</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="powder-line">
+      <a class="shot" href="powder-line/"><img src="img/powder-line.jpg" alt="POWDER LINE の こおりの谷――オレンジの ジャケットの ライダーが 氷の アーチが 連なる トンネルを 滑りぬける" width="1280" height="720" loading="lazy"><span class="no">15</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR スポーツ</span><span>Meta Quest 2/3</span><span>オフライン対応</span><span>three.js・WebXR</span></div>
+        <h2>POWDER LINE 体で滑る VR スノーボード</h2>
+        <p class="lead">体ごと 傾けて 曲がり、しゃがんで 加速、しゃがんでから 伸び上がって ジャンプ、空中で 体ごと 回って スピン。体の 傾きは そのまま 求心加速度（g·tan）に、伸び上がる 速さは ジャンプの 強さに、空中で 回った 角度は 板の 回転に つないで、体の 動きと 画面の 動きを 一致させた アーケード スノーボードです。クリスタルと リングを 集め、キッカーで 技を きめ、分かれ道を えらんで ゴールへ。練習ゲレンデと 3 コース（朝の 丘・氷の 谷・夜の オーロラの 峰）。</p>
+        <p class="note">Quest の ブラウザで 開いて「VR で すべる」。斜面の 下を 見て じっと すると 立ち位置と 身長を 測ります。景色を 回さない 視点（おすすめ）と 進行方向に 回る 視点、視野しぼり、スティックでの 座り操作も えらべます。PC（キー・ゲームパッド）と スマホ（タッチ）でも 遊べ、一度 開けば オフラインでも 動きます。</p>
+        <div class="actions">
+          <a class="btn primary" href="powder-line/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/powder-line">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/powder-line/README.md">README</a>：遊び方、操作（VR の 体・スティック、PC、スマホ）、コース、設定、テスト</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/powder-line/docs/DESIGN.md">設計メモ</a>：体 → 画面の 対応表、酔い対策、参考に した アプリと 研究</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/powder-line/js/physics.js"><code>js/physics.js</code></a>：エッジ・離陸と 着地・スピン・得点</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/powder-line/js/body.js"><code>js/body.js</code></a>：頭と 手の 動きから 傾き・しゃがみ・ジャンプ・グラブ</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/powder-line/js/course.js"><code>js/course.js</code></a>：雪面の 式と キッカー・分かれ道</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="kotei-duel">
+      <a class="shot" href="kotei-duel/"><img src="img/kotei-duel.jpg" alt="KOTEI DUEL の デュエル――机の V字に 要件定義・基本設計・詳細設計・製造の カードが 置かれ、見つかっていない バグが 卵の 形で のっている。右の パネルに 次の 工程「単体テスト」の 説明" width="1280" height="720" loading="lazy"><span class="no">16</span></a>
+      <div class="notes">
+        <div class="tags"><span>研修 カードゲーム</span><span>PC・スマホ・Meta Quest</span><span>オフライン対応</span><span>three.js・WebXR</span></div>
+        <h2>KOTEI DUEL 工程デュエル — V字の 約束</h2>
+        <p class="lead">日本の IT 企業で システムを つくる 工程（要件定義 → 見積もり → 設計 → 製造 → テスト → リリース → 運用）と、それぞれで 大切な ことを、デュエル・カードゲームで 体で 覚えます。机の V字に 工程カードを 左から 置き、バグは 工程が 進むたびに 2 倍、V字の 向かい側の テストで 見つけて 直す。要件定義を とばせば 見つからない バグが 本番障害に、承認の ハンコが あれば あいまいな 要望で こわされず、仕様変更は 変更管理で 受け、悪い 報告ほど 早く、本番は 手順書と ダブルチェック。相手は 神社長と デスマーチ・バグキング・本番の魔物。チュートリアル＋9 章、現場の 教訓 33 枚と ふりかえり クイズ。</p>
+        <p class="note">ネクストメイク 入社研修の 教材と IPA・JUAS などの 公開資料を もとに、やさしい 日本語（ふりがな・英語つき）で 作りました。PC・スマホは マウス／タッチ、Quest は レーザーか ハンドトラッキングで 遊べ、机は 自動で あなたに 合います。一度 開けば オフラインでも 動きます。</p>
+        <div class="actions">
+          <a class="btn primary" href="kotei-duel/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/kotei-duel">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/kotei-duel/README.md">README</a>：学べること、遊び方（PC・スマホ・VR）、ルール、章、テスト</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/kotei-duel/docs/DESIGN.md">設計書</a>：ルール全文、90 枚の カード、9 章、教訓と 出典、クイズ、バランス</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/kotei-duel/docs/RESEARCH.md">調査</a>：日本の 開発工程と 大切な こと、障害事例と 教訓</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/kotei-duel/js/engine.js"><code>js/engine.js</code></a>：ルールの エンジン（V字・バグ・わりこみ・CPU）</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+    <article class="work" id="self-intro">
+      <a class="shot" href="self-intro/"><img src="img/self-intro.jpg" alt="方眼紙の上にクラスの集合写真のポラロイドと「じこしょうかい 11人の スピーチ」の文字" width="1280" height="720" loading="lazy"><span class="no">17</span></a>
+      <div class="notes">
+        <div class="tags"><span>映像</span><span>自己紹介スピーチ</span><span>5 分半・11 人</span></div>
+        <h2>じこしょうかい — 11人の スピーチ</h2>
+        <p class="lead">日本語クラスの学生 11 人の自己紹介スピーチから、名前を言うところと、その人らしさが出るところ（彼女とデート・伊藤潤二の漫画・白い猫・プラホックがきらい…）を 1 人約 30 秒ずつ選んでつないだ動画。顔のアップと名前のカード、字幕つき。</p>
+        <p class="note">名前はスライドと音声の両方で確認。暗めの教室の映像は 1 人ずつ明るさを整え、声は聞きやすい大きさにそろえています。ページでは、学生を選んでその人から再生できます。</p>
+        <div class="actions">
+          <a class="btn primary" href="self-intro/">映像を見る</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/self-intro">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/self-intro/README.md">README</a>：構成、使った場面、作り方、素材と権利</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/self-intro/plan.json"><code>plan.json</code></a>：11 人の名前・使う秒数・字幕</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/self-intro/scripts/build.py"><code>scripts/build.py</code></a>：切り出し・明るさ・声・字幕・つなぎ・BGM（ffmpeg）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/self-intro/scripts/cards.py"><code>scripts/cards.py</code></a>：名前カード・オープニング・エンディング（Pillow）</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="khmer-gt">
+      <a class="shot" href="khmer-gt/"><img src="img/khmer-gt.jpg" alt="KHMER GT の裏アンコールワット 2099 コックピット視点――ステアリングホイール越しにネオン雨のサイバーアンコール五塔とライバル車群が広がる" width="1280" height="720" loading="lazy"><span class="no">18</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR レーシング</span><span>ハンドジェスチャー</span><span>Meta Quest・PC・スマホ</span><span>three.js・WebXR・MediaPipe</span></div>
+        <h2>KHMER GT — カンボジア リアルVRグランプリ</h2>
+        <p class="lead">プノンペン（王宮・独立記念塔・メコン川）、アンコールワット（朝焼け五塔・環濠）、裏アンコールワット 2099（近未来サイバーパンク）、ボコー山（霧の連続ヘアピン峠）、カンポット（塩田・コロニアル街・ドリアン像）の 5 コースと、6 車種の GT マシンで戦う 8 台対戦リアルレーシング。</p>
+        <p class="note">VR ハンドトラッキングおよび Web カメラのハンドジェスチャーに対応し、コントローラーなしでもメニュー選択（指差し＆ピンチ／0.9 秒ホールド）から運転（両手ハンドル・パーでブレーキ・✌️/👍で ERS ブースト）まで全操作が可能。キーボード・ゲームパッド・タッチ操作でも遊べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="khmer-gt/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/khmer-gt">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/README.md">README</a>：5 コース・6 車種・ハンドジェスチャー＆VR 操作ガイド</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/js/track/scenery.js"><code>js/track/scenery.js</code></a>：カンボジア 5 大名所と裏アンコールワット 2099 の 3D ランドマーク</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/js/car/physics.js"><code>js/car/physics.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/js/car/model.js"><code>js/car/model.js</code></a>：6 速ギア・ERS・スリップストリーム物理と 6 車種 3D モデル</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/js/vr/vrinput.js"><code>js/vr/vrinput.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/khmer-gt/js/engine/hands.js"><code>js/engine/hands.js</code></a>：VR ハンドトラッキング＆Web カメラハンド操作</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+
+    <article class="work" id="matrix-cosmos">
+      <a class="shot" href="matrix-cosmos/"><img src="img/matrix-cosmos.jpg" alt="THE MATRIX : COSMOS の光速体感VR――マトリックスの緑のデジタルレインと時計が光速 1.000c で静止し、光時計と空間が収縮する" width="1280" height="720" loading="lazy"><span class="no">19</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR 体感サイエンス</span><span>マトリックス世界観</span><span>Meta Quest・PC・スマホ</span><span>three.js・WebXR</span></div>
+        <h2>THE MATRIX : COSMOS — 量子と時空を体感するVR</h2>
+        <p class="lead">数式ではなくマトリックスの3Dコード空間の中で、相対性理論・量子力学・高次元時空・超弦理論を身体感覚で知覚する WebXR 教育アプリ。光速 c に近づくと周囲のデジタルレインと時計が静止する時間の遅れ、観測レーザーで波が粒に崩壊する二重スリット実験、曲がる時空と重力レンズ、4D光円錐・超立方体・10Dカラビ・ヤウ多様体、素手で弾ける1次元超弦の5領域をシームレスに体験できます。</p>
+        <p class="note">Meta Quest のコントローラー・ハンドトラッキング、PC・スマホのブラウザに対応。外部通信なし、Web Audio で空間音響と超弦の倍音をリアルタイム合成します。</p>
+        <div class="actions">
+          <a class="btn primary" href="matrix-cosmos/">あそぶ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/matrix-cosmos">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/matrix-cosmos/README.md">README</a>：5つの体感領域と VR / PC 操作ガイド</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/matrix-cosmos/js/matrixEnv.js"><code>js/matrixEnv.js</code></a>：時間遅れ・ドップラー効果・重力・量子揺らぎと連動する 3D デジタルレイン</li>
+            <li><a href="https://github.com/tomy1031/lab/tree/HEAD/matrix-cosmos/js/realms"><code>js/realms</code></a>：光速・量子・重力・高次元・超弦の5つの物理モジュール</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/matrix-cosmos/js/audio.js"><code>js/audio.js</code></a>：時間遅れクロック・量子崩壊・超弦倍音の Web Audio 空間シンセ</li>
+          </ul>
+        </details>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    リポジトリ：<a href="https://github.com/tomy1031/lab">github.com/tomy1031/lab</a>。このサイトは <a href="https://github.com/tomy1031/lab/blob/claude/yokohama-roll/site/build.mjs"><code>site/build.mjs</code></a> で各ブランチから組み立て、<code>gh-pages</code> ブランチから配信しています。
+  </footer>
+</div>
+</body>
+</html>

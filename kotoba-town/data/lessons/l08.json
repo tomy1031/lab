@@ -1,0 +1,775 @@
+{
+  "lesson": 8,
+  "titleJa": "どんな まちですか",
+  "titleEn": "What's it like?",
+  "summaryEn": "Describe things with adjectives: food, your town, your job, life in Japan. Say \"very\", \"not very\" and \"…, but …\" — and take your leave politely.",
+  "grammar": [
+    { "id": "g1", "pattern": "N は な-adj／い-adj です", "meaningEn": "N is (adjective) — な-adjectives drop な before です",
+      "exampleJa": "この 町は しずかです。カレーは おいしいです。", "exampleEn": "This town is quiet. The curry is delicious." },
+    { "id": "g2", "pattern": "～じゃ ありません／～くないです", "meaningEn": "is not (adjective): な-adj + じゃ ありません, い-adj drops い + くないです (いい → よくないです)",
+      "exampleJa": "あまり べんりじゃ ありません。むずかしくないです。", "exampleEn": "It's not very convenient. It's not difficult." },
+    { "id": "g3", "pattern": "な-adj な N／い-adj N", "meaningEn": "adjective before a noun: しずかな まち, 古い まち",
+      "exampleJa": "しんせつな 先生です。黒い くつです。", "exampleEn": "She is a kind teacher. They are black shoes." },
+    { "id": "g4", "pattern": "とても／あまり", "meaningEn": "very (with affirmative) / not very (with negative)",
+      "exampleJa": "とても いそがしいです。あまり 高くないです。", "exampleEn": "It's very busy. It's not very expensive." },
+    { "id": "g5", "pattern": "N は どうですか", "meaningEn": "How is N? / How do you find N? (asking for an impression)",
+      "exampleJa": "日本の 生活は どうですか。", "exampleEn": "How is life in Japan?" },
+    { "id": "g6", "pattern": "N1は どんな N2ですか", "meaningEn": "What kind of N2 is N1?",
+      "exampleJa": "あなたの 国は どんな 国ですか。", "exampleEn": "What kind of country is your country?" },
+    { "id": "g7", "pattern": "S1が、S2", "meaningEn": "S1, but S2",
+      "exampleJa": "いそがしいですが、おもしろいです。", "exampleEn": "It's busy, but interesting." },
+    { "id": "g8", "pattern": "どれ", "meaningEn": "which one (of three or more)",
+      "exampleJa": "あなたの くつは どれですか。", "exampleEn": "Which ones are your shoes?" },
+    { "id": "g9", "pattern": "そろそろ しつれいします／いいえ、けっこうです", "meaningEn": "set phrases: \"I should be going soon\" / \"No, thank you (I've had enough)\"",
+      "exampleJa": "もう 9時ですね。そろそろ しつれいします。", "exampleEn": "It's already nine. I should be going." }
+  ],
+  "vocab": [
+    { "ja": "おいしい", "kana": "おいしい", "en": "delicious" },
+    { "ja": "いそがしい", "kana": "いそがしい", "en": "busy" },
+    { "ja": "おもしろい", "kana": "おもしろい", "en": "interesting, fun" },
+    { "ja": "楽しい", "kana": "たのしい", "en": "enjoyable" },
+    { "ja": "むずかしい", "kana": "むずかしい", "en": "difficult" },
+    { "ja": "新しい", "kana": "あたらしい", "en": "new" },
+    { "ja": "古い", "kana": "ふるい", "en": "old (things)" },
+    { "ja": "大きい", "kana": "おおきい", "en": "big" },
+    { "ja": "小さい", "kana": "ちいさい", "en": "small" },
+    { "ja": "高い", "kana": "たかい", "en": "expensive; tall" },
+    { "ja": "安い", "kana": "やすい", "en": "cheap" },
+    { "ja": "暑い", "kana": "あつい", "en": "hot" },
+    { "ja": "寒い", "kana": "さむい", "en": "cold (weather)" },
+    { "ja": "冷たい", "kana": "つめたい", "en": "cold (to the touch)" },
+    { "ja": "いい", "kana": "いい", "en": "good" },
+    { "ja": "きれい", "kana": "きれい", "en": "beautiful; clean (な-adj)" },
+    { "ja": "しずか", "kana": "しずか", "en": "quiet (な-adj)" },
+    { "ja": "にぎやか", "kana": "にぎやか", "en": "lively (な-adj)" },
+    { "ja": "べんり", "kana": "べんり", "en": "convenient (な-adj)" },
+    { "ja": "しんせつ", "kana": "しんせつ", "en": "kind (な-adj)" },
+    { "ja": "有名", "kana": "ゆうめい", "en": "famous (な-adj)" },
+    { "ja": "町", "kana": "まち", "en": "town, city" },
+    { "ja": "生活", "kana": "せいかつ", "en": "life, daily living" },
+    { "ja": "食べ物", "kana": "たべもの", "en": "food" },
+    { "ja": "さくら", "kana": "さくら", "en": "cherry blossom" }
+  ],
+  "tipsEn": [
+    "Hosts rarely say it's time to go. When the clock gets a comment (もう 9時ですね), that's your cue: そろそろ しつれいします.",
+    "きれい, ゆうめい and しんせつ are な-adjectives: きれいな まち, and the negative is きれいじゃ ありません — never きれくないです.",
+    "Softening a complaint with が sounds natural and polite: いそがしいですが、おもしろいです."
+  ],
+  "research": {
+    "sources": [
+      "https://jlpt-n5-notes.vercel.app/lesson-08/grammar/",
+      "https://japanese.tuhoconline.net/learn-minna-no-nihongo-lesson-8.html",
+      "https://www.fun-japan.jp/en/articles/8450"
+    ],
+    "notesEn": "Lesson 8 introduces い- and な-adjectives as predicates (affirmative and negative, non-past only), adjectives modifying nouns, the degree adverbs とても and あまり, the questions N は どうですか and N1は どんな N2ですか, the conjunction が (but), and どれ. Its conversation is the end of a home visit, so it brings もう いっぱい いかがですか, いいえ、けっこうです, もう ～時ですね, そろそろ しつれいします and また いらっしゃって ください. Real situations that fit: small talk over dinner at a neighbour's, chatting with a local in the park about the town and your country, and a check-in talk with your manager about work, your apartment and your studies. Past-tense adjectives (lesson 12), あります (lesson 9) and reasons with から (lesson 9) are avoided."
+  },
+  "variants": [
+    {
+      "id": "l08a",
+      "titleJa": "ばんごはんの あとで",
+      "titleEn": "Dinner at the Moris'",
+      "scene": "home",
+      "setup": { "time": "night", "season": "winter", "weather": "clear" },
+      "briefEn": "The Moris have invited you to dinner. Shun cooked his famous curry, and now he's watching you take the first bite…",
+      "roleEn": "You are the Moris' neighbour from abroad. Talk about your real life in Japan and your own home town. Your shoes are in the genkan — decide what colour they are.",
+      "missionsEn": [
+        { "text": "Tell Shun how his curry is", "grammar": ["g1", "g4"] },
+        { "text": "Describe life in Japan and your home town", "grammar": ["g7", "g3", "g6"] },
+        { "text": "Say it's time to go, politely", "grammar": ["g9"] },
+        { "text": "Point out which shoes are yours", "grammar": ["g8", "g3"] }
+      ],
+      "characters": ["mori_aya", "mori_shun"],
+      "positions": { "mori_aya": "host", "mori_shun": "host2" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "mori_shun", "ja": "わたしの カレーは どうですか。", "kana": "わたしの カレーは どうですか。",
+              "en": "How is my curry?", "gesture": "think" }
+          ],
+          "focus": "table",
+          "listen": {
+            "promptEn": "How is Shun's curry? Tell him honestly — tasty, very tasty, tasty but hot…",
+            "grammar": ["g1", "g4", "g5"],
+            "hintJa": "とても ＿＿です。",
+            "modelAnswers": [
+              "とても おいしいです。",
+              "おいしいですが、ちょっと あついです。"
+            ],
+            "branches": [
+              { "id": "tasty", "whenEn": "Learner only praises it (delicious, very good).", "next": "n2a",
+                "exampleJa": "とても おいしいです。" },
+              { "id": "tasty_but", "whenEn": "Learner has a reservation: it's hot or spicy, or not very good.", "next": "n2b",
+                "exampleJa": "おいしいですが、ちょっと あついです。" }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            { "who": "mori_shun", "ja": "ありがとう ございます。もう いっぱい いかがですか。", "kana": "ありがとう ございます。もう いっぱい いかがですか。",
+              "en": "Thank you. Would you like another helping?", "gesture": "offer" }
+          ],
+          "listen": {
+            "promptEn": "He offers a second helping. Accept — or say you've had enough, politely.",
+            "grammar": ["g9"],
+            "hintJa": "いいえ、＿＿です。／はい、おねがいします。",
+            "modelAnswers": [
+              "いいえ、けっこうです。",
+              "はい、おねがいします。"
+            ],
+            "branches": [
+              { "id": "more", "whenEn": "Learner accepts another helping.", "next": "n2c",
+                "exampleJa": "はい、おねがいします。" },
+              { "id": "enough", "whenEn": "Learner declines (けっこうです, no thank you, I'm full).", "next": "n3",
+                "exampleJa": "いいえ、けっこうです。" }
+            ],
+            "fallback": "n3"
+          }
+        },
+        {
+          "id": "n2b",
+          "say": [
+            { "who": "mori_shun", "ja": "あ、すみません。冷たい 水を どうぞ。", "kana": "あ、すみません。つめたい みずを どうぞ。",
+              "en": "Oh, I'm sorry. Here, have some cold water.", "gesture": "offer" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2c",
+          "say": [
+            { "who": "mori_shun", "ja": "はい、どうぞ。", "kana": "はい、どうぞ。", "en": "Here you are.", "gesture": "offer" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            { "who": "mori_aya", "ja": "日本の 生活は どうですか。", "kana": "にほんの せいかつは どうですか。",
+              "en": "How is life in Japan?" }
+          ],
+          "listen": {
+            "promptEn": "How is your life in Japan? Try \"…, but …\" (e.g. busy but fun).",
+            "grammar": ["g5", "g7", "g1"],
+            "hintJa": "＿＿ですが、＿＿です。",
+            "modelAnswers": [
+              "いそがしいですが、たのしいです。",
+              "とても たのしいです。",
+              "たのしいですが、日本語は むずかしいです。"
+            ],
+            "branches": [
+              { "id": "positive", "whenEn": "Learner's answer is only positive (fun, interesting, good).", "next": "n4a",
+                "exampleJa": "とても たのしいです。" },
+              { "id": "mixed", "whenEn": "Learner mentions something hard or negative (busy, difficult, expensive, cold…), with or without a positive side.", "next": "n4b",
+                "exampleJa": "いそがしいですが、たのしいです。" }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            { "who": "mori_aya", "ja": "そうですか。いいですね。", "kana": "そうですか。いいですね。", "en": "Really? That's good.", "gesture": "nod" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            { "who": "mori_aya", "ja": "そうですか。たいへんですね。", "kana": "そうですか。たいへんですね。", "en": "I see. That must be hard.", "gesture": "nod" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            { "who": "mori_shun", "ja": "国の 町は どんな 町ですか。", "kana": "くにの まちは どんな まちですか。",
+              "en": "What kind of town is your home town?" }
+          ],
+          "listen": {
+            "promptEn": "Describe your home town: adjective + まち (a quiet town, a big town…).",
+            "grammar": ["g6", "g3"],
+            "hintJa": "＿＿ まちです。",
+            "modelAnswers": [
+              "しずかな 町です。",
+              "大きい 町です。とても にぎやかです。",
+              "小さいですが、きれいな 町です。"
+            ],
+            "branches": [
+              { "id": "lively", "whenEn": "The town is big and/or lively, busy.", "next": "n6a",
+                "exampleJa": "おおきい まちです。とても にぎやかです。" },
+              { "id": "other", "whenEn": "Anything else: quiet, small, beautiful, old, famous, etc.", "next": "n6b",
+                "exampleJa": "しずかな まちです。" }
+            ],
+            "fallback": "n6b"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            { "who": "mori_shun", "ja": "にぎやかな 町ですか。この 町は とても しずかですよ。", "kana": "にぎやかな まちですか。この まちは とても しずかですよ。",
+              "en": "A lively town? This town is very quiet, you know.", "gesture": "laugh" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            { "who": "mori_shun", "ja": "いいですね。この 町は しずかですが、べんりですよ。", "kana": "いいですね。この まちは しずかですが、べんりですよ。",
+              "en": "That sounds nice. This town is quiet, but it's convenient.", "gesture": "nod" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            { "who": "mori_aya", "ja": "あ、もう 9時ですね。", "kana": "あ、もう くじですね。",
+              "en": "Oh, it's already nine o'clock.", "gesture": "point", "target": "clock", "tts": "あ、もう くじですね。" }
+          ],
+          "focus": "clock",
+          "listen": {
+            "promptEn": "It's getting late — that's your cue. Say you should be going.",
+            "grammar": ["g9"],
+            "hintJa": "そろそろ ＿＿します。",
+            "modelAnswers": [
+              "そろそろ しつれいします。",
+              "そうですね。そろそろ しつれいします。きょうは ありがとう ございました。"
+            ],
+            "branches": [
+              { "id": "leave", "whenEn": "Learner says they should be going, without thanking the hosts.", "next": "n8",
+                "exampleJa": "そろそろ しつれいします。" },
+              { "id": "leave_thanks", "whenEn": "Learner says they should be going AND thanks them (for today, the meal), or only thanks them.", "next": "n7b",
+                "exampleJa": "そろそろ しつれいします。きょうは ありがとう ございました。" }
+            ],
+            "fallback": "n8"
+          }
+        },
+        {
+          "id": "n7b",
+          "say": [
+            { "who": "mori_shun", "ja": "いいえ、どういたしまして。", "kana": "いいえ、どういたしまして。", "en": "Not at all, you're welcome.", "gesture": "bow_light" }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            { "who": "mori_aya", "ja": "あなたの くつは どれですか。", "kana": "あなたの くつは どれですか。",
+              "en": "Which shoes are yours?", "gesture": "point", "target": "genkan" }
+          ],
+          "focus": "genkan",
+          "listen": {
+            "promptEn": "There are several pairs in the genkan. Say which ones are yours: colour or size + くつ.",
+            "grammar": ["g8", "g3"],
+            "hintJa": "その ＿＿ くつです。",
+            "modelAnswers": [
+              "その 黒い くつです。",
+              "あの 白い くつです。",
+              "その 大きい くつです。"
+            ],
+            "branches": [
+              { "id": "black", "whenEn": "Learner's shoes are black.", "next": "end_black",
+                "exampleJa": "その くろい くつです。" },
+              { "id": "other", "whenEn": "Learner's shoes are any other colour, or described another way (big, new, old…).", "next": "end_other",
+                "exampleJa": "その しろい くつです。" }
+            ],
+            "fallback": "end_other"
+          }
+        },
+        {
+          "id": "end_black",
+          "say": [
+            { "who": "mori_shun", "ja": "この 黒い くつですね。はい、どうぞ。", "kana": "この くろい くつですね。はい、どうぞ。",
+              "en": "These black ones, right? Here you are.", "gesture": "offer" },
+            { "who": "mori_aya", "ja": "また いらっしゃって ください。", "kana": "また いらっしゃって ください。",
+              "en": "Please come again.", "gesture": "bow_light" }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_other",
+          "say": [
+            { "who": "mori_shun", "ja": "これですね。すてきな くつですね。どうぞ。", "kana": "これですね。すてきな くつですね。どうぞ。",
+              "en": "These, right? Nice shoes. Here you are.", "gesture": "offer" },
+            { "who": "mori_aya", "ja": "また いらっしゃって ください。おやすみなさい。", "kana": "また いらっしゃって ください。おやすみなさい。",
+              "en": "Please come again. Good night.", "gesture": "wave" }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l08b",
+      "titleJa": "さくらの こうえん",
+      "titleEn": "Under the cherry blossoms",
+      "scene": "park",
+      "setup": { "time": "noon", "season": "spring", "weather": "clear" },
+      "briefEn": "It's a bright spring day and the park is pink with cherry blossoms. Hara-san, who walks here every single day, stops to chat with you on the path.",
+      "roleEn": "You live in this town and come from abroad. Talk about your real impressions and your own country.",
+      "missionsEn": [
+        { "text": "Say what you think of the park and the town", "grammar": ["g1", "g2", "g4"] },
+        { "text": "Ask her about the castle", "grammar": ["g6"] },
+        { "text": "Describe your country", "grammar": ["g3", "g6"] },
+        { "text": "Give your opinion of Japanese food with \"…, but …\"", "grammar": ["g7"] }
+      ],
+      "characters": ["hara"],
+      "positions": { "hara": "npc1" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "hara", "ja": "こんにちは。さくら、きれいですね。", "kana": "こんにちは。さくら、きれいですね。",
+              "en": "Hello. The cherry blossoms are beautiful, aren't they?", "gesture": "point", "target": "sakura" },
+            { "who": "hara", "ja": "この こうえんは どうですか。", "kana": "この こうえんは どうですか。",
+              "en": "How do you like this park?" }
+          ],
+          "focus": "sakura",
+          "listen": {
+            "promptEn": "What do you think of this park? Beautiful, quiet, big, lively…",
+            "grammar": ["g1", "g4", "g5"],
+            "hintJa": "とても ＿＿です。",
+            "modelAnswers": [
+              "とても きれいです。",
+              "大きいです。そして、しずかです。",
+              "とても にぎやかですね。"
+            ],
+            "branches": [
+              { "id": "calm", "whenEn": "Learner finds it beautiful, quiet, big, nice — anything except lively/crowded.", "next": "n2a",
+                "exampleJa": "とても きれいです。" },
+              { "id": "lively", "whenEn": "Learner finds it lively, busy or crowded.", "next": "n2b",
+                "exampleJa": "とても にぎやかですね。" }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            { "who": "hara", "ja": "そうですね。あさは とても しずかですよ。", "kana": "そうですね。あさは とても しずかですよ。",
+              "en": "Yes, isn't it. In the morning it's very quiet.", "gesture": "nod" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            { "who": "hara", "ja": "ええ。日曜日は とても にぎやかですよ。", "kana": "ええ。にちようびは とても にぎやかですよ。",
+              "en": "Yes. On Sundays it's very lively.", "gesture": "laugh" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            { "who": "hara", "ja": "この 町の 生活は どうですか。べんりですか。", "kana": "この まちの せいかつは どうですか。べんりですか。",
+              "en": "How is life in this town? Is it convenient?" }
+          ],
+          "listen": {
+            "promptEn": "Is life in this town convenient? Say yes — or \"not very\".",
+            "grammar": ["g2", "g4", "g1"],
+            "hintJa": "はい、＿＿です。／いいえ、あまり ＿＿じゃ ありません。",
+            "modelAnswers": [
+              "はい、とても べんりです。",
+              "いいえ、あまり べんりじゃ ありません。",
+              "べんりですが、スーパーは あまり 大きくないです。"
+            ],
+            "branches": [
+              { "id": "convenient", "whenEn": "Learner says it is convenient (overall positive).", "next": "n4a",
+                "exampleJa": "はい、とても べんりです。" },
+              { "id": "not_convenient", "whenEn": "Learner says it is not (very) convenient, or mainly complains.", "next": "n4b",
+                "exampleJa": "いいえ、あまり べんりじゃ ありません。" }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            { "who": "hara", "ja": "ええ。小さい 町ですが、べんりですね。", "kana": "ええ。ちいさい まちですが、べんりですね。",
+              "en": "Yes. It's a small town, but convenient.", "gesture": "nod" }
+          ],
+          "next": "n4q"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            { "who": "hara", "ja": "そうですか。バスは あまり べんりじゃ ありませんね。", "kana": "そうですか。バスは あまり べんりじゃ ありませんね。",
+              "en": "I see. The buses aren't very convenient, are they?", "gesture": "think" }
+          ],
+          "next": "n4q"
+        },
+        {
+          "id": "n4q",
+          "say": [
+            { "who": "hara", "ja": "あそこは しろです。", "kana": "あそこは しろです。",
+              "en": "That over there is the castle.", "gesture": "point", "target": "castle" }
+          ],
+          "focus": "castle",
+          "listen": {
+            "promptEn": "Your turn to ask! Ask what kind of castle it is — or whether it's old / famous.",
+            "grammar": ["g6", "g1"],
+            "hintJa": "あの しろは どんな ＿＿ですか。",
+            "modelAnswers": [
+              "あの しろは どんな しろですか。",
+              "あの しろは 古いですか。",
+              "有名な しろですか。"
+            ],
+            "branches": [
+              { "id": "what_kind", "whenEn": "Learner asks an open question (どんな しろ / どうですか).", "next": "n5a",
+                "exampleJa": "あの しろは どんな しろですか。" },
+              { "id": "yes_no", "whenEn": "Learner asks a yes/no question about it (is it old, famous, big…) or just comments on it.", "next": "n5b",
+                "exampleJa": "あの しろは ふるいですか。" }
+            ],
+            "fallback": "n5a"
+          }
+        },
+        {
+          "id": "n5a",
+          "say": [
+            { "who": "hara", "ja": "とても 古い しろです。そして、有名ですよ。", "kana": "とても ふるい しろです。そして、ゆうめいですよ。",
+              "en": "It's a very old castle. And it's famous." }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n5b",
+          "say": [
+            { "who": "hara", "ja": "ええ、とても 古いです。有名な しろですよ。", "kana": "ええ、とても ふるいです。ゆうめいな しろですよ。",
+              "en": "Yes, it's very old. It's a famous castle.", "gesture": "nod" }
+          ],
+          "next": "n6"
+        },
+        {
+          "id": "n6",
+          "say": [
+            { "who": "hara", "ja": "あなたの 国は どんな 国ですか。", "kana": "あなたの くには どんな くにですか。",
+              "en": "What kind of country is yours?" }
+          ],
+          "listen": {
+            "promptEn": "Describe your country: adjective + くに (a hot country, a big country, a beautiful country…).",
+            "grammar": ["g6", "g3", "g4"],
+            "hintJa": "＿＿ くにです。",
+            "modelAnswers": [
+              "あつい 国です。",
+              "とても さむい 国です。",
+              "大きい 国です。そして、きれいな 国です。"
+            ],
+            "branches": [
+              { "id": "hot", "whenEn": "Learner's country is hot or warm.", "next": "n7a",
+                "exampleJa": "あつい くにです。" },
+              { "id": "cold", "whenEn": "Learner's country is cold.", "next": "n7b",
+                "exampleJa": "とても さむい くにです。" },
+              { "id": "other", "whenEn": "Learner describes it without temperature: big, small, beautiful, lively, famous for something…", "next": "n7c",
+                "exampleJa": "おおきい くにです。そして、きれいです。" }
+            ],
+            "fallback": "n7c"
+          }
+        },
+        {
+          "id": "n7a",
+          "say": [
+            { "who": "hara", "ja": "あつい 国ですか。日本の 1月は とても さむいですよ。", "kana": "あつい くにですか。にほんの いちがつは とても さむいですよ。",
+              "en": "A hot country? January in Japan is very cold, you know.", "gesture": "surprised",
+              "tts": "あつい くにですか。にほんの いちがつは とても さむいですよ。" }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7b",
+          "say": [
+            { "who": "hara", "ja": "さむい 国ですか。日本の 8月は とても あついですよ。", "kana": "さむい くにですか。にほんの はちがつは とても あついですよ。",
+              "en": "A cold country? August in Japan is very hot, you know.", "gesture": "surprised",
+              "tts": "さむい くにですか。にほんの はちがつは とても あついですよ。" }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n7c",
+          "say": [
+            { "who": "hara", "ja": "そうですか。すてきな 国ですね。", "kana": "そうですか。すてきな くにですね。",
+              "en": "I see. It sounds like a lovely country.", "gesture": "nod" }
+          ],
+          "next": "n8"
+        },
+        {
+          "id": "n8",
+          "say": [
+            { "who": "hara", "ja": "日本の 食べ物は どうですか。", "kana": "にほんの たべものは どうですか。",
+              "en": "How do you find Japanese food?" }
+          ],
+          "listen": {
+            "promptEn": "What do you think of Japanese food? Try \"…, but …\" (e.g. delicious but expensive).",
+            "grammar": ["g7", "g1", "g5"],
+            "hintJa": "＿＿ですが、＿＿です。",
+            "modelAnswers": [
+              "おいしいですが、高いです。",
+              "とても おいしいです。",
+              "おいしいですが、あまり 安くないです。"
+            ],
+            "branches": [
+              { "id": "good", "whenEn": "Learner is only positive about Japanese food.", "next": "end_good",
+                "exampleJa": "とても おいしいです。" },
+              { "id": "but", "whenEn": "Learner adds a downside (expensive, small portions, not tasty…) or is negative.", "next": "end_but",
+                "exampleJa": "おいしいですが、たかいです。" }
+            ],
+            "fallback": "end_good"
+          }
+        },
+        {
+          "id": "end_good",
+          "say": [
+            { "who": "hara", "ja": "じゃ、この だんごは いかがですか。おいしいですよ。", "kana": "じゃ、この だんごは いかがですか。おいしいですよ。",
+              "en": "Then how about one of these dango? They're delicious.", "gesture": "offer" }
+          ],
+          "next": "bye"
+        },
+        {
+          "id": "end_but",
+          "say": [
+            { "who": "hara", "ja": "あの みせの だんごは 安いですよ。そして、おいしいです。", "kana": "あの みせの だんごは やすいですよ。そして、おいしいです。",
+              "en": "The dango at that stall are cheap. And delicious.", "gesture": "point", "target": "food_stall" }
+          ],
+          "focus": "food_stall",
+          "next": "bye"
+        },
+        {
+          "id": "bye",
+          "say": [
+            { "who": "hara", "ja": "わたしは 毎日 ここへ 来ます。また 会いましょう。", "kana": "わたしは まいにち ここへ きます。また あいましょう。",
+              "en": "I come here every day. Let's meet again.", "gesture": "wave" }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l08c",
+      "titleJa": "ぶちょうと はなします",
+      "titleEn": "A chat with the manager",
+      "scene": "office",
+      "setup": { "time": "noon", "season": "autumn", "weather": "cloudy" },
+      "briefEn": "You've been at the company for a month. Ogawa-buchō sits down with you for a friendly check-in: the work, your new apartment, your Japanese classes — and that old computer of yours.",
+      "roleEn": "You joined the design company a month ago and take Japanese classes with Hayakawa-sensei. Answer honestly. The PC on your desk is yours.",
+      "missionsEn": [
+        { "text": "Tell him how the job and your apartment are", "grammar": ["g1", "g2", "g7"] },
+        { "text": "Say how your Japanese study is going", "grammar": ["g4", "g7"] },
+        { "text": "Describe your teacher", "grammar": ["g3", "g6"] },
+        { "text": "Point out and describe your PC", "grammar": ["g8", "g3"] }
+      ],
+      "characters": ["ogawa"],
+      "positions": { "ogawa": "npc1" },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            { "who": "ogawa", "ja": "しごとは どうですか。いそがしいですか。", "kana": "しごとは どうですか。いそがしいですか。",
+              "en": "How is the work? Is it busy?", "gesture": "bow_light" }
+          ],
+          "listen": {
+            "promptEn": "How is your job? Try \"…, but …\" (e.g. busy but interesting).",
+            "grammar": ["g7", "g1", "g5"],
+            "hintJa": "＿＿ですが、＿＿です。",
+            "modelAnswers": [
+              "いそがしいですが、おもしろいです。",
+              "あまり いそがしくないです。たのしいです。",
+              "とても いそがしいです。そして、むずかしいです。"
+            ],
+            "branches": [
+              { "id": "positive", "whenEn": "Overall positive: interesting / fun / fine, whether or not it is busy.", "next": "n2a",
+                "exampleJa": "いそがしいですが、おもしろいです。" },
+              { "id": "hard", "whenEn": "Only negative: too busy, difficult, not interesting — no positive side.", "next": "n2b",
+                "exampleJa": "とても いそがしいです。そして、むずかしいです。" }
+            ],
+            "fallback": "n2a"
+          }
+        },
+        {
+          "id": "n2a",
+          "say": [
+            { "who": "ogawa", "ja": "そうですか。それは いいですね。", "kana": "そうですか。それは いいですね。", "en": "I see. That's good to hear.", "gesture": "nod" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2b",
+          "say": [
+            { "who": "ogawa", "ja": "たいへんですね。青木さんは しんせつな 人ですよ。", "kana": "たいへんですね。あおきさんは しんせつな ひとですよ。",
+              "en": "That's tough. Aoki-san is a kind person, you know.", "gesture": "think" }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            { "who": "ogawa", "ja": "新しい アパートは どうですか。", "kana": "あたらしい アパートは どうですか。",
+              "en": "How is your new apartment?" }
+          ],
+          "listen": {
+            "promptEn": "How is your apartment? Say one good or bad thing — quiet, small, not very new, convenient…",
+            "grammar": ["g1", "g2", "g4"],
+            "hintJa": "＿＿です。／あまり ＿＿くないです。",
+            "modelAnswers": [
+              "しずかです。そして、べんりです。",
+              "あまり 大きくないですが、きれいです。",
+              "小さいです。そして、あまり 新しくないです。"
+            ],
+            "branches": [
+              { "id": "good", "whenEn": "Mostly positive: nice, clean, quiet, convenient, new (a small 'but' is fine if it ends positive).", "next": "n4a",
+                "exampleJa": "しずかです。そして、べんりです。" },
+              { "id": "problem", "whenEn": "Mostly a complaint: small, old, expensive, noisy, not convenient.", "next": "n4b",
+                "exampleJa": "ちいさいです。そして、あまり あたらしくないです。" }
+            ],
+            "fallback": "n4a"
+          }
+        },
+        {
+          "id": "n4a",
+          "say": [
+            { "who": "ogawa", "ja": "そうですか。いい アパートですね。", "kana": "そうですか。いい アパートですね。", "en": "I see. That's a good apartment.", "gesture": "nod" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4b",
+          "say": [
+            { "who": "ogawa", "ja": "そうですか。東京の アパートは 小さいですが、高いですね。", "kana": "そうですか。とうきょうの アパートは ちいさいですが、たかいですね。",
+              "en": "I see. Tokyo apartments are small, but expensive, aren't they?", "gesture": "laugh" }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            { "who": "ogawa", "ja": "日本語の べんきょうは どうですか。", "kana": "にほんごの べんきょうは どうですか。",
+              "en": "How is your Japanese study going?" }
+          ],
+          "listen": {
+            "promptEn": "How is studying Japanese? Difficult? Not very difficult? Fun?",
+            "grammar": ["g7", "g2", "g4"],
+            "hintJa": "＿＿ですが、＿＿です。／あまり ＿＿くないです。",
+            "modelAnswers": [
+              "むずかしいですが、おもしろいです。",
+              "あまり むずかしくないです。たのしいです。",
+              "かんじは とても むずかしいです。"
+            ],
+            "branches": [
+              { "id": "difficult", "whenEn": "Learner says it is difficult (with or without a positive side).", "next": "n6a",
+                "exampleJa": "むずかしいですが、おもしろいです。" },
+              { "id": "not_difficult", "whenEn": "Learner says it is not (very) difficult, easy, or only fun/interesting.", "next": "n6b",
+                "exampleJa": "あまり むずかしくないです。たのしいです。" }
+            ],
+            "fallback": "n6a"
+          }
+        },
+        {
+          "id": "n6a",
+          "say": [
+            { "who": "ogawa", "ja": "そうですね。かんじは むずかしいですね。", "kana": "そうですね。かんじは むずかしいですね。",
+              "en": "Yes, indeed. Kanji are difficult, aren't they?", "gesture": "nod" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6b",
+          "say": [
+            { "who": "ogawa", "ja": "むずかしくないですか。それは いいですね。", "kana": "むずかしくないですか。それは いいですね。",
+              "en": "Not difficult? That's wonderful.", "gesture": "surprised" }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            { "who": "ogawa", "ja": "日本語の 先生は どんな 人ですか。", "kana": "にほんごの せんせいは どんな ひとですか。",
+              "en": "What kind of person is your Japanese teacher?" }
+          ],
+          "listen": {
+            "promptEn": "Describe Hayakawa-sensei: adjective + せんせい / ひと (a kind teacher, an interesting person…).",
+            "grammar": ["g6", "g3"],
+            "hintJa": "＿＿ せんせいです。",
+            "modelAnswers": [
+              "しんせつな 先生です。",
+              "おもしろい 人です。",
+              "とても げんきな 先生です。"
+            ],
+            "branches": [
+              { "id": "kind", "whenEn": "Learner says the teacher is kind / nice / good.", "next": "n8a",
+                "exampleJa": "しんせつな せんせいです。" },
+              { "id": "other", "whenEn": "Any other description: interesting, lively, busy, famous, beautiful, etc.", "next": "n8b",
+                "exampleJa": "おもしろい ひとです。" }
+            ],
+            "fallback": "n8a"
+          }
+        },
+        {
+          "id": "n8a",
+          "say": [
+            { "who": "ogawa", "ja": "しんせつな 先生ですか。いいですね。", "kana": "しんせつな せんせいですか。いいですね。",
+              "en": "A kind teacher? That's good.", "gesture": "nod" }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n8b",
+          "say": [
+            { "who": "ogawa", "ja": "そうですか。いい 先生ですね。", "kana": "そうですか。いい せんせいですね。",
+              "en": "I see. Sounds like a good teacher.", "gesture": "nod" }
+          ],
+          "next": "n9"
+        },
+        {
+          "id": "n9",
+          "say": [
+            { "who": "ogawa", "ja": "あ、あなたの パソコンは どれですか。", "kana": "あ、あなたの パソコンは どれですか。",
+              "en": "Oh — which computer is yours?", "gesture": "think" }
+          ],
+          "focus": "pc",
+          "listen": {
+            "promptEn": "Your PC is right next to you. Point it out and describe it: colour, size, old or new.",
+            "grammar": ["g8", "g3", "g1"],
+            "hintJa": "この ＿＿ パソコンです。",
+            "modelAnswers": [
+              "この 黒い パソコンです。ちょっと 古いです。",
+              "この 小さい パソコンです。",
+              "これです。あまり 新しくないです。"
+            ],
+            "branches": [
+              { "id": "old", "whenEn": "Learner says it is old, not new, or not good.", "next": "end_old",
+                "exampleJa": "この くろい パソコンです。ちょっと ふるいです。" },
+              { "id": "fine", "whenEn": "Learner just identifies it (colour, size) or says it is new / good.", "next": "end_fine",
+                "exampleJa": "この ちいさい パソコンです。" }
+            ],
+            "fallback": "end_fine"
+          }
+        },
+        {
+          "id": "end_old",
+          "say": [
+            { "who": "ogawa", "ja": "古いですね。じゃ、新しい パソコンを 買いましょう。", "kana": "ふるいですね。じゃ、あたらしい パソコンを かいましょう。",
+              "en": "It is old. Well then, let's buy you a new computer.", "gesture": "nod" }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_fine",
+          "say": [
+            { "who": "ogawa", "ja": "それですか。来月 新しい パソコンを 買いますよ。", "kana": "それですか。らいげつ あたらしい パソコンを かいますよ。",
+              "en": "That one? We're buying you a new computer next month.", "gesture": "point", "target": "pc" }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "東京の 生活は どうですか。",
+        "openerKana": "とうきょうの せいかつは どうですか。",
+        "openerEn": "How is life in Tokyo?",
+        "topicEn": "Formal but kind small talk as the manager: life in Tokyo, the learner's country and home town (どんな 国ですか), food, weather. Use adjectives, とても／あまり and ～が、～. Stay within lesson 1–8 grammar (no past-tense adjectives).",
+        "maxTurns": 4
+      }
+    }
+  ]
+}

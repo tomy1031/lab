@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EYE GYM — 見る力の脳トレ VR</title>
+<meta name="description" content="Meta Quest 2/3 で遊べる、1分ミニゲームの「見る力の脳トレ」。スコア・ランク・レベルアップで、上達が目に見える。">
+<meta name="theme-color" content="#5aa9ff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/" } }
+</script>
+<style>
+  :root { --ink: #2f3a5c; --ink-2: #5d6a8e; --pink: #ff6fa8; --blue: #3fb8ff; --gold: #ffb52e; --green: #4fcf6f; --violet: #9a7bff; --card: rgba(255,255,255,0.88); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #8fc8ff; color: var(--ink); font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif; }
+  body { overflow: hidden; }
+  #app { position: fixed; inset: 0; }
+  #app canvas { display: block; touch-action: none; }
+  #landing { position: fixed; inset: 0; overflow-y: auto; padding: max(16px, env(safe-area-inset-top)) 16px 40px; z-index: 10; }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  .hero { text-align: center; padding: 5vh 0 2vh; }
+  .logo { font-family: "Fredoka", sans-serif; font-weight: 700; font-size: clamp(56px, 13vw, 112px); letter-spacing: 0.02em; margin: 0; color: #fff;
+    text-shadow: 0 6px 0 #ff6fa8, 0 14px 30px rgba(60, 80, 160, 0.35); }
+  .tag { font-weight: 800; font-size: 18px; color: #fff; margin: 14px 0 0; text-shadow: 0 2px 8px rgba(40, 60, 140, 0.35); }
+  .card { background: var(--card); border-radius: 28px; padding: 22px; margin: 16px 0; box-shadow: 0 10px 0 rgba(40, 60, 140, 0.12), 0 20px 50px rgba(40, 60, 140, 0.18); }
+  .card h2 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
+  .play { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .play { grid-template-columns: 1fr; } }
+  .big { font: inherit; font-weight: 800; font-size: 20px; border: 0; border-radius: 22px; padding: 18px; cursor: pointer; color: #fff; box-shadow: 0 7px 0 rgba(0,0,0,0.15); transition: transform .12s; text-align: center; }
+  .big small { display: block; font-weight: 700; font-size: 13px; opacity: .9; margin-top: 4px; }
+  .big:hover { transform: translateY(-3px); }
+  .big:disabled { filter: grayscale(.7); opacity: .6; cursor: not-allowed; transform: none; }
+  .pink { background: linear-gradient(#ff8dbb, var(--pink)); } .blue { background: linear-gradient(#6fcbff, var(--blue)); }
+  .note { font-size: 13px; color: var(--ink-2); line-height: 1.7; margin: 10px 0 0; }
+  .offline { display: inline-block; margin: 10px 0 0; font-size: 12.5px; font-weight: 700; line-height: 1.5; padding: 5px 12px; border-radius: 999px; background: #eef3fb; color: var(--ink-2); }
+  .offline[hidden] { display: none; }
+  .offline[data-state="ok"] { background: #e2f7e8; color: #1d7a3c; }
+  .offline[data-state="off"] { background: #fff1de; color: #9a5800; }
+  .stats { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: center; }
+  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+  #radar { width: 300px; height: 300px; max-width: 100%; justify-self: center; }
+  .kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kv div { background: #f2f6ff; border-radius: 16px; padding: 10px; text-align: center; }
+  .kv b { display: block; font-family: "Fredoka", sans-serif; font-size: 26px; }
+  .kv span { font-size: 12px; color: var(--ink-2); font-weight: 700; }
+  .games { display: grid; gap: 8px; }
+  .g { display: flex; align-items: center; gap: 12px; background: #f6f9ff; border-radius: 16px; padding: 8px 12px; }
+  .g i { width: 40px; height: 40px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-style: normal; font-family: "Fredoka", sans-serif; font-weight: 700; font-size: 20px; flex: none; }
+  .g b { font-family: "Fredoka", sans-serif; font-size: 18px; }
+  .g span { font-size: 12.5px; color: var(--ink-2); font-weight: 700; display: block; }
+  .g em { margin-left: auto; font-style: normal; font-family: "Fredoka", sans-serif; font-weight: 600; color: var(--pink); white-space: nowrap; }
+  label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+  input[type=number], select { font: inherit; padding: 10px 12px; border-radius: 14px; border: 2px solid #dbe6ff; background: #fff; color: var(--ink); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .row2 { grid-template-columns: 1fr; } }
+  a { color: #2a7fd6; font-weight: 700; }
+  #back { position: fixed; top: 12px; left: 12px; z-index: 6; display: none; font: inherit; font-weight: 800; border: 0; border-radius: 999px; padding: 10px 18px; background: #fff; color: var(--ink); box-shadow: 0 4px 0 rgba(0,0,0,.12); cursor: pointer; }
+  #hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 5; font-size: 12.5px; font-weight: 700; color: var(--ink); background: rgba(255,255,255,.85); padding: 6px 14px; border-radius: 999px; display: none; }
+  body.playing #back, body.playing #hint { display: block; }
+  body.playing #landing, body.in-xr #landing { display: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button id="back">← もどる</button>
+<div id="hint">クリック：えらぶ・割る ／ ドラッグ・矢印キー：はじく ／ 右ドラッグ：見回す ／ Esc：ポーズ</div>
+<main id="landing">
+  <div class="wrap">
+    <header class="hero">
+      <h1 class="logo">EYE GYM</h1>
+      <p class="tag">まいにち5分、見る力の脳トレ。Meta Quest 2 / 3</p>
+    </header>
+
+    <section class="card">
+      <div class="play">
+        <button class="big pink" id="btn-vr">VRであそぶ<small>コントローラーでも、指でつついても</small></button>
+        <button class="big blue" id="btn-desktop">この画面であそぶ<small>マウスで体験（Depth Order は VR のみ）</small></button>
+      </div>
+      <p class="note" id="xr-note"></p>
+      <p class="offline" id="offline" hidden></p>
+    </section>
+
+    <section class="card">
+      <h2>あなたの EYE POWER</h2>
+      <div class="stats">
+        <canvas id="radar" width="600" height="600"></canvas>
+        <div>
+          <div class="kv">
+            <div><b id="k-level">1</b><span>EYE LEVEL</span></div>
+            <div><b id="k-power">5</b><span>EYE POWER</span></div>
+            <div><b id="k-streak">0</b><span>連続日数</span></div>
+          </div>
+          <div class="games" id="games"></div>
+        </div>
+      </div>
+      <p class="note">レベルは、各ゲームの難しさ（縞の淡さ・リングの小ささ・表示時間・奥行きの差・星が出ている時間）から決まります。上がるのは、目が実際にうまくなったときだけです。</p>
+    </section>
+
+    <section class="card">
+      <h2>設定</h2>
+      <div class="row2">
+        <label class="f">年齢 <input type="number" id="set-age" min="6" max="99"></label>
+        <label class="f">VRの画質 <select id="set-quality"><option value="auto">自動</option><option value="high">高精細</option><option value="standard">標準</option></select></label>
+        <label class="f">音量 <select id="set-volume"><option value="0">なし</option><option value="0.4">小</option><option value="0.8">中</option><option value="1">大</option></select></label>
+      </div>
+      <p class="note">じっくり型の視覚トレーニングは <a href="../">Starlight Lake</a>、各ゲームの下敷きにした研究は <a href="../docs/research.html">研究ノート</a> にあります。医療機器ではありません。近視・乱視の度数は変わりません。VR は 1 回 15〜25 分を目安に、目が疲れたら休憩を。</p>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+  const params = new URLSearchParams(location.search);
+  // offline play: one service worker (../sw.js) keeps both apps on the device after an online visit
+  import('../src/offline.js').then((m) => m.setupOffline(document.getElementById('offline'), { sw: '../sw.js', scope: '../' }));
+  if (params.has('emulate')) {
+    const { XRDevice, metaQuest3, metaQuest2 } = await import('https://cdn.jsdelivr.net/npm/iwer@2.6.0/build/iwer.module.js');
+    const dev = new XRDevice(params.get('emulate') === 'quest2' ? metaQuest2 : metaQuest3);
+    dev.installRuntime({ forceInstall: true });
+    window.__xrDevice = dev;
+  }
+  const { ArcadeApp } = await import('./src/app.js');
+  const { drawRadar } = await import('./src/screens.js');
+  const { GAMES, GAME_ORDER, SKILLS } = await import('./src/progress.js');
+  const app = new ArcadeApp(document.getElementById('app'));
+  window.__app = app;
+  const $ = (id) => document.getElementById(id);
+  const s = app.settings;
+
+  $('set-age').value = s.age; $('set-quality').value = s.quality; $('set-volume').value = String(s.volume);
+  $('set-age').addEventListener('input', (e) => { s.age = Math.max(6, Math.min(99, parseInt(e.target.value, 10) || 42)); app.progress.save(); });
+  $('set-quality').addEventListener('input', (e) => { s.quality = e.target.value; app.progress.save(); });
+  $('set-volume').addEventListener('input', (e) => { s.volume = parseFloat(e.target.value); app.sound.setVolume(s.volume); app.progress.save(); });
+
+  const vr = $('btn-vr'), note = $('xr-note');
+  if (!navigator.xr) { vr.disabled = true; note.textContent = 'このブラウザは WebXR 非対応です。Meta Quest のブラウザで開いてください。'; }
+  else navigator.xr.isSessionSupported('immersive-vr').then((ok) => {
+    if (!ok) { vr.disabled = true; note.textContent = 'VR ヘッドセットが見つかりません。Meta Quest のブラウザで開くと VR で遊べます。'; }
+    else note.textContent = '立ったままでも座ったままでも遊べます。まわりに手をのばせる空間を。';
+  }).catch(() => {});
+  vr.addEventListener('click', async () => { try { await app.enterVR(); } catch (e) { note.textContent = 'VR を開始できませんでした：' + e.message; } });
+  $('btn-desktop').addEventListener('click', () => { document.body.classList.add('playing'); app.startDesktop(); });
+  $('back').addEventListener('click', () => app.exit());
+  app.onExitHooks.push(() => { document.body.classList.remove('playing'); render(); });
+  app.onRecord = [render];
+
+  function render() {
+    const pr = app.progress;
+    $('k-level').textContent = pr.eyeLevel().lv;
+    $('k-power').textContent = pr.eyePower();
+    $('k-streak').textContent = pr.streak();
+    const vals = {}; for (const k of Object.keys(SKILLS)) vals[k] = pr.skillLevel(k);
+    const c = $('radar'), g = c.getContext('2d');
+    g.clearRect(0, 0, c.width, c.height);
+    drawRadar(g, 300, 310, 180, vals);
+    $('games').innerHTML = GAME_ORDER.map((id) => {
+      const d = GAMES[id], r = pr.data.games[id];
+      return `<div class="g"><i style="background:${d.color}">${d.icon}</i><div><b>${d.title}</b><span>${SKILLS[d.skill].label} Lv.${pr.skillLevel(d.skill)}</span></div><em>BEST ${r.best.toLocaleString()}</em></div>`;
+    }).join('');
+  }
+  render();
+  document.fonts?.ready?.then(render);
+</script>
+</body>
+</html>

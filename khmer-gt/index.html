@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>KHMER GT — カンボジア リアルVRグランプリ</title>
+  <meta name="description" content="プノンペン・アンコールワット・裏アンコールワット（サイバーパンク2099）・ボコー山・カンポットを駆けるグランツーリスモ風リアル対戦カーレーシング。WebXR VR＆ハンドジェスチャーでコントローラー不要の完全操作に対応。">
+  <meta name="theme-color" content="#0b0e14">
+  <link rel="icon" href="img/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="gl" aria-label="KHMER GT 3D レーシング画面"></canvas>
+
+  <!-- GT SHOWROOM / LOBBY SCREEN -->
+  <main id="screen-lobby">
+    <header class="lobby-header">
+      <div class="brand-block">
+        <h1>KHMER <span>GT</span></h1>
+        <div class="brand-sub">CAMBODIA REAL VR GRAND PRIX</div>
+        <div id="course-detail-badge" class="course-detail-badge"></div>
+      </div>
+
+      <div>
+        <div class="header-actions">
+          <button id="btn-vr" class="action-btn vr-btn" type="button">VRモードで遊ぶ (WebXR)</button>
+          <button id="btn-hand" class="action-btn" type="button">ハンドジェスチャー操作</button>
+          <button id="btn-guide" class="action-btn" type="button">操作ガイド</button>
+          <button id="btn-mute" class="action-btn" type="button">🔊 サウンド ON</button>
+        </div>
+        <div id="hand-status-text" class="hand-status-bar">ハンド操作: OFF（クリックでカメラ起動・手だけで全操作可能）</div>
+      </div>
+    </header>
+
+    <section class="lobby-dock" aria-label="コースとマシンの選択">
+      <!-- 5 Cambodia Courses -->
+      <div class="dock-panel">
+        <div class="dock-title">
+          <span>01 / CIRCUIT SELECT</span>
+          <span>全5コース</span>
+        </div>
+        <div id="course-list" class="card-grid course-grid"></div>
+      </div>
+
+      <!-- 6 Playable Cars -->
+      <div class="dock-panel">
+        <div class="dock-title">
+          <span>02 / MACHINE SELECT</span>
+          <span>全6車種</span>
+        </div>
+        <div id="car-list" class="card-grid car-grid"></div>
+      </div>
+
+      <!-- Selected Car Telemetry & Start -->
+      <div class="dock-panel spec-panel">
+        <div class="car-detail-head">
+          <h2 id="car-detail-title">NAGA GT-R35</h2>
+          <div id="car-detail-sub" class="car-detail-sub"></div>
+          <div id="car-detail-specs" class="car-detail-specs"></div>
+        </div>
+        <p id="car-detail-desc" class="car-detail-desc"></p>
+
+        <div class="stat-bars">
+          <div class="stat-row"><span>最高速度</span><div class="stat-track"><div id="stat-speed" class="stat-fill"></div></div></div>
+          <div class="stat-row"><span>加速性能</span><div class="stat-track"><div id="stat-accel" class="stat-fill"></div></div></div>
+          <div class="stat-row"><span>旋回性能</span><div class="stat-track"><div id="stat-handling" class="stat-fill"></div></div></div>
+          <div class="stat-row"><span>安定性</span><div class="stat-track"><div id="stat-stability" class="stat-fill"></div></div></div>
+        </div>
+
+        <div class="race-options">
+          <div class="seg-group" role="group" aria-label="AI難易度">
+            <button class="seg-btn" data-diff="rookie" type="button">ROOKIE</button>
+            <button class="seg-btn active" data-diff="pro" type="button">PRO</button>
+            <button class="seg-btn" data-diff="master" type="button">MASTER</button>
+          </div>
+          <div class="seg-group" role="group" aria-label="周回数">
+            <button class="seg-btn" data-laps="1" type="button">1周</button>
+            <button class="seg-btn active" data-laps="3" type="button">3周</button>
+            <button class="seg-btn" data-laps="5" type="button">5周</button>
+          </div>
+        </div>
+
+        <button id="btn-start-race" class="start-btn" type="button">RACE START</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- RACE HUD -->
+  <section id="hud" class="hidden" aria-label="レーステレメトリー">
+    <div class="hud-top-left">
+      <div class="pos-lap-card">
+        <div class="pos-block">
+          <span class="pos-label">POS</span>
+          <span id="hud-pos">6</span>
+          <span class="pos-total">/8</span>
+        </div>
+        <div class="lap-time-block">
+          <div><span>LAP</span><strong id="hud-lap">1 / 3</strong></div>
+          <div><span>TIME</span><strong id="hud-time">00:00.000</strong></div>
+          <div><span>BEST</span><strong id="hud-best">--:--.---</strong></div>
+        </div>
+      </div>
+      <div id="hud-standings" class="standings-box"></div>
+    </div>
+
+    <div class="hud-top-right">
+      <div class="hud-tools">
+        <button id="btn-cam" class="hud-mini-btn" type="button">視点切替 (C)</button>
+        <button id="btn-pause-hud" class="hud-mini-btn" type="button">ポーズ (Esc)</button>
+      </div>
+      <canvas id="minimap-canvas" width="168" height="168"></canvas>
+    </div>
+
+    <div id="start-lights" class="hidden" aria-label="スタートシグナル">
+      <div class="light-pod"></div>
+      <div class="light-pod"></div>
+      <div class="light-pod"></div>
+      <div class="light-pod"></div>
+      <div class="light-pod"></div>
+    </div>
+
+    <div id="hud-banner"></div>
+    <div id="hud-wrongway" class="hidden">WRONG WAY / 逆走注意</div>
+
+    <div class="hud-bottom-cluster">
+      <div class="rpm-bar-track"><div id="hud-rpm-fill"></div></div>
+      <div class="cluster-main">
+        <div class="pedals" aria-label="ブレーキとアクセル開度">
+          <div class="pedal-track" title="ブレーキ"><div id="hud-brake"></div></div>
+          <div class="pedal-track" title="アクセル"><div id="hud-throttle"></div></div>
+        </div>
+        <div class="speed-box">
+          <div id="hud-speed">0</div>
+          <div class="speed-unit">KM/H</div>
+        </div>
+        <div class="gear-box">
+          <div id="hud-gear">1</div>
+        </div>
+        <div class="ers-box">
+          <div class="ers-label"><span>ERS BOOST</span><span id="hud-rpm-val">1400 RPM</span></div>
+          <div class="ers-track"><div id="hud-ers-fill"></div></div>
+        </div>
+      </div>
+      <div class="cluster-footer">
+        <span id="hud-source">キーボード</span>
+        <span id="hud-draft" class="hidden">SLIPSTREAM</span>
+      </div>
+    </div>
+
+    <div id="hand-preview-wrap" class="hidden">
+      <canvas id="hand-preview-canvas" width="216" height="156"></canvas>
+    </div>
+  </section>
+
+  <!-- MOBILE TOUCH CONTROLS -->
+  <div id="touch-controls" class="hidden">
+    <div class="tc-group">
+      <button id="tc-left" class="tc-btn" type="button">◀</button>
+      <button id="tc-right" class="tc-btn" type="button">▶</button>
+    </div>
+    <div class="tc-group">
+      <button id="tc-brake" class="tc-btn" type="button">BRK</button>
+      <button id="tc-boost" class="tc-btn" type="button">ERS</button>
+      <button id="tc-gas" class="tc-btn" type="button">GAS</button>
+    </div>
+  </div>
+
+  <!-- PAUSE OVERLAY -->
+  <div id="screen-pause" class="overlay-screen hidden">
+    <div class="modal-card">
+      <h2>PAUSED</h2>
+      <p class="modal-sub">両手ハンドルでステアリング / パー✋でブレーキ / ✌️または👍でERSブースト</p>
+      <div class="modal-actions">
+        <button id="btn-resume" class="start-btn" type="button">レースを再開</button>
+        <button id="btn-restart" class="action-btn" type="button">最初からやり直す</button>
+        <button id="btn-quit" class="action-btn" type="button">ガレージへ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS OVERLAY -->
+  <div id="screen-results" class="overlay-screen hidden">
+    <div class="modal-card">
+      <h2 id="results-title">1st — CHAMPION!</h2>
+      <p id="results-sub" class="modal-sub"></p>
+      <div id="results-table" class="results-table"></div>
+      <div class="modal-actions">
+        <button id="btn-res-replay" class="start-btn" type="button">もう一度レース</button>
+        <button id="btn-res-lobby" class="action-btn" type="button">コース・車種を選ぶ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS GUIDE MODAL -->
+  <div id="modal-guide" class="overlay-screen hidden">
+    <div class="modal-card">
+      <h2>CONTROLS GUIDE</h2>
+      <p class="modal-sub">コントローラーなし（VRハンドトラッキング・Webカメラ）からキーボード・ゲームパッドまで完全対応</p>
+      <div class="guide-grid">
+        <div class="guide-box">
+          <h3>✋ ハンドジェスチャー / VRハンド</h3>
+          <div>・<strong>両手でハンドルを握って傾ける</strong>：ステアリング</div>
+          <div>・<strong>グー／自然な握り</strong>：アクセル（自動加速）</div>
+          <div>・<strong>パー ✋（手を開く）</strong>：ブレーキ＆バック</div>
+          <div>・<strong>ピース ✌️ / サムズアップ 👍</strong>：ERSブースト</div>
+          <div>・<strong>メニュー操作</strong>：指差し＆ピンチ（または0.9秒ホールド）</div>
+        </div>
+        <div class="guide-box">
+          <h3>⌨️ キーボード / ゲームパッド</h3>
+          <div>・<strong>W / ↑</strong>：アクセル　<strong>S / ↓</strong>：ブレーキ</div>
+          <div>・<strong>A・D / ←・→</strong>：ステアリング</div>
+          <div>・<strong>Shift / N</strong>：ERSオーバーテイクブースト</div>
+          <div>・<strong>Space</strong>：ドリフト補助</div>
+          <div>・<strong>C</strong>：視点切替（チェイス / コックピット / フード）</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-close-guide" class="start-btn" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLLER-FREE HAND CURSOR (PINCH / DWELL) -->
+  <svg id="hand-cursor" class="hidden" viewBox="0 0 44 44">
+    <circle cx="22" cy="22" r="16" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="3"/>
+    <circle id="hand-cursor-ring" cx="22" cy="22" r="16" fill="none" stroke="#00f0ff" stroke-width="3.5"
+      stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 22 22)"/>
+    <circle class="cursor-dot" cx="22" cy="22" r="5" fill="#d4a84b"/>
+  </svg>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+{
+  "lesson": 14,
+  "titleJa": "てつだいましょうか",
+  "titleEn": "Shall I help you?",
+  "summaryEn": "Meet the て-form. Ask people to do things (～て ください), say what is happening right now (～て います), and offer help (～ましょうか).",
+  "grammar": [
+    {
+      "id": "g1",
+      "pattern": "Vて（て-form）",
+      "meaningEn": "the て-form. Group I: い・ち・り→って, み・び・に→んで, き→いて, ぎ→いで, し→して (exception: いきます→いって). Group II: ます→て. Group III: して, きて.",
+      "exampleJa": "まちます → まって／よみます → よんで／かきます → かいて",
+      "exampleEn": "wait / read / write in the て-form"
+    },
+    {
+      "id": "g2",
+      "pattern": "Vて ください",
+      "meaningEn": "please do V (request, instruction, or kind invitation)",
+      "exampleJa": "よみかたを おしえて ください。",
+      "exampleEn": "Please tell me how to read it."
+    },
+    {
+      "id": "g3",
+      "pattern": "Vて います",
+      "meaningEn": "be doing V right now (action in progress)",
+      "exampleJa": "ともだちが えきで まって います。",
+      "exampleEn": "My friend is waiting at the station."
+    },
+    {
+      "id": "g4",
+      "pattern": "Vます-stem＋ましょうか",
+      "meaningEn": "Shall I do V for you? (offering help). Accept: ええ、おねがいします。 Decline: いいえ、けっこうです。",
+      "exampleJa": "エアコンを つけましょうか。",
+      "exampleEn": "Shall I turn on the air conditioner?"
+    },
+    {
+      "id": "g5",
+      "pattern": "すみませんが、～",
+      "meaningEn": "Excuse me, but… (softens a request; this が is not 'but')",
+      "exampleJa": "すみませんが、この かみを よんで ください。",
+      "exampleEn": "Excuse me, could you read this paper for me?"
+    },
+    {
+      "id": "g6",
+      "pattern": "Nが V",
+      "meaningEn": "が marks the subject when you describe what you see happening",
+      "exampleJa": "あめが ふって います。",
+      "exampleEn": "It is raining."
+    }
+  ],
+  "vocab": [
+    {
+      "ja": "手伝います",
+      "kana": "てつだいます",
+      "en": "help"
+    },
+    {
+      "ja": "待ちます",
+      "kana": "まちます",
+      "en": "wait"
+    },
+    {
+      "ja": "急ぎます",
+      "kana": "いそぎます",
+      "en": "hurry"
+    },
+    {
+      "ja": "教えます",
+      "kana": "おしえます",
+      "en": "tell, teach"
+    },
+    {
+      "ja": "見せます",
+      "kana": "みせます",
+      "en": "show"
+    },
+    {
+      "ja": "取ります",
+      "kana": "とります",
+      "en": "take, pass, fetch"
+    },
+    {
+      "ja": "持ちます",
+      "kana": "もちます",
+      "en": "hold, carry"
+    },
+    {
+      "ja": "呼びます",
+      "kana": "よびます",
+      "en": "call (someone)"
+    },
+    {
+      "ja": "話します",
+      "kana": "はなします",
+      "en": "speak"
+    },
+    {
+      "ja": "つけます",
+      "kana": "つけます",
+      "en": "turn on"
+    },
+    {
+      "ja": "開けます",
+      "kana": "あけます",
+      "en": "open"
+    },
+    {
+      "ja": "始めます",
+      "kana": "はじめます",
+      "en": "start"
+    },
+    {
+      "ja": "降ります",
+      "kana": "ふります",
+      "en": "fall (rain)"
+    },
+    {
+      "ja": "コピーします",
+      "kana": "コピーします",
+      "en": "copy"
+    },
+    {
+      "ja": "出します",
+      "kana": "だします",
+      "en": "take out"
+    },
+    {
+      "ja": "エアコン",
+      "kana": "エアコン",
+      "en": "air conditioner"
+    },
+    {
+      "ja": "おつり",
+      "kana": "おつり",
+      "en": "change (money)"
+    },
+    {
+      "ja": "読み方",
+      "kana": "よみかた",
+      "en": "how to read, the reading"
+    },
+    {
+      "ja": "買い方",
+      "kana": "かいかた",
+      "en": "how to buy"
+    },
+    {
+      "ja": "ゆっくり",
+      "kana": "ゆっくり",
+      "en": "slowly"
+    },
+    {
+      "ja": "すぐ",
+      "kana": "すぐ",
+      "en": "soon, at once"
+    },
+    {
+      "ja": "あとで",
+      "kana": "あとで",
+      "en": "later"
+    },
+    {
+      "ja": "もう 少し",
+      "kana": "もう すこし",
+      "en": "a little more"
+    },
+    {
+      "ja": "荷物",
+      "kana": "にもつ",
+      "en": "parcel, luggage"
+    }
+  ],
+  "tipsEn": [
+    "Start a request to a stranger with すみませんが、… — it is the polite knock on the door before ～て ください.",
+    "When someone offers help with ～ましょうか, answer 「ええ、おねがいします」 or 「いいえ、けっこうです」. A plain いいえ sounds cold.",
+    "Missed a delivery in Japan? The slip in your mailbox (ふざいひょう) tells you how to ask for redelivery — neighbours and station staff are used to helping with the kanji."
+  ],
+  "research": {
+    "sources": [
+      "https://www.jfkl.org.my/wp-content/uploads/2023/01/動詞の「て形」の教え方（HP用）-2.pdf",
+      "https://nihongomaster.com/blog/basic-japanese-grammar-step-by-step-guide-to-the-te-form",
+      "https://nihongonow.byu.edu/te-form"
+    ],
+    "notesEn": "Lesson 14 introduces the three verb groups and the て-form (group I sound changes って／んで／いて／いで／して with the exception いきます→いって; group II ます→て; group III して／きて), and uses it at once in Vて ください (requests, instructions, invitations), Vて います (an action in progress) and, with the ます-stem, ～ましょうか (offering to do something), together with the softener すみませんが and Nが V for describing what you see (あめが ふって います). The natural situations are asking strangers and staff for help, offering help to a busy colleague or a neighbour, and reporting what someone is doing right now. Typical mistakes are choosing the wrong group I ending (✗ まちて, ✗ よみて, ✗ かきて, ✗ いきて→いって), treating group I verbs that look like group II (かえります, はいります) as group II, dropping the small っ or the ん in speech, mixing up ～ましょう (let's) and ～ましょうか (shall I?), and answering an offer with a bare はい／いいえ. The three scenes are original: a rainy morning at the ticket machine, the hour before a meeting at the office, and a delivery slip in the apartment mailbox. NPC lines avoid ～ても／～ては／～てから, て-chaining, the state use of ～て います (lesson 15), the ない-form and plain style."
+  },
+  "variants": [
+    {
+      "id": "l14a",
+      "titleJa": "あめの あさの えき",
+      "titleEn": "A rainy morning at the station",
+      "scene": "station",
+      "setup": {
+        "time": "morning",
+        "season": "spring",
+        "weather": "rain"
+      },
+      "call": false,
+      "briefEn": "A rainy spring morning. Your friend Minh is waiting for you at Sakuramachi station, but the ticket machine in front of you is all kanji. Takeuchi, whom you know from around town, is beside you, and Okada the station attendant is on his way over.",
+      "roleEn": "You are a passenger who needs a ticket to さくらまち (240 yen). Ask for help politely — people are glad to give it.",
+      "missionsEn": [
+        {
+          "text": "Answer Takeuchi's offer of an umbrella",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Ask the station attendant to teach you how to buy a ticket",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Ask him to tell you the reading or to speak slowly",
+          "grammar": [
+            "g1",
+            "g2"
+          ]
+        },
+        {
+          "text": "Say that your friend is waiting right now",
+          "grammar": [
+            "g3",
+            "g6"
+          ]
+        }
+      ],
+      "characters": [
+        "okada",
+        "takeuchi"
+      ],
+      "positions": {
+        "okada": "staff",
+        "takeuchi": "npc1"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "おはよう ございます。雨が 降って いますね。",
+              "kana": "おはよう ございます。あめが ふって いますね。",
+              "en": "Good morning. It's raining, isn't it."
+            },
+            {
+              "who": "takeuchi",
+              "ja": "かさが ありませんね。わたしの かさを 貸しましょうか。",
+              "kana": "かさが ありませんね。わたしの かさを かしましょうか。",
+              "en": "You don't have an umbrella. Shall I lend you mine?",
+              "gesture": "offer"
+            }
+          ],
+          "listen": {
+            "promptEn": "She offers to lend you an umbrella. Accept gratefully — or decline politely.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "ええ、おねがいします。／いいえ、けっこうです。",
+            "modelAnswers": [
+              "すみません。おねがいします。",
+              "ありがとう ございます。おねがいします。",
+              "いいえ、けっこうです。ありがとう ございます。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts the umbrella.",
+                "next": "n2_yes",
+                "exampleJa": "すみません。おねがいします。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines the umbrella.",
+                "next": "n2_no",
+                "exampleJa": "いいえ、けっこうです。"
+              }
+            ],
+            "fallback": "n2_no"
+          }
+        },
+        {
+          "id": "n2_yes",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "はい、どうぞ。わたしは もう 1本 ありますから。",
+              "kana": "はい、どうぞ。わたしは もう いっぽん ありますから。",
+              "en": "Here you are. I have another one.",
+              "gesture": "offer",
+              "tts": "はい、どうぞ。わたしは もう いっぽん ありますから。"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_no",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "そうですか。わかりました。",
+              "kana": "そうですか。わかりました。",
+              "en": "I see. All right.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "focus": "ticket_machine",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "おはよう ございます。何か 手伝いましょうか。",
+              "kana": "おはよう ございます。なにか てつだいましょうか。",
+              "en": "Good morning. Can I help you with anything?",
+              "gesture": "bow_light",
+              "tts": "おはよう ございます。なにか てつだいましょうか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "You want a ticket to さくらまち but cannot read the machine. Ask him politely to teach you how to buy a ticket (きっぷの かいかた).",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "すみませんが、＿＿を おしえて ください。",
+            "modelAnswers": [
+              "すみませんが、きっぷの かいかたを おしえて ください。",
+              "すみませんが、さくらまちまでの きっぷの かいかたを おしえて ください。",
+              "さくらまちへ いきたいです。すみませんが、てつだって ください。"
+            ],
+            "branches": [
+              {
+                "id": "how_to_buy",
+                "whenEn": "Learner asks to be taught how to buy the ticket / use the machine, or asks for help buying it.",
+                "next": "n4_how",
+                "exampleJa": "すみませんが、きっぷの かいかたを おしえて ください。"
+              },
+              {
+                "id": "which_train",
+                "whenEn": "Learner asks instead about the train, the platform or the way to Sakuramachi.",
+                "next": "n4_plat",
+                "exampleJa": "すみません。さくらまちは なんばんせんですか。"
+              }
+            ],
+            "fallback": "n4_how"
+          }
+        },
+        {
+          "id": "n4_how",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "はい。桜町まで 240円です。いっしょに 買いましょう。",
+              "kana": "はい。さくらまちまで にひゃくよんじゅうえんです。いっしょに かいましょう。",
+              "en": "Sure. It's 240 yen to Sakuramachi. Let's buy it together.",
+              "gesture": "nod",
+              "tts": "はい。さくらまちまで にひゃくよんじゅうえんです。いっしょに かいましょう。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_plat",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "桜町は 2番線です。きっぷは いっしょに 買いましょう。",
+              "kana": "さくらまちは にばんせんです。きっぷは いっしょに かいましょう。",
+              "en": "Sakuramachi is platform 2. Let's buy the ticket together.",
+              "gesture": "point",
+              "target": "platform_sign_2",
+              "tts": "さくらまちは にばんせんです。きっぷは いっしょに かいましょう。"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "focus": "ticket_machine",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "ここを 見て ください。漢字が わかりますか。",
+              "kana": "ここを みて ください。かんじが わかりますか。",
+              "en": "Please look here. Do you understand the kanji?",
+              "gesture": "point",
+              "target": "ticket_machine"
+            }
+          ],
+          "listen": {
+            "promptEn": "Be honest. If you cannot read it, ask him to tell you the reading (よみかた) or to speak slowly (ゆっくり). If you can, say so.",
+            "grammar": [
+              "g1",
+              "g2"
+            ],
+            "hintJa": "すみません。＿＿を おしえて ください。／ゆっくり ＿＿て ください。",
+            "modelAnswers": [
+              "すみません。よみかたを おしえて ください。",
+              "すみませんが、もう すこし ゆっくり はなして ください。",
+              "はい、すこし わかります。"
+            ],
+            "branches": [
+              {
+                "id": "needs_help",
+                "whenEn": "Learner asks him to teach the reading, to read it, to say it slowly or otherwise to help.",
+                "next": "n6_help",
+                "exampleJa": "すみません。よみかたを おしえて ください。"
+              },
+              {
+                "id": "can_read",
+                "whenEn": "Learner says they understand the kanji (a little or well).",
+                "next": "n6_ok",
+                "exampleJa": "はい、すこし わかります。"
+              }
+            ],
+            "fallback": "n6_help"
+          }
+        },
+        {
+          "id": "n6_help",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "いいですよ。これは「さくらまち」です。240円を 出して ください。",
+              "kana": "いいですよ。これは「さくらまち」です。にひゃくよんじゅうえんを だして ください。",
+              "en": "Of course. This says 'Sakuramachi'. Please take out 240 yen.",
+              "gesture": "nod",
+              "tts": "いいですよ。これは さくらまちです。にひゃくよんじゅうえんを だして ください。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_ok",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "すごいですね。じゃ、240円を 出して ください。",
+              "kana": "すごいですね。じゃ、にひゃくよんじゅうえんを だして ください。",
+              "en": "Impressive. Then please take out 240 yen.",
+              "gesture": "nod",
+              "tts": "すごいですね。じゃ、にひゃくよんじゅうえんを だして ください。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "okada",
+              "ja": "はい、きっぷと おつりです。どうぞ。",
+              "kana": "はい、きっぷと おつりです。どうぞ。",
+              "en": "Here is your ticket and your change.",
+              "gesture": "offer"
+            },
+            {
+              "who": "takeuchi",
+              "ja": "桜町へ 何を しに 行きますか。",
+              "kana": "さくらまちへ なにを しに いきますか。",
+              "en": "What are you going to Sakuramachi for?",
+              "tts": "さくらまちへ なにを しに いきますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Your friend Minh is waiting for you at Sakuramachi station right now. Tell her (〜て います).",
+            "grammar": [
+              "g3",
+              "g6"
+            ],
+            "hintJa": "ともだちが ＿＿で ＿＿て います。",
+            "modelAnswers": [
+              "ともだちが さくらまちの えきで まって います。",
+              "ともだちに あいに いきます。いま、ともだちが えきで まって います。"
+            ],
+            "branches": [
+              {
+                "id": "friend_waiting",
+                "whenEn": "Learner says a friend (or someone) is waiting.",
+                "next": "end_hurry",
+                "exampleJa": "ともだちが えきで まって います。"
+              },
+              {
+                "id": "other_purpose",
+                "whenEn": "Learner gives another purpose (meeting a friend, shopping, studying, work) without saying anyone is waiting.",
+                "next": "end_ok",
+                "exampleJa": "ともだちに あいに いきます。"
+              }
+            ],
+            "fallback": "end_hurry"
+          }
+        },
+        {
+          "id": "end_hurry",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "じゃ、急いで ください。すぐ 電車が 来ますよ。",
+              "kana": "じゃ、いそいで ください。すぐ でんしゃが きますよ。",
+              "en": "Then please hurry. The train is coming any minute.",
+              "tts": "じゃ、いそいで ください。すぐ でんしゃが きますよ。"
+            },
+            {
+              "who": "okada",
+              "ja": "2番線です。いって いらっしゃい！",
+              "kana": "にばんせんです。いって いらっしゃい！",
+              "en": "Platform 2. Have a good trip!",
+              "gesture": "point",
+              "target": "platform_sign_2",
+              "tts": "にばんせんです。いって いらっしゃい！"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_ok",
+          "say": [
+            {
+              "who": "takeuchi",
+              "ja": "いいですね。あ、電車が 来ましたよ。",
+              "kana": "いいですね。あ、でんしゃが きましたよ。",
+              "en": "How nice. Oh, the train has come.",
+              "gesture": "point",
+              "target": "train",
+              "tts": "いいですね。あ、でんしゃが きましたよ。"
+            },
+            {
+              "who": "okada",
+              "ja": "2番線です。急いで ください！",
+              "kana": "にばんせんです。いそいで ください！",
+              "en": "Platform 2. Please hurry!",
+              "gesture": "point",
+              "target": "platform_sign_2",
+              "tts": "にばんせんです。いそいで ください！"
+            }
+          ],
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "l14b",
+      "titleJa": "かいぎの まえ",
+      "titleEn": "Before the five o'clock meeting",
+      "scene": "office",
+      "setup": {
+        "time": "evening",
+        "season": "summer",
+        "weather": "clear"
+      },
+      "call": false,
+      "briefEn": "A hot summer afternoon at the office. The meeting starts at five and Aoki still has a pile of copying to do. Then the manager, Ogawa, walks in.",
+      "roleEn": "You are Aoki's colleague. Offer your help with 〜ましょうか, and say what you are doing with 〜て います.",
+      "missionsEn": [
+        {
+          "text": "Offer to help Aoki",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell the manager what you are doing right now",
+          "grammar": [
+            "g3"
+          ]
+        },
+        {
+          "text": "Offer to cool the room down",
+          "grammar": [
+            "g4",
+            "g1"
+          ]
+        },
+        {
+          "text": "Offer to get the paper, or ask where it is",
+          "grammar": [
+            "g4",
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "aoki",
+        "ogawa"
+      ],
+      "positions": {
+        "aoki": "npc1",
+        "ogawa": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ああ、忙しいです。5時から 会議です。",
+              "kana": "ああ、いそがしいです。ごじから かいぎです。",
+              "en": "Oh, I'm so busy. The meeting is at five.",
+              "gesture": "think"
+            },
+            {
+              "who": "aoki",
+              "ja": "まだ コピーが 50枚 あります……。",
+              "kana": "まだ コピーが ごじゅうまい あります……。",
+              "en": "And I still have fifty pages to copy…"
+            }
+          ],
+          "listen": {
+            "promptEn": "Aoki is swamped. Offer to help: do the copying for her — or another kind offer (buy her a coffee? turn on the air conditioner?).",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "＿＿ましょうか。",
+            "modelAnswers": [
+              "てつだいましょうか。",
+              "わたしが コピーしましょうか。",
+              "コーヒーを かいましょうか。"
+            ],
+            "branches": [
+              {
+                "id": "offer_copy",
+                "whenEn": "Learner offers to help in general or to do the copying.",
+                "next": "n2_copy",
+                "exampleJa": "てつだいましょうか。"
+              },
+              {
+                "id": "offer_other",
+                "whenEn": "Learner offers something else (coffee, air conditioner, window…).",
+                "next": "n2_other",
+                "exampleJa": "コーヒーを かいましょうか。"
+              }
+            ],
+            "fallback": "n2_copy"
+          }
+        },
+        {
+          "id": "n2_copy",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ありがとう ございます！じゃ、これを 20枚 コピーして ください。",
+              "kana": "ありがとう ございます！じゃ、これを にじゅうまい コピーして ください。",
+              "en": "Thank you! Then please make twenty copies of this.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_other",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "ありがとう ございます。じゃ、コピーを 手伝って ください。",
+              "kana": "ありがとう ございます。じゃ、コピーを てつだって ください。",
+              "en": "Thank you. In that case, please help me with the copying.",
+              "gesture": "offer"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "ちょっと いいですか。今 何を して いますか。",
+              "kana": "ちょっと いいですか。いま なにを して いますか。",
+              "en": "Do you have a moment? What are you doing now?",
+              "tts": "ちょっと いいですか。いま なにを して いますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "The manager asks what you are doing right now. Tell him (〜て います).",
+            "grammar": [
+              "g3",
+              "g1"
+            ],
+            "hintJa": "いま、＿＿て います。",
+            "modelAnswers": [
+              "いま、かいぎの コピーを して います。",
+              "あおきさんを てつだって います。",
+              "レポートを かいて います。"
+            ],
+            "branches": [
+              {
+                "id": "helping",
+                "whenEn": "Learner says they are copying or helping Aoki.",
+                "next": "n4_help",
+                "exampleJa": "あおきさんを てつだって います。"
+              },
+              {
+                "id": "other_work",
+                "whenEn": "Learner says they are doing something else (writing a report, reading mail, making a phone call…).",
+                "next": "n4_other",
+                "exampleJa": "レポートを かいて います。"
+              }
+            ],
+            "fallback": "n4_help"
+          }
+        },
+        {
+          "id": "n4_help",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。ありがとう。会議は 5時からです。急いで ください。",
+              "kana": "そうですか。ありがとう。かいぎは ごじからです。いそいで ください。",
+              "en": "I see. Thank you. The meeting is at five, so please hurry.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_other",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "そうですか。すみませんが、あとで 青木さんを 手伝って ください。",
+              "kana": "そうですか。すみませんが、あとで あおきさんを てつだって ください。",
+              "en": "I see. Sorry to ask, but please help Aoki afterwards.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "この 部屋は ちょっと 暑いですね。",
+              "kana": "この へやは ちょっと あついですね。",
+              "en": "This room is a little hot, isn't it."
+            }
+          ],
+          "listen": {
+            "promptEn": "The manager feels hot. Offer to do something about it: turn on the air conditioner (つけます) or open the window (あけます).",
+            "grammar": [
+              "g4",
+              "g1"
+            ],
+            "hintJa": "＿＿を ＿＿ましょうか。",
+            "modelAnswers": [
+              "エアコンを つけましょうか。",
+              "まどを あけましょうか。"
+            ],
+            "branches": [
+              {
+                "id": "air_conditioner",
+                "whenEn": "Learner offers to turn on the air conditioner.",
+                "next": "n6_ac",
+                "exampleJa": "エアコンを つけましょうか。"
+              },
+              {
+                "id": "window",
+                "whenEn": "Learner offers to open the window (or the door).",
+                "next": "n6_window",
+                "exampleJa": "まどを あけましょうか。"
+              }
+            ],
+            "fallback": "n6_ac"
+          }
+        },
+        {
+          "id": "n6_ac",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "ええ、お願いします。……ああ、涼しいですね。",
+              "kana": "ええ、おねがいします。……ああ、すずしいですね。",
+              "en": "Yes, please. …Ah, that's nice and cool.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_window",
+          "say": [
+            {
+              "who": "ogawa",
+              "ja": "窓ですか。ええ、お願いします。ありがとう。",
+              "kana": "まどですか。ええ、おねがいします。ありがとう。",
+              "en": "The window? Yes, please. Thank you.",
+              "gesture": "nod"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あれ？コピー機の 紙が ありません。",
+              "kana": "あれ？コピーきの かみが ありません。",
+              "en": "Huh? The copier is out of paper.",
+              "gesture": "surprised"
+            }
+          ],
+          "listen": {
+            "promptEn": "The copier has run out of paper. Offer to get some (とります) — or ask Aoki to tell you where the paper is.",
+            "grammar": [
+              "g4",
+              "g2"
+            ],
+            "hintJa": "かみを ＿＿ましょうか。／かみは どこですか。＿＿て ください。",
+            "modelAnswers": [
+              "わたしが かみを とりましょうか。",
+              "かみは どこですか。おしえて ください。"
+            ],
+            "branches": [
+              {
+                "id": "offer_fetch",
+                "whenEn": "Learner offers to get / bring the paper.",
+                "next": "n8_offer",
+                "exampleJa": "わたしが かみを とりましょうか。"
+              },
+              {
+                "id": "ask_where",
+                "whenEn": "Learner asks where the paper is or asks her to tell them.",
+                "next": "n8_ask",
+                "exampleJa": "かみは どこですか。おしえて ください。"
+              }
+            ],
+            "fallback": "n8_ask"
+          }
+        },
+        {
+          "id": "n8_offer",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "すみません、お願いします。紙は あの たなの 上です。",
+              "kana": "すみません、おねがいします。かみは あの たなの うえです。",
+              "en": "Sorry, yes please. The paper is on top of that shelf.",
+              "tts": "すみません、おねがいします。かみは あの たなの うえです。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "n8_ask",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "あの たなの 上です。すみませんが、取って ください。",
+              "kana": "あの たなの うえです。すみませんが、とって ください。",
+              "en": "It's on top of that shelf. Sorry, could you get it?",
+              "tts": "あの たなの うえです。すみませんが、とって ください。"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "end",
+          "say": [
+            {
+              "who": "aoki",
+              "ja": "終わりました！どうも ありがとう ございました。",
+              "kana": "おわりました！どうも ありがとう ございました。",
+              "en": "All done! Thank you so much.",
+              "gesture": "bow"
+            },
+            {
+              "who": "ogawa",
+              "ja": "じゃ、会議を 始めましょう。",
+              "kana": "じゃ、かいぎを はじめましょう。",
+              "en": "Well then, let's start the meeting."
+            }
+          ],
+          "end": true
+        }
+      ],
+      "freeTalk": {
+        "openerJa": "会議は 6時までです。それから 時間が あります。何か 手伝いましょうか。",
+        "openerKana": "かいぎは ろくじまでです。それから じかんが あります。なにか てつだいましょうか。",
+        "openerEn": "The meeting is until six. After that I have time. Is there anything I can help you with?",
+        "topicEn": "Aoki returns the favour: the learner asks her for things with ～て ください (teach me this kanji's reading, show me the report, speak slowly…), offers help with ～ましょうか and says what they are doing with ～て います. Stay within lesson 14 grammar; no ～ても／～ては／～てから, no ない-form, polite style.",
+        "maxTurns": 4
+      }
+    },
+    {
+      "id": "l14c",
+      "titleJa": "ポストの かみ",
+      "titleEn": "The slip in the mailbox",
+      "scene": "apartment",
+      "setup": {
+        "time": "noon",
+        "season": "winter",
+        "weather": "cloudy"
+      },
+      "call": false,
+      "briefEn": "A cold winter noon. You found a slip of paper in your mailbox, full of kanji, and you are standing in the corridor staring at it when your neighbour Aya comes out. Her husband Shun is at home too.",
+      "roleEn": "You are the neighbour from next door. Ask for help with the paper, answer the Moris' kind offers, and say what is going on right now.",
+      "missionsEn": [
+        {
+          "text": "Ask Aya to read the paper for you",
+          "grammar": [
+            "g2",
+            "g5"
+          ]
+        },
+        {
+          "text": "Answer her offer to phone the post office",
+          "grammar": [
+            "g4"
+          ]
+        },
+        {
+          "text": "Tell Shun what is happening right now",
+          "grammar": [
+            "g3",
+            "g6"
+          ]
+        },
+        {
+          "text": "Accept or decline Shun's help",
+          "grammar": [
+            "g4",
+            "g2"
+          ]
+        }
+      ],
+      "characters": [
+        "mori_aya",
+        "mori_shun"
+      ],
+      "positions": {
+        "mori_aya": "npc1",
+        "mori_shun": "npc2"
+      },
+      "start": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "focus": "mailbox",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "こんにちは。あれ？その 紙は 何ですか。",
+              "kana": "こんにちは。あれ？その かみは なんですか。",
+              "en": "Hello. Oh? What is that paper?",
+              "gesture": "think",
+              "tts": "こんにちは。あれ？その かみは なんですか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "The paper from your mailbox is all kanji. Ask Aya politely to read it for you, or to teach you the reading.",
+            "grammar": [
+              "g2",
+              "g5"
+            ],
+            "hintJa": "すみませんが、この かみを ＿＿て ください。",
+            "modelAnswers": [
+              "すみませんが、この かみを よんで ください。",
+              "かんじが わかりません。すみませんが、よみかたを おしえて ください。"
+            ],
+            "branches": [
+              {
+                "id": "asks_to_read",
+                "whenEn": "Learner asks her to read it or to teach the reading / meaning.",
+                "next": "n2_read",
+                "exampleJa": "すみませんが、この かみを よんで ください。"
+              },
+              {
+                "id": "asks_to_look",
+                "whenEn": "Learner asks her to look at it, or only says they cannot read the kanji.",
+                "next": "n2_look",
+                "exampleJa": "すみませんが、ちょっと みて ください。"
+              }
+            ],
+            "fallback": "n2_look"
+          }
+        },
+        {
+          "id": "n2_read",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "いいですよ。ちょっと 見せて ください。",
+              "kana": "いいですよ。ちょっと みせて ください。",
+              "en": "Of course. Let me see it for a moment.",
+              "gesture": "receive"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n2_look",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "漢字が 多いですね。ちょっと 見せて ください。",
+              "kana": "かんじが おおいですね。ちょっと みせて ください。",
+              "en": "That's a lot of kanji. Let me see it for a moment.",
+              "gesture": "receive"
+            }
+          ],
+          "next": "n3"
+        },
+        {
+          "id": "n3",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "これは 郵便局の 紙です。国から 荷物が 来ましたよ。",
+              "kana": "これは ゆうびんきょくの かみです。くにから にもつが きましたよ。",
+              "en": "This is a slip from the post office. A parcel has come from your country.",
+              "tts": "これは ゆうびんきょくの かみです。くにから にもつが きましたよ。"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "わたしが 郵便局に 電話を かけましょうか。",
+              "kana": "わたしが ゆうびんきょくに でんわを かけましょうか。",
+              "en": "Shall I phone the post office for you?",
+              "gesture": "phone"
+            }
+          ],
+          "listen": {
+            "promptEn": "She offers to phone the post office for you. Accept gratefully — or decline politely and say you will call.",
+            "grammar": [
+              "g4"
+            ],
+            "hintJa": "ええ、おねがいします。／いいえ、けっこうです。",
+            "modelAnswers": [
+              "すみません。おねがいします。",
+              "いいえ、けっこうです。わたしが かけます。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts her offer.",
+                "next": "n4_call",
+                "exampleJa": "すみません。おねがいします。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines / will call by themselves.",
+                "next": "n4_self",
+                "exampleJa": "いいえ、けっこうです。わたしが かけます。"
+              }
+            ],
+            "fallback": "n4_call"
+          }
+        },
+        {
+          "id": "n4_call",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "じゃ、かけますね。ちょっと 待って ください。",
+              "kana": "じゃ、かけますね。ちょっと まって ください。",
+              "en": "I'll call them, then. Just a moment, please.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n4_self",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "郵便局の 日本語は 難しいですよ。わたしが かけますね。",
+              "kana": "ゆうびんきょくの にほんごは むずかしいですよ。わたしが かけますね。",
+              "en": "Post-office Japanese is hard, you know. I'll make the call.",
+              "gesture": "phone"
+            }
+          ],
+          "next": "n5"
+        },
+        {
+          "id": "n5",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "こんにちは。寒いですね。ここで 何を して いますか。",
+              "kana": "こんにちは。さむいですね。ここで なにを して いますか。",
+              "en": "Hello. Cold, isn't it. What are you doing out here?",
+              "gesture": "bow_light",
+              "tts": "こんにちは。さむいですね。ここで なにを して いますか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "Shun comes out. Tell him what is happening right now: Aya is phoning the post office — or you are waiting for her.",
+            "grammar": [
+              "g3",
+              "g6"
+            ],
+            "hintJa": "あやさんが ＿＿て います。／あやさんを ＿＿て います。",
+            "modelAnswers": [
+              "あやさんが ゆうびんきょくに でんわを かけて います。",
+              "あやさんを まって います。"
+            ],
+            "branches": [
+              {
+                "id": "aya_calling",
+                "whenEn": "Learner says Aya is making a phone call / talking to the post office.",
+                "next": "n6_call",
+                "exampleJa": "あやさんが でんわを かけて います。"
+              },
+              {
+                "id": "waiting",
+                "whenEn": "Learner says they are waiting (for Aya, for the call), or anything else.",
+                "next": "n6_wait",
+                "exampleJa": "あやさんを まって います。"
+              }
+            ],
+            "fallback": "n6_wait"
+          }
+        },
+        {
+          "id": "n6_call",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "電話ですか。あやの 電話は いつも 長いですよ。",
+              "kana": "でんわですか。あやの でんわは いつも ながいですよ。",
+              "en": "On the phone? Aya's calls are always long, you know.",
+              "gesture": "laugh"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n6_wait",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。寒いですから、中で 待って ください。",
+              "kana": "そうですか。さむいですから、なかで まって ください。",
+              "en": "I see. It's cold, so please wait inside.",
+              "gesture": "beckon",
+              "tts": "そうですか。さむいですから、なかで まって ください。"
+            }
+          ],
+          "next": "n7"
+        },
+        {
+          "id": "n7",
+          "say": [
+            {
+              "who": "mori_aya",
+              "ja": "荷物は 今晩 7時ごろ 来ます。うちに いて くださいね。",
+              "kana": "にもつは こんばん しちじごろ きます。うちに いて くださいね。",
+              "en": "The parcel will come around seven tonight. Please be at home.",
+              "tts": "にもつは こんばん しちじごろ きます。うちに いて くださいね。"
+            },
+            {
+              "who": "mori_shun",
+              "ja": "重い 荷物ですか。7時に 手伝いましょうか。",
+              "kana": "おもい にもつですか。しちじに てつだいましょうか。",
+              "en": "Is it a heavy parcel? Shall I help you at seven?",
+              "tts": "おもい にもつですか。しちじに てつだいましょうか。"
+            }
+          ],
+          "listen": {
+            "promptEn": "It is 20 kg of rice from home! Accept Shun's help (ask him to help you) — or decline politely: you will carry it alone.",
+            "grammar": [
+              "g4",
+              "g2"
+            ],
+            "hintJa": "すみません。＿＿て ください。／いいえ、けっこうです。",
+            "modelAnswers": [
+              "ありがとう ございます。じゃ、てつだって ください。",
+              "ええ、おねがいします。おもいですから。",
+              "いいえ、けっこうです。ひとりで もちます。"
+            ],
+            "branches": [
+              {
+                "id": "accept",
+                "whenEn": "Learner accepts his help.",
+                "next": "end_help",
+                "exampleJa": "ありがとう ございます。じゃ、てつだって ください。"
+              },
+              {
+                "id": "decline",
+                "whenEn": "Learner declines / will carry it alone.",
+                "next": "end_alone",
+                "exampleJa": "いいえ、けっこうです。ひとりで もちます。"
+              }
+            ],
+            "fallback": "end_help"
+          }
+        },
+        {
+          "id": "end_help",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "いいですよ。じゃ、7時に 呼んで ください。",
+              "kana": "いいですよ。じゃ、しちじに よんで ください。",
+              "en": "Sure. Call me at seven, then.",
+              "gesture": "nod",
+              "tts": "いいですよ。じゃ、しちじに よんで ください。"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "よかったですね。じゃ、また 今晩。",
+              "kana": "よかったですね。じゃ、また こんばん。",
+              "en": "That's good. See you tonight, then.",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        },
+        {
+          "id": "end_alone",
+          "say": [
+            {
+              "who": "mori_shun",
+              "ja": "そうですか。わかりました。じゃ、また。",
+              "kana": "そうですか。わかりました。じゃ、また。",
+              "en": "I see. All right. See you.",
+              "gesture": "nod"
+            },
+            {
+              "who": "mori_aya",
+              "ja": "荷物は ゆっくり 持って くださいね。",
+              "kana": "にもつは ゆっくり もって くださいね。",
+              "en": "Carry the parcel carefully, all right?",
+              "gesture": "wave"
+            }
+          ],
+          "end": true
+        }
+      ]
+    }
+  ]
+}
