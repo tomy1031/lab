@@ -21,6 +21,7 @@
 //   POWDER_REF    POWDER LINE (powder-line/)                   default: HEAD if it has powder-line/, else origin/claude/stoic-maxwell-eaq1nw
 //   KOTEI_REF     KOTEI DUEL (kotei-duel/)                      default: HEAD if it has kotei-duel/, else origin/claude/it-manufacturing-card-game-2qkhxb
 //   SELFINTRO_REF じこしょうかい (self-intro/output)               default: HEAD if it has self-intro/, else origin/claude/great-sagan-2ophg4
+//   SPINTABLE_REF SPIN TABLE (spin-table/)                      default: HEAD if it has spin-table/, else origin/claude/gallant-cori-y69hp8
 // The site pages themselves (site/*.html, site/img) are taken from the working tree.
 // SKIP_AIC=1 skips the AI COMPANY build (it needs `npm ci`), leaving a page that links to GitHub.
 import { execSync } from 'node:child_process';
@@ -53,6 +54,7 @@ const refs = {
   selfintro: process.env.SELFINTRO_REF || 'HEAD',
   khmergt: process.env.KHMERGT_REF || 'HEAD',
   matrixcosmos: process.env.MATRIX_COSMOS_REF || 'HEAD',
+  spintable: process.env.SPINTABLE_REF || 'HEAD',
 };
 // once the reel's branch is merged and deleted, take it from the films branch it was merged into
 const hasRef = (ref) => { try { sh(`git -C "${root}" rev-parse --verify --quiet "${ref}^{commit}"`); return true; } catch { return false; } };
@@ -70,6 +72,7 @@ if (!process.env.ANAKATA_REF && !hasDir(refs.anakata, 'anakata')) refs.anakata =
 if (!process.env.POWDER_REF && !hasDir(refs.powder, 'powder-line')) refs.powder = 'origin/claude/stoic-maxwell-eaq1nw';
 if (!process.env.KOTEI_REF && !hasDir(refs.kotei, 'kotei-duel')) refs.kotei = 'origin/claude/it-manufacturing-card-game-2qkhxb';
 if (!process.env.SELFINTRO_REF && !hasDir(refs.selfintro, 'self-intro')) refs.selfintro = 'origin/claude/great-sagan-2ophg4';
+if (!process.env.SPINTABLE_REF && !hasDir(refs.spintable, 'spin-table')) refs.spintable = 'origin/claude/gallant-cori-y69hp8';
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lab-site-'));
 // extract <dir> of <ref> into a fresh temp folder and return its path
@@ -505,6 +508,28 @@ copy(path.join(siteSrc, 'img'), path.join(out, 'img'));
   }
 }
 
+// 20 SPIN TABLE — realistic WebXR table tennis. Its own tools/bundle.mjs copies what ships (the page, the ES
+// modules and the vendored three.js) and fills sw.js with the build id and the file list, so it works offline.
+{
+  const dest = path.join(out, 'spin-table');
+  try {
+    const src = exportDir(refs.spintable, 'spin-table');
+    const { bundle } = await import(pathToFileURL(path.join(src, 'tools', 'bundle.mjs')).href);
+    const build = sh(`git -C "${root}" rev-parse "${refs.spintable}:spin-table"`).slice(0, 12);
+    const r = bundle(src, dest, build);
+    const preview = path.join(src, 'docs', 'preview.jpg');
+    if (fs.existsSync(preview)) copy(preview, path.join(out, 'img', 'spin-table.jpg'));
+    console.log(`spin-table build ${r.build}: ${r.files} files`);
+  } catch (e) {
+    console.warn(`spin-table not found at ${refs.spintable}; publishing a link page instead:`, e.message);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.writeFileSync(path.join(dest, 'index.html'),
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SPIN TABLE</title>' +
+      '<p style="font-family:sans-serif;padding:24px">準備中です。<a href="../">lab にもどる</a></p>');
+  }
+}
+
 fs.rmSync(tmp, { recursive: true, force: true });
 const size = sh(`du -sh "${out}" | cut -f1`, { shell: '/bin/bash' });
-console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro} khmergt=${refs.khmergt} matrixcosmos=${refs.matrixcosmos}`);
+console.log(`site built in ${out} (${size}) from yokohama=${refs.yokohama} films=${refs.films} aic=${refs.aic} undokai=${refs.undokai} starlight=${refs.starlight} starweaver=${refs.starweaver} aetherwalk=${refs.aetherwalk} kotoba=${refs.kotoba} offbeat=${refs.offbeat} dreamdrift=${refs.dreamdrift} rally=${refs.rally} island=${refs.island} skyatlas=${refs.skyatlas} anakata=${refs.anakata} powder=${refs.powder} kotei=${refs.kotei} selfintro=${refs.selfintro} khmergt=${refs.khmergt} matrixcosmos=${refs.matrixcosmos} spintable=${refs.spintable}`);

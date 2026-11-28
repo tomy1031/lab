@@ -1,0 +1,9 @@
+{
+  "name": "SPIN TABLE — リアル VR 卓球",
+  "short_name": "SPIN TABLE",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "description": "Meta Quest で本物のように卓球ができる WebXR ゲーム"
+}

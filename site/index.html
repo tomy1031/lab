@@ -509,6 +509,30 @@
         </details>
       </div>
     </article>
+
+    <article class="work" id="spin-table">
+      <a class="shot" href="spin-table/"><img src="img/spin-table.jpg" alt="SPIN TABLE の試合を会場の角から見た中継カメラ――赤いフロアに青い卓球台、ラケットを構えて打ち合う 2 人、満員のスタンド、打球の速さと回転数の表示" width="1280" height="720" loading="lazy"><span class="no">20</span></a>
+      <div class="notes">
+        <div class="tags"><span>VR スポーツ</span><span>卓球</span><span>Meta Quest・PC</span><span>three.js・WebXR</span><span>オフライン対応</span></div>
+        <h2>SPIN TABLE — リアル VR 卓球</h2>
+        <p class="lead">コントローラーがシェークハンドのラケットになり、振ったとおりに当たる卓球。ITTF 規格の台と 40 mm のボールで、空気抵抗・回転（マグヌス効果）・台とラバーの摩擦を 1000 分の 1 秒ごとに計算し、面の角度・スイング・当たった場所（芯・先・ふち）で球の速さと回転が決まります。打った瞬間は振動（芯は短く、外すと長く、ふちは鋭く）・音・閃光で手応えを返し、km/h と rpm を表示。CPU は回転を読んでラケットの面と振りを逆算して打ち、読み違えるとミスします。</p>
+        <p class="note">試合（11 点制・5 段階の CPU）、ラリー練習、球出しマシン（上・下・横回転）、サーブ練習（ルールの判定つき）。ラバーは裏ソフト・粘着・表ソフト・粒高・アンチから選べます。</p>
+        <div class="actions">
+          <a class="btn primary" href="spin-table/">あそぶ</a>
+          <a class="btn" href="spin-table/?demo&amp;cam=tv">デモ</a>
+          <a class="btn" href="https://github.com/tomy1031/lab/tree/HEAD/spin-table">ソースコード</a>
+        </div>
+        <details>
+          <summary>中身</summary>
+          <ul>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/spin-table/README.md">README</a>：遊び方、操作、打つときの手応え、物理の計算、初期値とその理由</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/spin-table/js/physics.js"><code>js/physics.js</code></a>：ボールの飛行・台のバウンド（エッジ）・ネット・ラバーの反発と摩擦</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/spin-table/js/paddle.js"><code>js/paddle.js</code></a>：ラケットの輪郭と、フレーム間を連続的に調べる当たり判定（芯・ふち・ねじれ）</li>
+            <li><a href="https://github.com/tomy1031/lab/blob/HEAD/spin-table/js/shot.js"><code>js/shot.js</code></a>・<a href="https://github.com/tomy1031/lab/blob/HEAD/spin-table/js/planner.js"><code>js/planner.js</code></a>：狙い・サーブ・ラケットの面と振りの逆算、CPU の判断</li>
+          </ul>
+        </details>
+      </div>
+    </article>
   </main>
 
   <footer>

@@ -1,0 +1,21 @@
+{
+  "name": "spin-table",
+  "private": true,
+  "type": "module",
+  "description": "SPIN TABLE — realistic VR table tennis for Meta Quest (three.js / WebXR, no build step)",
+  "scripts": {
+    "serve": "node tests/serve.mjs 8080",
+    "test": "node tests/unit.mjs && node tests/paddle.mjs && node tests/sim.mjs && node tests/smoke.mjs && node tests/xr.mjs",
+    "test:unit": "node tests/unit.mjs",
+    "test:paddle": "node tests/paddle.mjs",
+    "test:sim": "node tests/sim.mjs",
+    "test:smoke": "node tests/smoke.mjs",
+    "test:xr": "node tests/xr.mjs",
+    "bundle": "node tools/bundle.mjs"
+  },
+  "devDependencies": {
+    "iwer": "2.7.0",
+    "playwright": "1.63.0",
+    "three": "0.186.1"
+  }
+}
