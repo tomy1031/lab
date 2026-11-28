@@ -91,6 +91,12 @@ on:
       - 'matrix-cosmos/js/**'
       - 'matrix-cosmos/docs/preview.jpg'
       - 'matrix-cosmos/tools/bundle.mjs'
+      - 'spin-table/index.html'
+      - 'spin-table/manifest.webmanifest'
+      - 'spin-table/sw.js'
+      - 'spin-table/js/**'
+      - 'spin-table/docs/preview.jpg'
+      - 'spin-table/tools/bundle.mjs'
       - '.github/workflows/pages.yml'
   schedule:
     - cron: '23 18 * * *' # daily, picks up changes on the other project branches
